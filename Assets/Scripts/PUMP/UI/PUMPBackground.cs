@@ -21,7 +21,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     private Canvas _rootCanvas;
     private IExternalInput _externalInput;
     private IExternalOutput _externalOutput;
-    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.05f, 0.5f);
+    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.02f, 0.5f);
 
     private void SubscribeNodeAction(Node node)
     {
@@ -360,7 +360,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     private List<SerializeNodeInfo> _latestHistoryInfo = null;  // 노드 비어있는 상태
     private int _currentHistoryIndex = -1;
     private int _maxHistoryCapacity = 10;
-    private bool _recordingCall = false;
+    private UniTask _recordingTask = UniTask.CompletedTask;
 
     private void PushHistory(List<SerializeNodeInfo> historyInfo)
     {
@@ -394,11 +394,10 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         return null;
     }
     
-    private async UniTaskVoid RequestRecordingEndFrameAsync()
+    private async UniTask RequestRecordingEndFrameAsync()
     {
         await UniTask.WaitForEndOfFrame();
         RecordHistory();
-        _recordingCall = false;
     }
 
     /// <summary>
@@ -407,20 +406,19 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     /// </summary>
     public void RecordHistory()
     {
-        _recordingCall = false;
         _latestHistoryInfo = GetSerializeNodeInfos();
         PushHistory(_latestHistoryInfo);
     }
 
     /// <summary>
     /// 지속적으로 호출하더라도 프레임당 기록 한번으로 제한
+    /// SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 호출하지 말 것.
     /// </summary>
     public void RecordHistoryOncePerFrame()
     {
-        if (!_recordingCall)
+        if (_recordingTask.Status == UniTaskStatus.Succeeded)
         {
-            _recordingCall = true;
-            RequestRecordingEndFrameAsync().Forget();
+            _recordingTask = RequestRecordingEndFrameAsync();
         }
     }
 

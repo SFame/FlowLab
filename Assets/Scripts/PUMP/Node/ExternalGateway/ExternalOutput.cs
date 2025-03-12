@@ -51,6 +51,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     protected override void OnLoad_BeforeStateUpdate()
     {
         base.OnLoad_BeforeStateUpdate();
+        BlockedMove = true;
         OutEnumActive = false;
     }
     

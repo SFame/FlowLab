@@ -35,8 +35,13 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
         }
     }
 
+    public bool BlockedMove { get; set; } = false;
+
     public void SetPosition(Vector2 position)
     {
+        if (BlockedMove)
+            return;
+
         Vector3 newPosition = ClampPositionInBoundary(position);
         Rect.position = newPosition;
         OnMove?.Invoke(new UGUIPosition(WorldPosition, AnchoredPosition));
@@ -64,12 +69,18 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (BlockedMove)
+            return;
+
         _offset = (Vector2)Rect.position - eventData.position;
         MoveStart?.Invoke(new UGUIPosition(WorldPosition, AnchoredPosition));
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (BlockedMove)
+            return;
+
         Vector2 beforePosition = Rect.position;
         Vector2 newPosition = eventData.position + _offset;
         SetPosition(newPosition);
@@ -80,6 +91,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (BlockedMove)
+            return;
+
         MoveEnd?.Invoke(new UGUIPosition(WorldPosition, AnchoredPosition));
     }
     

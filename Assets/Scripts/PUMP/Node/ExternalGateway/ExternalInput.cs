@@ -51,6 +51,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
     protected override void OnLoad_BeforeStateUpdate()
     {
         base.OnLoad_BeforeStateUpdate();
+        BlockedMove = true;
         InEnumActive = false;
     }
     
