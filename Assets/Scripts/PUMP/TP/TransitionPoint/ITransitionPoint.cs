@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public interface INameable
@@ -25,9 +26,12 @@ public interface ILocatable
 public interface ITransitionPoint : INameable, IStateful, ILocatable
 {
     public TPConnection Connection { get; set; }
+    public GameObject GameObject { get; }
+    public Node Node { get; set; }
     public void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
     public void Connect(TPConnection connection);
     public void Disconnect();
+    public Action<UGUIPosition> OnMove { get; set; }
 }
 
 public interface ITPIn : ITransitionPoint

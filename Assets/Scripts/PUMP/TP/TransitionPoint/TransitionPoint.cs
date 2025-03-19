@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -68,6 +69,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
             _nameText.text = value;
         }
     }
+    public GameObject GameObject => gameObject;
     public Vector2 Location => (Vector2)ImageRect?.position;
 
     public abstract void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
@@ -85,7 +87,9 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                 _node = value;
         }
     }
-    
+
+    public Action<UGUIPosition> OnMove { get; set; }
+
     protected virtual List<ContextElement> ContextElements
     {
         get => new List<ContextElement>()

@@ -18,7 +18,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(105f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
 
     protected override string NodeDisplayName => "Compartor";
 

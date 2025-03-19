@@ -19,7 +19,7 @@ public class ClickSwitch : Node, IStateful, INodeModifiableArgs<bool>
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
 
     protected override string NodeDisplayName => "Click Switch";
 

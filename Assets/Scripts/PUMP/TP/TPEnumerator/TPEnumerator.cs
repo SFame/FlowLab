@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightable
+public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
 {
     #region Privates
     protected bool _hasSet = false;
@@ -27,7 +27,6 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
 
     #region On Inspector
     [SerializeField] protected GridLayoutGroup layout;
-    [SerializeField] protected Image backgroundImage;
     #endregion
 
     #region Need Override
@@ -35,7 +34,7 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
     #endregion
     
     #region Interface to child
-    protected List<TransitionPoint> TPs { get; private set; } = new();
+    protected List<ITransitionPoint> TPs { get; private set; } = new();
     #endregion
 
     #region Interface
@@ -51,54 +50,6 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
             if (_node is null)
                 _node = value;
         }
-    }
-
-    public TPEnumerator SetTPs(int count)
-    {
-        DestroyTPs();
-
-        if (Node is null)
-        {
-            Debug.LogError("Must set TPEnumerator's Node info first");
-            throw new Exception("Must set TPEnumerator's Node info first");
-        }
-        
-        for (int i = 0; i < count; i++)
-        {
-            GameObject TPObj = InstantiateTP();
-            if (TPObj is null)
-                break;
-
-            TransitionPoint inOut = TPObj.GetComponent<TransitionPoint>();
-            inOut.Node = Node;
-
-            TPObj.transform.SetParent(layout.transform);
-
-            TPs.Add(inOut);
-        }
-
-        SizeUpdate();
-        _hasSet = true;
-        return this;
-    }
-
-    public TPEnumerator SetGridSize(Vector2 value)
-    {
-        layout.cellSize = value;
-        return this;
-    }
-
-    public TPEnumerator SetGridMargin(float value)
-    {
-        layout.spacing = new Vector2(0f, value);
-        return this;
-    }
-
-    public TPEnumerator SetHeight(float value)
-    {
-        Rect.sizeDelta = new Vector2(Rect.sizeDelta.x, value);
-        SetHightZeroWhenNonTP();
-        return this;
     }
 
     public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices)
@@ -129,11 +80,7 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
     /// </summary>
     /// <returns></returns>
     public abstract TPEnumeratorToken GetToken();
-    
-    public void SetHighlight(bool highlight)
-    {
-        backgroundImage.color = highlight ? _highlightColor : _defaultColor;
-    }
+
 
     public void SetActive(bool active)
     {
@@ -142,29 +89,52 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
     #endregion
 
     #region Wrapped interface
-    ITPEnumerator ITPEnumerator.SetTPs(int count)
+    public ITPEnumerator SetTPs(int count)
     {
-        return SetTPs(count);
+        DestroyTPs();
+
+        if (Node is null)
+        {
+            Debug.LogError("Must set TPEnumerator's Node info first");
+            throw new Exception("Must set TPEnumerator's Node info first");
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            GameObject TPObj = InstantiateTP();
+            if (TPObj is null)
+                break;
+
+            ITransitionPoint inOut = TPObj.GetComponent<ITransitionPoint>();
+            inOut.Node = Node;
+
+            TPObj.transform.SetParent(layout.transform);
+
+            TPs.Add(inOut);
+        }
+
+        SizeUpdate();
+        _hasSet = true;
+        return this;
     }
 
-    ITPEnumerator ITPEnumerator.SetGridSize(Vector2 value)
+    public ITPEnumerator SetTPSize(Vector2 value)
     {
-        return SetGridSize(value);
+        layout.cellSize = value;
+        return this;
     }
 
-    ITPEnumerator ITPEnumerator.SetGridMargin(float value)
+    public ITPEnumerator SetTPsMargin(float value)
     {
-        return SetGridMargin(value);
+        layout.spacing = new Vector2(0f, value);
+        return this;
     }
 
-    ITPEnumerator ITPEnumerator.SetHeight(float value)
+    public ITPEnumerator SetHeight(float value)
     {
-        return SetHeight(value);
-    }
-
-    TPEnumeratorToken ITPEnumerator.GetToken()
-    {
-        return GetToken();
+        Rect.sizeDelta = new Vector2(Rect.sizeDelta.x, value);
+        SetHightZeroWhenNonTP();
+        return this;
     }
     #endregion
 
@@ -220,10 +190,10 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator, IHighlightabl
 
     private void DestroyTPs()
     {
-        foreach (TransitionPoint tp in TPs)
+        foreach (ITransitionPoint tp in TPs)
         {
             tp.Connection?.Disconnect();
-            Destroy(tp.gameObject);  
+            Destroy(tp.GameObject);  
         }
         TPs.Clear();
     }

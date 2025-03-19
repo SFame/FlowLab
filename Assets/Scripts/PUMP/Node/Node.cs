@@ -154,12 +154,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void SetHighlight(bool highlighted)
     {
         Image.color = highlighted ? _highlightedColor : DefaultColor;
-
-        if (InputToken.Enumerator is IHighlightable inHighlightable)
-            inHighlightable.SetHighlight(highlighted);
-        
-        if (OutputToken.Enumerator is IHighlightable outHighlightable)
-            outHighlightable.SetHighlight(highlighted);
     }
     #endregion
 
@@ -213,6 +207,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected abstract float EnumeratorTPMargin { get; }
     protected abstract Vector2 EnumeratorTPSize { get; }
     protected abstract Vector2 DefaultNodeSize { get; }
+    protected virtual bool SizeFreeze { get; } = false;
     #endregion
 
     #region Can use in child
@@ -341,21 +336,25 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         tpEnumIn.MinHeight = DefaultNodeSize.y;
         tpEnumOut.MinHeight = DefaultNodeSize.y;
 
-        tpEnumIn.OnSizeUpdatedWhenTPChange += size =>
-        {
-            _inEnumHeight = size.y;
-            float maxValue = HeightSynchronizationWithEnum();
-            tpEnumIn.SetHeight(maxValue);
-            tpEnumOut.SetHeight(maxValue);
-        };
 
-        tpEnumOut.OnSizeUpdatedWhenTPChange += size =>
+        if (!SizeFreeze)
         {
-            _outEnumHeight = size.y;
-            float maxValue = HeightSynchronizationWithEnum();
-            tpEnumIn.SetHeight(maxValue);
-            tpEnumOut.SetHeight(maxValue);
-        };
+            tpEnumIn.OnSizeUpdatedWhenTPChange += size =>
+            {
+                _inEnumHeight = size.y;
+                float maxValue = HeightSynchronizationWithEnum();
+                tpEnumIn.SetHeight(maxValue);
+                tpEnumOut.SetHeight(maxValue);
+            };
+
+            tpEnumOut.OnSizeUpdatedWhenTPChange += size =>
+            {
+                _outEnumHeight = size.y;
+                float maxValue = HeightSynchronizationWithEnum();
+                tpEnumIn.SetHeight(maxValue);
+                tpEnumOut.SetHeight(maxValue);
+            }; 
+        }
 
         tpEnumIn.Node = this;
         tpEnumOut.Node = this;
@@ -444,7 +443,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         return maxHeight;
     }
 
-    private ITPEnumerator SetTPEnumSize(ITPEnumerator tpEnum) => tpEnum.SetGridMargin(EnumeratorTPMargin).SetGridSize(EnumeratorTPSize);
+    private ITPEnumerator SetTPEnumSize(ITPEnumerator tpEnum) => tpEnum.SetTPsMargin(EnumeratorTPMargin).SetTPSize(EnumeratorTPSize);
 
     /// <summary>
     /// TP In의 변경 시의 이벤트 구독

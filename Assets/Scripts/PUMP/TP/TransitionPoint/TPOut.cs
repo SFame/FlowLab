@@ -8,14 +8,12 @@ public class TPOut : TransitionPoint, ITPOut
     private bool _state;
     private LineConnector _lineConnector;
 
-    private Action<UGUIPosition> NodeMoveAction { get; set; }
-
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
-        NodeMoveAction = uguiPos => OnNodeMove(lineConnector);
-        Node.OnMove += NodeMoveAction;
+        OnMove = uguiPos => OnNodeMove(lineConnector);
+        Node.OnMove += OnMove;
 
         tpConnection.LineConnector = lineConnector;
         return tpConnection;
@@ -82,14 +80,14 @@ public class TPOut : TransitionPoint, ITPOut
         connection.SourceState = this;
         Connection = connection;
 
-        NodeMoveAction = uguiPos => OnNodeMove(connection.LineConnector);
-        Node.OnMove += NodeMoveAction;
+        OnMove = uguiPos => OnNodeMove(connection.LineConnector);
+        Node.OnMove += OnMove;
     }
 
     public override void Disconnect()
     {
         Connection = null;
-        Node.OnMove -= NodeMoveAction;
+        Node.OnMove -= OnMove;
     }
     #endregion
 
@@ -112,7 +110,7 @@ public class TPOut : TransitionPoint, ITPOut
         {
             Vector2 targetPoint = eventData.position;
 
-            TPIn target = FindUnderPoint<TPIn>(eventData);
+            ITPIn target = FindUnderPoint<ITPIn>(eventData);
             if (target is not null)
                 targetPoint = target.Location;
             
@@ -130,7 +128,7 @@ public class TPOut : TransitionPoint, ITPOut
 
         SetConnectionLineHideMode(false);
 
-        TPIn find = FindUnderPoint<TPIn>(eventData);
+        ITPIn find = FindUnderPoint<ITPIn>(eventData);
         if (find is not null)
         {
             Node.RecordingCall();
@@ -145,7 +143,7 @@ public class TPOut : TransitionPoint, ITPOut
         }
     }
 
-    private void OnSuccessFinding(TPIn find)
+    private void OnSuccessFinding(ITPIn find)
     {
         LinkTo(find);
     }

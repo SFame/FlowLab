@@ -17,7 +17,7 @@ public class XNOR : Node
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
 
     protected override string NodeDisplayName => "XNOR";
 

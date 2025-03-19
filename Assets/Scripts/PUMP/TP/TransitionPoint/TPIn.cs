@@ -11,14 +11,12 @@ public class TPIn : TransitionPoint, ITPIn
     private bool _state;
     private LineConnector _lineConnector;
 
-    private Action<UGUIPosition> NodeMoveAction { get; set; }
-
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
-        NodeMoveAction = uguiPos => OnNodeMove(lineConnector);   // 커넥션 제거 시 구독 해제를 위해 Action에 할당
-        Node.OnMove += NodeMoveAction;
+        OnMove = uguiPos => OnNodeMove(lineConnector);   // 커넥션 제거 시 구독 해제를 위해 Action에 할당
+        Node.OnMove += OnMove;
 
         tpConnection.LineConnector = lineConnector;
         return tpConnection;
@@ -70,8 +68,8 @@ public class TPIn : TransitionPoint, ITPIn
         connection.TargetState = this;
         Connection = connection;
 
-        NodeMoveAction = uguiPos => OnNodeMove(connection.LineConnector);
-        Node.OnMove += NodeMoveAction;
+        OnMove = uguiPos => OnNodeMove(connection.LineConnector);
+        Node.OnMove += OnMove;
     }
     
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
@@ -91,7 +89,8 @@ public class TPIn : TransitionPoint, ITPIn
     public override void Disconnect()
     {
         Connection = null;
-        Node.OnMove -= NodeMoveAction;
+        Node.OnMove -= OnMove;
+        OnMove = null;
     }
     #endregion
 
@@ -114,7 +113,7 @@ public class TPIn : TransitionPoint, ITPIn
         {
             Vector2 targetPoint = eventData.position;
 
-            TPOut target = FindUnderPoint<TPOut>(eventData);
+            ITPOut target = FindUnderPoint<ITPOut>(eventData);
             if (target is not null)
                 targetPoint = target.Location;
 
@@ -132,7 +131,7 @@ public class TPIn : TransitionPoint, ITPIn
 
         SetConnectionLineHideMode(false);
 
-        TPOut find = FindUnderPoint<TPOut>(eventData);
+        ITPOut find = FindUnderPoint<ITPOut>(eventData);
         if (find is not null)
         {
             OnSuccessFinding(find);
@@ -147,7 +146,7 @@ public class TPIn : TransitionPoint, ITPIn
         }
     }
 
-    private void OnSuccessFinding(TPOut find)
+    private void OnSuccessFinding(ITPOut find)
     {
         LinkTo(find);
     }
