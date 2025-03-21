@@ -456,9 +456,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             return;
         }
 
-        foreach (ITPIn tpIn in InputToken)
+        foreach (ITransitionPoint tp in InputToken)
         {
-            if (tpIn is not null)
+            if (tp is ITPIn tpIn)
                 tpIn.OnStateChange += StateUpdate;
         }
     }

@@ -42,15 +42,15 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     #region Components
     #endregion
 
-    protected override string SpritePath => "PUMP/Sprite/null_node";
+    protected override string SpritePath => "PUMP/Sprite/ingame/line";
     public override string NodePrefebPath => "PUMP/Prefab/Node/EXTERNAL_GATE";
     protected override string TP_EnumInPrefebPath => "PUMP/Prefab/TP/External/ExternalTPEnumIn";
-    protected override string NodeDisplayName => "Out";
+    protected override string NodeDisplayName => "";
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorTPMargin => 0f;
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
-    protected override Vector2 DefaultNodeSize => new Vector2(60f, Background.Rect.rect.height);
+    protected override Vector2 DefaultNodeSize => new Vector2(30f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 8;
     protected override int DefaultOutputCount => 8;

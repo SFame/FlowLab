@@ -88,6 +88,7 @@ public class TPOut : TransitionPoint, ITPOut
     {
         Connection = null;
         Node.OnMove -= OnMove;
+        OnMove = null;
     }
     #endregion
 

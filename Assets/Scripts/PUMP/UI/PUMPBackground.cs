@@ -21,7 +21,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     private Canvas _rootCanvas;
     private IExternalInput _externalInput;
     private IExternalOutput _externalOutput;
-    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.03f, 0.5f);
+    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.066f, 0.5f);
 
     private void SubscribeNodeAction(Node node)
     {
