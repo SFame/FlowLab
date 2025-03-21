@@ -1,0 +1,116 @@
+{
+  "sequences": [
+    {
+      "id": "npc_001",
+      "title": "Village Elder Conversation",
+      "entries": [
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Welcome, traveler. It's been a long time since we've had visitors to our village.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        },
+        {
+          "speakerName": "Player",
+          "messageText": "Hello. Could you tell me about this village?",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        },
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Of course. This village has a history of 100 years as a peaceful place. But recently, the forest has grown dark, and strange creatures have begun to appear.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        },
+        {
+          "speakerName": "Village Elder",
+          "messageText": "If you're truly here to help us, speak with the blacksmith. He lost his daughter just three nights ago.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": [
+            {
+              "choiceText": "I'll help you",
+              "nextDialogueId": "npc_001_accept",
+              "eventId": "quest_village_accept"
+            },
+            {
+              "choiceText": "I'm sorry, I have other matters to attend to",
+              "nextDialogueId": "npc_001_decline",
+              "eventId": "quest_village_decline"
+            },
+            {
+              "choiceText": "Tell me more details",
+              "nextDialogueId": "npc_001_more_info",
+              "eventId": "quest_village_more_info"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "npc_001_accept",
+      "title": "Village Elder Quest Accepted",
+      "entries": [
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Thank you so much! The blacksmith is on the west side of the village square. Tell him I sent you.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        },
+        {
+          "speakerName": "Player",
+          "messageText": "I understand. I'll find him soon.",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        },
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Good luck, traveler. Be careful.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "npc_001_decline",
+      "title": "Village Elder Quest Declined",
+      "entries": [
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Ah, I see... I understand. If you have other business, it can't be helped.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        },
+        {
+          "speakerName": "Village Elder",
+          "messageText": "If you change your mind, please come back anytime. We desperately need help.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "npc_001_more_info",
+      "title": "Village Elder talk moreeee",
+      "entries": [
+        {
+          "speakerName": "Village Elder",
+          "messageText": "Hello my name is eeeeeelder.",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        },
+        {
+          "speakerName": "Player",
+          "messageText": "good",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        },
+        {
+          "speakerName": "Village Elder",
+          "messageText": "good",
+          "speakerImagePath": "Characters/VillageElder",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}
