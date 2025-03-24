@@ -6,14 +6,16 @@ using OdinSerializer;
 using UnityEngine;
 using static Utils.Serializer;
 
+/// <summary>
+/// 기본 저장경로는 node_data.bin
+/// </summary>
 public class PUMPSerializeManager : MonoBehaviour
 {
     #region Privates
-    private const string FILE_NAME = "node_data.bin";
     private static PUMPSerializeManager _instance;
     private static readonly object _lock = new();
-    private bool _initialized = false;
-    private List<PUMPSaveDataStructure> _saveDatas = new();
+    private readonly Dictionary<string, List<PUMPSaveDataStructure>> _saveDatas = new();
+    private readonly DataUpdateEvent _onDataUpdated = new();
 
     private void Awake()
     {
@@ -23,34 +25,34 @@ public class PUMPSerializeManager : MonoBehaviour
             return;
         }
     }
-    
-    private async UniTask Initialize()
+
+    private async UniTask GetDataInDictionaryFromFile(string path)
     {
-        if (_initialized)
+        if (_saveDatas.ContainsKey(path) && _saveDatas[path] != null)
             return;
         
-        _saveDatas = await LoadDataAsync<List<PUMPSaveDataStructure>>(FILE_NAME);
-        _saveDatas ??= new();
-
-        foreach (PUMPSaveDataStructure saveData in _saveDatas)
+        List<PUMPSaveDataStructure> datas = await LoadDataAsync<List<PUMPSaveDataStructure>>(path);
+        datas ??= new();
+        
+        foreach (PUMPSaveDataStructure data in datas)
         {
-            saveData.SubscribeDeleteRequest(DeleteData);
-            saveData.SubscribeDeleteRequest(_ => OnDataUpdated?.Invoke());
-            saveData.SubscribeUpdateNotification(_ => OnDataUpdated?.Invoke());
-            saveData.SubscribeUpdateNotification(data => data.LastUpdate = DateTime.Now);
+            data.SubscribeDeleteRequest(saveStructure => DeleteData(path, saveStructure));
+            data.SubscribeUpdateNotification(saveStructure => saveStructure.LastUpdate = DateTime.Now);
+            data.SubscribeDeleteRequest(_ => _onDataUpdated.Invoke(path));
+            data.SubscribeUpdateNotification(_ => _onDataUpdated.Invoke(path));
         }
-
-        OnDataUpdated += WriteData;
-        _initialized = true;
+        
+        _onDataUpdated.AddEvent(path, () => WriteData(path));
+        _saveDatas.Add(path, datas);
     }
 
-    private void WriteData()
+    private void WriteData(string path)
     {
-        _ = SaveDataAsync(FILE_NAME, _saveDatas);
+        _ = SaveDataAsync(path, _saveDatas[path]);
     }
-    private void DeleteData(PUMPSaveDataStructure data)
+    private void DeleteData(string path, PUMPSaveDataStructure data)
     {
-        _saveDatas.Remove(data);
+        _saveDatas[path].Remove(data);
     }
     #endregion
 
@@ -72,38 +74,48 @@ public class PUMPSerializeManager : MonoBehaviour
         }
     }
 
-    public async UniTask AddData(List<SerializeNodeInfo> nodeInfos, string name, string imagePath)
+    public async UniTask AddData(string path, PUMPSaveDataStructure structure)
     {
-        await Initialize();
+        await GetDataInDictionaryFromFile(path);
+        structure.SubscribeDeleteRequest(saveStructure => DeleteData(path, saveStructure));
+        structure.SubscribeUpdateNotification(saveStructure => saveStructure.LastUpdate = DateTime.Now);
+        structure.SubscribeDeleteRequest(_ => _onDataUpdated.Invoke(path));
+        structure.SubscribeUpdateNotification(_ => _onDataUpdated.Invoke(path));
+        structure.LastUpdate = DateTime.Now;
         
-        PUMPSaveDataStructure saveData = new() { NodeInfos = nodeInfos, Name = name, ImagePath = imagePath };
-        saveData.SubscribeDeleteRequest(DeleteData);
-        saveData.SubscribeDeleteRequest(_ => OnDataUpdated?.Invoke());
-        saveData.SubscribeUpdateNotification(_ => OnDataUpdated?.Invoke());
-        saveData.SubscribeUpdateNotification(data => data.LastUpdate = DateTime.Now);
-        saveData.LastUpdate = DateTime.Now;
+        _saveDatas[path].Add(structure);
         
-        _saveDatas.Add(saveData);
-        
-        OnDataUpdated?.Invoke();
+        _onDataUpdated.Invoke(path);
     }
 
-    public async UniTask<List<PUMPSaveDataStructure>> GetDatas()
+    public async UniTask<List<PUMPSaveDataStructure>> GetDatas(string path)
     {
-        await Initialize();
-        return _saveDatas.ToList();
+        await GetDataInDictionaryFromFile(path);
+        return _saveDatas[path].ToList();
     }
-    
-    public event Action OnDataUpdated;
     #endregion
 }
 
 public class PUMPSaveDataStructure
 {
+    public PUMPSaveDataStructure(List<SerializeNodeInfo> nodeInfos, string name, string imagePath, object tag = null)
+    {
+        NodeInfos = nodeInfos;
+        Name = name;
+        ImagePath = imagePath;
+        Tag = tag;
+    }
+    
+    #region Serialize Data
     [OdinSerialize] public List<SerializeNodeInfo> NodeInfos { get; set; }
     [OdinSerialize] public string Name { get; set; }
+    [OdinSerialize] public string ImagePath { get; set; } // Optional
+    [OdinSerialize] public object Tag { get; set; } // Optional
+    #endregion
+    
+    #region Automatic generation
     [OdinSerialize] public DateTime LastUpdate { get; set; }
-    [OdinSerialize] public string ImagePath { get; set; }
+    #endregion
     
     [field: NonSerialized] private event Action<PUMPSaveDataStructure> DeleteRequest;
     [field: NonSerialized] private event Action<PUMPSaveDataStructure> UpdateNotification;
@@ -112,4 +124,25 @@ public class PUMPSaveDataStructure
     public void SubscribeUpdateNotification(Action<PUMPSaveDataStructure> action) => UpdateNotification += action;
     public void Delete() => DeleteRequest?.Invoke(this);
     public void NotifyDataChanged() => UpdateNotification?.Invoke(this);
+}
+
+public class DataUpdateEvent
+{
+    private Dictionary<string, Action> Events { get; } = new();
+
+    public void Invoke(string key)
+    {
+        if (Events.TryGetValue(key, out Action action))
+        {
+            action?.Invoke();
+        }
+    }
+
+    public void AddEvent(string key, Action action)
+    {
+        if (!Events.TryAdd(key, action))
+        {
+            Events[key] += action;
+        }
+    }
 }

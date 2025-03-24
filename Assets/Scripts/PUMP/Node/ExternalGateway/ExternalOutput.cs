@@ -21,7 +21,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
             }
             return OutputToken.Count;
         }
-        private set
+        set
         {
             InputCount = value;
             OutputCount = value;
@@ -29,6 +29,8 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
         }
     }
     #endregion
+
+    #region Components
     private TMP_Dropdown Dropdown
     {
         get
@@ -39,7 +41,6 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
         }
     }
     private TMP_Dropdown _dropdown;
-    #region Components
     #endregion
 
     protected override string SpritePath => "PUMP/Sprite/ingame/line";
@@ -50,7 +51,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorTPMargin => 0f;
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
-    protected override Vector2 DefaultNodeSize => new Vector2(30f, Background.Rect.rect.height);
+    protected override Vector2 DefaultNodeSize => new Vector2(25f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 8;
     protected override int DefaultOutputCount => 8;
@@ -102,6 +103,10 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     protected override void OnLoad_AfterStateUpdate()
     {
         base.OnLoad_AfterStateUpdate();
+        
+        if (Dropdown == null)
+            return;
+        
         Dropdown.value = GateCount - 1;
         Dropdown.onValueChanged.AddListener(value => GateCount = value + 1);
         Dropdown.onValueChanged.AddListener(_ => RecordingCall());

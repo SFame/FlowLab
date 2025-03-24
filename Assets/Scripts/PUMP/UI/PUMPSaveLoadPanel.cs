@@ -13,6 +13,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     #endregion
     
     #region Privates
+    private const string SAVE_PATH = "node_data.bin";
     private RecyclableScrollRect _scrollRect;
     private PUMPBackground _background;
     private CanvasGroup _canvasGroup;
@@ -75,8 +76,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         async UniTaskVoid AddNewSave(string saveName)
         {
             List<SerializeNodeInfo> nodeInfos = Background.GetSerializeNodeInfos();
-            string capturePath = Background.Rect.CaptureToFile(ScreenSize);
-            await _serializer.AddData(nodeInfos, saveName, capturePath);
+            string capturePath = ((RectTransform)Background.Rect.parent).CaptureToFile(ScreenSize);
+            await _serializer.AddData(SAVE_PATH, new(nodeInfos, saveName, capturePath));
             UpdateAndApply().Forget();
         }
         
@@ -98,7 +99,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     private async UniTask GetDatasFromManager()
     {
         if (_initialized)
-            _saveDatas = await _serializer.GetDatas();
+            _saveDatas = await _serializer.GetDatas(SAVE_PATH);
     }
 
     private async UniTaskVoid UpdateAndApply()

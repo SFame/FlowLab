@@ -21,8 +21,10 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     private Canvas _rootCanvas;
     private IExternalInput _externalInput;
     private IExternalOutput _externalOutput;
-    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.066f, 0.5f);
-
+    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.062f, 0.5f);
+    private int _defaultExternalInputCount = 2;
+    private int _defaultExternalOutputCount = 2;
+    
     private void SubscribeNodeAction(Node node)
     {
         node.OnDestroy += n =>
@@ -97,6 +99,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     /// </summary>
     private void SetGateway()
     {
+        // 중복 생성 방지
         List<Node> inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
         if (inputNodes.Count > 1)
         {
@@ -123,7 +126,13 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
             {
                 Nodes.Remove(node);
                 Node newNode = AddNewNode(typeof(ExternalInput));
-                _externalInput = newNode as IExternalInput;
+
+                if (newNode is IExternalInput externalIn)
+                {
+                    _externalInput = externalIn;
+                    externalIn.GateCount = _defaultExternalInputCount;
+                }
+                
                 newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
             }
             else
@@ -134,7 +143,13 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         else
         {
             Node newNode = AddNewNode(typeof(ExternalInput));
-            _externalInput = newNode as IExternalInput;
+            
+            if (newNode is IExternalInput externalIn)
+            {
+                _externalInput = externalIn;
+                externalIn.GateCount = _defaultExternalInputCount;
+            }
+            
             newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
         }
 
@@ -144,7 +159,13 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
             {
                 Nodes.Remove(node);
                 Node newNode = AddNewNode(typeof(ExternalOutput));
-                _externalOutput = newNode as IExternalOutput;
+                
+                if (newNode is IExternalOutput externalOut)
+                {
+                    _externalOutput = externalOut;
+                    externalOut.GateCount = _defaultExternalOutputCount;
+                }
+                
                 newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
             }
             else
@@ -155,7 +176,13 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         else
         {
             Node newNode = AddNewNode(typeof(ExternalOutput));
-            _externalOutput = newNode as IExternalOutput;
+            
+            if (newNode is IExternalOutput externalOut)
+            {
+                _externalOutput = externalOut;
+                externalOut.GateCount = _defaultExternalOutputCount;
+            }
+            
             newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
         }
     }
@@ -170,10 +197,10 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         Nodes.Clear();
     }
 
+    // 디버깅
     private void Awake()
     {
-        SetGateway();
-        RecordHistory();
+        Initialize();
     }
     
     // 디버깅
@@ -188,6 +215,16 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
 
     #region Interface
     [field: SerializeField] public List<Node> Nodes { get; } = new(); // 인스펙터 시각화용 직렬화
+    
+    /// <summary>
+    /// 외부 입력
+    /// </summary>
+    public IExternalInput ExternalInput => _externalInput;
+    
+    /// <summary>
+    /// 외부 출력
+    /// </summary>
+    public IExternalOutput ExternalOutput => _externalOutput;
     
     public RectTransform Rect
     {
@@ -205,6 +242,17 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
             _lineConnectManager ??= GetComponentInChildren<LineConnectManager>();
             return _lineConnectManager;
         }
+    }
+
+    public void Initialize(int inputCount = -1, int outputCount = -1)
+    {
+        if (inputCount >= 0)
+            _defaultExternalInputCount = inputCount;
+        if (outputCount >= 0)
+            _defaultExternalOutputCount = outputCount;
+        
+        SetGateway();
+        RecordHistory();
     }
 
     public void Reset()
@@ -246,7 +294,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
 
     public List<SerializeNodeInfo> GetSerializeNodeInfos()
     {
-        SetGateway();
+        SetGateway();  //ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
         List<SerializeNodeInfo> result = new();
         foreach (Node node in Nodes)
         {
