@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -14,13 +15,14 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
 {
     [FormerlySerializedAs("_nodeParent"), SerializeField]
     private RectTransform nodeParent;
-    
+    [SerializeField] public bool initializeOnAwake = true;
+
     #region Privates
     private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
     private Canvas _rootCanvas;
-    private IExternalInput _externalInput;
-    private IExternalOutput _externalOutput;
+    private ExternalInputAdapter _externalInputAdapter = new();
+    private ExternalOutputAdapter _externalOutputAdapter = new();
     private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.062f, 0.5f);
     private int _defaultExternalInputCount = 2;
     private int _defaultExternalOutputCount = 2;
@@ -99,10 +101,14 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     /// </summary>
     private void SetGateway()
     {
+        bool inputReset = false;
+        bool outputReset = false;
+
         // 중복 생성 방지
         List<Node> inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
         if (inputNodes.Count > 1)
         {
+            inputReset = true;
             foreach (Node duplicateInput in inputNodes.Skip(1))
             {
                 if (duplicateInput)
@@ -113,6 +119,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         List<Node> outputNodes = Nodes.Where(node => node is IExternalOutput).ToList();
         if (outputNodes.Count > 1)
         {
+            outputReset = true;
             foreach (Node duplicateOutput in outputNodes.Skip(1))
             {
                 if (duplicateOutput)
@@ -124,30 +131,32 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         {
             if (externalInput.ObjectIsNull && externalInput is Node node)
             {
+                inputReset = true;
                 Nodes.Remove(node);
                 Node newNode = AddNewNode(typeof(ExternalInput));
 
-                if (newNode is IExternalInput externalIn)
+                if (newNode is IExternalInput newExternalInput)
                 {
-                    _externalInput = externalIn;
-                    externalIn.GateCount = _defaultExternalInputCount;
+                    _externalInputAdapter.UpdateReference(newExternalInput);
+                    newExternalInput.GateCount = _defaultExternalInputCount;
                 }
                 
                 newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
             }
             else
             {
-                _externalInput = externalInput;
+                _externalInputAdapter.UpdateReference(externalInput);
             }
         }
         else
         {
+            inputReset = true;
             Node newNode = AddNewNode(typeof(ExternalInput));
             
-            if (newNode is IExternalInput externalIn)
+            if (newNode is IExternalInput newExternalInput)
             {
-                _externalInput = externalIn;
-                externalIn.GateCount = _defaultExternalInputCount;
+                _externalInputAdapter.UpdateReference(newExternalInput);
+                newExternalInput.GateCount = _defaultExternalInputCount;
             }
             
             newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
@@ -157,34 +166,42 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         {
             if (externalOutput.ObjectIsNull && externalOutput is Node node)
             {
+                outputReset = true;
                 Nodes.Remove(node);
                 Node newNode = AddNewNode(typeof(ExternalOutput));
                 
-                if (newNode is IExternalOutput externalOut)
+                if (newNode is IExternalOutput newExternalOutput)
                 {
-                    _externalOutput = externalOut;
-                    externalOut.GateCount = _defaultExternalOutputCount;
+                    _externalOutputAdapter.UpdateReference(newExternalOutput);
+                    newExternalOutput.GateCount = _defaultExternalOutputCount;
                 }
                 
                 newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
             }
             else
             {
-                _externalOutput = externalOutput;
+                _externalOutputAdapter.UpdateReference(externalOutput);
             }
         }
         else
         {
+            outputReset = true;
             Node newNode = AddNewNode(typeof(ExternalOutput));
             
-            if (newNode is IExternalOutput externalOut)
+            if (newNode is IExternalOutput newExternalOutput)
             {
-                _externalOutput = externalOut;
-                externalOut.GateCount = _defaultExternalOutputCount;
+                _externalOutputAdapter.UpdateReference(newExternalOutput);
+                newExternalOutput.GateCount = _defaultExternalOutputCount;
             }
             
             newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
         }
+
+        if (inputReset)
+            _externalInputAdapter.InvokeOnCountUpdate();
+
+        if (outputReset)
+            _externalOutputAdapter.InvokeOnCountUpdate();
     }
     
     private void ClearNodes()
@@ -197,10 +214,10 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         Nodes.Clear();
     }
 
-    // 디버깅
     private void Awake()
     {
-        Initialize();
+        if (initializeOnAwake)
+            Initialize();
     }
     
     // 디버깅
@@ -219,12 +236,12 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
     /// <summary>
     /// 외부 입력
     /// </summary>
-    public IExternalInput ExternalInput => _externalInput;
+    public IExternalInput ExternalInput => _externalInputAdapter;
     
     /// <summary>
     /// 외부 출력
     /// </summary>
-    public IExternalOutput ExternalOutput => _externalOutput;
+    public IExternalOutput ExternalOutput => _externalOutputAdapter;
     
     public RectTransform Rect
     {
@@ -753,3 +770,140 @@ public interface IHighlightable
 /// invokerToExclude는 호출자이자, 움직임 콜백 대상 제외자 입력. 만약 호출자가 해당 콜백에 의해 움직여야된다면, null 할당
 /// </summary>
 public delegate void OnSelectedMoveHandler(IDragSelectable invokerToExclude, Vector2 delta);
+
+/// <summary>
+/// 외부 입·출력 인터페이스의 무결성을 보장하기 위한 Adapter Pattern
+/// </summary>
+public abstract class ExternalAdapter
+{
+    public abstract void UpdateReference(IExternalGateway externalGateway);
+    public abstract void InvokeOnCountUpdate();
+}
+
+public class ExternalInputAdapter : ExternalAdapter, IExternalInput
+{
+    private IExternalInput _reference;
+
+    public ITransitionPoint this[int index]
+    {
+        get
+        {
+            CheckNullAndThrowNullExeption();
+            return _reference[index];
+        }
+    }
+
+    public bool ObjectIsNull => _reference == null || _reference.ObjectIsNull;
+
+    public int GateCount
+    {
+        get
+        {
+            CheckNullAndThrowNullExeption();
+            return _reference.GateCount;
+        }
+        set
+        {
+            CheckNullAndThrowNullExeption();
+            _reference.GateCount = value;
+        }
+    }
+
+    public event Action OnCountUpdate;
+
+    public IEnumerator<ITransitionPoint> GetEnumerator()
+    {
+        CheckNullAndThrowNullExeption();
+        return _reference.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override void InvokeOnCountUpdate()
+    {
+        OnCountUpdate?.Invoke();
+    }
+
+    public override void UpdateReference(IExternalGateway externalGateway)
+    {
+        if (_reference != null)
+            _reference.OnCountUpdate -= OnCountUpdate;
+
+        _reference = externalGateway as IExternalInput;
+        CheckNullAndThrowNullExeption();
+        _reference.OnCountUpdate += OnCountUpdate;
+    }
+
+    private void CheckNullAndThrowNullExeption()
+    {
+        if (ObjectIsNull)
+            throw new NullReferenceException();
+    }
+}
+
+public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
+{
+    private IExternalOutput _reference;
+
+    public ITransitionPoint this[int index]
+    {
+        get
+        {
+            CheckNullAndThrowNullExeption();
+            return _reference[index];
+        }
+    }
+
+    public bool ObjectIsNull => _reference == null || _reference.ObjectIsNull;
+
+    public int GateCount
+    {
+        get
+        {
+            CheckNullAndThrowNullExeption();
+            return _reference.GateCount;
+        }
+        set
+        {
+            CheckNullAndThrowNullExeption();
+            _reference.GateCount = value;
+        }
+    }
+
+    public event Action OnStateUpdate;
+
+    public event Action OnCountUpdate;
+
+    public IEnumerator<ITransitionPoint> GetEnumerator()
+    {
+        CheckNullAndThrowNullExeption();
+        return _reference.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public override void InvokeOnCountUpdate()
+    {
+        OnCountUpdate?.Invoke();
+    }
+
+    public override void UpdateReference(IExternalGateway externalGateway)
+    {
+        if (_reference != null)
+        {
+            _reference.OnStateUpdate -= OnStateUpdate;
+            _reference.OnCountUpdate -= OnCountUpdate;
+        }
+
+        _reference = externalGateway as IExternalOutput;
+        CheckNullAndThrowNullExeption();
+        _reference.OnStateUpdate += OnStateUpdate;
+        _reference.OnCountUpdate += OnCountUpdate;
+    }
+
+    private void CheckNullAndThrowNullExeption()
+    {
+        if (ObjectIsNull)
+            throw new NullReferenceException();
+    }
+}

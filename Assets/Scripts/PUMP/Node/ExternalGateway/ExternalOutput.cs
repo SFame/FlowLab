@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,8 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     #region External Interface
     public ITransitionPoint this[int index] => OutputToken[index];
     public event Action OnCountUpdate;
+    public event Action OnStateUpdate;
+
     public bool ObjectIsNull => gameObject == null;
 
     public int GateCount
@@ -28,6 +31,10 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
             OnCountUpdate?.Invoke();
         }
     }
+
+    public IEnumerator<ITransitionPoint> GetEnumerator() => OutputToken.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
 
     #region Components
@@ -76,6 +83,8 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
         
         for (int i = 0; i < InputToken.Count; i++)
             OutputToken[i].State = InputToken[i].State;
+
+        OnStateUpdate?.Invoke();
     }
 
     protected override string DefineInputName(int tpNumber)

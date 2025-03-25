@@ -16,6 +16,7 @@ public class PaletteTest : NodePalette
         { typeof(ClickSwitch), "ClickSwitch" },
         { typeof(Splitter), "Split" },
         { typeof(Comparator), "Compartor" },
+        { typeof(ClassedNode), "Classed" },
     };
 
     private void Awake()

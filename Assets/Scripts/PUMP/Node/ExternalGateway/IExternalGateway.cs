@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
-public interface IExternalGateway
+public interface IExternalGateway : IEnumerable<ITransitionPoint>
 {
     public bool ObjectIsNull { get; }
     public int GateCount { get; set; }
@@ -15,5 +17,5 @@ public interface IExternalInput : IExternalGateway
 
 public interface IExternalOutput : IExternalGateway
 {
-    
+    public event Action OnStateUpdate;
 }

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PUMPTool : MonoBehaviour
 {
     #region On Inspector
-    [SerializeField] private PUMPSaveLoadPanel saveLoadPanel;
+    [SerializeField] private SaveLoadUiController saveLoadUiController;
     
     [SerializeField] private Button closeButton;
     [SerializeField] private Button openButton;
@@ -39,7 +39,7 @@ public class PUMPTool : MonoBehaviour
     {
         openButton.onClick.AddListener(() => OpenTool().Forget());
         closeButton.onClick.AddListener(() => CloseTool().Forget());
-        saveLoadButton.onClick.AddListener(() => saveLoadPanel.SetActive(true, 0.2f).Forget());
+        saveLoadButton.onClick.AddListener(() => saveLoadUiController.SetActive(true, 0.2f).Forget());
     }
 
     private async UniTaskVoid OpenTool()

@@ -38,6 +38,8 @@ namespace Utils
 
     public static class Capture
     {
+        private static Vector2 ScreenSize => new Vector2(Screen.currentResolution.width, Screen.currentResolution.height);
+
         /// <summary>
         /// targetRect(및 자식)만 캡처하여 size 크기의 Texture2D로 반환
         /// </summary>
@@ -202,7 +204,7 @@ namespace Utils
         /// <returns>저장된 파일의 전체 경로. 실패시 null</returns>
         public static string CaptureToFile(
             this RectTransform targetRect,
-            Vector2 size,
+            Vector2? size = null,
             string savePath = null,
             string fileName = null,
             string captureLayerName = "ForCapture")
@@ -241,7 +243,8 @@ namespace Utils
                 }
 
                 // 3. 캡처 실행
-                Texture2D texture = CaptureRect(targetRect, size, captureLayerName);
+                size ??= ScreenSize;
+                Texture2D texture = CaptureRect(targetRect, size.Value, captureLayerName);
                 if (texture == null)
                 {
                     Debug.LogError("[CaptureToFile] 캡처에 실패했습니다.");
@@ -732,6 +735,12 @@ namespace Utils
 
                 rectTransform.localPosition = localPosition;
             }
+        }
+
+        public static Canvas GetRootCanvas(this RectTransform rectTransform) => rectTransform.GetComponentInParent<Canvas>().rootCanvas;
+        public static RectTransform GetRootCanvasRect(this RectTransform rectTransform)
+        {
+             return rectTransform.GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
         }
     }
 }

@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -29,6 +30,10 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
             OnCountUpdate?.Invoke();
         }
     }
+
+    public IEnumerator<ITransitionPoint> GetEnumerator() => InputToken.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
 
     #region Components

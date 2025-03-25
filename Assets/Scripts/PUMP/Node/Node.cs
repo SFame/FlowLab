@@ -297,7 +297,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     private void SetName()
     {
-        name = NodeDisplayName;
+        name = GetType().Name;
         NodeNameText.text = NodeDisplayName;
         NodeNameText.fontSize = TextSize;
     }

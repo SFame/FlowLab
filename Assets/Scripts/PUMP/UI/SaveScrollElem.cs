@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 
-public class SaveScrollElem : MonoBehaviour, ICell, IPointerClickHandler
+public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI nameText;
@@ -78,13 +78,14 @@ public class SaveScrollElem : MonoBehaviour, ICell, IPointerClickHandler
         remove => _onRightClick -= value;
     }
 
-    public void DataUpdate()
+    public void Refresh()
     {
         if (Data == null)
             return;
         
         nameText.text = Data.Name;
-        dateText.text = Data.LastUpdate.ToString("<b>MM</b> / <b>dd</b> / <b>yyyy</b>\n<b>HH</b>:<b>mm</b>");
+        DateTime date = Data.LastUpdate;
+        dateText.text = $"<b>{date.Month:D2}</b> / <b>{date.Day:D2}</b> / <b>{date.Year}</b>\n<b>{date.Hour:D2}</b>:<b>{date.Minute:D2}</b>";
         SetImage(Capture.LoadTextureFromFile(Data.ImagePath));
     }
 
@@ -93,6 +94,6 @@ public class SaveScrollElem : MonoBehaviour, ICell, IPointerClickHandler
         _onDoubleClick = null;
         _onRightClick = null;
         Data = data;
-        DataUpdate();
+        Refresh();
     }
 }

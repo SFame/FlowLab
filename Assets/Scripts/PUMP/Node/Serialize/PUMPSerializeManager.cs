@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using OdinSerializer;
-using UnityEngine;
 using static Utils.Serializer;
 
 /// <summary>
 /// 기본 저장경로는 node_data.bin
 /// </summary>
-public class PUMPSerializeManager : MonoBehaviour
+public class PUMPSerializeManager
 {
     #region Privates
     private static PUMPSerializeManager _instance;
@@ -17,12 +16,14 @@ public class PUMPSerializeManager : MonoBehaviour
     private readonly Dictionary<string, List<PUMPSaveDataStructure>> _saveDatas = new();
     private readonly DataUpdateEvent _onDataUpdated = new();
 
-    private void Awake()
+    private PUMPSerializeManager() { }
+
+    private static PUMPSerializeManager Instance
     {
-        if (_instance != null && _instance != this)
+        get
         {
-            Destroy(gameObject);
-            return;
+            _instance ??= new PUMPSerializeManager();
+            return _instance;
         }
     }
 
@@ -57,47 +58,32 @@ public class PUMPSerializeManager : MonoBehaviour
     #endregion
 
     #region Interface
-    public static PUMPSerializeManager Instance
+    public static async UniTask AddData(string path, PUMPSaveDataStructure structure)
     {
-        get
-        {
-            if (_instance == null)
-            {
-                lock(_lock)
-                {
-                    GameObject go = new GameObject("NodeSerializeManager");
-                    _instance = go.AddComponent<PUMPSerializeManager>();
-                    DontDestroyOnLoad(go);
-                }
-            }
-            return _instance;
-        }
-    }
-
-    public async UniTask AddData(string path, PUMPSaveDataStructure structure)
-    {
-        await GetDataInDictionaryFromFile(path);
-        structure.SubscribeDeleteRequest(saveStructure => DeleteData(path, saveStructure));
+        await Instance.GetDataInDictionaryFromFile(path);
+        structure.SubscribeDeleteRequest(saveStructure => Instance.DeleteData(path, saveStructure));
         structure.SubscribeUpdateNotification(saveStructure => saveStructure.LastUpdate = DateTime.Now);
-        structure.SubscribeDeleteRequest(_ => _onDataUpdated.Invoke(path));
-        structure.SubscribeUpdateNotification(_ => _onDataUpdated.Invoke(path));
+        structure.SubscribeDeleteRequest(_ => Instance._onDataUpdated.Invoke(path));
+        structure.SubscribeUpdateNotification(_ => Instance._onDataUpdated.Invoke(path));
         structure.LastUpdate = DateTime.Now;
-        
-        _saveDatas[path].Add(structure);
-        
-        _onDataUpdated.Invoke(path);
+
+        Instance._saveDatas[path].Add(structure);
+
+        Instance._onDataUpdated.Invoke(path);
     }
 
-    public async UniTask<List<PUMPSaveDataStructure>> GetDatas(string path)
+    public static async UniTask<List<PUMPSaveDataStructure>> GetDatas(string path)
     {
-        await GetDataInDictionaryFromFile(path);
-        return _saveDatas[path].ToList();
+        await Instance.GetDataInDictionaryFromFile(path);
+        return Instance._saveDatas[path].ToList();
     }
     #endregion
 }
 
 public class PUMPSaveDataStructure
 {
+    public PUMPSaveDataStructure() { }
+
     public PUMPSaveDataStructure(List<SerializeNodeInfo> nodeInfos, string name, string imagePath, object tag = null)
     {
         NodeInfos = nodeInfos;
