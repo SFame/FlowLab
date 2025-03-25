@@ -149,6 +149,7 @@ public struct RoomData
     [OdinSerialize] private string _roomID;
     [OdinSerialize] private Dictionary<int, bool> _stageStates;
     [OdinSerialize] private bool _clear;
+	[OdinSerialize] private object _tag;
 
     #region Properties
     public string RoomID 
@@ -166,6 +167,11 @@ public struct RoomData
         get {  return _clear; } 
         set { _clear = value; }
     }
+	public object Tag
+	{
+		get { return _tag; }	
+		set { _tag = value; }
+	}
     #endregion
 
     public RoomData(string roomID, int stageCount = 0)
