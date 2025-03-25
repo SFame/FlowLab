@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6360745568194141331}
   - component: {fileID: 6810463794762530773}
   - component: {fileID: 2128914228309382544}
+  - component: {fileID: 6736030158677057566}
   - component: {fileID: 5503982140588132566}
   - component: {fileID: 3852178875346839596}
   m_Layer: 6
@@ -28,7 +29,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2619789075046056597}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -93,6 +94,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeParent: {fileID: 9199168667862927995}
+  initializeOnAwake: 1
+--- !u!114 &6736030158677057566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2619789075046056597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56ac076ab66ac2d4b9f33f1358871dd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 2128914228309382544}
 --- !u!223 &5503982140588132566
 Canvas:
   m_ObjectHideFlags: 0
