@@ -176,6 +176,7 @@ public struct RoomData
 
     public RoomData(string roomID, int stageCount = 0)
     {
+        _tag = null;
         _roomID = roomID;
         _stageStates = new Dictionary<int, bool>();
         for (int i = 0; i< stageCount; i++)
