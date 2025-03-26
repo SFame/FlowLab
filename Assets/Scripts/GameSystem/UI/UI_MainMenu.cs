@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class UI_MainMenu : MonoBehaviour
 {
@@ -9,7 +10,13 @@ public class UI_MainMenu : MonoBehaviour
     private GameObject StartUI;
     [SerializeField]
     private GameObject MainMenuUI;
+    [SerializeField]
+    private GameObject LoadGameUI;
 
+    private void Start()
+    {
+        LoadGameUI.GetComponent<Button>().interactable = Utils.Serializer.LoadData<GameSaveData>("SaveData.bin") != default ? true : false;
+    }
     public void OnClickStart()
     {
         if (StartUI.activeSelf)
@@ -22,6 +29,10 @@ public class UI_MainMenu : MonoBehaviour
             StartUI.SetActive(true);
             MainMenuUI.SetActive(false);
         }
+    }
+    public void OnClickStartGame()
+    {
+        SceneManager.LoadSceneAsync("2.FieldScene");
     }
     public void OnClickSandboxMode()
     {
