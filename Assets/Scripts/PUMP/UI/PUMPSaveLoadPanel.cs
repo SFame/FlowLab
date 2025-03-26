@@ -11,25 +11,24 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     [SerializeField] private Button saveButton;
     [SerializeField] private string savePath;
     [SerializeField] private SaveLoadStructureExtractor extractor;
+    [SerializeField] private TextGetter textGetter;
+    [SerializeField] private string defaultSaveName = string.Empty;
+    #endregion
+
+    #region Interface
+    public void ReloadData()
+    {
+        ReloadDataAsync().Forget();
+    }
     #endregion
 
     #region Privates
     private SaveLoadUiController _uiController;
     private RecyclableScrollRect _scrollRect;
     private Canvas _rootCanvas;
-    private TextGetter _textGetter;
     private PUMPSerializeManager _serializer;
     private List<PUMPSaveDataStructure> _saveDatas;
     private bool _initialized = false;
-
-    private TextGetter TextGetter
-    {
-        get
-        {
-            _textGetter ??= GetComponentInChildren<TextGetter>(true);
-            return _textGetter;
-        }
-    }
 
     private Canvas RootCanvas
     {
@@ -52,7 +51,12 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private async void Awake()
     {
         await Initialize();
-        UpdateAndApply().Forget();
+        ReloadDataAsync().Forget();
+    }
+
+    private void OnDestroy()
+    {
+        PUMPSerializeManager.OnDataUpdated.RemoveEvent(savePath, ReloadData);
     }
 
     private async UniTaskVoid AddNewSave(string saveName)
@@ -65,7 +69,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
         await PUMPSerializeManager.AddData(savePath, newStructure);
 
-        UpdateAndApply().Forget();
+        ReloadDataAsync().Forget();
     }
 
     private async UniTask Initialize()
@@ -78,9 +82,10 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         
         saveButton?.onClick.AddListener(() =>
         {
-            TextGetter.GetInputText("Board name", "", newName => AddNewSave(newName).Forget());
+            textGetter.Set("Save name", defaultSaveName, newName => AddNewSave(newName).Forget());
         });
-        
+
+        PUMPSerializeManager.OnDataUpdated.AddEvent(savePath, ReloadData);
         _initialized = true;
     }
 
@@ -97,7 +102,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         ScrollRect.ReloadData();
     }
 
-    private async UniTask UpdateAndApply()
+    private async UniTask ReloadDataAsync()
     {
         if (!_initialized)
             return;
@@ -176,7 +181,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                     text: "Rename",
                     clickAction: () =>
                     {
-                        TextGetter.GetInputText("New name", data.Name, newName =>
+                        textGetter.Set("New name", data.Name, newName =>
                         {
                             if (data.Name != newName)
                             {

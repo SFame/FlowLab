@@ -5,12 +5,12 @@ using UnityEngine.EventSystems;
 public class TPOut : TransitionPoint, ITPOut
 {
     #region Privates
+    [SerializeField]
     private bool _state;
     private LineConnector _lineConnector;
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
-        Debug.Log(Node.gameObject.name);
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
         OnMove = uguiPos => OnNodeMove(lineConnector);

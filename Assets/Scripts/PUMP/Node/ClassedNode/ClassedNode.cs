@@ -7,19 +7,10 @@ using UnityEngine;
 
 public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<ClassedNodeSerializeInfo>
 {
-    private TextMeshProUGUI tmp;
-    private TextMeshProUGUI Tmp
-    {
-        get
-        {
-            tmp ??= GetComponentInChildren<TextMeshProUGUI>();
-            return tmp;
-        }
-    }
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
-    private string _id = string.Empty;
-    private void ClassedNodeDestroyInvoke(Node node)
+
+    private void OnDestroyAdapter(Node node)
     {
         foreach (Action<IClassedNode> action in _onDeleteActions.ToList())  // 순회 도중 Enumerable 변경 예외처리
             action?.Invoke(this);
@@ -33,6 +24,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     protected override string SpritePath => "PUMP/Sprite/null_node";
 
     protected override string NodeDisplayName => "Classed";
+    protected override float TextSize => 24;
 
     protected override float InEnumeratorXPos => -70f;
 
@@ -48,7 +40,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
         get
         {
             List<ContextElement> contexts = base.ContextElements;
-            contexts.Add(new ContextElement("Edit", () => ClassedNodePanel.OpenPanel(this)));
+            contexts.Add(new ContextElement("Edit Classed Node", () => OpenPanel?.Invoke(this)));
             return contexts;
         }
     }
@@ -56,7 +48,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     protected override void OnLoad_BeforeStateUpdate()
     {
         base.OnLoad_BeforeStateUpdate();
-        OnDestroy += ClassedNodeDestroyInvoke;
+        OnDestroy += OnDestroyAdapter;
         ClassedNodePanel.JoinPanel(this);
     }
 
@@ -76,18 +68,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     }
 
     public string Name { get; set; }
-
-    public string Id
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(_id))
-                GetNewId();
-            Tmp.text = _id;
-            return _id;
-        }
-        private set => _id = value;
-    }
+    public string Id { get; set; } = string.Empty;
 
     int IClassedNode.InputCount { get => InputCount; set => InputCount = value; }
     int IClassedNode.OutputCount { get => OutputCount; set => OutputCount = value; }
@@ -115,11 +96,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
 
     public Node GetNode() => this;
 
-    public string GetNewId()
-    {
-        _id = Guid.NewGuid().ToString();
-        return _id;
-    }
 
     #region SerializeData
     public ClassedNodeSerializeInfo ModifiableTObject

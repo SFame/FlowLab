@@ -13,8 +13,7 @@ using Debug = UnityEngine.Debug;
 [RequireComponent(typeof(GraphicRaycaster))]
 public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
 {
-    [FormerlySerializedAs("_nodeParent"), SerializeField]
-    private RectTransform nodeParent;
+    [SerializeField] private RectTransform nodeParent;
     [SerializeField] public bool initializeOnAwake = true;
 
     #region Privates
@@ -272,7 +271,7 @@ public class PUMPBackground : MonoBehaviour, IPointerDownHandler, IDraggable
         RecordHistory();
     }
 
-    public void Reset()
+    public void ResetBackground()
     {
         ClearNodes();
         SetGateway();
@@ -811,6 +810,11 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public event Action OnCountUpdate;
 
+    public override void InvokeOnCountUpdate()
+    {
+        OnCountUpdate?.Invoke();
+    }
+
     public IEnumerator<ITransitionPoint> GetEnumerator()
     {
         CheckNullAndThrowNullExeption();
@@ -819,19 +823,17 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public override void InvokeOnCountUpdate()
-    {
-        OnCountUpdate?.Invoke();
-    }
 
     public override void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference != null)
-            _reference.OnCountUpdate -= OnCountUpdate;
+            _reference.OnCountUpdate -= InvokeOnCountUpdate;
 
         _reference = externalGateway as IExternalInput;
         CheckNullAndThrowNullExeption();
-        _reference.OnCountUpdate += OnCountUpdate;
+        _reference.OnCountUpdate += InvokeOnCountUpdate;
+
+        InvokeOnCountUpdate();
     }
 
     private void CheckNullAndThrowNullExeption()
@@ -870,9 +872,20 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         }
     }
 
+
     public event Action OnStateUpdate;
 
     public event Action OnCountUpdate;
+
+    public override void InvokeOnCountUpdate()
+    {
+        OnCountUpdate?.Invoke();
+    }
+
+    public void InvokeOnStateUpdate()
+    {
+        OnStateUpdate?.Invoke();
+    }
 
     public IEnumerator<ITransitionPoint> GetEnumerator()
     {
@@ -882,23 +895,20 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public override void InvokeOnCountUpdate()
-    {
-        OnCountUpdate?.Invoke();
-    }
-
     public override void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference != null)
         {
-            _reference.OnStateUpdate -= OnStateUpdate;
-            _reference.OnCountUpdate -= OnCountUpdate;
+            _reference.OnStateUpdate -= InvokeOnStateUpdate;
+            _reference.OnCountUpdate -= InvokeOnCountUpdate;
         }
 
         _reference = externalGateway as IExternalOutput;
         CheckNullAndThrowNullExeption();
-        _reference.OnStateUpdate += OnStateUpdate;
-        _reference.OnCountUpdate += OnCountUpdate;
+        _reference.OnStateUpdate += InvokeOnStateUpdate;
+        _reference.OnCountUpdate += InvokeOnCountUpdate;
+
+        InvokeOnCountUpdate();
     }
 
     private void CheckNullAndThrowNullExeption()

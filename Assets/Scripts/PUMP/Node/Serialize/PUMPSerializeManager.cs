@@ -15,7 +15,7 @@ public class PUMPSerializeManager
     #region Privates
     private static PUMPSerializeManager _instance;
     private readonly Dictionary<string, List<PUMPSaveDataStructure>> _saveDatas = new();
-    private readonly DataUpdateEvent _onDataUpdated = new();
+    private readonly PairEvent _onDataUpdated = new();
     private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private PUMPSerializeManager() { }
@@ -69,6 +69,8 @@ public class PUMPSerializeManager
     #endregion
 
     #region Interface
+    public static PairEvent OnDataUpdated => Instance._onDataUpdated;
+
     public static async UniTask AddData(string path, PUMPSaveDataStructure structure)
     {
         await Instance.GetDataInDictionaryFromFile(path);
@@ -157,7 +159,7 @@ public class PUMPSaveDataStructure
     public void NotifyDataChanged() => UpdateNotification?.Invoke(this);
 }
 
-public class DataUpdateEvent
+public class PairEvent
 {
     private Dictionary<string, Action> Events { get; } = new();
 
@@ -174,6 +176,14 @@ public class DataUpdateEvent
         if (!Events.TryAdd(key, action))
         {
             Events[key] += action;
+        }
+    }
+
+    public void RemoveEvent(string key, Action action)
+    {
+        if (Events.ContainsKey(key))
+        {
+            Events[key] -= action;
         }
     }
 }

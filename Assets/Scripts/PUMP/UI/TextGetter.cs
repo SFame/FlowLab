@@ -21,7 +21,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     private CancellationTokenSource _cts;
     #endregion
 
-    public void GetInputText(string titleString, string inputString, Action<string> callback)
+    public void Set(string titleString, string inputString, Action<string> callback)
     {
         gameObject.SetActive(true);
         Initialize();
@@ -38,6 +38,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         WaitKeyAsync(_cts.Token).Forget();
     }
 
+    #region Privates
     private void SendWithExit()
     {
         _callback?.Invoke(inputField.text);
@@ -91,4 +92,5 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         if (result[0].gameObject == gameObject)
             Exit();
     }
+    #endregion
 }

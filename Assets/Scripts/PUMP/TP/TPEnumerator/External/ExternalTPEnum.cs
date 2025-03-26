@@ -67,17 +67,16 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
         float parentHeight = _tpSlider.rect.height;
         float parentMinY = _tpSlider.rect.min.y;
         float parentMaxY = _tpSlider.rect.max.y;
-
         float handleHeight = handle.Rect.rect.height;
 
         Vector3 handleLocalPos = _tpSlider.InverseTransformPoint(handle.Rect.position);
         float handleY = handleLocalPos.y;
-
         float handlePivotY = handle.Rect.pivot.y;
+
         float handleBottomY = handleY - handleHeight * handlePivotY;
         float handleTopY = handleBottomY + handleHeight;
 
-        float ratio = (handleBottomY - parentMinY) / (parentHeight - handleHeight);
+        float ratio = (parentMaxY - handleTopY) / (parentHeight - handleHeight);
 
         return ratio;
     }
@@ -90,9 +89,8 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
         float handleHeight = handle.Rect.rect.height;
         float handlePivotY = handle.Rect.pivot.y;
 
-        float handleBottomY = parentMinY + (ratio * (parentHeight - handleHeight));
-
-        float handleY = handleBottomY + (handleHeight * handlePivotY);
+        float handleTopY = parentMaxY - (ratio * (parentHeight - handleHeight));
+        float handleY = handleTopY - (handleHeight * (1 - handlePivotY));
 
         Vector3 currentLocalPos = handle.Rect.localPosition;
         Vector3 newLocalPos = new Vector3(currentLocalPos.x, handleY, currentLocalPos.z);
@@ -190,7 +188,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
 
     public ITPEnumerator SetTPsMargin(float value)
     {
-        // ½½¶óÀÌ´õ ¹æ½ÄÀº Set Margin ±¸ÇöÇÏÁö ¾ÊÀ½
+        // ìŠ¬ë¼ì´ë” ë°©ì‹ì€ Set Margin êµ¬í˜„í•˜ì§€ ì•ŠìŒ
         return this;
     }
 
@@ -221,8 +219,8 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
             if (handle is null)
                 return this;
 
-            float currentYPos = (i + 1) * interval;
-            SetPositionToRatio(handle, currentYPos);
+            float ratio = (i + 1) * interval;
+            SetPositionToRatio(handle, ratio);
 
             if (handle.TP != null)
                 handle.TP.Node = Node;
@@ -248,7 +246,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
 
         for (int i = 0; i < Handles.Count; i++)
         {
-            if (Handles[i].TP.Connection == null && targetTps[i] != null && vertices[i] != null) // ¿¬°áµÇ¾î ÀÖÁö ¾ÊÀ» ¶§¸¸ ½ÇÇà, targetTp°¡ ÀÖÀ» ¶§¸¸ ½ÇÇà
+            if (Handles[i].TP.Connection == null && targetTps[i] != null && vertices[i] != null) // ì—°ê²°ë˜ì–´ ìˆì§€ ì•Šì„ ë•Œë§Œ ì‹¤í–‰, targetTpê°€ ìˆì„ ë•Œë§Œ ì‹¤í–‰
             {
                 TPConnection newConnection = new() { LineEdges = vertices[i] };
 

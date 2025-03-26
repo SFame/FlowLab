@@ -1,4 +1,4 @@
-﻿//MIT License
+//MIT License
 //Copyright (c) 2020 Mohammed Iqubal Hussain
 //Website : Polyandcode.com 
 
@@ -48,6 +48,8 @@ namespace PolyAndCode.UI
 
         private RecyclingSystem _recyclingSystem;
         private Vector2 _prevAnchoredPos;
+
+        private IRecyclableScrollRectDataSource _cachedDataSource;
 
         protected override void Start()
         {
@@ -121,6 +123,12 @@ namespace PolyAndCode.UI
         /// </summary>
         public void ReloadData(IRecyclableScrollRectDataSource dataSource)
         {
+            if (!gameObject.activeInHierarchy)
+            {
+                _cachedDataSource = dataSource;
+                return;
+            }
+
             if (_recyclingSystem != null)
             {
                 StopMovement();
@@ -131,6 +139,16 @@ namespace PolyAndCode.UI
                                                               ));
                 _prevAnchoredPos = content.anchoredPosition;
             }
+
+            _cachedDataSource = null;
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+
+            if (_cachedDataSource != null)
+                ReloadData(_cachedDataSource);
         }
 
         /*

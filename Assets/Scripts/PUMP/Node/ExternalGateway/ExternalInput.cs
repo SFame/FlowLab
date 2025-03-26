@@ -57,7 +57,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorTPMargin => 0f;
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
-    protected override Vector2 DefaultNodeSize => new Vector2(25f, 951.6152f);
+    protected override Vector2 DefaultNodeSize => new Vector2(25f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 8;
     protected override int DefaultOutputCount => 8;
