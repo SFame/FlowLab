@@ -2,10 +2,20 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<ClassedNodeSerializeInfo>
 {
+    private TextMeshProUGUI tmp;
+    private TextMeshProUGUI Tmp
+    {
+        get
+        {
+            tmp ??= GetComponentInChildren<TextMeshProUGUI>();
+            return tmp;
+        }
+    }
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
     private string _id = string.Empty;
@@ -47,7 +57,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     {
         base.OnLoad_BeforeStateUpdate();
         OnDestroy += ClassedNodeDestroyInvoke;
-        ClassedNodePanel.SetPanel(this);
+        ClassedNodePanel.JoinPanel(this);
     }
 
     protected override string DefineInputName(int tpNumber)
@@ -73,7 +83,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
         {
             if (string.IsNullOrEmpty(_id))
                 GetNewId();
-
+            Tmp.text = _id;
             return _id;
         }
         private set => _id = value;

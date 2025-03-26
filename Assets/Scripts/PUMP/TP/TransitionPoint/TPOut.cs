@@ -10,6 +10,7 @@ public class TPOut : TransitionPoint, ITPOut
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
+        Debug.Log(Node.gameObject.name);
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
         OnMove = uguiPos => OnNodeMove(lineConnector);

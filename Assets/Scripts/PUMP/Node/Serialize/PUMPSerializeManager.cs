@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using OdinSerializer;
+using UnityEngine;
 using static Utils.Serializer;
 
 /// <summary>
@@ -12,9 +14,9 @@ public class PUMPSerializeManager
 {
     #region Privates
     private static PUMPSerializeManager _instance;
-    private static readonly object _lock = new();
     private readonly Dictionary<string, List<PUMPSaveDataStructure>> _saveDatas = new();
     private readonly DataUpdateEvent _onDataUpdated = new();
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private PUMPSerializeManager() { }
 
@@ -29,22 +31,31 @@ public class PUMPSerializeManager
 
     private async UniTask GetDataInDictionaryFromFile(string path)
     {
-        if (_saveDatas.ContainsKey(path) && _saveDatas[path] != null)
-            return;
-        
-        List<PUMPSaveDataStructure> datas = await LoadDataAsync<List<PUMPSaveDataStructure>>(path);
-        datas ??= new();
-        
-        foreach (PUMPSaveDataStructure data in datas)
+        await _semaphore.WaitAsync();
+
+        try
         {
-            data.SubscribeDeleteRequest(saveStructure => DeleteData(path, saveStructure));
-            data.SubscribeUpdateNotification(saveStructure => saveStructure.LastUpdate = DateTime.Now);
-            data.SubscribeDeleteRequest(_ => _onDataUpdated.Invoke(path));
-            data.SubscribeUpdateNotification(_ => _onDataUpdated.Invoke(path));
-        }
+            if (_saveDatas.ContainsKey(path) && _saveDatas[path] != null)
+                return;
         
-        _onDataUpdated.AddEvent(path, () => WriteData(path));
-        _saveDatas.Add(path, datas);
+            List<PUMPSaveDataStructure> datas = await LoadDataAsync<List<PUMPSaveDataStructure>>(path);
+            datas ??= new();
+        
+            foreach (PUMPSaveDataStructure data in datas)
+            {
+                data.SubscribeDeleteRequest(saveStructure => DeleteData(path, saveStructure));
+                data.SubscribeUpdateNotification(saveStructure => saveStructure.LastUpdate = DateTime.Now);
+                data.SubscribeDeleteRequest(_ => _onDataUpdated.Invoke(path));
+                data.SubscribeUpdateNotification(_ => _onDataUpdated.Invoke(path));
+            }
+
+            _onDataUpdated.AddEvent(path, () => WriteData(path));
+            _saveDatas.Add(path, datas);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     private void WriteData(string path)
@@ -105,9 +116,43 @@ public class PUMPSaveDataStructure
     
     [field: NonSerialized] private event Action<PUMPSaveDataStructure> DeleteRequest;
     [field: NonSerialized] private event Action<PUMPSaveDataStructure> UpdateNotification;
-    
-    public void SubscribeDeleteRequest(Action<PUMPSaveDataStructure> action) => DeleteRequest += action;
-    public void SubscribeUpdateNotification(Action<PUMPSaveDataStructure> action) => UpdateNotification += action;
+
+    public void SubscribeDeleteRequest(Action<PUMPSaveDataStructure> action)
+    {
+        if (DeleteRequest != null)
+        {
+            foreach (Delegate d in DeleteRequest.GetInvocationList())
+            {
+                if (d.Equals(action))
+                    return;
+            }
+        }
+        DeleteRequest += action;
+    }
+
+    public void SubscribeUpdateNotification(Action<PUMPSaveDataStructure> action)
+    {
+        if (UpdateNotification != null)
+        {
+            foreach (Delegate d in UpdateNotification.GetInvocationList())
+            {
+                if (d.Equals(action))
+                    return;
+            }
+        }
+        UpdateNotification += action;
+    }
+
+    public void UnsubscribeDeleteRequest(Action<PUMPSaveDataStructure> action)
+    {
+        DeleteRequest -= action;
+    }
+
+    public void UnsubscribeUpdateNotification(Action<PUMPSaveDataStructure> action)
+    {
+        UpdateNotification -= action;
+    }
+
     public void Delete() => DeleteRequest?.Invoke(this);
     public void NotifyDataChanged() => UpdateNotification?.Invoke(this);
 }

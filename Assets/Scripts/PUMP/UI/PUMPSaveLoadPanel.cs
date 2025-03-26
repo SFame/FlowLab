@@ -49,13 +49,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         }
     }
 
-    private void Awake()
+    private async void Awake()
     {
-        Initialize().Forget();
-    }
-
-    private void OnEnable()
-    {
+        await Initialize();
         UpdateAndApply().Forget();
     }
 
@@ -64,11 +60,15 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         List<SerializeNodeInfo> nodeInfos = extractor.GetNodeInfos();
         string imagePath = extractor.GetImagePath();
         object tag = extractor.GetTag();
-        await PUMPSerializeManager.AddData(savePath, new(nodeInfos, saveName, imagePath, tag));
+
+        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, imagePath, tag);
+        newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
+        await PUMPSerializeManager.AddData(savePath, newStructure);
+
         UpdateAndApply().Forget();
     }
 
-    private async UniTaskVoid Initialize()
+    private async UniTask Initialize()
     {
         if (_initialized)
             return;
@@ -86,11 +86,18 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private async UniTask GetDatasFromManager()
     {
-        if (_initialized)
-            _saveDatas = await PUMPSerializeManager.GetDatas(savePath);
+        _saveDatas = await PUMPSerializeManager.GetDatas(savePath);
+
+        foreach (PUMPSaveDataStructure data in _saveDatas)
+            data.SubscribeUpdateNotification(RefreshEventAdapter);
     }
 
-    private async UniTaskVoid UpdateAndApply()
+    private void RefreshEventAdapter(PUMPSaveDataStructure structure)
+    {
+        ScrollRect.ReloadData();
+    }
+
+    private async UniTask UpdateAndApply()
     {
         if (!_initialized)
             return;
