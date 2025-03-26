@@ -99,13 +99,13 @@ GameObject:
   - component: {fileID: 7793780914511001346}
   - component: {fileID: 7289651450712234775}
   - component: {fileID: 7819140539258871249}
-  m_Layer: 15
+  m_Layer: 10
   m_Name: TestNpc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8253028938761719419
 Transform:
   m_ObjectHideFlags: 0
