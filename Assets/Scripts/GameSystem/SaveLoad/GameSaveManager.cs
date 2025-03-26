@@ -12,11 +12,10 @@ public class GameSaveManager : SerializedMonoBehaviour
 {
     #region singleton
     public static GameSaveManager Instance { get; private set; }
-    private static PUMPSerializeManager _instance;
     #endregion
 
-    private const string FILE_NAME = "node_data.bin";
-    [OdinSerialize] private GameSaveData _data;
+    private const string FILE_NAME = "SaveData.bin";
+    [OdinSerialize][SerializeField] private GameSaveData _data;
 
     private void Awake()
     {
@@ -25,6 +24,9 @@ public class GameSaveManager : SerializedMonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            GlobalEventManager.GameStartEvent += LoadGame;
+            GlobalEventManager.GameExitEvent += SaveGame;
         }
         else
         {
@@ -48,7 +50,9 @@ public class GameSaveManager : SerializedMonoBehaviour
     public void LoadGame()
     {
         _data = LoadData<GameSaveData>(FILE_NAME);
-        ApplyPlayerTransform();
+
+        if(_data != default)
+            ApplyPlayerTransform();
     }
     private void UpdatePlayerTransform()
     {
@@ -108,12 +112,12 @@ public class GameSaveManager : SerializedMonoBehaviour
 }
 
 [Serializable]
-public class GameSaveData : MonoBehaviour
+public class GameSaveData
 {
-    [OdinSerialize] private Vector3 _playerPosition;
-    [OdinSerialize] private Quaternion _playerRotation;
-    [OdinSerialize] private List<RoomData> _roomList;
-    [OdinSerialize] private DateTime _lastSaveTime;
+    [OdinSerialize][SerializeField] private Vector3 _playerPosition;
+    [OdinSerialize][SerializeField] private Quaternion _playerRotation;
+    [OdinSerialize][SerializeField] private List<RoomData> _roomList;
+    [OdinSerialize][SerializeField] private DateTime _lastSaveTime;
 
     #region Properties
     public Vector3 PlayerPosition
@@ -146,10 +150,10 @@ public class GameSaveData : MonoBehaviour
 [Serializable]
 public struct RoomData
 {
-    [OdinSerialize] private string _roomID;
-    [OdinSerialize] private Dictionary<int, bool> _stageStates;
-    [OdinSerialize] private bool _clear;
-	[OdinSerialize] private object _tag;
+    [OdinSerialize][SerializeField] private string _roomID;
+    [OdinSerialize][SerializeField] private Dictionary<int, bool> _stageStates;
+    [OdinSerialize][SerializeField] private bool _clear;
+	[OdinSerialize][SerializeField] private object _tag;
 
     #region Properties
     public string RoomID 
