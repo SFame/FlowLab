@@ -9,6 +9,7 @@ public class ClassedNodePanel : MonoBehaviour
 {
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
+    [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private string savePath;
     #endregion
 
@@ -37,11 +38,55 @@ public class ClassedNodePanel : MonoBehaviour
     }
     #endregion
 
+    #region Instance Interface
+    public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent()
+    {
+        return CurrentPair.GetCurrent();
+    }
+
+    public void SetCurrent(PUMPSaveDataStructure dataStructure)
+    {
+        var tuple = GetCurrent();
+
+        if (dataStructure == null)
+        {
+            Debug.LogError($"{GetType().Name}: SetCurrent param is null");
+            return;
+        }
+        if (tuple.ClassedNode == null || tuple.PairBackground == null)
+        {
+            Debug.LogError($"{GetType().Name}: CurrentPair elements are null");
+            return;
+        }
+
+        tuple.PairBackground.SetSerializeNodeInfos(dataStructure.NodeInfos);
+        dataStructure.Tag = tuple.ClassedNode.GetNewId();
+        dataStructure.NotifyDataChanged();
+    }
+
+    public void ClosePanel()
+    {
+        SetActive(false);
+    }
+    #endregion
+
     #region Privates
     private Action<bool[]> _classedOnInputUpdateCache;
     private Action _exOutOnStateUpdateCache;
 
-    private Dictionary<IClassedNode, PUMPBackground> ClassedPair { get; set; } = new();
+    private Dictionary<IClassedNode, PUMPBackground> ClassedDict { get; set; } = new();
+    private ClassedPairManagedStruct CurrentPair { get; set; } = new();
+
+    private void SetActive(bool active)
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = active ? 1f : 0f;
+        canvasGroup.blocksRaycasts = active;
+        canvasGroup.interactable = active;
+    }
+
     private static bool TryFindPanel(IClassedNode classedNode, out ClassedNodePanel panel)
     {
         RectTransform parent = classedNode.GetNode().Background.Rect.GetRootCanvasRect();
@@ -57,16 +102,36 @@ public class ClassedNodePanel : MonoBehaviour
         return false;
     }
 
+    private static bool TryFindPanel(RectTransform rect, out ClassedNodePanel panel)
+    {
+        RectTransform parent = rect.GetRootCanvasRect();
+        foreach (RectTransform child in parent)
+        {
+            if (child.TryGetComponent(out ClassedNodePanel findPanel))
+            {
+                panel = findPanel;
+                return true;
+            }
+        }
+        panel = null;
+        return false;
+    }
+
     private void OpenBackground(IClassedNode classedNode)
     {
-        if (ClassedPair.TryGetValue(classedNode, out PUMPBackground background))
+        if (ClassedDict.TryGetValue(classedNode, out PUMPBackground background))
         {
-            background.gameObject.SetActive(true);
+            CurrentPair.Set(classedNode, background);
 
             return;
         }
 
         Debug.LogError($"{GetType().Name}: Can't find key on Dictionary");
+    }
+
+    private void CloseBackground()
+    {
+        CurrentPair.Discard();
     }
 
     private PUMPBackground AddNewPumpBackground()
@@ -75,7 +140,7 @@ public class ClassedNodePanel : MonoBehaviour
         PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
         background.initializeOnAwake = false;
         background.Initialize();
-        backgroundObject.SetActive(false);
+        backgroundObject.SetActiveDelay(false).Forget();
         return background;
     }
 
@@ -103,7 +168,7 @@ public class ClassedNodePanel : MonoBehaviour
             LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
         };
 
-        ClassedPair.Add(classedNode, newBackground);
+        ClassedDict.Add(classedNode, newBackground);
     }
 
     /// <summary>
@@ -114,8 +179,11 @@ public class ClassedNodePanel : MonoBehaviour
     /// <param name="exOut"></param>
     private void LinkClassedToExternal(IClassedNode classed, IExternalInput exIn, IExternalOutput exOut)
     {
-        classed.InputCount = exIn.GateCount;
-        classed.OutputCount = exOut.GateCount;
+        if (classed.InputCount != exIn.GateCount || classed.OutputCount != exOut.GateCount)
+        {
+            classed.InputCount = exIn.GateCount;
+            classed.OutputCount = exOut.GateCount;
+        }
 
         _classedOnInputUpdateCache = states =>
         {
@@ -135,26 +203,26 @@ public class ClassedNodePanel : MonoBehaviour
     #endregion
 
     #region Interface
-    public static void SetPanel(IClassedNode classedNode)
+    public static ClassedNodePanel JoinPanel(IClassedNode classedNode)
     {
         if (TryFindPanel(classedNode, out ClassedNodePanel panel))
         {
             panel.AddClassedNode(classedNode).Forget();
-            return;
+            return panel;
         }
 
         RectTransform parent = classedNode.GetNode().Background.Rect.GetRootCanvasRect();
-        GameObject classedNodePanelObject = Instantiate(PanelPrefab, parent);
-        ClassedNodePanel classedNodePanel = classedNodePanelObject.GetComponent<ClassedNodePanel>();
+        ClassedNodePanel classedNodePanel = Instantiate(PanelPrefab, parent).GetComponent<ClassedNodePanel>();
         classedNodePanel.AddClassedNode(classedNode).Forget();
-        classedNodePanelObject.SetActive(false);
+        classedNodePanel.SetActive(false);
+        return classedNodePanel;
     }
 
     public static void OpenPanel(IClassedNode classedNode)
     {
         if (TryFindPanel(classedNode, out ClassedNodePanel panel))
         {
-            panel.gameObject.SetActive(true);
+            panel.SetActive(true);
             panel.OpenBackground(classedNode);
 
             return;
@@ -162,5 +230,49 @@ public class ClassedNodePanel : MonoBehaviour
 
         Debug.LogError("Static - ClassedNodePanel: SetPanel first");
     }
+
+    public static ClassedNodePanel GetInstance(RectTransform findStartRect)
+    {
+        if (TryFindPanel(findStartRect, out ClassedNodePanel panel))
+            return panel;
+
+        Debug.LogError("Static - ClassedNodePanel: SetPanel first");
+        return null;
+    }
     #endregion
+
+    private class ClassedPairManagedStruct
+    {
+        private IClassedNode _currentClassed;
+        private PUMPBackground _pairBackground;
+
+        public void Set(IClassedNode classedNode, PUMPBackground background)
+        {
+            if (_pairBackground != null || classedNode != null)
+                Discard();
+
+            if (classedNode == null || background == null)
+            {
+                Debug.LogError($"{GetType().Name}: Param is null");
+                return;
+            }
+
+            _currentClassed = classedNode;
+            _pairBackground = background;
+
+            _pairBackground.gameObject.SetActive(true);
+        }
+
+        public void Discard()
+        {
+            _pairBackground?.gameObject?.SetActive(false);
+            _currentClassed = null;
+            _pairBackground = null;
+        }
+
+        public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent()
+        {
+            return (_currentClassed, _pairBackground);
+        }
+    }
 }

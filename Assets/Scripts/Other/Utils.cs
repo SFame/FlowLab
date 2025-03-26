@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -33,6 +35,12 @@ namespace Utils
             }
 
             return null;
+        }
+
+        public static async UniTaskVoid SetActiveDelay(this GameObject @object, bool active, PlayerLoopTiming timing = PlayerLoopTiming.LastPostLateUpdate)
+        {
+            await UniTask.Yield(timing);
+            @object.SetActive(false);
         }
     }
 
