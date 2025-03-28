@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class UIButtonEvent 
+public class UIButtonEvent : MonoBehaviour
 {
     public void OnGuideButton()
     {
