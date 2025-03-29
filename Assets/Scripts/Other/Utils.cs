@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -37,10 +38,10 @@ namespace Utils
             return null;
         }
 
-        public static async UniTaskVoid SetActiveDelay(this GameObject @object, bool active, PlayerLoopTiming timing = PlayerLoopTiming.LastPostLateUpdate)
+        public static async UniTask InvokeActionDelay(Action action , PlayerLoopTiming timing = PlayerLoopTiming.LastPostLateUpdate)
         {
             await UniTask.Yield(timing);
-            @object.SetActive(false);
+            action?.Invoke();
         }
     }
 

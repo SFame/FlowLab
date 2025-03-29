@@ -8,7 +8,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
 {
     #region External Interface
     public ITransitionPoint this[int index] => OutputToken[index];
-    public event Action OnCountUpdate;
+    public event Action<int> OnCountUpdate;
     public event Action OnStateUpdate;
 
     public bool ObjectIsNull => gameObject == null;
@@ -28,7 +28,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
         {
             InputCount = value;
             OutputCount = value;
-            OnCountUpdate?.Invoke();
+            OnCountUpdate?.Invoke(value);
         }
     }
 
@@ -70,7 +70,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
                 clickAction: () =>
                 {
                     Disconnect();
-                    RecordingCall();
+                    ReportChanges();
                 }, 
                 text: "Disconnect"),
         };
@@ -118,7 +118,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
         
         Dropdown.value = GateCount - 1;
         Dropdown.onValueChanged.AddListener(value => GateCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => RecordingCall());
+        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
 
     #region Serialize

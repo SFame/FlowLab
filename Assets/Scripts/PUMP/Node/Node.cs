@@ -15,6 +15,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private Image _image;
     private TextMeshProUGUI _nodeNameText;
     private PUMPBackground _background;
+    private bool _isBackgroundSet = false;
     private Canvas _rootCanvas;
     private readonly Color _highlightedColor = Color.green;
 
@@ -64,10 +65,20 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     {
         get
         {
-            if (_background is null)
-                _background = GetComponentInParent<PUMPBackground>();
-
+            if (!_isBackgroundSet || _background == null)
+                Debug.LogError("Set Node field 'Background' in PUMPBackground");
             return _background;
+        }
+
+        set
+        {
+            if (value == null)
+            {
+                Debug.LogError("Background is null");
+                return;
+            }
+            _background = value;
+            _isBackgroundSet = true;
         }
     }
 
@@ -129,7 +140,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void CallCompletePlacementFromPalette()
     {
         OnCompletePlacementFromPalette();
-        RecordingCall();
+        ReportChanges();
     }
 
     public event Action<Node> OnDestroy;
@@ -175,7 +186,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
                 clickAction: () =>
                 {
                     Destroy();
-                    RecordingCall();
+                    ReportChanges();
                 }, 
                 text: "Remove"),
             
@@ -183,7 +194,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
                 clickAction: () =>
                 {
                     Disconnect();
-                    RecordingCall();
+                    ReportChanges();
                 }, 
                 text: "Disconnect"),
         };
@@ -254,12 +265,12 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     }
 
     /// <summary>
-    /// Undo를 위한 히스토리에 기록해야 한다면 호출
-    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 호출하지 말 것.
+    /// 변경사항이 있다면 호출
+    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
     /// </summary>
-    public void RecordingCall()
+    public void ReportChanges()
     {
-        Background?.RecordHistoryOncePerFrame();
+        ((IChangeObserver)Background)?.ReportChanges();
     }
     #endregion
 
@@ -271,7 +282,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void Initialize()
     {
         OnDragging += pointerEventArgs => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
-        MoveEnd += _ => RecordingCall();
+        MoveEnd += _ => ReportChanges();
         SetName();
         SetSprite();
         SetRect();

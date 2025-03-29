@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,7 +67,13 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     #endregion
 
     #region Constructor
-    public Pool(Func<T> createFunc, int initSize = DEFAULT_INIT_SIZE, int maxSize = DEFAULT_MAX_SIZE, Action<T> actionOnGet = null, Action<T> actionOnRelease = null, Action<T> actionOnDestroy = null, Predicate<T> isNullPredicate = null)
+    public Pool(Func<T> createFunc, 
+                int initSize = DEFAULT_INIT_SIZE, 
+                int maxSize = DEFAULT_MAX_SIZE, 
+                Action<T> actionOnGet = null,
+                Action<T> actionOnRelease = null, 
+                Action<T> actionOnDestroy = null, 
+                Predicate<T> isNullPredicate = null)
     {
         if (createFunc == null)
         {

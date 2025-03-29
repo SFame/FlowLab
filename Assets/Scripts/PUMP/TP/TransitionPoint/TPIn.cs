@@ -135,12 +135,12 @@ public class TPIn : TransitionPoint, ITPIn
         if (find is not null)
         {
             OnSuccessFinding(find);
-            Node.RecordingCall();
+            Node.ReportChanges();
         }
         else
         {
             if (Connection is not null)
-                Node.RecordingCall();
+                Node.ReportChanges();
             
             Connection?.Disconnect();
         }

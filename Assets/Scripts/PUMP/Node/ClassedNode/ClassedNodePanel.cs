@@ -1,8 +1,10 @@
+using Cysharp.Threading.Tasks;
 using System;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 
+[RequireComponent(typeof(IClassedNodeDataManager))]
 public class ClassedNodePanel : MonoBehaviour
 {
     #region On Inspector
@@ -10,12 +12,16 @@ public class ClassedNodePanel : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private TextGetter textGetter;
     [SerializeField] private string defaultSaveName = string.Empty;
-    [SerializeField] private TextMeshProUGUI tmp;
+
+    [Space, Header("ExternalCountSlider")]
+    [SerializeField] private Slider inputCountSlider;
+    [SerializeField] private Slider outputCountSlider;
     #endregion
 
     #region Const/Static Fields
     private const string PANEL_PREFAB_PATH = "PUMP/Prefab/ClassedNode/ClassedNodePanel";
     private const string BACKGROUND_PREFAB_PATH = "PUMP/Prefab/PUMP_Background";
+
     private static GameObject _panelPrefab;
     private static GameObject _backgroundPrefab;
 
@@ -38,15 +44,6 @@ public class ClassedNodePanel : MonoBehaviour
     }
     #endregion
 
-    private void Update()
-    {
-        if (DataManager.HasCurrent())
-        {
-            var id = DataManager.GetCurrent().ClassedNode.Id;
-            tmp.text = id;
-        }
-    }
-
     #region Static Interface
     public static ClassedNodePanel JoinPanel(IClassedNode classedNode)
     {
@@ -56,10 +53,8 @@ public class ClassedNodePanel : MonoBehaviour
             panel = Instantiate(PanelPrefab, parent).GetComponent<ClassedNodePanel>();
         }
 
-        classedNode.OpenPanel += panel.OpenPanel;
-        classedNode.OnDestroy += panel.DataManager.DestroyClassed;
-        panel.DataManager.AddNew(classedNode);
-        panel.SetActive(false);
+        panel.Initialize(classedNode);
+
         return panel;
     }
 
@@ -74,6 +69,17 @@ public class ClassedNodePanel : MonoBehaviour
     #endregion
 
     #region Instance Interface
+    public void Initialize(IClassedNode classedNode)
+    {
+        _baseBackground = classedNode.GetNode().Background;
+        DataManager.AddNew(classedNode);
+
+        classedNode.OpenPanel += OpenPanel;
+        classedNode.OnDestroy += DataManager.DestroyClassed;
+
+        SetActive(false);
+    }
+
     public void OpenPanel(IClassedNode classedNode)
     {
         if (classedNode == null)
@@ -85,7 +91,7 @@ public class ClassedNodePanel : MonoBehaviour
 
     public void ClosePanel()
     {
-        DataManager.DiscardCurrent();
+        CloseBackground();
         SetActive(false);
     }
 
@@ -101,13 +107,14 @@ public class ClassedNodePanel : MonoBehaviour
             if (_dataManager == null)
             {
                 _dataManager = GetComponent<IClassedNodeDataManager>();
+                _dataManager.BaseBackground = _baseBackground;
                 _dataManager.BackgroundGetter = () =>
                 {
                     GameObject backgroundObject = Instantiate(BackgroundPrefab, pumpBackgroundParent);
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
                     background.initializeOnAwake = false;
-                    background.Initialize();
-                    backgroundObject.SetActiveDelay(false).Forget();
+                    background.Open();
+                    Other.InvokeActionDelay(_baseBackground.Open).Forget();
                     return background;
                 };
             }
@@ -117,7 +124,9 @@ public class ClassedNodePanel : MonoBehaviour
     #endregion
 
     #region Privates
+    private PUMPBackground _baseBackground;
     private IClassedNodeDataManager _dataManager;
+    private bool _initialized = false;
 
     private void SetActive(bool active)
     {
@@ -162,11 +171,74 @@ public class ClassedNodePanel : MonoBehaviour
     private void OpenBackground(IClassedNode classedNode)
     {
         DataManager.SetCurrent(classedNode);
+        SetSlider(DataManager.GetCurrent().PairBackground);
     }
 
     private void CloseBackground()
     {
+        TerminateSlider(DataManager.GetCurrent().PairBackground);
         DataManager.DiscardCurrent();
+    }
+
+    public void SetSlider(PUMPBackground background)
+    {
+        TerminateSlider(background);
+
+        if (background == null)
+            return;
+
+        if (inputCountSlider != null)
+        {
+            inputCountSlider.value = background.ExternalInput.GateCount;
+            inputCountSlider.onValueChanged.AddListener(value =>
+            {
+                int intValue = Mathf.RoundToInt(value);
+                background.ExternalInput.GateCount = intValue;
+                ((IChangeObserver)background).ReportChanges();
+            });
+        }
+
+        if (outputCountSlider != null)
+        {
+            outputCountSlider.value = background.ExternalOutput.GateCount;
+            outputCountSlider.onValueChanged.AddListener(value =>
+            {
+                int intValue = Mathf.RoundToInt(value);
+                background.ExternalOutput.GateCount = intValue;
+                ((IChangeObserver)background).ReportChanges();
+            });
+        }
+
+        background.ExternalInput.OnCountUpdate += SetInputSliderValue;
+        background.ExternalOutput.OnCountUpdate += SetOutputSliderValue;
+    }
+
+    public void TerminateSlider(PUMPBackground background)
+    {
+        if (inputCountSlider != null)
+        {
+            inputCountSlider.onValueChanged.RemoveAllListeners();
+            inputCountSlider.value = 0f;
+        }
+
+        if (outputCountSlider != null)
+        {
+            outputCountSlider.onValueChanged.RemoveAllListeners();
+            outputCountSlider.value = 0f;
+        }
+
+        background.ExternalInput.OnCountUpdate -= SetInputSliderValue;
+        background.ExternalOutput.OnCountUpdate -= SetOutputSliderValue;
+    }
+
+    private void SetInputSliderValue(int value)
+    {
+        inputCountSlider.value = value;
+    }
+
+    private void SetOutputSliderValue(int value)
+    {
+        outputCountSlider.value = value;
     }
     #endregion
 }
@@ -174,12 +246,13 @@ public class ClassedNodePanel : MonoBehaviour
 public interface IClassedNodeDataManager
 {
     public Func<PUMPBackground> BackgroundGetter { get; set; }
+    public PUMPBackground BaseBackground { get; set; }
     public bool HasCurrent();
     public void SetCurrent(IClassedNode classedNode);
     public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent();
     public void OverrideToCurrent(PUMPSaveDataStructure structure);
     public void DestroyClassed(IClassedNode classedNode);
     public void DiscardCurrent();
-    public void AddNew(IClassedNode classedNode);
+    public UniTask AddNew(IClassedNode classedNode);
     public void Push(string name);
 }

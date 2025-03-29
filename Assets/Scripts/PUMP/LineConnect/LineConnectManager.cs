@@ -26,7 +26,7 @@ public class LineConnectManager : MonoBehaviour
         lineGo.transform.SetParent(transform);
         
         LineConnector lc = lineGo.AddComponent<LineConnector>();
-        lc.OnDragEnd += Background.RecordHistoryOncePerFrame;
+        lc.OnDragEnd += ((IChangeObserver)Background).ReportChanges;
         _lineRefreshAction += lc.RefreshPoints;
         lc.OnRemove += () => _lineRefreshAction -= lc.RefreshPoints;
         return lc;

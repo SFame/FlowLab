@@ -52,7 +52,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
         // Input count
         InputCountInputCountDropdown.value = InputCount - 1;
         InputCountInputCountDropdown.onValueChanged.AddListener(value => InputCount = value + 1);
-        InputCountInputCountDropdown.onValueChanged.AddListener(_ => RecordingCall());
+        InputCountInputCountDropdown.onValueChanged.AddListener(_ => ReportChanges());
         
         // Compare number
         CompareNumberInputField.text = CompareNumber.ToString();
@@ -67,7 +67,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
             }
             StateUpdate();
         });
-        CompareNumberInputField.onEndEdit.AddListener(countString => RecordingCall());
+        CompareNumberInputField.onEndEdit.AddListener(countString => ReportChanges());
         
         // Operator
         OperatorDropdown.ClearOptions();
@@ -79,7 +79,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
             Operator = OperatorDropdown.options[select].text;
             StateUpdate();
         });
-        OperatorDropdown.onValueChanged.AddListener(_ => RecordingCall());
+        OperatorDropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
 
     #region Node Setting

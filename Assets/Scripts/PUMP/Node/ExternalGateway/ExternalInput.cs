@@ -10,7 +10,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
 {
     #region External Interface
     public ITransitionPoint this[int index] => InputToken[index];
-    public event Action OnCountUpdate;
+    public event Action<int> OnCountUpdate;
     public bool ObjectIsNull => gameObject == null;
     public int GateCount
     {
@@ -27,7 +27,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
         {
             InputCount = value;
             OutputCount = value;
-            OnCountUpdate?.Invoke();
+            OnCountUpdate?.Invoke(value);
         }
     }
 
@@ -69,7 +69,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
                 clickAction: () =>
                 {
                     Disconnect();
-                    RecordingCall();
+                    ReportChanges();
                 }, 
                 text: "Disconnect"),
         };
@@ -115,7 +115,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
         
         Dropdown.value = GateCount - 1;
         Dropdown.onValueChanged.AddListener(value => GateCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => RecordingCall());
+        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
 
     #region Serialize

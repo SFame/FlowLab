@@ -133,13 +133,13 @@ public class TPOut : TransitionPoint, ITPOut
         ITPIn find = FindUnderPoint<ITPIn>(eventData);
         if (find is not null)
         {
-            Node.RecordingCall();
+            Node.ReportChanges();
             OnSuccessFinding(find);
         }
         else
         {
             if (Connection is not null)
-                Node.RecordingCall();
+                Node.ReportChanges();
             
             Connection?.Disconnect();
         }

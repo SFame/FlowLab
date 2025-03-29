@@ -57,7 +57,7 @@ public class ClickSwitch : Node, IStateful, INodeModifiableArgs<bool>
             SelectedRemoveRequestInvoke();
             State = !State;
             StateUpdate();
-            RecordingCall();
+            ReportChanges();
         }
     }
 }

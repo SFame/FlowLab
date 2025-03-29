@@ -17,7 +17,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     // -- Extractor --
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
+        classedNodePanel.TerminateSlider(CurrentPair.GetCurrent().PairBackground);
         OverrideToCurrent(structure);
+        classedNodePanel.SetSlider(CurrentPair.GetCurrent().PairBackground);
     }
 
     public override string GetImagePath()
@@ -38,6 +40,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     }
 
     // -- DataManager --
+    public Func<PUMPBackground> BackgroundGetter { get; set; }
+    public PUMPBackground BaseBackground { get; set; }
+
     public void Push(string name)
     {
         PushAsync(name).Forget();
@@ -52,7 +57,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     {
         if (ClassedDict.TryGetValue(classedNode, out PUMPBackground background))
         {
-            CurrentPair.Set(classedNode, background);
+            CurrentPair.Set(classedNode, background, BaseBackground);
             return;
         }
 
@@ -61,7 +66,6 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
     public void OverrideToCurrent(PUMPSaveDataStructure structure)
     {
-
         if (structure == null)
         {
             Debug.LogError($"{GetType().Name}: OverrideCurrent param is null");
@@ -72,10 +76,10 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             Debug.LogError($"{GetType().Name}: CurrentPair elements are null");
             return;
         }
-
         var tuple = GetCurrent();
         tuple.PairBackground.SetSerializeNodeInfos(structure.NodeInfos);
         tuple.ClassedNode.Id = structure.Tag.ToString();
+        tuple.ClassedNode.Name = structure.Name;
         structure.NotifyDataChanged();
     }
 
@@ -89,6 +93,8 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
             Destroy(background.gameObject);
             // Destroy이벤트로 호출되기 때문에 classedNode는 파괴하지 않음.
+
+            ClassedDict.Remove(classedNode);
         }
     }
 
@@ -97,9 +103,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         CurrentPair.Discard();
     }
 
-    public void AddNew(IClassedNode classedNode)
+    public UniTask AddNew(IClassedNode classedNode)
     {
-        AddNewAsync(classedNode).Forget();
+        return AddNewAsync(classedNode);
     }
 
     public bool HasCurrent()
@@ -112,8 +118,6 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     #region Privates
     private Dictionary<IClassedNode, PUMPBackground> ClassedDict { get; set; } = new();
     private ClassedPairManagedStruct CurrentPair { get; set; } = new();
-
-    public Func<PUMPBackground> BackgroundGetter { get; set; }
 
     private Action<bool[]> _classedOnInputUpdateCache;
     private Action _exOutOnStateUpdateCache;
@@ -128,17 +132,20 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         if (matchedStructure != null)
         {
             newBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos);
+            classedNode.Name = matchedStructure.Name;
         }
 
         LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
 
-        newBackground.ExternalInput.OnCountUpdate += () =>
+        newBackground.ExternalInput.OnCountUpdate += _ =>
         {
             classedNode.OnInputUpdate -= _classedOnInputUpdateCache;
+            newBackground.ExternalOutput.OnStateUpdate -= _exOutOnStateUpdateCache;
             LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
         };
-        newBackground.ExternalOutput.OnCountUpdate += () =>
+        newBackground.ExternalOutput.OnCountUpdate += _ =>
         {
+            classedNode.OnInputUpdate -= _classedOnInputUpdateCache;
             newBackground.ExternalOutput.OnStateUpdate -= _exOutOnStateUpdateCache;
             LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
         };
@@ -168,7 +175,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         _exOutOnStateUpdateCache = () =>
         {
-            classed.OutputUpdate(exOut.Select(tp => tp.State).ToArray());
+            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray());
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
     }
@@ -183,6 +190,8 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             Tag = GetTag(),
         };
 
+        GetCurrent().ClassedNode.Name = name;
+
         await PUMPSerializeManager.AddData(savePath, newStructure);
     }
 
@@ -194,9 +203,18 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     {
         private IClassedNode _currentClassed;
         private PUMPBackground _pairBackground;
+        private PUMPBackground _baseBackground;
 
-        public void Set(IClassedNode classedNode, PUMPBackground background)
+        public void Set(IClassedNode classedNode, PUMPBackground background, PUMPBackground baseBackground)
         {
+            if (_baseBackground == null && baseBackground == null)
+            {
+                Debug.LogError($"{GetType().Name}: ParentBackground is null");
+                return;
+            }
+
+            _baseBackground = baseBackground;
+
             if (_pairBackground != null || classedNode != null)
                 Discard();
 
@@ -209,14 +227,15 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             _currentClassed = classedNode;
             _pairBackground = background;
 
-            _pairBackground.gameObject.SetActive(true);
+            _pairBackground.Open();
         }
 
         public void Discard()
         {
-            _pairBackground?.gameObject?.SetActive(false);
+            _pairBackground?.Close();
             _currentClassed = null;
             _pairBackground = null;
+            _baseBackground?.Open();
         }
 
         public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent()
@@ -225,40 +244,4 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         }
     }
     #endregion
-
-    /*
-    private async UniTask PushAsync()
-    {
-        if (!HasCurrent())
-            return;
-
-        List<PUMPSaveDataStructure> structures = await PUMPSerializeManager.GetDatas(savePath);
-        HashSet<string> existingTags = new HashSet<string>(structures
-            .Select(structure => structure.Tag?.ToString())
-            .Where(tag => tag != null));
-
-        foreach (var kvp in ClassedDict)
-        {
-            if (string.IsNullOrEmpty(kvp.Key.Id))
-                kvp.Key.Id = GetNewId();
-        }
-
-        Dictionary<IClassedNode, PUMPBackground> missingNodes = ClassedDict
-            .Where(pair => !existingTags.Contains(pair.Key.Id))
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
-
-        foreach (var kvp in missingNodes)
-        {
-            PUMPSaveDataStructure newStructure = new()
-            {
-                NodeInfos = kvp.Value.GetSerializeNodeInfos(),
-                Name = defaultClassedName,
-                ImagePath = GetImagePath(),
-                Tag = kvp.Key.Id,
-            };
-
-            await PUMPSerializeManager.AddData(savePath, newStructure);
-        }
-    }
-    */
 }

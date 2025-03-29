@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
@@ -9,11 +10,26 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
 {
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
+    private string _name;
 
     private void OnDestroyAdapter(Node node)
     {
         foreach (Action<IClassedNode> action in _onDeleteActions.ToList())  // 순회 도중 Enumerable 변경 예외처리
             action?.Invoke(this);
+    }
+
+    private async UniTaskVoid UpdateOutputStateNextFrame(bool[] outputs)
+    {
+        await UniTask.WaitForEndOfFrame();
+
+        if (outputs.Length != OutputToken.Count)
+        {
+            Debug.LogError($"{GetType().Name}: OutputUpdate counts do not match (TokenCount: {OutputToken.Count} / ExternalCount: {outputs.Length}");
+            return;
+        }
+
+        for (int i = 0; i < OutputToken.Count; i++)
+            OutputToken[i].State = outputs[i];
     }
     #endregion
 
@@ -67,7 +83,16 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
         OnInputUpdate?.Invoke(InputToken.Select(tp => tp.State).ToArray());
     }
 
-    public string Name { get; set; }
+    #region Classed Node Interface
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            NodeNameText.text = value;
+            name = value;
+        }
+    }
     public string Id { get; set; } = string.Empty;
 
     int IClassedNode.InputCount { get => InputCount; set => InputCount = value; }
@@ -82,11 +107,11 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
         remove => _onDeleteActions.Remove(value);
     }
 
-    public void OutputUpdate(bool[] outputs)
+    public void OutputStateUpdate(bool[] outputs)
     {
         if (outputs.Length != OutputToken.Count)
         {
-            Debug.LogError($"{GetType().Name}: OutputUpdate counts do not match");
+            UpdateOutputStateNextFrame(outputs).Forget();
             return;
         }
 
@@ -95,7 +120,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     }
 
     public Node GetNode() => this;
-
+    #endregion
 
     #region SerializeData
     public ClassedNodeSerializeInfo ModifiableTObject

@@ -120,7 +120,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
 
     private void HandleEndDragCallback(PointerEventData eventData, ExternalTPHandle handle)
     {
-        Node.RecordingCall();
+        Node.ReportChanges();
     }
 
     private ExternalTPHandle InstantiateHandle()
@@ -137,7 +137,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
         if (handleObject.TryGetComponent(out ExternalTPHandle handle))
         {
             handle.OnDragging += eventData => HandleDraggingCallback(eventData, handle);
-            handle.OnDragEnd += _ => Node.RecordingCall();
+            handle.OnDragEnd += _ => Node.ReportChanges();
             return handle;
         }
 

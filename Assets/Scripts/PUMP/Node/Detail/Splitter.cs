@@ -30,7 +30,7 @@ public class Splitter : DynamicIONode, INodeModifiableArgs<int>
     {
         Dropdown.value = OutputCount - 1;
         Dropdown.onValueChanged.AddListener(value => OutputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => RecordingCall());
+        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
     
     protected override int DefaultInputCount => 1;
