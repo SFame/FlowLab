@@ -15,6 +15,8 @@ public class PUMPInputOutputManager : MonoBehaviour
     [SerializeField] private int minNodeCount = 1;
     [SerializeField] private int maxNodeCount = 8;
 
+    [SerializeField] private PuzzleDataPanel puzzleDataPanel;
+
     private PUMPBackground _pumpBackground;
     private int _currentInputCount = 2;
     private int _currentOutputCount = 2;
@@ -83,6 +85,9 @@ public class PUMPInputOutputManager : MonoBehaviour
             }
 
             ApplyChanges();
+
+            // Input 개수가 변경되었으므로 테스트 케이스 초기화
+            ClearTestCases();
         }
     }
     
@@ -118,6 +123,8 @@ public class PUMPInputOutputManager : MonoBehaviour
                     outputCountField.caretPosition = caretPosition;
             }
             ApplyChanges();
+
+            ClearTestCases();
         }
     }
 
@@ -148,5 +155,20 @@ public class PUMPInputOutputManager : MonoBehaviour
 
 
         _isInitializing = false;
+    }
+
+    private void ClearTestCases()
+    {
+        if (puzzleDataPanel != null)
+        {
+            // 기존 테스트 케이스 UI 제거
+            puzzleDataPanel.ClearTestCases();
+
+            // 데이터도 초기화
+            puzzleDataPanel.currentPuzzleData = new PuzzleData();
+
+            // 새로운 빈 테스트 케이스 추가 (자동으로 현재 입출력 개수에 맞게 조정)
+            puzzleDataPanel.AddNewTestCase();
+        }
     }
 }
