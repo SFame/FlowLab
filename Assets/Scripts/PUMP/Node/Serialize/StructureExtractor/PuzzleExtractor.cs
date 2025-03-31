@@ -10,7 +10,7 @@ public class PuzzleExtractor : SaveLoadStructureExtractor
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
         background.SetSerializeNodeInfos(structure.NodeInfos);
-        background.RecordHistoryOncePerFrame();
+        ((IChangeObserver)background).ReportChanges();
 
         if (structure.Tag is PuzzleData puzzleData)
         {

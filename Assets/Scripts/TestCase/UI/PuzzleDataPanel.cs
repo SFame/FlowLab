@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
 using TMPro;
+using System;
 
 public class PuzzleDataPanel : MonoBehaviour
 {
@@ -16,8 +17,12 @@ public class PuzzleDataPanel : MonoBehaviour
 
     [SerializeField] private PUMPBackground background;
 
+    [SerializeField] private PuzzleTestCasePanel testCasePanel;
+
     private List<TestCaseController> testCaseControllers = new List<TestCaseController>();
     public PuzzleData currentPuzzleData = new PuzzleData();
+
+    public event Action<PuzzleData> OnPuzzleDataChanged;
 
     private void Start()
     {
@@ -94,6 +99,8 @@ public class PuzzleDataPanel : MonoBehaviour
             TestCase testCase = controller.GetTestCaseData();
             currentPuzzleData.testCases.Add(testCase);
         }
+
+        OnPuzzleDataChanged?.Invoke(currentPuzzleData);
     }
     // 기존 테스트 케이스 UI 제거
     public void ClearTestCases()
@@ -111,7 +118,7 @@ public class PuzzleDataPanel : MonoBehaviour
         ClearTestCases();
 
         // 새 데이터 설정
-        currentPuzzleData = puzzleData;
+        UpdatePuzzleData(puzzleData);
 
         // 테스트 케이스가 없으면 빈 케이스 하나 추가
         if (puzzleData.testCases == null || puzzleData.testCases.Count == 0)
@@ -141,4 +148,10 @@ public class PuzzleDataPanel : MonoBehaviour
     {
         LoadFromPuzzleData(new PuzzleData { testCases = testCases });
     }
+    public void UpdatePuzzleData(PuzzleData newData)
+    {
+        currentPuzzleData = newData;
+        OnPuzzleDataChanged?.Invoke(currentPuzzleData);
+    }
+
 }
