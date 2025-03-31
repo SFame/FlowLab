@@ -35,8 +35,38 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     public override object GetTag()
     {
         string newId = GetNewId();
-        GetCurrent().ClassedNode.Id = newId;
         return newId;
+    }
+
+    public override bool ValidateBeforeSerialization(PUMPSaveDataStructure structure)
+    {
+        string id;
+        string name;
+
+        try
+        {
+            id = structure.Tag.AsString();
+            name = structure.Name;
+        }
+        catch (InvalidCastException e)
+        {
+            Debug.LogError("Tag convert Error: " + e.Message);
+            return false;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e.Message);
+            return false;
+        }
+
+        if (GetCurrent().ClassedNode is IClassedNode classedNode)
+        {
+            classedNode.Name = name;
+            classedNode.Id = id;
+            return true;
+        }
+
+        return false;
     }
 
     // -- DataManager --

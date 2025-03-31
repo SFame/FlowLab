@@ -11,7 +11,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     [SerializeField] private Button saveButton;
     [SerializeField] private string savePath;
     [SerializeField] private SaveLoadStructureExtractor extractor;
-    [SerializeField] private TextGetter textGetter;
     [SerializeField] private string defaultSaveName = string.Empty;
     #endregion
 
@@ -34,7 +33,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     {
         get
         {
-            _rootCanvas ??= transform.GetComponentInParent<Canvas>().rootCanvas;
+            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
             return _rootCanvas;
         }
     }
@@ -61,15 +60,30 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private async UniTaskVoid AddNewSave(string saveName)
     {
+        if (Extract(saveName, out PUMPSaveDataStructure newStructure))
+        {
+            newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
+            await PUMPSerializeManager.AddData(savePath, newStructure);
+
+            ReloadDataAsync().Forget();
+        }
+    }
+
+    private bool Extract(string saveName, out PUMPSaveDataStructure structure)
+    {
         List<SerializeNodeInfo> nodeInfos = extractor.GetNodeInfos();
         string imagePath = extractor.GetImagePath();
         object tag = extractor.GetTag();
 
         PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, imagePath, tag);
-        newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
-        await PUMPSerializeManager.AddData(savePath, newStructure);
+        if (extractor.ValidateBeforeSerialization(newStructure))
+        {
+            structure = newStructure;
+            return true;
+        }
 
-        ReloadDataAsync().Forget();
+        structure = null;
+        return false;
     }
 
     private async UniTask Initialize()
@@ -82,7 +96,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         
         saveButton?.onClick.AddListener(() =>
         {
-            textGetter.Set("Save name", defaultSaveName, newName => AddNewSave(newName).Forget());
+            TextGetterManager.Set(RootCanvas, newName => AddNewSave(newName).Forget(), "Save name", defaultSaveName);
         });
 
         PUMPSerializeManager.OnDataUpdated.AddEvent(savePath, ReloadData);
@@ -166,12 +180,16 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                         UniTask.Create(async () =>
                         {
                             await UniTask.Yield();
-                            Capture.DeleteCaptureFile(data.ImagePath);
-                            data.NodeInfos = extractor.GetNodeInfos();
-                            data.ImagePath = extractor.GetImagePath();
-                            data.Tag = extractor.GetTag();
-                            data.NotifyDataChanged();
-                            elem.Refresh();
+                            string beforeImagePath = data.ImagePath;
+                            if (Extract(data.Name, out PUMPSaveDataStructure newStructure))
+                            {
+                                Capture.DeleteCaptureFile(beforeImagePath);
+                                data.Paste(newStructure);
+                                data.NotifyDataChanged();
+                                elem.Refresh();
+                                return;
+                            }
+                            Debug.LogError("Extract error");
                         });
                     }
                 ),
@@ -181,7 +199,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                     text: "Rename",
                     clickAction: () =>
                     {
-                        textGetter.Set("New name", data.Name, newName =>
+                        TextGetterManager.Set(RootCanvas, newName =>
                         {
                             if (data.Name != newName)
                             {
@@ -189,7 +207,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                                 data.NotifyDataChanged();
                                 elem.Refresh();
                             }
-                        });
+                        },
+                        "New name",
+                        data.Name);
                     }
                 )
             };

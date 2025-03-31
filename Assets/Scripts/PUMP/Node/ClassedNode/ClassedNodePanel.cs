@@ -10,7 +10,6 @@ public class ClassedNodePanel : MonoBehaviour
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
     [SerializeField] private CanvasGroup canvasGroup;
-    [SerializeField] private TextGetter textGetter;
     [SerializeField] private string defaultSaveName = string.Empty;
 
     [Space, Header("ExternalCountSlider")]
@@ -97,7 +96,7 @@ public class ClassedNodePanel : MonoBehaviour
 
     public void OpenSaveOption()
     {
-        textGetter.Set("Save Name", defaultSaveName, DataManager.Push);
+        TextGetterManager.Set(RootCanvas, DataManager.Push, "Save Name", defaultSaveName);
     }
 
     public IClassedNodeDataManager DataManager
@@ -126,7 +125,17 @@ public class ClassedNodePanel : MonoBehaviour
     #region Privates
     private PUMPBackground _baseBackground;
     private IClassedNodeDataManager _dataManager;
+    private Canvas _rootCanvas;
     private bool _initialized = false;
+
+    private Canvas RootCanvas
+    {
+        get
+        {
+            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
+            return _rootCanvas;
+        }
+    }
 
     private void SetActive(bool active)
     {

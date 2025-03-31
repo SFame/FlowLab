@@ -6,7 +6,7 @@ using System.Linq;
 /// <summary>
 /// MonoBehaviour Component
 /// </summary>
-public class PUMP_InputManager : MonoBehaviour
+public class PUMPInputManager : MonoBehaviour
 {
     [SerializeField] private List<BackgroundActionKeyMap> m_KeyMap;
     [SerializeField] private bool m_Enable = true;

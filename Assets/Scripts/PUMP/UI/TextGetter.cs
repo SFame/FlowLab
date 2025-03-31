@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -19,7 +18,21 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     private Action<string> _callback;
     private bool _initialized = false;
     private CancellationTokenSource _cts;
+    private RectTransform _rect;
     #endregion
+
+    public bool IsObjectNull => gameObject == null;
+
+    public RectTransform Rect
+    {
+        get
+        {
+            _rect ??= GetComponent<RectTransform>();
+            return _rect;
+        }
+    }
+
+    public event Action OnExit;
 
     public void Set(string titleString, string inputString, Action<string> callback)
     {
@@ -49,6 +62,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     {
         Terminate();
         gameObject.SetActive(false);
+        OnExit?.Invoke();
     }
 
     private void Initialize()

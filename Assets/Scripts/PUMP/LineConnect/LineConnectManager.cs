@@ -3,19 +3,11 @@ using UnityEngine;
 
 public class LineConnectManager : MonoBehaviour
 {
-    #region Privates
-    private PUMPBackground Background
-    {
-        get
-        {
-            if (_background is null)
-                _background = GetComponentInParent<PUMPBackground>();
-            
-            return _background;
-        }
-    }
-    private PUMPBackground _background;
+    #region On Inspector
+    [SerializeField] private PUMPBackground m_Background;
+    #endregion
 
+    #region Privates
     private Action _lineRefreshAction;
     #endregion
     
@@ -26,7 +18,7 @@ public class LineConnectManager : MonoBehaviour
         lineGo.transform.SetParent(transform);
         
         LineConnector lc = lineGo.AddComponent<LineConnector>();
-        lc.OnDragEnd += ((IChangeObserver)Background).ReportChanges;
+        lc.OnDragEnd += ((IChangeObserver)m_Background).ReportChanges;
         _lineRefreshAction += lc.RefreshPoints;
         lc.OnRemove += () => _lineRefreshAction -= lc.RefreshPoints;
         return lc;

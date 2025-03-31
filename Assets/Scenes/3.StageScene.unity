@@ -351,9 +351,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5121238550817370744, guid: d6d38c9a30a0cfa49b1bd2f3213b83be, type: 3}
-      propertyPath: m_lineSpacing
-      value: 0
+    - target: {fileID: 4521260940340345266, guid: d6d38c9a30a0cfa49b1bd2f3213b83be, type: 3}
+      propertyPath: textGetter
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8029187724350137900, guid: d6d38c9a30a0cfa49b1bd2f3213b83be, type: 3}
       propertyPath: m_Name

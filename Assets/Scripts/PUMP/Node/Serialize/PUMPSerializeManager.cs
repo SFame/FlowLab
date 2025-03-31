@@ -155,6 +155,14 @@ public class PUMPSaveDataStructure
         UpdateNotification -= action;
     }
 
+    public void Paste(PUMPSaveDataStructure structure)
+    {
+        NodeInfos = structure.NodeInfos;
+        Name = structure.Name;
+        ImagePath = structure.ImagePath;
+        Tag = structure.Tag;
+    }
+
     public void Delete() => DeleteRequest?.Invoke(this);
     public void NotifyDataChanged() => UpdateNotification?.Invoke(this);
 }

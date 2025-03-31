@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 
 namespace Utils
 {
-    public static class Other
+    public static class Other // 짬통
     {
         public static T GetComponentInSibling<T>(this Component component, bool includeInactive = true) where T : Component
         {
@@ -42,6 +42,13 @@ namespace Utils
         {
             await UniTask.Yield(timing);
             action?.Invoke();
+        }
+
+        public static string AsString(this object obj)
+        {
+            return obj is string str
+                ? str
+                : throw new InvalidCastException("Object cannot be converted to string");
         }
     }
 
@@ -750,6 +757,80 @@ namespace Utils
         public static RectTransform GetRootCanvasRect(this RectTransform rectTransform)
         {
              return rectTransform.GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
+        }
+
+        public static void SetAnchor(this RectTransform rect, Vector2 min, Vector2 max)
+        {
+            rect.anchorMin = min;
+            rect.anchorMax = max;
+        }
+
+        public static void SetEdges(this RectTransform rect, float left, float right, float top, float bottom)
+        {
+            rect.offsetMin = new Vector2(left, bottom);
+            rect.offsetMax = new Vector2(-right, -top);
+        }
+    }
+
+    public static class TextGetterManager
+    {
+        private static GameObject _textGetterPrefab;
+        private static TextGetter _currentTextGetter;
+        private static bool _isShow = false;
+
+        private static string PREFAB_PATH = "TextGetter/TextGetter";
+
+        private static GameObject TextGetterPrefab
+        {
+            get
+            {
+                _textGetterPrefab ??= Resources.Load<GameObject>(PREFAB_PATH);
+                return _textGetterPrefab;
+            }
+        }
+
+        private static TextGetter CurrentTextGetter
+        {
+            get
+            {
+                if (CurrentIsNull)
+                {
+                    _currentTextGetter = Object.Instantiate(TextGetterPrefab).GetComponent<TextGetter>();
+                    _currentTextGetter.OnExit += () =>
+                    {
+                        _isShow = false;
+                        _currentTextGetter.Rect.SetParent(null);
+                    };
+                }
+                
+                _currentTextGetter.gameObject.SetActive(false);
+                return _currentTextGetter;
+            }
+        }
+
+        private static bool CurrentIsNull => _currentTextGetter == null || _currentTextGetter.IsObjectNull;
+
+        private static void SetRect(RectTransform rect, Canvas rootCanvas)
+        {
+            rect.SetParent(rootCanvas.transform);
+            rect.SetAnchor(Vector2.zero, Vector2.one);
+            rect.SetEdges(0f, 0f, 0f, 0f);
+        }
+
+        public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "")
+        {
+            if (_isShow && CurrentIsNull)
+                _isShow = false;
+
+            if (_isShow)
+            {
+                Debug.LogWarning("TextGetter is already open.");
+                return;
+            }
+
+            SetRect(CurrentTextGetter.Rect, rootCanvas);
+            CurrentTextGetter.Set(titleString, inputString, callback);
+            _isShow = true;
         }
     }
 }
