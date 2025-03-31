@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(UILineRenderer))]
 [RequireComponent(typeof(RectTransform))]
 public class LineConnector : MonoBehaviour
 {
@@ -79,7 +80,7 @@ public class LineConnector : MonoBehaviour
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
-    private List<LineArg> LineArgs { get; set; } = new();
+    [SerializeField]private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
     private LineArg[] SidePoints { get; set; } = new LineArg[2];
 
@@ -402,6 +403,7 @@ public class LineConnector : MonoBehaviour
         #endregion
     }
 
+    [Serializable]
     public class LineArg
     {
         public ImageLine Line { get; private set; }
