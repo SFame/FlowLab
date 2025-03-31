@@ -7,15 +7,18 @@ using UnityEngine.UI;
 
 public class PuzzleBackground : MonoBehaviour
 {
-    [SerializeField] private PUMPBackground pumpBackground;
-    [SerializeField] private PuzzleDataPanel puzzleDataPanel;
+    public PUMPBackground pumpBackground;
 
     [SerializeField] private Button testButton;
+    [SerializeField] private Button exitButton;
 
     [SerializeField] private float testCaseDelay = 0.2f;
 
-    //[SerializeField] private PuzzleData currentPuzzleData;
+    public PUMPSaveDataStructure currentData;
+    public PuzzleData currentPuzzleData;
     private bool isValidating = false;
+
+    private GameObject puzzleCanvas;
 
     // 테스트 결과 이벤트
     public event Action<bool> OnValidationComplete;
@@ -27,6 +30,17 @@ public class PuzzleBackground : MonoBehaviour
         {
             testButton.onClick.AddListener(() => ValidateAllTestCases().Forget());
         }
+        // Exit 버튼 이벤트 연결
+        if (exitButton != null)
+        {
+            exitButton.onClick.AddListener(CloseCanvas);
+        }
+    }
+
+    public void SetPuzzleData(PuzzleData puzzleData)
+    {
+        currentPuzzleData = puzzleData;
+        Debug.Log($"Loaded PuzzleData with {currentPuzzleData.testCases?.Count ?? 0} test cases");
     }
 
     // PUMPSaveDataStructure에서 PuzzleData 설정
@@ -46,7 +60,7 @@ public class PuzzleBackground : MonoBehaviour
     // 모든 테스트케이스 검증
     public async UniTaskVoid ValidateAllTestCases()
     {
-        if (isValidating || puzzleDataPanel.currentPuzzleData.testCases == null || puzzleDataPanel.currentPuzzleData.testCases.Count == 0)
+        if (isValidating || currentPuzzleData.testCases == null || currentPuzzleData.testCases.Count == 0)
         {
             Debug.LogWarning("No test cases to validate or validation already in progress.");
             return;
@@ -55,15 +69,13 @@ public class PuzzleBackground : MonoBehaviour
         isValidating = true;
         bool allTestsPassed = true;
 
-        // UI 업데이트 등 필요한 초기화 작업
         Debug.Log("Starting validation of all test cases...");
 
-        for (int i = 0; i < puzzleDataPanel.currentPuzzleData.testCases.Count; i++)
+        for (int i = 0; i < currentPuzzleData.testCases.Count; i++)
         {
-            TestCase testCase = puzzleDataPanel.currentPuzzleData.testCases[i];
+            TestCase testCase = currentPuzzleData.testCases[i];
             bool testPassed = await ValidateTestCase(testCase, i);
 
-            // 각 테스트케이스 결과 알림
             OnTestCaseComplete?.Invoke(i, testPassed);
 
             if (!testPassed)
@@ -71,11 +83,9 @@ public class PuzzleBackground : MonoBehaviour
                 allTestsPassed = false;
             }
 
-            // 테스트 사이에 딜레이 추가
             await UniTask.Delay(TimeSpan.FromSeconds(testCaseDelay));
         }
 
-        // 모든 테스트 결과 알림
         OnValidationComplete?.Invoke(allTestsPassed);
         Debug.Log($"All test cases validation completed. Result: {(allTestsPassed ? "PASSED" : "FAILED")}");
 
@@ -124,5 +134,19 @@ public class PuzzleBackground : MonoBehaviour
 
         Debug.Log($"Test case {index} validation result: {(testPassed ? "PASSED" : "FAILED")}");
         return testPassed;
+    }
+
+    public void CloseCanvas()
+    {
+        if (puzzleCanvas != null)
+        {
+            Destroy(puzzleCanvas);
+            Debug.Log("Puzzle canvas closed");
+        } 
+    }
+    // 퍼즐 캔버스 설정(퍼즐 상호작용부분에서)
+    public void SetPuzzleCanvas(GameObject canvas)
+    {
+        puzzleCanvas = canvas;
     }
 }

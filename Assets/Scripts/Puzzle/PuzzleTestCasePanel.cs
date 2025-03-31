@@ -8,7 +8,6 @@ public class PuzzleTestCasePanel : MonoBehaviour
     [SerializeField] private Transform testCaseSection;
     [SerializeField] private GameObject puzzleTestCaseItemPrefab;
     [SerializeField] private PuzzleBackground puzzleBackground;
-    [SerializeField] private PuzzleDataPanel puzzleDataPanel;
 
     private List<GameObject> testCaseItems = new List<GameObject>();
 
@@ -17,8 +16,6 @@ public class PuzzleTestCasePanel : MonoBehaviour
         if (puzzleBackground != null)
             puzzleBackground.OnTestCaseComplete += HandleTestCaseResult;
 
-        if (puzzleDataPanel != null)
-            puzzleDataPanel.OnPuzzleDataChanged += SetupTestCases;
     }
 
     private void OnDisable()
@@ -26,8 +23,6 @@ public class PuzzleTestCasePanel : MonoBehaviour
         if (puzzleBackground != null)
             puzzleBackground.OnTestCaseComplete -= HandleTestCaseResult;
 
-        if (puzzleDataPanel != null)
-            puzzleDataPanel.OnPuzzleDataChanged -= SetupTestCases;
     }
 
     public void SetupTestCases(PuzzleData puzzleData)
