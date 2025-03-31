@@ -14,6 +14,7 @@ public class TestCaseController : MonoBehaviour
     [SerializeField] private GameObject togglePrefab;
 
     private PuzzleDataPanel puzzlePanel;
+    private PuzzleBackground puzzleBackground;
 
     private List<Toggle> inputToggles = new List<Toggle>();
     private List<Toggle> outputToggles = new List<Toggle>();
