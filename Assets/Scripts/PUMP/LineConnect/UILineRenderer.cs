@@ -8,21 +8,22 @@ public class UILineRenderer : Graphic
 {
     [SerializeField] private List<Vector2> _anchorPoints;
     [SerializeField] private List<Vector2> _points;
-    [SerializeField] private float _curveSize;
-    [SerializeField] private float _resolution;
-    [SerializeField] private float _widthSize;
+    [SerializeField] private float _curveSize = 10f;
+    [SerializeField] private float _resolution = 10f;
+    [SerializeField] private float _widthSize = 10f;
     [SerializeField] private Color _color;
     public List<Vector2> AnchorPoints => _anchorPoints;
 
     public void Init()
     {
-        _anchorPoints ??= GetComponent<LineConnector>().GetVertices();
-        _points ??= new List<Vector2>();
+        _anchorPoints = GetComponent<LineConnector>().GetVertices();
+        _points = new List<Vector2>();
     }
     protected override void OnPopulateMesh(VertexHelper vh)
     {
         base.OnPopulateMesh(vh);
 
+        Debug.Log("called OnPopulateMesh");
         vh.Clear();
 
         //Draw Vertices
@@ -89,18 +90,16 @@ public class UILineRenderer : Graphic
             vertex.position = _points[i] - _widthSize * 0.5f * left;
             vh.AddVert(vertex);
         }
-        //tris[triIndex] = vertIndex;
-        //tris[triIndex + 1] = vertIndex + 2;
-        //tris[triIndex + 2] = vertIndex + 1;
-
-        //tris[triIndex + 3] = vertIndex + 1;
-        //tris[triIndex + 4] = vertIndex + 2;
-        //tris[triIndex + 5] = vertIndex + 3;
         for (int i = 0; i < _points.Count - 1; i++)
         {
             int index = i * 2;
             vh.AddTriangle(index + 0, index + 2, index + 1);
             vh.AddTriangle(index + 1, index + 2, index + 3);
         }
+    }
+    public void test()
+    {
+        SetAllDirty();
+        Debug.Log("called SetAllDirty");
     }
 }
