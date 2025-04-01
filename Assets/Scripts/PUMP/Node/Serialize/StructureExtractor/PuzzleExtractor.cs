@@ -9,8 +9,7 @@ public class PuzzleExtractor : SaveLoadStructureExtractor
 
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
-        background.SetSerializeNodeInfos(structure.NodeInfos);
-        ((IChangeObserver)background).ReportChanges();
+        background.SetSerializeNodeInfos(structure.NodeInfos, true);
 
         if (structure.Tag is PuzzleData puzzleData)
         {
@@ -39,7 +38,7 @@ public class PuzzleExtractor : SaveLoadStructureExtractor
 
     private void ResetAndCreateTestCaseUI(List<TestCase> testCases)
     {
-        // PuzzleDataPanel¿¡ ±¸ÇöµÈ ¸Ş¼­µå »ç¿ë
+        // PuzzleDataPanelì— êµ¬í˜„ëœ ë©”ì„œë“œ ì‚¬ìš©
         puzzleDataPanel.LoadFromTestCases(testCases);
     }
 }

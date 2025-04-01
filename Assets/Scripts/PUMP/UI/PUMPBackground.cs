@@ -12,18 +12,22 @@ using Debug = UnityEngine.Debug;
 [RequireComponent(typeof(GraphicRaycaster))]
 public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable
 {
+    #region On Inspector
     [SerializeField] private RectTransform nodeParent;
-    [SerializeField] public bool initializeOnAwake = true;
+    [field: SerializeField] public bool InitializeOnStart { get; set; } = true;
+    [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
+    #endregion
 
     #region Static
     /// <summary>
-    /// 현재 열려있는 PUMPBackground
+    /// 현재 PUMPBackground
     /// </summary>
     public static PUMPBackground Current { get; private set; }
     #endregion
 
     #region Privates
     private bool _initialized = false;
+    private HashSet<object> _isOnChangeBlocker = new();
     private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
     private Canvas _rootCanvas;
@@ -37,10 +41,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     {
         get
         {
-            _rootCanvas ??= GetComponentInParent<Canvas>()?.rootCanvas;
+            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
             return _rootCanvas;
         }
     }
+
+    private bool IsOnChangeBlocked => _isOnChangeBlocker.Any();
 
     private void Initialize(int inputCount = -1, int outputCount = -1)
     {
@@ -56,7 +62,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         OnChanged += RecordHistory;
 
         SetGateway();
-        RecordHistory();
+
+        if (RecordOnInitialize)
+            RecordHistory();
+
+        _initialized = true;
     }
 
     private void SubscribeNodeAction(Node node)
@@ -125,39 +135,63 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     /// </summary>
     private void SetGateway()
     {
-        int newInputCount = -1;
-        int newOutputCount = -1;
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
 
-        // 중복 생성 방지
-        List<Node> inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
-        if (inputNodes.Count > 1)
+        try
         {
-            foreach (Node duplicateInput in inputNodes.Skip(1))
+            int newInputCount = -1;
+            int newOutputCount = -1;
+
+            // 중복 생성 방지
+            List<Node> inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
+            if (inputNodes.Count > 1)
             {
-                if (duplicateInput)
-                    duplicateInput.Destroy();
+                foreach (Node duplicateInput in inputNodes.Skip(1))
+                {
+                    if (duplicateInput)
+                        duplicateInput.Destroy();
+                }
+
+                newInputCount = ((IExternalInput)inputNodes[0]).GateCount;
             }
 
-            newInputCount = ((IExternalInput)inputNodes[0]).GateCount;
-        }
-        
-        List<Node> outputNodes = Nodes.Where(node => node is IExternalOutput).ToList();
-        if (outputNodes.Count > 1)
-        {
-            foreach (Node duplicateOutput in outputNodes.Skip(1))
+            List<Node> outputNodes = Nodes.Where(node => node is IExternalOutput).ToList();
+            if (outputNodes.Count > 1)
             {
-                if (duplicateOutput)
-                    duplicateOutput.Destroy();
+                foreach (Node duplicateOutput in outputNodes.Skip(1))
+                {
+                    if (duplicateOutput)
+                        duplicateOutput.Destroy();
+                }
+
+                newOutputCount = ((IExternalOutput)outputNodes[0]).GateCount;
             }
 
-            newOutputCount = ((IExternalOutput)outputNodes[0]).GateCount;
-        }
-
-        if (Nodes.FirstOrDefault(node => node is IExternalInput) is IExternalInput externalInput)
-        {
-            if (externalInput.ObjectIsNull && externalInput is Node node)
+            if (Nodes.FirstOrDefault(node => node is IExternalInput) is IExternalInput externalInput)
             {
-                Nodes.Remove(node);
+                if (externalInput.ObjectIsNull && externalInput is Node node)
+                {
+                    Nodes.Remove(node);
+                    Node newNode = AddNewNode(typeof(ExternalInput));
+
+                    if (newNode is IExternalInput newExternalInput)
+                    {
+                        _externalInputAdapter.UpdateReference(newExternalInput);
+                        newExternalInput.GateCount = _defaultExternalInputCount;
+
+                        newInputCount = newExternalInput.GateCount;
+                    }
+
+                    newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
+                }
+                else
+                {
+                    _externalInputAdapter.UpdateReference(externalInput);
+                }
+            }
+            else
+            {
                 Node newNode = AddNewNode(typeof(ExternalInput));
 
                 if (newNode is IExternalInput newExternalInput)
@@ -167,36 +201,36 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
                     newInputCount = newExternalInput.GateCount;
                 }
-                
+
                 newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
+            }
+
+            if (Nodes.FirstOrDefault(node => node is IExternalOutput) is IExternalOutput externalOutput)
+            {
+                if (externalOutput.ObjectIsNull && externalOutput is Node node)
+                {
+                    Nodes.Remove(node);
+                    Node newNode = AddNewNode(typeof(ExternalOutput));
+
+                    if (newNode is IExternalOutput newExternalOutput)
+                    {
+                        _externalOutputAdapter.UpdateReference(newExternalOutput);
+                        newExternalOutput.GateCount = _defaultExternalOutputCount;
+
+                        newOutputCount = newExternalOutput.GateCount;
+                    }
+
+                    newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
+                }
+                else
+                {
+                    _externalOutputAdapter.UpdateReference(externalOutput);
+                }
             }
             else
             {
-                _externalInputAdapter.UpdateReference(externalInput);
-            }
-        }
-        else
-        {
-            Node newNode = AddNewNode(typeof(ExternalInput));
-            
-            if (newNode is IExternalInput newExternalInput)
-            {
-                _externalInputAdapter.UpdateReference(newExternalInput);
-                newExternalInput.GateCount = _defaultExternalInputCount;
-
-                newInputCount = newExternalInput.GateCount;
-            }
-            
-            newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
-        }
-
-        if (Nodes.FirstOrDefault(node => node is IExternalOutput) is IExternalOutput externalOutput)
-        {
-            if (externalOutput.ObjectIsNull && externalOutput is Node node)
-            {
-                Nodes.Remove(node);
                 Node newNode = AddNewNode(typeof(ExternalOutput));
-                
+
                 if (newNode is IExternalOutput newExternalOutput)
                 {
                     _externalOutputAdapter.UpdateReference(newExternalOutput);
@@ -204,40 +238,26 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
                     newOutputCount = newExternalOutput.GateCount;
                 }
-                
+
                 newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
             }
-            else
-            {
-                _externalOutputAdapter.UpdateReference(externalOutput);
-            }
+
+            if (newInputCount != -1)
+                _externalInputAdapter.InvokeOnCountUpdate(newInputCount);
+
+            if (newOutputCount != -1)
+                _externalOutputAdapter.InvokeOnCountUpdate(newOutputCount);
         }
-        else
+        finally
         {
-            Node newNode = AddNewNode(typeof(ExternalOutput));
-            
-            if (newNode is IExternalOutput newExternalOutput)
-            {
-                _externalOutputAdapter.UpdateReference(newExternalOutput);
-                newExternalOutput.GateCount = _defaultExternalOutputCount;
-
-                newOutputCount = newExternalOutput.GateCount;
-            }
-            
-            newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
+            _isOnChangeBlocker.Remove(blocker);
         }
-
-        if (newInputCount != -1)
-            _externalInputAdapter.InvokeOnCountUpdate(newInputCount);
-
-        if (newOutputCount != -1)
-            _externalOutputAdapter.InvokeOnCountUpdate(newOutputCount);
     }
 
     private void ClearNodes()
     {
         ClearDraggables();
-        
+
         foreach (Node node in Nodes.ToList())
             node?.Destroy();
         
@@ -250,6 +270,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     /// </summary>
     void IChangeObserver.ReportChanges()
     {
+        if (IsOnChangeBlocked)
+            return;
+
         if (_changeInvokeTask.Status == UniTaskStatus.Succeeded)
             _changeInvokeTask = ReportChangesEndFrameAsync();
     }
@@ -260,9 +283,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         OnChanged?.Invoke();
     }
 
-    private void Awake()
+    private void Start()
     {
-        if (initializeOnAwake)
+        if (InitializeOnStart)
             Open();
         else
             gameObject.SetActive(false);
@@ -369,112 +392,141 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     public List<SerializeNodeInfo> GetSerializeNodeInfos()
     {
-        SetGateway();  //ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
-        List<SerializeNodeInfo> result = new();
-        foreach (Node node in Nodes)
-        {
-            SerializeNodeInfo nodeInfo = new()
-            {
-                NodeType = node.GetType(), // 노드 타입
-                NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
-                NodeSerializableArgs = node is INodeModifiableArgs args ? args.ModifiableObject : null // 직렬화 추가정보
-            };
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
 
-            // 연결정보
-            TPConnectionInfo connectionInfo = node.GetTPConnectionInfo();
-            
-            nodeInfo.InConnectionTargets = new TPConnectionIndexInfo[connectionInfo.InConnectionTargets.Length];
-            TargetsListUpdate(connectionInfo.InConnectionTargets, nodeInfo.InConnectionTargets, connectionInfo.InVertices);
-            
-            nodeInfo.OutConnectionTargets = new TPConnectionIndexInfo[connectionInfo.OutConnectionTargets.Length];
-            TargetsListUpdate(connectionInfo.OutConnectionTargets, nodeInfo.OutConnectionTargets, connectionInfo.OutVertices);
-            
-            result.Add(nodeInfo);
+        try
+        {
+            SetGateway();  //ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
+            List<SerializeNodeInfo> result = new();
+            foreach (Node node in Nodes)
+            {
+                SerializeNodeInfo nodeInfo = new()
+                {
+                    NodeType = node.GetType(), // 노드 타입
+                    NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
+                    NodeSerializableArgs = node is INodeModifiableArgs args ? args.ModifiableObject : null // 직렬화 추가정보
+                };
+
+                // 연결정보
+                TPConnectionInfo connectionInfo = node.GetTPConnectionInfo();
+
+                nodeInfo.InConnectionTargets = new TPConnectionIndexInfo[connectionInfo.InConnectionTargets.Length];
+                TargetsListUpdate(connectionInfo.InConnectionTargets, nodeInfo.InConnectionTargets, connectionInfo.InVertices);
+
+                nodeInfo.OutConnectionTargets = new TPConnectionIndexInfo[connectionInfo.OutConnectionTargets.Length];
+                TargetsListUpdate(connectionInfo.OutConnectionTargets, nodeInfo.OutConnectionTargets, connectionInfo.OutVertices);
+
+                result.Add(nodeInfo);
+            }
+
+            return result;
         }
-        return result;
+        catch (Exception e)
+        {
+            Debug.LogError($"GetSerializeNodeInfos failed: {e.Message}");
+            return null;
+        }
+        finally
+        {
+            _isOnChangeBlocker.Remove(blocker);
+        }
     }
 
-    public void SetSerializeNodeInfos(List<SerializeNodeInfo> infos)
+    public void SetSerializeNodeInfos(List<SerializeNodeInfo> infos, bool invokeOnChange = true)
     {
-        ClearNodes();
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
 
-        // 연결정보 제외 로드
-        foreach (SerializeNodeInfo info in infos)
+        try
         {
-            Node newNode = AddNewNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
-            if (newNode is null)
-                continue;
-            
-            newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
-        }
-
-        if (Nodes.Count != infos.Count)
-        {
-            Debug.LogError($"Nodes <-> infos count mismatch");
-            return;
-        }
-
-        // 연결정보 로드
-        for (int i = 0; i < Nodes.Count; i++)
-        {
-            if (Nodes[i] == null)
-                continue;
-            
-            TPConnectionIndexInfo[] inConnectionTargetInfos = infos[i].InConnectionTargets;  // i번째 노드 커넥션 index 정보들
-            TPConnectionIndexInfo[] outConnectionTargetInfos = infos[i].OutConnectionTargets;
-
-            int inCount = inConnectionTargetInfos.Length;
-            int outCount = outConnectionTargetInfos.Length;
-            
-            ITransitionPoint[] inConnectionTargets = new ITransitionPoint[inCount];
-            List<Vector2>[] inVertices = new List<Vector2>[inCount];
-            ITransitionPoint[] outConnectionTargets = new ITransitionPoint[outCount];
-            List<Vector2>[] outVertices = new List<Vector2>[outCount];
-
-            for (int j = 0; j < inCount; j++)
+            ClearNodes();
+            // 연결정보 제외 로드
+            foreach (SerializeNodeInfo info in infos)
             {
-                if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex || inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
-                    continue;
-                
-                Node targetNode = Nodes[inConnectionTargetInfos[j].NodeIndex];
-                ITransitionPoint[] targetOutTps = targetNode.GetTPs().outTps;
-                int targetTpIndex = inConnectionTargetInfos[j].TpIndex;
-                
-                if (targetTpIndex <= -1 || targetOutTps.Length <= targetTpIndex)
+                Node newNode = AddNewNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
+                if (newNode is null)
                     continue;
 
-                ITransitionPoint targetInTp = targetOutTps[targetTpIndex];
-                if (targetInTp == null)
-                    continue;
-
-                inConnectionTargets[j] = targetInTp;
-                inVertices[j] = ConvertLocalToWorldPositions(inConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
+                newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
             }
 
-            for (int j = 0; j < outCount; j++)
+            if (Nodes.Count != infos.Count)
             {
-                if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex || outConnectionTargetInfos[j].NodeIndex <= -1)
-                    continue;
-                
-                Node targetNode = Nodes[outConnectionTargetInfos[j].NodeIndex];
-                ITransitionPoint[] targetInTps = targetNode.GetTPs().inTps;
-                int targetTpIndex = outConnectionTargetInfos[j].TpIndex;
-                
-                if (targetTpIndex <= -1 || targetInTps.Length <= targetTpIndex)
-                    continue;
-                
-                ITransitionPoint targetOutTp = targetInTps[targetTpIndex];
-                if (targetOutTp == null)
-                    continue;
-                
-                outConnectionTargets[j] = targetOutTp;
-                outVertices[j] = ConvertLocalToWorldPositions(outConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
+                Debug.LogError($"Nodes <-> infos count mismatch");
+                return;
             }
 
-            TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
-            Nodes[i].SetTPConnectionInfo(connectionInfo);
+            // 연결정보 로드
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (Nodes[i] == null)
+                    continue;
+
+                TPConnectionIndexInfo[] inConnectionTargetInfos = infos[i].InConnectionTargets;  // i번째 노드 커넥션 index 정보들
+                TPConnectionIndexInfo[] outConnectionTargetInfos = infos[i].OutConnectionTargets;
+
+                int inCount = inConnectionTargetInfos.Length;
+                int outCount = outConnectionTargetInfos.Length;
+
+                ITransitionPoint[] inConnectionTargets = new ITransitionPoint[inCount];
+                List<Vector2>[] inVertices = new List<Vector2>[inCount];
+                ITransitionPoint[] outConnectionTargets = new ITransitionPoint[outCount];
+                List<Vector2>[] outVertices = new List<Vector2>[outCount];
+
+                for (int j = 0; j < inCount; j++)
+                {
+                    if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex || inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
+                        continue;
+
+                    Node targetNode = Nodes[inConnectionTargetInfos[j].NodeIndex];
+                    ITransitionPoint[] targetOutTps = targetNode.GetTPs().outTps;
+                    int targetTpIndex = inConnectionTargetInfos[j].TpIndex;
+
+                    if (targetTpIndex <= -1 || targetOutTps.Length <= targetTpIndex)
+                        continue;
+
+                    ITransitionPoint targetInTp = targetOutTps[targetTpIndex];
+                    if (targetInTp == null)
+                        continue;
+
+                    inConnectionTargets[j] = targetInTp;
+                    inVertices[j] = ConvertLocalToWorldPositions(inConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
+                }
+
+                for (int j = 0; j < outCount; j++)
+                {
+                    if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex || outConnectionTargetInfos[j].NodeIndex <= -1)
+                        continue;
+
+                    Node targetNode = Nodes[outConnectionTargetInfos[j].NodeIndex];
+                    ITransitionPoint[] targetInTps = targetNode.GetTPs().inTps;
+                    int targetTpIndex = outConnectionTargetInfos[j].TpIndex;
+
+                    if (targetTpIndex <= -1 || targetInTps.Length <= targetTpIndex)
+                        continue;
+
+                    ITransitionPoint targetOutTp = targetInTps[targetTpIndex];
+                    if (targetOutTp == null)
+                        continue;
+
+                    outConnectionTargets[j] = targetOutTp;
+                    outVertices[j] = ConvertLocalToWorldPositions(outConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
+                }
+
+                TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
+                Nodes[i].SetTPConnectionInfo(connectionInfo);
+            }
+
+            SetGateway();
+
+            if (invokeOnChange)
+                OnChanged?.Invoke();
         }
-        SetGateway();
+        finally
+        {
+            _isOnChangeBlocker.Remove(blocker);
+        }
     }
     #endregion
 
@@ -540,7 +592,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             ClearDraggables();
             _latestHistoryInfo = historyInfo;
-            SetSerializeNodeInfos(_latestHistoryInfo);
+            SetSerializeNodeInfos(_latestHistoryInfo, false);
         }
     }
 
@@ -550,7 +602,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             ClearDraggables();
             _latestHistoryInfo = historyInfo;
-            SetSerializeNodeInfos(_latestHistoryInfo);
+            SetSerializeNodeInfos(_latestHistoryInfo, false);
         }
     }
     #endregion

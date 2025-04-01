@@ -21,8 +21,6 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     private RectTransform _rect;
     #endregion
 
-    public bool IsObjectNull => gameObject == null;
-
     public RectTransform Rect
     {
         get

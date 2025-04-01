@@ -8,8 +8,7 @@ public class DefaultExtractor : SaveLoadStructureExtractor
 
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
-        background.SetSerializeNodeInfos(structure.NodeInfos);
-        ((IChangeObserver)background).ReportChanges();
+        background.SetSerializeNodeInfos(structure.NodeInfos, true);
     }
 
     public override string GetImagePath()

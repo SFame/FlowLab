@@ -10,7 +10,7 @@ public class ClassedNodePanel : MonoBehaviour
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
     [SerializeField] private CanvasGroup canvasGroup;
-    [SerializeField] private string defaultSaveName = string.Empty;
+    [SerializeField] public string defaultSaveName = string.Empty;
 
     [Space, Header("ExternalCountSlider")]
     [SerializeField] private Slider inputCountSlider;
@@ -94,9 +94,77 @@ public class ClassedNodePanel : MonoBehaviour
         SetActive(false);
     }
 
+    public void ClosePanelWithAskSave()
+    {
+        if (DataManager.GetCurrent().IsChanged)
+        {
+            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOption, () => CloseWithSave().Forget());
+            return;
+        }
+
+        ClosePanel();
+    }
+
     public void OpenSaveOption()
     {
         TextGetterManager.Set(RootCanvas, DataManager.Push, "Save Name", defaultSaveName);
+    }
+
+    public void SetSlider(PUMPBackground background)
+    {
+        TerminateSlider(background);
+
+        if (background == null)
+            return;
+
+        if (inputCountSlider != null)
+        {
+            inputCountSlider.value = background.ExternalInput.GateCount;
+            inputCountSlider.onValueChanged.AddListener(value =>
+            {
+                if (_isInputSliderValueChangingBySystem)
+                    return;
+
+                int intValue = Mathf.RoundToInt(value);
+                background.ExternalInput.GateCount = intValue;
+                ((IChangeObserver)background).ReportChanges();
+            });
+        }
+
+        if (outputCountSlider != null)
+        {
+            outputCountSlider.value = background.ExternalOutput.GateCount;
+            outputCountSlider.onValueChanged.AddListener(value =>
+            {
+                if (_isOutputSliderValueChangingBySystem)
+                    return;
+
+                int intValue = Mathf.RoundToInt(value);
+                background.ExternalOutput.GateCount = intValue;
+                ((IChangeObserver)background).ReportChanges();
+            });
+        }
+
+        background.ExternalInput.OnCountUpdate += SetInputSliderValue;
+        background.ExternalOutput.OnCountUpdate += SetOutputSliderValue;
+    }
+
+    public void TerminateSlider(PUMPBackground background)
+    {
+        if (inputCountSlider != null)
+        {
+            inputCountSlider.onValueChanged.RemoveAllListeners();
+            inputCountSlider.value = 0f;
+        }
+
+        if (outputCountSlider != null)
+        {
+            outputCountSlider.onValueChanged.RemoveAllListeners();
+            outputCountSlider.value = 0f;
+        }
+
+        background.ExternalInput.OnCountUpdate -= SetInputSliderValue;
+        background.ExternalOutput.OnCountUpdate -= SetOutputSliderValue;
     }
 
     public IClassedNodeDataManager DataManager
@@ -110,8 +178,10 @@ public class ClassedNodePanel : MonoBehaviour
                 _dataManager.BackgroundGetter = () =>
                 {
                     GameObject backgroundObject = Instantiate(BackgroundPrefab, pumpBackgroundParent);
+                    backgroundObject.name = "ClassedPairBackground";
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
-                    background.initializeOnAwake = false;
+                    background.InitializeOnStart = false;
+                    background.RecordOnInitialize = false;
                     background.Open();
                     Other.InvokeActionDelay(_baseBackground.Open).Forget();
                     return background;
@@ -127,6 +197,8 @@ public class ClassedNodePanel : MonoBehaviour
     private IClassedNodeDataManager _dataManager;
     private Canvas _rootCanvas;
     private bool _initialized = false;
+    private bool _isInputSliderValueChangingBySystem = false;
+    private bool _isOutputSliderValueChangingBySystem = false;
 
     private Canvas RootCanvas
     {
@@ -189,79 +261,27 @@ public class ClassedNodePanel : MonoBehaviour
         DataManager.DiscardCurrent();
     }
 
-    public void SetSlider(PUMPBackground background)
+    private async UniTask CloseWithSave()
     {
-        TerminateSlider(background);
+        if (!DataManager.HasCurrent())
+            ClosePanel();
 
-        if (background == null)
-            return;
-
-        if (inputCountSlider != null)
-        {
-            inputCountSlider.value = background.ExternalInput.GateCount;
-            inputCountSlider.onValueChanged.AddListener(value =>
-            {
-                int intValue = Mathf.RoundToInt(value);
-                background.ExternalInput.GateCount = intValue;
-                ((IChangeObserver)background).ReportChanges();
-            });
-        }
-
-        if (outputCountSlider != null)
-        {
-            outputCountSlider.value = background.ExternalOutput.GateCount;
-            outputCountSlider.onValueChanged.AddListener(value =>
-            {
-                int intValue = Mathf.RoundToInt(value);
-                background.ExternalOutput.GateCount = intValue;
-                ((IChangeObserver)background).ReportChanges();
-            });
-        }
-
-        background.ExternalInput.OnCountUpdate += SetInputSliderValue;
-        background.ExternalOutput.OnCountUpdate += SetOutputSliderValue;
-    }
-
-    public void TerminateSlider(PUMPBackground background)
-    {
-        if (inputCountSlider != null)
-        {
-            inputCountSlider.onValueChanged.RemoveAllListeners();
-            inputCountSlider.value = 0f;
-        }
-
-        if (outputCountSlider != null)
-        {
-            outputCountSlider.onValueChanged.RemoveAllListeners();
-            outputCountSlider.value = 0f;
-        }
-
-        background.ExternalInput.OnCountUpdate -= SetInputSliderValue;
-        background.ExternalOutput.OnCountUpdate -= SetOutputSliderValue;
+        await DataManager.ApplyCurrentById(DataManager.GetCurrent().ClassedNode.Id);
+        ClosePanel();
     }
 
     private void SetInputSliderValue(int value)
     {
+        _isInputSliderValueChangingBySystem = true;
         inputCountSlider.value = value;
+        _isInputSliderValueChangingBySystem = false;
     }
 
     private void SetOutputSliderValue(int value)
     {
+        _isOutputSliderValueChangingBySystem = true;
         outputCountSlider.value = value;
+        _isOutputSliderValueChangingBySystem= false;
     }
     #endregion
-}
-
-public interface IClassedNodeDataManager
-{
-    public Func<PUMPBackground> BackgroundGetter { get; set; }
-    public PUMPBackground BaseBackground { get; set; }
-    public bool HasCurrent();
-    public void SetCurrent(IClassedNode classedNode);
-    public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent();
-    public void OverrideToCurrent(PUMPSaveDataStructure structure);
-    public void DestroyClassed(IClassedNode classedNode);
-    public void DiscardCurrent();
-    public UniTask AddNew(IClassedNode classedNode);
-    public void Push(string name);
 }

@@ -509,7 +509,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 6284344543897938188}
         m_TargetAssemblyTypeName: ClassedNodePanel, Assembly-CSharp
-        m_MethodName: ClosePanel
+        m_MethodName: ClosePanelWithAskSave
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -682,7 +682,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pumpBackgroundParent: {fileID: 1612395454863577558}
   canvasGroup: {fileID: 2939373656973612671}
-  textGetter: {fileID: 0}
   defaultSaveName: My Module
   inputCountSlider: {fileID: 1648502480572110487}
   outputCountSlider: {fileID: 6362979924943488550}
@@ -3215,7 +3214,6 @@ MonoBehaviour:
   saveButton: {fileID: 169211293717271540}
   savePath: classed_node_data.bin
   extractor: {fileID: 7963384774495180011}
-  textGetter: {fileID: 0}
   defaultSaveName: My Module
 --- !u!114 &3004900261550282087
 MonoBehaviour:

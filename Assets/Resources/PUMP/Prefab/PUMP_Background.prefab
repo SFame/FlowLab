@@ -94,7 +94,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeParent: {fileID: 9199168667862927995}
-  initializeOnAwake: 1
+  <InitializeOnStart>k__BackingField: 1
+  <RecordOnInitialize>k__BackingField: 1
 --- !u!114 &6736030158677057566
 MonoBehaviour:
   m_ObjectHideFlags: 0

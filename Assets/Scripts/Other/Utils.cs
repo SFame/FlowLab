@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using OdinSerializer;
+using Unity.VisualScripting;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -38,7 +39,7 @@ namespace Utils
             return null;
         }
 
-        public static async UniTask InvokeActionDelay(Action action , PlayerLoopTiming timing = PlayerLoopTiming.LastPostLateUpdate)
+        public static async UniTask InvokeActionDelay(Action action , PlayerLoopTiming timing = PlayerLoopTiming.Update)
         {
             await UniTask.Yield(timing);
             action?.Invoke();
@@ -49,6 +50,19 @@ namespace Utils
             return obj is string str
                 ? str
                 : throw new InvalidCastException("Object cannot be converted to string");
+        }
+
+        public static IEnumerable<T> WhereForeach<T>(this IEnumerable<T> enumerable, Predicate<T> predicate, Action<T> action)
+        {
+            foreach (var item in enumerable)
+            {
+                if (predicate(item))
+                {
+                    action(item);
+                }
+            }
+
+            return enumerable;
         }
     }
 
@@ -774,11 +788,12 @@ namespace Utils
 
     public static class TextGetterManager
     {
+        #region Privates
         private static GameObject _textGetterPrefab;
         private static TextGetter _currentTextGetter;
         private static bool _isShow = false;
 
-        private static string PREFAB_PATH = "TextGetter/TextGetter";
+        private static string PREFAB_PATH = "StaticUI/TextGetter";
 
         private static GameObject TextGetterPrefab
         {
@@ -808,7 +823,7 @@ namespace Utils
             }
         }
 
-        private static bool CurrentIsNull => _currentTextGetter == null || _currentTextGetter.IsObjectNull;
+        private static bool CurrentIsNull => _currentTextGetter.IsUnityNull();
 
         private static void SetRect(RectTransform rect, Canvas rootCanvas)
         {
@@ -816,6 +831,7 @@ namespace Utils
             rect.SetAnchor(Vector2.zero, Vector2.one);
             rect.SetEdges(0f, 0f, 0f, 0f);
         }
+        #endregion
 
         public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "")
         {
@@ -831,6 +847,83 @@ namespace Utils
             SetRect(CurrentTextGetter.Rect, rootCanvas);
             CurrentTextGetter.Set(titleString, inputString, callback);
             _isShow = true;
+        }
+    }
+
+    public static class MessageBoxManager
+    {
+        #region Privates
+        private static GameObject _messageBoxPrefab;
+        private static MessageBox _currentMessageBox;
+        private static bool _isShow = false;
+        private static string PREFAB_PATH = "StaticUI/MessageBox";
+
+        private static GameObject MessageBoxPrefab
+        {
+            get
+            {
+                _messageBoxPrefab ??= Resources.Load<GameObject>(PREFAB_PATH);
+                return _messageBoxPrefab;
+            }
+        }
+
+        private static MessageBox CurrentMessageBox
+        {
+            get
+            {
+                if (CurrentIsNull)
+                {
+                    _currentMessageBox = Object.Instantiate(MessageBoxPrefab).GetComponent<MessageBox>();
+                    _currentMessageBox.OnExit += () =>
+                    {
+                        _isShow = false;
+                        _currentMessageBox.transform.SetParent(null);
+                    };
+                }
+
+                _currentMessageBox.gameObject.SetActive(false);
+                return _currentMessageBox;
+            }
+        }
+
+        private static bool CurrentIsNull => _currentMessageBox.IsUnityNull();
+
+        private static void SetRect(RectTransform rect, Canvas rootCanvas)
+        {
+            rect.SetParent(rootCanvas.transform);
+            rect.SetAnchor(Vector2.zero, Vector2.one);
+            rect.SetEdges(0f, 0f, 0f, 0f);
+        }
+        #endregion
+
+        public static void Show(Canvas rootCanvas, string title, List<string> buttonTexts, List<Action> buttonActions)
+        {
+            if (_isShow && CurrentIsNull)
+                _isShow = false;
+
+            if (_isShow)
+            {
+                Debug.LogWarning("MessageBox is already open.");
+                return;
+            }
+
+            SetRect(CurrentMessageBox.transform as RectTransform, rootCanvas);
+            CurrentMessageBox.Set(title, buttonTexts, buttonActions);
+            _isShow = true;
+        }
+
+        public static void ShowOk(Canvas rootCanvas, string title, Action onOk = null)
+        {
+            List<string> buttonTexts = new List<string> { "OK" };
+            List<Action> buttonActions = new List<Action> { onOk };
+            Show(rootCanvas, title, buttonTexts, buttonActions);
+        }
+
+        public static void ShowYesNo(Canvas rootCanvas, string title, Action onYes = null, Action onNo = null)
+        {
+            List<string> buttonTexts = new List<string> { "Yes", "No" };
+            List<Action> buttonActions = new List<Action> { onYes, onNo };
+            Show(rootCanvas, title, buttonTexts, buttonActions);
         }
     }
 }

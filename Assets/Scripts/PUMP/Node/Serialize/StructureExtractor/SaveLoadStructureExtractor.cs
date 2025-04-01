@@ -8,7 +8,7 @@ public abstract class SaveLoadStructureExtractor : MonoBehaviour
     public abstract List<SerializeNodeInfo> GetNodeInfos();
     public abstract string GetImagePath();
     public abstract object GetTag();
-    public virtual bool ValidateBeforeSerialization(PUMPSaveDataStructure structure) => true;
+    public virtual bool ValidateBeforeSerialization(PUMPSaveDataStructure structure) => true; // 직렬화 하기 완성된 데이터 검증 가능
     #endregion
 
     #region When Apply

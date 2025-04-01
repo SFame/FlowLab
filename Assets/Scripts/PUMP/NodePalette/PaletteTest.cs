@@ -22,6 +22,5 @@ public class PaletteTest : NodePalette
     private void Awake()
     {
         SetContent();
-        OnNodeAdded += Debug.Log;
     }
 }

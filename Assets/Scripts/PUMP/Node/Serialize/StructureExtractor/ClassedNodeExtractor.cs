@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using Utils;
 
@@ -17,9 +18,16 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     // -- Extractor --
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
-        classedNodePanel.TerminateSlider(CurrentPair.GetCurrent().PairBackground);
+        if (!HasCurrent())
+        {
+            Debug.LogError($"{GetType().Name}: ApplyData() but has not Current");
+            return;
+        }
+
+        PUMPBackground pairBackground = CurrentPair.GetCurrent().PairBackground;
+        classedNodePanel.TerminateSlider(pairBackground);
         OverrideToCurrent(structure);
-        classedNodePanel.SetSlider(CurrentPair.GetCurrent().PairBackground);
+        classedNodePanel.SetSlider(pairBackground);
     }
 
     public override string GetImagePath()
@@ -29,7 +37,12 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
     public override List<SerializeNodeInfo> GetNodeInfos()
     {
-        return GetCurrent().PairBackground.GetSerializeNodeInfos();
+        if (HasCurrent())
+        {
+            return GetCurrent().PairBackground.GetSerializeNodeInfos();
+        }
+
+        return null;
     }
 
     public override object GetTag()
@@ -59,10 +72,12 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             return false;
         }
 
-        if (GetCurrent().ClassedNode is IClassedNode classedNode)
+        if (HasCurrent()) // PUMPSaveDataStructure가 Valid할 시, 현재 Classed에 적용 후 true return
         {
-            classedNode.Name = name;
-            classedNode.Id = id;
+            var current = GetCurrent();
+            current.ClassedNode.Name = name;
+            current.ClassedNode.Id = id;
+            current.ClearChangeFlag();
             return true;
         }
 
@@ -78,22 +93,25 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         PushAsync(name).Forget();
     }
 
-    public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent()
+    public CurrentClassedPairManagerToken GetCurrent()
     {
         return CurrentPair.GetCurrent();
     }
 
     public void SetCurrent(IClassedNode classedNode)
     {
-        if (ClassedDict.TryGetValue(classedNode, out PUMPBackground background))
+        if (ClassedDict.TryGetValue(classedNode, out PUMPBackground pairBackground))
         {
-            CurrentPair.Set(classedNode, background, BaseBackground);
+            CurrentPair.Set(classedNode, pairBackground, BaseBackground);
             return;
         }
 
         Debug.LogError($"{GetType().Name}: Can't find key on Dictionary");
     }
 
+    /// <summary>
+    /// 현재 Current Background에 오버라이딩, 
+    /// </summary>
     public void OverrideToCurrent(PUMPSaveDataStructure structure)
     {
         if (structure == null)
@@ -106,11 +124,42 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             Debug.LogError($"{GetType().Name}: CurrentPair elements are null");
             return;
         }
-        var tuple = GetCurrent();
-        tuple.PairBackground.SetSerializeNodeInfos(structure.NodeInfos);
-        tuple.ClassedNode.Id = structure.Tag.ToString();
-        tuple.ClassedNode.Name = structure.Name;
+        var current = GetCurrent();
+        current.PairBackground.SetSerializeNodeInfos(structure.NodeInfos, true);
+        current.ClassedNode.Id = structure.Tag.ToString();
+        current.ClassedNode.Name = structure.Name;
+        current.ClearChangeFlag();
         structure.NotifyDataChanged();
+    }
+
+    public async UniTask ApplyCurrentById(string id)
+    {
+        if (!HasCurrent())
+        {
+            Debug.LogWarning("Has not Current");
+            return;
+        }
+
+        List<PUMPSaveDataStructure> pumpData = await PUMPSerializeManager.GetDatas(savePath);
+        PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(id) ?
+            null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(id));
+
+        var current = GetCurrent();
+
+        if (matchedStructure != null)
+        {
+            current.PairBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos, true);
+            current.ClassedNode.Name = matchedStructure.Name;
+            current.ClassedNode.Id = matchedStructure.Tag.ToString();
+            current.ClearChangeFlag();
+            matchedStructure.NotifyDataChanged();
+            return;
+        }
+
+        current.PairBackground.SetSerializeNodeInfos(new(), true);
+        current.ClassedNode.Name = classedNodePanel.defaultSaveName;
+        current.ClassedNode.Id = string.Empty;
+        current.ClearChangeFlag();
     }
 
     public void DestroyClassed(IClassedNode classedNode)
@@ -119,7 +168,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         {
             var current = CurrentPair.GetCurrent();
             if (current.ClassedNode == classedNode || current.PairBackground == background)
-                CurrentPair.Discard();
+                DiscardCurrent();
 
             Destroy(background.gameObject);
             // Destroy이벤트로 호출되기 때문에 classedNode는 파괴하지 않음.
@@ -140,14 +189,13 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
     public bool HasCurrent()
     {
-        var tuple = GetCurrent();
-        return tuple.ClassedNode != null && tuple.PairBackground != null;
+        return GetCurrent().HasCurrent;
     }
     #endregion
 
     #region Privates
     private Dictionary<IClassedNode, PUMPBackground> ClassedDict { get; set; } = new();
-    private ClassedPairManagedStruct CurrentPair { get; set; } = new();
+    private CurrentClassedPairManager CurrentPair { get; set; } = new();
 
     private Action<bool[]> _classedOnInputUpdateCache;
     private Action _exOutOnStateUpdateCache;
@@ -161,26 +209,26 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         PUMPBackground newBackground = BackgroundGetter?.Invoke();
         if (matchedStructure != null)
         {
-            newBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos);
+            newBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos, true);
             classedNode.Name = matchedStructure.Name;
         }
 
         LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
 
-        newBackground.ExternalInput.OnCountUpdate += _ =>
-        {
-            classedNode.OnInputUpdate -= _classedOnInputUpdateCache;
-            newBackground.ExternalOutput.OnStateUpdate -= _exOutOnStateUpdateCache;
-            LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
-        };
-        newBackground.ExternalOutput.OnCountUpdate += _ =>
-        {
-            classedNode.OnInputUpdate -= _classedOnInputUpdateCache;
-            newBackground.ExternalOutput.OnStateUpdate -= _exOutOnStateUpdateCache;
-            LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
-        };
+        newBackground.ExternalInput.OnCountUpdate += _ => OnExternalCountUpdateHandler(classedNode, newBackground);
+        newBackground.ExternalOutput.OnCountUpdate += _ => OnExternalCountUpdateHandler(classedNode, newBackground);
 
         ClassedDict.Add(classedNode, newBackground);
+    }
+
+    /// <summary>
+    /// External의 Count 변경 시 실행
+    /// </summary>
+    private void OnExternalCountUpdateHandler(IClassedNode classedNode, PUMPBackground pairBackground)
+    {
+        classedNode.OnInputUpdate -= _classedOnInputUpdateCache;
+        pairBackground.ExternalOutput.OnStateUpdate -= _exOutOnStateUpdateCache;
+        LinkClassedToExternal(classedNode, pairBackground.ExternalInput, pairBackground.ExternalOutput);
     }
 
     /// <summary>
@@ -220,24 +268,35 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             Tag = GetTag(),
         };
 
-        GetCurrent().ClassedNode.Name = name;
-
-        await PUMPSerializeManager.AddData(savePath, newStructure);
+        if (ValidateBeforeSerialization(newStructure))
+        {
+            await PUMPSerializeManager.AddData(savePath, newStructure);
+        }
     }
 
     private string GetNewId() => Guid.NewGuid().ToString();
     #endregion
 
     #region Private Class
-    private class ClassedPairManagedStruct
+    private class CurrentClassedPairManager
     {
         private IClassedNode _currentClassed;
         private PUMPBackground _pairBackground;
         private PUMPBackground _baseBackground;
-
-        public void Set(IClassedNode classedNode, PUMPBackground background, PUMPBackground baseBackground)
+        private CurrentClassedPairManagerToken _currentToken = new();
+        private ICurrentClassedPairManagerTokenSetter _tokenSetter;
+        private ICurrentClassedPairManagerTokenSetter TokenSetter
         {
-            if (_baseBackground == null && baseBackground == null)
+            get
+            {
+                _tokenSetter ??= _currentToken;
+                return _tokenSetter;
+            }
+        }
+
+        public void Set(IClassedNode classedNode, PUMPBackground pairBackground, PUMPBackground baseBackground)
+        {
+            if (_baseBackground == null && baseBackground == null)  // 베이스 백그라운드 우선 확인
             {
                 Debug.LogError($"{GetType().Name}: ParentBackground is null");
                 return;
@@ -248,30 +307,84 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             if (_pairBackground != null || classedNode != null)
                 Discard();
 
-            if (classedNode == null || background == null)
+            if (classedNode == null || pairBackground == null)
             {
                 Debug.LogError($"{GetType().Name}: Param is null");
                 return;
             }
 
             _currentClassed = classedNode;
-            _pairBackground = background;
+            _pairBackground = pairBackground;
+
+            TokenSetter.Set(classedNode, pairBackground);
 
             _pairBackground.Open();
         }
 
         public void Discard()
         {
+            TokenSetter.Terminate();
             _pairBackground?.Close();
             _currentClassed = null;
             _pairBackground = null;
             _baseBackground?.Open();
         }
 
-        public (IClassedNode ClassedNode, PUMPBackground PairBackground) GetCurrent()
+        public CurrentClassedPairManagerToken GetCurrent()
         {
-            return (_currentClassed, _pairBackground);
+            return _currentToken;
         }
     }
     #endregion
+}
+
+public class CurrentClassedPairManagerToken : ICurrentClassedPairManagerTokenSetter
+{
+    public IClassedNode ClassedNode { get; private set; }
+    public PUMPBackground PairBackground { get; private set; }
+    public bool IsChanged { get; private set; }
+    public bool HasCurrent => (!ClassedNode.IsUnityNull()) && PairBackground != null;
+
+    public void ClearChangeFlag()
+    {
+        IsChanged = false;
+    }
+
+    void ICurrentClassedPairManagerTokenSetter.Set(IClassedNode classedNode, PUMPBackground background)
+    {
+        ClassedNode = classedNode;
+        PairBackground = background;
+
+        if (!HasCurrent)
+        {
+            Debug.LogError($"{GetType().Name}: Field is Null => {ClassedNode} / {PairBackground}");
+            return;
+        }
+
+        PairBackground.OnChanged += OnChangedHandler;
+        IsChanged = false;
+    }
+
+    void ICurrentClassedPairManagerTokenSetter.Terminate()
+    {
+        if (PairBackground != null)
+        { 
+            PairBackground.OnChanged -= OnChangedHandler;
+        }
+            
+        ClassedNode = null;
+        PairBackground = null;
+        IsChanged = false;
+    }
+
+    private void OnChangedHandler()
+    {
+        IsChanged = true;
+    }
+}
+
+public interface ICurrentClassedPairManagerTokenSetter // 외부 클래스에서의 명시적 Setter 접근 방지
+{
+    public void Set(IClassedNode classedNode, PUMPBackground background);
+    public void Terminate();
 }
