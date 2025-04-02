@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using static Utils.RectTransformPosition;
 using Debug = UnityEngine.Debug;
 
-[RequireComponent(typeof(GraphicRaycaster))]
+[RequireComponent(typeof(GraphicRaycaster), typeof(CanvasGroup))]
 public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable
 {
     #region On Inspector
@@ -27,15 +27,19 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     #region Privates
     private bool _initialized = false;
+    private bool _canInteractive = true;
     private HashSet<object> _isOnChangeBlocker = new();
     private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
     private Canvas _rootCanvas;
+    private CanvasGroup _canvasGroup;
     private ExternalInputAdapter _externalInputAdapter = new();
     private ExternalOutputAdapter _externalOutputAdapter = new();
     private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.062f, 0.5f);
     private int _defaultExternalInputCount = 2;
     private int _defaultExternalOutputCount = 2;
+
+    private List<Node> Nodes { get; } = new();
 
     private Canvas RootCanvas
     {
@@ -43,6 +47,15 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
             return _rootCanvas;
+        }
+    }
+
+    private CanvasGroup CanvasGroup
+    {
+        get
+        {
+            _canvasGroup ??= GetComponent<CanvasGroup>();
+            return _canvasGroup;
         }
     }
 
@@ -299,8 +312,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     #endregion
 
     #region Interface
-    [field: SerializeField] public List<Node> Nodes { get; } = new(); // 인스펙터 시각화용 직렬화
-    
     /// <summary>
     /// 외부 입력
     /// </summary>
@@ -331,6 +342,17 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             _lineConnectManager ??= GetComponentInChildren<LineConnectManager>();
             return _lineConnectManager;
+        }
+    }
+
+    public bool CanInteractive
+    {
+        get => _canInteractive;
+        set
+        {
+            CanvasGroup.interactable = value;
+            CanvasGroup.blocksRaycasts = value;
+            _canInteractive = value;
         }
     }
 

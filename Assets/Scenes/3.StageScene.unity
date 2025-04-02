@@ -284,6 +284,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1389682181293925542, guid: d6d38c9a30a0cfa49b1bd2f3213b83be, type: 3}
+      propertyPath: <InitializeOnStart>k__BackingField
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1389682181293925542, guid: d6d38c9a30a0cfa49b1bd2f3213b83be, type: 3}
       propertyPath: <RecordOnInitialize>k__BackingField
       value: 1
       objectReference: {fileID: 0}

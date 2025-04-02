@@ -1978,7 +1978,6 @@ MonoBehaviour:
   saveButton: {fileID: 4424892381495104373}
   savePath: node_data.bin
   extractor: {fileID: 6032966559575740712}
-  textGetter: {fileID: 0}
   defaultSaveName: My Background
 --- !u!114 &3467479275361690747
 MonoBehaviour:
@@ -2000,7 +1999,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6855050029075717257}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0.47651994
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -2755,14 +2754,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4264256106532117367}
   m_SourcePrefab: {fileID: 100100000, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+--- !u!1 &3069507616913814435 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+  m_PrefabInstance: {fileID: 1063492325605454134}
+  m_PrefabAsset: {fileID: 0}
+--- !u!225 &4264256106532117367
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3069507616913814435}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &6032966559575740712 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6736030158677057566, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
   m_PrefabInstance: {fileID: 1063492325605454134}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 3069507616913814435}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56ac076ab66ac2d4b9f33f1358871dd3, type: 3}
