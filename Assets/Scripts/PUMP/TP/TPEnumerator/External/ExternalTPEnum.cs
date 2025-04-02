@@ -33,7 +33,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
         }
     }
 
-    private Canvas Canvas
+    private Canvas RootCanvas
     {
         get
         {
@@ -104,7 +104,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
         (
             _tpSlider,
             eventData.position,
-            Canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : Canvas.worldCamera,
+            RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : RootCanvas.worldCamera,
             out Vector2 mouseLocalPos
         );
 

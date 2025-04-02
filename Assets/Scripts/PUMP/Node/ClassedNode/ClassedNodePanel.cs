@@ -1,11 +1,10 @@
 using Cysharp.Threading.Tasks;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(IClassedNodeDataManager))]
-public class ClassedNodePanel : MonoBehaviour
+public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisibleTarget, IDestroyTarget
 {
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
@@ -48,8 +47,12 @@ public class ClassedNodePanel : MonoBehaviour
     {
         if (!TryFindPanel(classedNode, out ClassedNodePanel panel))
         {
-            RectTransform parent = classedNode.GetNode().Background.Rect.GetRootCanvasRect();
-            panel = Instantiate(PanelPrefab, parent).GetComponent<ClassedNodePanel>();
+            panel = Instantiate(PanelPrefab).GetComponent<ClassedNodePanel>();
+
+            PUMPBackground background = classedNode.GetNode().Background;
+            PUMPSeparator separator = ((ISeparatorSectorable)background).GetSeparator();
+
+            separator.SetOverFull(panel.GetComponent<RectTransform>(), panel);
         }
 
         panel.Initialize(classedNode);
@@ -71,6 +74,7 @@ public class ClassedNodePanel : MonoBehaviour
     public void Initialize(IClassedNode classedNode)
     {
         _baseBackground = classedNode.GetNode().Background;
+        _baseBackground.OnDestroyed += DestroyPanel;
         DataManager.AddNew(classedNode);
 
         classedNode.OpenPanel += OpenPanel;
@@ -94,11 +98,16 @@ public class ClassedNodePanel : MonoBehaviour
         SetActive(false);
     }
 
+    public void DestroyPanel()
+    {
+        Destroy(gameObject);
+    }
+
     public void ClosePanelWithAskSave()
     {
         if (DataManager.GetCurrent().IsChanged)
         {
-            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOption, () => CloseWithSave().Forget());
+            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOption, () => CloseWithoutSave().Forget());
             return;
         }
 
@@ -163,8 +172,11 @@ public class ClassedNodePanel : MonoBehaviour
             outputCountSlider.value = 0f;
         }
 
-        background.ExternalInput.OnCountUpdate -= SetInputSliderValue;
-        background.ExternalOutput.OnCountUpdate -= SetOutputSliderValue;
+        if (background != null)
+        {
+            background.ExternalInput.OnCountUpdate -= SetInputSliderValue;
+            background.ExternalOutput.OnCountUpdate -= SetOutputSliderValue;
+        }
     }
 
     public IClassedNodeDataManager DataManager
@@ -180,8 +192,8 @@ public class ClassedNodePanel : MonoBehaviour
                     GameObject backgroundObject = Instantiate(BackgroundPrefab, pumpBackgroundParent);
                     backgroundObject.name = "ClassedPairBackground";
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
-                    background.InitializeOnStart = false;
                     background.RecordOnInitialize = false;
+                    ((ISeparatorSectorable)background).SetSeparator(((ISeparatorSectorable)this).GetSeparator());
                     background.Open();
                     Other.InvokeActionDelay(_baseBackground.Open).Forget();
                     return background;
@@ -199,6 +211,7 @@ public class ClassedNodePanel : MonoBehaviour
     private bool _initialized = false;
     private bool _isInputSliderValueChangingBySystem = false;
     private bool _isOutputSliderValueChangingBySystem = false;
+    private PUMPSeparator _separator;
 
     private Canvas RootCanvas
     {
@@ -221,15 +234,15 @@ public class ClassedNodePanel : MonoBehaviour
 
     private static bool TryFindPanel(IClassedNode classedNode, out ClassedNodePanel panel)
     {
-        RectTransform parent = classedNode.GetNode().Background.Rect.GetRootCanvasRect();
-        foreach (RectTransform child in parent)
+        PUMPSeparator separator = ((ISeparatorSectorable)classedNode.GetNode().Background).GetSeparator();
+        ClassedNodePanel classedNodePanel = separator.GetComponentInOver<ClassedNodePanel>();
+
+        if (classedNodePanel != null)
         {
-            if (child.TryGetComponent(out ClassedNodePanel findPanel))
-            {
-                panel = findPanel;
-                return true;
-            }
+            panel = classedNodePanel;
+            return true;
         }
+        
         panel = null;
         return false;
     }
@@ -261,12 +274,13 @@ public class ClassedNodePanel : MonoBehaviour
         DataManager.DiscardCurrent();
     }
 
-    private async UniTask CloseWithSave()
+    private async UniTask CloseWithoutSave()
     {
-        if (!DataManager.HasCurrent())
-            ClosePanel();
+        if (DataManager.HasCurrent())
+        {
+            await DataManager.ApplyCurrentById(DataManager.GetCurrent().ClassedNode.Id);
+        }
 
-        await DataManager.ApplyCurrentById(DataManager.GetCurrent().ClassedNode.Id);
         ClosePanel();
     }
 
@@ -282,6 +296,34 @@ public class ClassedNodePanel : MonoBehaviour
         _isOutputSliderValueChangingBySystem = true;
         outputCountSlider.value = value;
         _isOutputSliderValueChangingBySystem= false;
+    }
+
+    void ISeparatorSectorable.SetSeparator(PUMPSeparator separator)
+    {
+        _separator = separator;
+    }
+
+    PUMPSeparator ISeparatorSectorable.GetSeparator()
+    {
+        return _separator;
+    }
+
+    void ISeparatorSectorable.SetVisible(bool visible)
+    {
+        if (!visible)
+        {
+            CloseWithoutSave().Forget();
+        }
+    }
+
+    void ISetVisibleTarget.SetVisible(bool visible) { } // 하위 Pair Background의 요청을 고의적으로 무시
+
+    void IDestroyTarget.Destroy(object sender)
+    {
+        if (sender is PUMPBackground background)
+        {
+            Destroy(background.gameObject);
+        }
     }
     #endregion
 }

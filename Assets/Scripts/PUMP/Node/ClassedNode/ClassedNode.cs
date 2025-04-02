@@ -20,16 +20,23 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
 
     private async UniTaskVoid UpdateOutputStateNextFrame(bool[] outputs)
     {
-        await UniTask.WaitForEndOfFrame();
-
-        if (outputs.Length != OutputToken.Count)
+        try
         {
-            Debug.LogError($"{GetType().Name}: OutputUpdate counts do not match (TokenCount: {OutputToken.Count} / ExternalCount: {outputs.Length}");
-            return;
-        }
+            await UniTask.WaitForEndOfFrame();
 
-        for (int i = 0; i < OutputToken.Count; i++)
-            OutputToken[i].State = outputs[i];
+            if (outputs.Length != OutputToken.Count)
+            {
+                Debug.Log($"{Name}: 출력 설정 무시됨 - 토큰 개수 변경됨 (토큰: {OutputToken.Count}, 출력: {outputs.Length})");
+                return;
+            }
+
+            for (int i = 0; i < OutputToken.Count; i++)
+                OutputToken[i].State = outputs[i];
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"{Name}: 출력 상태 업데이트 중 예외 발생 - {e.Message}");
+        }
     }
     #endregion
 
@@ -37,9 +44,10 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
 
     protected override int DefaultOutputCount => 2;
 
-    protected override string SpritePath => "PUMP/Sprite/null_node";
+    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
     protected override string NodeDisplayName => "Classed";
+
     protected override float TextSize => 24;
 
     protected override float InEnumeratorXPos => -70f;
@@ -51,6 +59,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
 
     protected override float EnumeratorTPMargin => 10f;
+
     protected override List<ContextElement> ContextElements
     {
         get

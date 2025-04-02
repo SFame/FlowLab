@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
+[ResourceGetter("PUMP/Sprite/ingame/null_node")]
 public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable
 {
     #region Privates

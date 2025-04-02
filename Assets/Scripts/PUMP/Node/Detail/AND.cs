@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ResourceGetter("PUMP/Sprite/PaletteImage/test")]
 public class AND : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/null_node";
+    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
     protected override List<string> InputNames { get; } = new List<string> { "A1", "A2" };
 

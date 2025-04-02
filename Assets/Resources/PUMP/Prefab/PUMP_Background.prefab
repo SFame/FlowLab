@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6736030158677057566}
   - component: {fileID: 5503982140588132566}
   - component: {fileID: 3852178875346839596}
+  - component: {fileID: 1656648216250604016}
   m_Layer: 6
   m_Name: PUMP_Background
   m_TagString: Untagged
@@ -94,7 +95,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nodeParent: {fileID: 9199168667862927995}
-  <InitializeOnStart>k__BackingField: 1
   <RecordOnInitialize>k__BackingField: 1
 --- !u!114 &6736030158677057566
 MonoBehaviour:
@@ -149,6 +149,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &1656648216250604016
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2619789075046056597}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6405751375762120733
 GameObject:
   m_ObjectHideFlags: 0

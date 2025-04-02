@@ -26,7 +26,7 @@ public abstract class NodePalette : MonoBehaviour
     private GridLayoutGroup _gridLayoutGroup;
     private GameObject _elementPrefab;
     private readonly List<PaletteElem> _elements = new();
-    private RectTransform _root;
+    private RectTransform _rootRect;
 
     private const string ELEMENT_PREFAB_PATH = "PUMP/Prefab/NodePalette/PaletteElem";
 
@@ -51,14 +51,14 @@ public abstract class NodePalette : MonoBehaviour
         }
     }
 
-    private RectTransform Root
+    private RectTransform RootRect
     {
         get
         {
-            if (_root is null)
-                _root = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
+            if (_rootRect is null)
+                _rootRect = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
             
-            return _root;
+            return _rootRect;
         }
     }
     
@@ -127,7 +127,7 @@ public abstract class NodePalette : MonoBehaviour
         elem.OnDragStart += () =>
         {
             elem.ContentFixPosition = elem.Rect.anchoredPosition;
-            elem.Rect.SetParent(Root, true);
+            elem.Rect.SetParent(RootRect, true);
         };
         elem.OnDragEnd += () =>
         {

@@ -7,7 +7,8 @@ using UnityEngine;
 
 public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.ComparatorSerializeInfo>
 {
-    protected override string SpritePath => "PUMP/Sprite/null_node";
+    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
+
     public override string NodePrefebPath => "PUMP/Prefab/Node/COMPARATOR";
 
     protected override float InEnumeratorXPos => -70f;

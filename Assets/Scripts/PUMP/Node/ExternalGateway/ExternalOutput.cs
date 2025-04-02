@@ -50,7 +50,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
     private TMP_Dropdown _dropdown;
     #endregion
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/line";
+    protected override string SpritePath => "PUMP/Sprite/ingame/external_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/EXTERNAL_GATE";
     protected override string TP_EnumInPrefebPath => "PUMP/Prefab/TP/External/ExternalTPEnumIn";
     protected override string NodeDisplayName => "";

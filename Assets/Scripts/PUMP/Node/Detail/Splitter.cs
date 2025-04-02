@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Splitter : DynamicIONode, INodeModifiableArgs<int>
 {
-    protected override string SpritePath => "PUMP/Sprite/null_node";
+    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override float InEnumeratorXPos => -70f;

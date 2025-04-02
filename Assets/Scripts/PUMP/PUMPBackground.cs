@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,11 +11,10 @@ using static Utils.RectTransformPosition;
 using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(GraphicRaycaster), typeof(CanvasGroup))]
-public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable
+public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable, ISeparatorSectorable, ICreationAwaitable
 {
     #region On Inspector
     [SerializeField] private RectTransform nodeParent;
-    [field: SerializeField] public bool InitializeOnStart { get; set; } = true;
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion
 
@@ -38,6 +38,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.062f, 0.5f);
     private int _defaultExternalInputCount = 2;
     private int _defaultExternalOutputCount = 2;
+    private PUMPSeparator _separator;
+    private TaskCompletionSource<bool> _tcs = new();
 
     private List<Node> Nodes { get; } = new();
 
@@ -80,6 +82,16 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             RecordHistory();
 
         _initialized = true;
+    }
+
+    void ISeparatorSectorable.SetSeparator(PUMPSeparator separator)
+    {
+        _separator = separator;
+    }
+
+    PUMPSeparator ISeparatorSectorable.GetSeparator()
+    {
+        return _separator;
     }
 
     private void SubscribeNodeAction(Node node)
@@ -298,16 +310,17 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     private void Start()
     {
-        if (InitializeOnStart)
-            Open();
-        else
-            gameObject.SetActive(false);
+        _tcs.SetResult(true);
     }
 
     private void OnDestroy()
     {
         if (Current == this)
+        {
             Current = null;
+        }
+
+        OnDestroyed?.Invoke();
     }
     #endregion
 
@@ -326,7 +339,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     /// 변경사항 발생 시 호출
     /// </summary>
     public event Action OnChanged;
-    
+
+    public event Action OnDestroyed;
+
     public RectTransform Rect
     {
         get
@@ -372,6 +387,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     {
         if (Current == this)
             gameObject.SetActive(false);
+    }
+
+    public void Destroy()
+    {
+        IDestroyTarget destroyTarget = GetComponentInParent<IDestroyTarget>();
+        destroyTarget?.Destroy(this);
     }
 
     public void ResetBackground()
@@ -549,6 +570,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             _isOnChangeBlocker.Remove(blocker);
         }
+    }
+
+    public Task WaitForCreationAsync()
+    {
+        return _tcs.Task;
     }
     #endregion
 
@@ -850,6 +876,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
         return selectedObjects;
     }
+
+    public void SetVisible(bool visible)
+    {
+        ISetVisibleTarget target = GetComponentInParent<ISetVisibleTarget>();
+        target?.SetVisible(visible);
+    }
     #endregion
 }
 
@@ -1035,5 +1067,15 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
 public interface IChangeObserver
 {
-    public void ReportChanges();
+    void ReportChanges();
+}
+
+public interface ISetVisibleTarget
+{
+    void SetVisible(bool visible);
+}
+
+public interface IDestroyTarget
+{
+    void Destroy(object sender);
 }

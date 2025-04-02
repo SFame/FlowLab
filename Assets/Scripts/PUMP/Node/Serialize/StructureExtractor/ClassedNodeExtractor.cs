@@ -170,7 +170,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             if (current.ClassedNode == classedNode || current.PairBackground == background)
                 DiscardCurrent();
 
-            Destroy(background.gameObject);
+            background.Destroy();
             // Destroy이벤트로 호출되기 때문에 classedNode는 파괴하지 않음.
 
             ClassedDict.Remove(classedNode);
