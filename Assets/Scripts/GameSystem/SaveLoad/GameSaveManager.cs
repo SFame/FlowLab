@@ -16,7 +16,7 @@ public class GameSaveManager : SerializedMonoBehaviour
 
     private const string FILE_NAME = "SaveData.bin";
     [OdinSerialize][SerializeField] private GameSaveData _data;
-
+    [SerializeField] private List<Room> _roomList = new List<Room>();
     private void Awake()
     {
         // 싱글톤 처리
@@ -33,11 +33,6 @@ public class GameSaveManager : SerializedMonoBehaviour
             Destroy(gameObject);
         }
     }
-    private async UniTask InitializeSaveSystem()
-    {
-        _data = await LoadDataAsync<GameSaveData>(FILE_NAME);
-        _data ??= new();
-    }
     public void SaveGame()
     {
         // 플레이어 현재 위치 및 회전 업데이트
@@ -52,7 +47,10 @@ public class GameSaveManager : SerializedMonoBehaviour
         _data = LoadData<GameSaveData>(FILE_NAME);
 
         if(_data != default)
+        {
             ApplyPlayerTransform();
+            ApplyRoomState();
+        }
     }
     private void UpdatePlayerTransform()
     {
@@ -72,36 +70,39 @@ public class GameSaveManager : SerializedMonoBehaviour
             player.transform.rotation = _data.PlayerRotation;
         }
     }
-    public void UpdateRoomData(RoomData roomData)
+    private void ApplyRoomState()
+    {
+        for (int i = 0; i < _roomList.Count; i++)
+        {
+            string roomName = _roomList[i].RoomID;
+            _roomList[i] = _data.RoomList[roomName];
+        }
+    }
+    public void UpdateRoomData(Room roomData)
     {
         for (int i = 0; i < _data.RoomList.Count; i++)
         {
-            if (_data.RoomList[i].RoomID == roomData.RoomID)
+            if (_data.RoomList.ContainsKey(roomData.RoomID))
             {
-                _data.RoomList[i] = roomData;
+                _data.RoomList[roomData.RoomID] = roomData;
                 return;
             }
         }
 
         // 존재하지 않으면 추가
-        _data.RoomList.Add(roomData);
+        _data.RoomList[roomData.RoomID] = roomData;
     }
-    public RoomData GetRoomData(string roomID)
+    public Room GetRoomData(string roomID)
     {
-        foreach (var roomData in _data.RoomList)
+        if (_data.RoomList.ContainsKey(roomID))
         {
-            if (roomData.RoomID == roomID)
-            {
-                return roomData;
-            }
+            return _data.RoomList[roomID];
         }
-
-        // 존재하지 않으면 새로 생성
-        return new RoomData(roomID);
+        return null;
     }
     public void SetStageCleared(string roomID, int stageID, bool cleared)
     {
-        RoomData roomData = GetRoomData(roomID);
+        Room roomData = GetRoomData(roomID);
         roomData.UpdateClearStatus();
         UpdateRoomData(roomData);
     }
@@ -116,7 +117,7 @@ public class GameSaveData
 {
     [OdinSerialize][SerializeField] private Vector3 _playerPosition;
     [OdinSerialize][SerializeField] private Quaternion _playerRotation;
-    [OdinSerialize][SerializeField] private List<RoomData> _roomList;
+    [OdinSerialize][SerializeField] private Dictionary<string, Room> _roomList;
     [OdinSerialize][SerializeField] private DateTime _lastSaveTime;
 
     #region Properties
@@ -130,7 +131,11 @@ public class GameSaveData
         get { return _playerRotation; }
         set { _playerRotation = value; }
     }
-    public List<RoomData> RoomList => _roomList;
+    public Dictionary<string, Room> RoomList
+    {
+        get{ return RoomList; }
+        set {  RoomList = value; }
+    }
     public DateTime LastSaveTime => _lastSaveTime;
     #endregion
 
@@ -139,107 +144,10 @@ public class GameSaveData
         _playerPosition = Vector3.zero;
         _playerRotation = Quaternion.identity;
         _lastSaveTime = DateTime.Now;
-        _roomList ??= new();
+        _roomList = new Dictionary<string, Room>();
     }
     public void UpdateSaveTime()
     {
         _lastSaveTime = DateTime.Now;
-    }
-}
-
-[Serializable]
-public struct RoomData
-{
-    [OdinSerialize][SerializeField] private string _roomID;
-    [OdinSerialize][SerializeField] private Dictionary<int, bool> _stageStates;
-    [OdinSerialize][SerializeField] private bool _clear;
-	[OdinSerialize][SerializeField] private object _tag;
-
-    #region Properties
-    public string RoomID 
-    {  
-        get { return _roomID; } 
-        set { _roomID = value; }
-    }
-    public Dictionary<int, bool> StageState 
-    { 
-        get { return _stageStates; } 
-        set { _stageStates = value; } 
-    }
-    public bool Clear 
-    {
-        get {  return _clear; } 
-        set { _clear = value; }
-    }
-	public object Tag
-	{
-		get { return _tag; }	
-		set { _tag = value; }
-	}
-    #endregion
-
-    public RoomData(string roomID, int stageCount = 0)
-    {
-        _tag = null;
-        _roomID = roomID;
-        _stageStates = new Dictionary<int, bool>();
-        for (int i = 0; i< stageCount; i++)
-        {
-            _stageStates[i] = false;
-        }
-        _clear = false;
-    }
-    public void UpdateClearStatus()
-    {
-        if (_stageStates.Count == 0)
-        {
-            _clear = false;
-            return;
-        }
-
-        foreach (var state in _stageStates.Values)
-        {
-            if (!state)
-            {
-                _clear = false;
-                return;
-            }
-        }
-
-        _clear = true;
-    }
-    public float GetRoomCompletionRate()
-    {
-        if (_stageStates.Count == 0)
-            return 0f;
-
-        int clearedStages = 0;
-
-        foreach (var state in _stageStates.Values)
-        {
-            if (state)
-                clearedStages++;
-        }
-
-        return (float)clearedStages / _stageStates.Count;
-    }
-    public override string ToString()
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine($"[SerializeRoomInfo]");
-        sb.AppendLine("{");
-        sb.AppendLine($"    [NodeType]: {_roomID ?? "null"}");
-        sb.AppendLine($"    [StageCount]: {_stageStates.Count}");
-        sb.AppendLine($"    [StageState]");
-        sb.AppendLine( "    {");
-        foreach( var state in _stageStates)
-        {
-        sb.AppendLine($"        [Stage ID]: {state.Key}");
-        sb.AppendLine($"        [Stage State]: {state.Value}");
-        }
-        sb.AppendLine( "    }");
-        sb.Append("}");
-
-        return sb.ToString();
     }
 }
