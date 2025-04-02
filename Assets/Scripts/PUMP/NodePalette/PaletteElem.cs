@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class PaletteElem : MonoBehaviour, IDraggable
 {
-    #region Variables
-    [SerializeField] private TextMeshProUGUI _text;
-    [SerializeField] public RectTransform _rect;
+    #region On Inspector
+    [SerializeField] private TextMeshProUGUI m_Text;
+    [SerializeField] private RectTransform m_Rect;
+    [SerializeField] private Image m_Image;
+    #endregion
+
+    #region Privates
     private string _displayName;
     private Vector2 _dragOffset;
     private bool _isDragging;
@@ -21,13 +26,16 @@ public class PaletteElem : MonoBehaviour, IDraggable
     public event Action OnDragEnd;
     public event Action OnInstantiate;
 
+    public RectTransform Rect => m_Rect;
+    public Image Image => m_Image;
+
     public string DisplayName
     {
         get => _displayName;
         set
         {
             _displayName = value;
-            _text.text = _displayName;
+            m_Text.text = _displayName;
         }
     }
     
@@ -41,14 +49,14 @@ public class PaletteElem : MonoBehaviour, IDraggable
     {
         _isDragging = true;
         _background = null;
-        _dragOffset = (Vector2)_rect.position - eventData.position;
+        _dragOffset = (Vector2)Rect.position - eventData.position;
         OnDragStart?.Invoke();
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (_isDragging)
-            _rect.position = eventData.position + _dragOffset;
+            Rect.position = eventData.position + _dragOffset;
         
         FindPumpBackground(eventData);
     }
@@ -59,7 +67,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
         {
             OnDragEnd?.Invoke();
         }
-        _rect.localScale = Vector3.one;
+        Rect.localScale = Vector3.one;
         
         if (_background != null && _newNode != null)
             _newNode.CallCompletePlacementFromPalette();
@@ -91,7 +99,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
                 if (result.gameObject.TryGetComponent(out _background))
                 {
                     _newNode = _background.AddNewNode(NodeType);
-                    _rect.localScale = Vector3.zero;
+                    Rect.localScale = Vector3.zero;
                     OnInstantiate?.Invoke();
                     break;
                 }

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
+using NUnit.Compatibility;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 public abstract class NodePalette : MonoBehaviour
 {
@@ -75,13 +79,19 @@ public abstract class NodePalette : MonoBehaviour
         await UniTask.WaitUntil(() => ContentWidth > float.Epsilon);
         
         SetContentRectSize();
+        _elements.WhereForeach(elem => !elem.IsUnityNull(), elem => Destroy(elem.gameObject));
         _elements.Clear();
+
         foreach (KeyValuePair<Type, string> kvp in NodeTypes)
         {
             RectTransform newElemRect = GetNewElemWithScaled();
             PaletteElem newElem = newElemRect.GetComponent<PaletteElem>();
             newElem.DisplayName = kvp.Value;
             newElem.NodeType = kvp.Key;
+
+            if (GetSprite(kvp.Key) is Sprite sprite)
+                newElem.Image.sprite = sprite;
+
             SetElementCallback(newElem);
             _elements.Add(newElem);
         }
@@ -94,7 +104,7 @@ public abstract class NodePalette : MonoBehaviour
         Vector2 defaultPos = new Vector2(ContentWidth / 2, -(ElementHeight / 2));
 
         for (int i = 0; i < _elements.Count; i++)
-            _elements[i]._rect.anchoredPosition = new Vector2(defaultPos.x, defaultPos.y + -i * ElementHeight);
+            _elements[i].Rect.anchoredPosition = new Vector2(defaultPos.x, defaultPos.y + -i * ElementHeight);
     }
 
     private void SetContentRectSize()
@@ -116,15 +126,21 @@ public abstract class NodePalette : MonoBehaviour
     {
         elem.OnDragStart += () =>
         {
-            elem.ContentFixPosition = elem._rect.anchoredPosition;
-            elem._rect.SetParent(Root, true);
+            elem.ContentFixPosition = elem.Rect.anchoredPosition;
+            elem.Rect.SetParent(Root, true);
         };
         elem.OnDragEnd += () =>
         {
-            elem._rect.SetParent(Content, true);
-            elem._rect.anchoredPosition = elem.ContentFixPosition;
+            elem.Rect.SetParent(Content, true);
+            elem.Rect.anchoredPosition = elem.ContentFixPosition;
         };
         elem.OnInstantiate += () => OnNodeAdded?.Invoke(elem.NewNode);
+    }
+
+    private Sprite GetSprite(Type nodeType)
+    {
+        string imagePath = ((ResourceGetterAttribute)Attribute.GetCustomAttribute(nodeType, typeof(ResourceGetterAttribute), true))?.Path ?? string.Empty;
+        return string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath);
     }
     #endregion
 }

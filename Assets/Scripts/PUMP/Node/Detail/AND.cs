@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ResourceGetter("PUMP/Sprite/PaletteImage/test")]
 public class AND : Node
 {
     protected override string SpritePath => "PUMP/Sprite/null_node";

@@ -225,5 +225,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 702f7c6ed887a4129987ec4a7a9ade3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _text: {fileID: 1718555103007506755}
-  _rect: {fileID: 4446755259241081467}
+  m_Text: {fileID: 1718555103007506755}
+  m_Rect: {fileID: 4446755259241081467}
+  m_Image: {fileID: 1833460113759226597}
