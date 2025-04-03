@@ -14,14 +14,15 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     private Vector2 _defaultSize;
     private Color _defaultColor;
     private readonly Color _highlightedColor = Color.green;
-    private float _expansionScale = 1.5f;
+    private readonly float _expansionScale = 1.5f;
+    private bool _isSetDefaultSize = false;
+    private bool _isSetDefaultColor = false;
     
     private RectTransform Rect
     {
         get
         {
-            if (_rect == null)
-                _rect = GetComponent<RectTransform>();
+            _rect ??= GetComponent<RectTransform>();
             return _rect;
         }
     }
@@ -30,16 +31,9 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     {
         get
         {
-            if (_rawImage == null)
-                _rawImage = GetComponent<RawImage>();
+            _rawImage ??= GetComponent<RawImage>();
             return _rawImage;
         }
-    }
-
-    private void Awake()
-    {
-        _defaultSize = Rect.sizeDelta;
-        _defaultColor = RawImage.color;
     }
     #endregion
 
@@ -106,7 +100,10 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     {
         if (FreezeAttributes)
             return;
-        
+
+        SetDefaultSize();
+        SetDefaultColor();
+
         Vector2 size = highlighted ? _defaultSize * _expansionScale : _defaultSize;
         Color color = highlighted ? _highlightedColor : _defaultColor;
         Rect.sizeDelta = size;
@@ -170,6 +167,24 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     
     public event OnSelectedMoveHandler OnSelectedMove;
     public event Action SelectRemoveRequest;
+
+    private void SetDefaultSize()
+    {
+        if (_isSetDefaultSize)
+            return;
+
+        _defaultSize = Rect.sizeDelta;
+        _isSetDefaultSize = true;
+    }
+
+    private void SetDefaultColor()
+    {
+        if(_isSetDefaultColor)
+            return;
+
+        _defaultColor = RawImage.color;
+        _isSetDefaultColor = true;
+    }
 
     private void OnDestroy()
     {

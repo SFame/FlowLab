@@ -18,7 +18,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private PUMPBackground _background;
     private bool _isBackgroundSet = false;
     private Canvas _rootCanvas;
-    private readonly Color _highlightedColor = Color.green;
 
     private float _inEnumHeight;
     private float _outEnumHeight;
@@ -27,7 +26,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private bool _outEnumActive = true;
     #endregion
 
-    #region Component
+    #region Protected
     protected Image Image
     {
         get
@@ -163,9 +162,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             tp.Connection?.Disconnect();
     }
     
-    public void SetHighlight(bool highlighted)
+    public virtual void SetHighlight(bool highlighted)
     {
-        Image.color = highlighted ? _highlightedColor : DefaultColor;
+        Image.color = highlighted ? HighlightedColor : DefaultColor;
     }
     #endregion
 
@@ -206,6 +205,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected virtual string TP_EnumOutPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
     protected virtual Color DefaultColor { get; set; } = Color.white;
+    protected virtual Color HighlightedColor { get; set; } = Color.green;
     protected virtual float TextSize { get; } = 30f;
 
     protected abstract string SpritePath { get; }

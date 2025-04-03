@@ -9,6 +9,8 @@ using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace Utils
@@ -63,6 +65,59 @@ namespace Utils
             }
 
             return enumerable;
+        }
+
+        public static bool HasIntersection<T>(this IEnumerable<T> current, IEnumerable<T> target)
+        {
+            return current.Intersect(target).Any();
+        }
+    }
+
+    public static class RaycasterUtil
+    {
+        public static List<T> FindUnderPoint<T>(this GraphicRaycaster raycaster, Vector2 point)
+        {
+            PointerEventData pointerData = new PointerEventData(EventSystem.current);
+            pointerData.position = point;
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            raycaster.Raycast(pointerData, results);
+
+            List<T> foundComponents = new List<T>();
+            foreach (RaycastResult result in results)
+            {
+                if (result.gameObject.TryGetComponent(out T component))
+                    foundComponents.Add(component);
+            }
+            return foundComponents;
+        }
+
+        public static HashSet<T> GridRaycast<T>(this GraphicRaycaster raycaster, Vector2 startPos, Vector2 endPos, float gridSize = 10f)
+        {
+            PointerEventData pointerData = new PointerEventData(EventSystem.current);
+
+            float minX = Mathf.Min(startPos.x, endPos.x);
+            float maxX = Mathf.Max(startPos.x, endPos.x);
+            float minY = Mathf.Min(startPos.y, endPos.y);
+            float maxY = Mathf.Max(startPos.y, endPos.y);
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            for (float x = minX; x <= maxX; x += gridSize)
+            {
+                for (float y = minY; y <= maxY; y += gridSize)
+                {
+                    pointerData.position = new Vector2(x, y);
+                    raycaster.Raycast(pointerData, results);
+                }
+            }
+
+            HashSet<T> selectedObjects = new HashSet<T>();
+            foreach (RaycastResult result in results)
+            {
+                if (result.gameObject.TryGetComponent(out T component))
+                    selectedObjects.Add(component);
+            }
+            return selectedObjects;
         }
     }
 

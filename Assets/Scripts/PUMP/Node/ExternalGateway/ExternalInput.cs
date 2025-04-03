@@ -118,6 +118,16 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
         Dropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
 
+    public override void SetHighlight(bool highlighted)
+    {
+        base.SetHighlight(highlighted);
+
+        if (OutputToken.Enumerator is IHighlightable highlightable)
+        {
+            highlightable.SetHighlight(highlighted);
+        }
+    }
+
     #region Serialize
     public List<float> _handleRatios;
     public ExternalNodeSerializeInfo ModifiableTObject

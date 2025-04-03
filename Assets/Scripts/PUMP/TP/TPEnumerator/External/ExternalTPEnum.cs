@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
+public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
 {
     [SerializeField]
     private GameObject _handleTemplate;
@@ -252,6 +252,14 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator
 
                 Handles[i].TP.LinkTo(targetTps[i], newConnection);
             }
+        }
+    }
+
+    public void SetHighlight(bool highlight)
+    {
+        foreach (ExternalTPHandle handle in Handles)
+        {
+            handle?.SetHighlight(highlight);
         }
     }
     #endregion
