@@ -5,6 +5,7 @@ using Utils;
 
 public class PUMPSeparator : MonoBehaviour
 {
+    #region On Inspector
     [SerializeField] private RectTransform m_BaseSector;
     [SerializeField] private RectTransform m_OverSector;
     [SerializeField] private GameObject m_PumpSectorPrefab;
@@ -14,7 +15,9 @@ public class PUMPSeparator : MonoBehaviour
     [SerializeField] private bool m_OpenBackgroundOnStart;
     [SerializeField] private bool m_ShowWhenStart;
     [SerializeField] private bool m_ShowWhenGet;
+    #endregion
 
+    #region Privates
     private PUMPBackground _currentBackground;
     private HashSet<ISeparatorSectorable> _separatorSectorables = new();
     private bool _isVisible = false;
@@ -30,7 +33,7 @@ public class PUMPSeparator : MonoBehaviour
 
                 GameObject go = Instantiate(m_PumpSectorPrefab, m_BaseSector);
                 RectTransform rect = go.GetComponent<RectTransform>();
-                SetRectFull(rect);
+                rect.SetRectFull();
                 _currentBackground = rect.GetComponentInChildren<PUMPBackground>();
 
                 if (_currentBackground is ISeparatorSectorable settable)
@@ -108,13 +111,13 @@ public class PUMPSeparator : MonoBehaviour
             PUMPBackground.Current.Destroy();
         }
     }
+    #endregion
 
-    private void SetRectFull(RectTransform rect)
-    {
-        rect.SetAnchor(Vector2.zero, Vector2.one);
-        rect.SetEdges(0f, 0f, 0f, 0f);
-    }
-
+    #region Interface
+    /// <summary>
+    /// PUMPBackground Get
+    /// </summary>
+    /// <returns></returns>
     public PUMPBackground GetBackground()
     {
         if (m_ShowWhenGet)
@@ -123,23 +126,6 @@ public class PUMPSeparator : MonoBehaviour
         }
 
         return CurrentBackground;
-    }
-
-    public void SetOver(RectTransform rect, ISeparatorSectorable separatorSectorable = null)
-    {
-        rect.SetParent(m_OverSector);
-        separatorSectorable?.SetSeparator(this);
-        separatorSectorable.SetVisible(_isVisible);
-        _separatorSectorables.Add(separatorSectorable);
-    }
-
-    public void SetOverFull(RectTransform rect, ISeparatorSectorable separatorSectorable = null)
-    {
-        rect.SetParent(m_OverSector);
-        SetRectFull(rect);
-        separatorSectorable?.SetSeparator(this);
-        separatorSectorable.SetVisible(_isVisible);
-        _separatorSectorables.Add(separatorSectorable);
     }
 
     public void SetVisible(bool visible)
@@ -164,10 +150,28 @@ public class PUMPSeparator : MonoBehaviour
         }
     }
 
+    public void SetOver(RectTransform rect, ISeparatorSectorable separatorSectorable = null)
+    {
+        rect.SetParent(m_OverSector);
+        separatorSectorable?.SetSeparator(this);
+        separatorSectorable.SetVisible(_isVisible);
+        _separatorSectorables.Add(separatorSectorable);
+    }
+
+    public void SetOverFull(RectTransform rect, ISeparatorSectorable separatorSectorable = null)
+    {
+        rect.SetParent(m_OverSector);
+        rect.SetRectFull();
+        separatorSectorable?.SetSeparator(this);
+        separatorSectorable.SetVisible(_isVisible);
+        _separatorSectorables.Add(separatorSectorable);
+    }
+
     public T GetComponentInOver<T>()
     {
         return m_OverSector.GetComponentInChildren<T>();
     }
+    #endregion
 }
 
 public interface ISeparatorSectorable

@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 using static Utils.RectTransformPosition;
 using Debug = UnityEngine.Debug;
 
@@ -14,7 +16,10 @@ using Debug = UnityEngine.Debug;
 public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable, ISeparatorSectorable, ICreationAwaitable
 {
     #region On Inspector
-    [SerializeField] private RectTransform nodeParent;
+    [SerializeField] private RectTransform m_NodeParent;
+    [SerializeField] private RectTransform m_DraggingZone;
+    [SerializeField] private RectTransform m_ChildZone;
+
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion
 
@@ -389,6 +394,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             gameObject.SetActive(false);
     }
 
+    public void SetVisible(bool visible)
+    {
+        ISetVisibleTarget target = GetComponentInParent<ISetVisibleTarget>();
+        target?.SetVisible(visible);
+    }
+
     public void Destroy()
     {
         IDestroyTarget destroyTarget = GetComponentInParent<IDestroyTarget>();
@@ -397,8 +408,79 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     public void ResetBackground()
     {
-        ClearNodes();
-        SetGateway();
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
+
+        try
+        {
+            ClearNodes();
+            SetGateway();
+            ClearHistory();
+        }
+        finally
+        {
+            _isOnChangeBlocker.Remove(blocker);
+        }
+    }
+
+    /// <summary>
+    /// Background의 자식으로 표시할 RectTransform이 있다면 호출
+    /// 단, 화면 전체를 Image 등으로 가린다면 Background의 Raycast를 가릴 수 있음
+    /// </summary>
+    public void SetChildZoneAsFull(RectTransform rect)
+    {
+        rect.SetParent(m_ChildZone);
+        rect.SetRectFull();
+    }
+
+    /// <summary>
+    /// 사이즈 조절 없이 단순히 추가만 함.
+    /// </summary>
+    /// <param name="rect"></param>
+    public void SetChildZone(RectTransform rect)
+    {
+        rect.SetParent(m_ChildZone);
+    }
+
+    public T GetComponentInChildZone<T>()
+    {
+        return m_ChildZone.GetComponentInChildren<T>();
+    }
+
+    public T[] GetComponentsInChildZone<T>()
+    {
+        return m_ChildZone.GetComponentsInChildren<T>();
+    }
+
+    public void DestroyAllInChildZone()
+    {
+        foreach (Transform child in m_ChildZone)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void DestroyTargetInChild<T>(Predicate<T> predicate)
+    {
+        T[] foundComponents = m_ChildZone.GetComponentsInChildren<T>();
+
+        HashSet<GameObject> foundObjects = new();
+
+        foreach (T component in foundComponents)
+        {
+            if (component is Component casted && predicate(component))
+            {
+                foundObjects.Add(casted.gameObject);
+            }
+        }
+
+        foreach (GameObject go in foundObjects)
+        {
+            if (go != null)
+            {
+                Destroy(go);
+            }
+        }
     }
 
     public void DisconnectAllNodes()
@@ -424,7 +506,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
         
         node.Background = this;
-        node.Rect.SetParent(nodeParent);
+        node.Rect.SetParent(m_NodeParent);
         node.BoundaryRect = Rect;
         node.Rect.anchoredPosition = Vector2.zero;
         SubscribeNodeAction(node);
@@ -694,7 +776,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             if (_rangeRect is null)
             {
-                _rangeRect = Instantiate(RangePrefab, transform).GetComponent<RectTransform>();
+                _rangeRect = Instantiate(RangePrefab, m_DraggingZone).GetComponent<RectTransform>();
                 _rangeRect.sizeDelta = Vector2.zero;
                 _rangeRect.anchorMin = new Vector2(0f, 1f);
                 _rangeRect.anchorMax = new Vector2(0f, 1f);
@@ -877,11 +959,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         return selectedObjects;
     }
 
-    public void SetVisible(bool visible)
-    {
-        ISetVisibleTarget target = GetComponentInParent<ISetVisibleTarget>();
-        target?.SetVisible(visible);
-    }
     #endregion
 }
 

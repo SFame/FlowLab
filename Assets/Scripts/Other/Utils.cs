@@ -784,6 +784,12 @@ namespace Utils
             rect.offsetMin = new Vector2(left, bottom);
             rect.offsetMax = new Vector2(-right, -top);
         }
+
+        public static void SetRectFull(this RectTransform rect)
+        {
+            rect.SetAnchor(Vector2.zero, Vector2.one);
+            rect.SetEdges(0f, 0f, 0f, 0f);
+        }
     }
 
     public static class TextGetterManager
