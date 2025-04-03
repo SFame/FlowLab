@@ -1,7 +1,7 @@
-using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 [RequireComponent(typeof(Image))]
 public class TPIn : TransitionPoint, ITPIn
@@ -113,7 +113,7 @@ public class TPIn : TransitionPoint, ITPIn
         {
             Vector2 targetPoint = eventData.position;
 
-            ITPOut target = FindUnderPoint<ITPOut>(eventData);
+            ITPOut target = eventData.FindUnderPoint<ITPOut>();
             if (target is not null)
                 targetPoint = target.Location;
 
@@ -131,7 +131,7 @@ public class TPIn : TransitionPoint, ITPIn
 
         SetConnectionLineHideMode(false);
 
-        ITPOut find = FindUnderPoint<ITPOut>(eventData);
+        ITPOut find = eventData.FindUnderPoint<ITPOut>();
         if (find is not null)
         {
             OnSuccessFinding(find);

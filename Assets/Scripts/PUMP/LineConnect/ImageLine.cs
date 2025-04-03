@@ -3,15 +3,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(RectTransform), typeof(RawImage))]
+//[RequireComponent(typeof(RectTransform), typeof(RawImage))]
 public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPointerExitHandler, IHighlightable
 {
-    private RawImage RawImage
+    private Image Image
     {
         get
         {
             if (_rawImage is null)
-                _rawImage = GetComponent<RawImage>();
+                _rawImage = GetComponent<Image>();
             return _rawImage;
         }
     }
@@ -28,25 +28,24 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     
     private Vector2 _startPoint;
     private Vector2 _endPoint;
-    private float _thickness = 4f;
-    private RawImage _rawImage;
+    private Image _rawImage;
     private RectTransform _rect;
     private Color _defaultColor;
     private Color _highlightedColor = Color.green;
-    private float _defaultThickness;
-    private float _highlightedThicknessScale = 1.5f;
+    private float _defaultThickness = 12f;
+    private float _highlightedThicknessScale = 1.4f;
     private static bool _isDragging = false;
 
     private void Awake()
     {
         Rect.pivot = new Vector2(0, 0.5f);
-        _defaultColor = RawImage.color;
-        _defaultThickness = _thickness;
+        _defaultColor = Image.color;
+        Thickness = _defaultThickness;
     }
 
     public Vector2 StartPoint => _startPoint;
     public Vector2 EndPoint => _endPoint;
-    public float Thickness => _thickness;
+    public float Thickness { get; private set; }
 
     public event Action<PointerEventData> OnDragStart;
     public event Action<PointerEventData> OnDragging;
@@ -77,7 +76,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     {
         if (!FreezeAttributes)
         {
-            _thickness = width;
+            Thickness = width;
             UpdateLine();
         }
     }
@@ -87,7 +86,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         if (!FreezeAttributes)
         {
             _defaultColor = color;
-            RawImage.color = color;
+            Image.color = color;
         }
     }
 
@@ -96,8 +95,8 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         if (!FreezeAttributes)
         {
             _defaultColor.a = alpha;
-            Color currentColor = RawImage.color;
-            RawImage.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
+            Color currentColor = Image.color;
+            Image.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
         }
     }
     
@@ -114,7 +113,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     public void SetHighlight(bool highlight)
     {
         if (!FreezeAttributes)
-            RawImage.color = highlight ? _highlightedColor : _defaultColor;
+            Image.color = highlight ? _highlightedColor : _defaultColor;
     }
 
     private void UpdateLine()
@@ -124,7 +123,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         float length = diff.magnitude;
 
         Rect.position = _startPoint;
-        Rect.sizeDelta = new Vector2(length, _thickness);
+        Rect.sizeDelta = new Vector2(length, Thickness);
         Rect.rotation = Quaternion.Euler(0f, 0f, angle);
     }
 

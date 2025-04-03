@@ -71,6 +71,15 @@ namespace Utils
         {
             return current.Intersect(target).Any();
         }
+
+        public static T FindUnderPoint<T>(this PointerEventData eventData)
+        {
+            List<RaycastResult> results = new();
+            EventSystem.current.RaycastAll(eventData, results);
+            return results
+                .Select(result => result.gameObject.GetComponent<T>())
+                .FirstOrDefault(selected => !selected.IsUnityNull());
+        }
     }
 
     public static class RaycasterUtil

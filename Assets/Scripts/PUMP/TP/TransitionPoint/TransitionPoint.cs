@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -128,18 +129,4 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
             Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
     }
     #endregion
-
-    /// <summary>
-    /// ��ƿ�Լ��ε� ��ƿŬ���� ��� �׳� �ϴ� ���� ������
-    /// </summary>
-    /// <param name="eventData"></param>
-    /// <returns></returns>
-    protected T FindUnderPoint<T>(PointerEventData eventData)
-    {
-        List<RaycastResult> results = new();
-        EventSystem.current.RaycastAll(eventData, results);
-        return results
-            .Select(result => result.gameObject.GetComponent<T>())
-            .FirstOrDefault(selected => selected is not null);
-    }
 }

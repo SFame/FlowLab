@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utils;
 
 public class TPOut : TransitionPoint, ITPOut
 {
@@ -112,7 +113,7 @@ public class TPOut : TransitionPoint, ITPOut
         {
             Vector2 targetPoint = eventData.position;
 
-            ITPIn target = FindUnderPoint<ITPIn>(eventData);
+            ITPIn target = eventData.FindUnderPoint<ITPIn>();
             if (target is not null)
                 targetPoint = target.Location;
             
@@ -130,7 +131,7 @@ public class TPOut : TransitionPoint, ITPOut
 
         SetConnectionLineHideMode(false);
 
-        ITPIn find = FindUnderPoint<ITPIn>(eventData);
+        ITPIn find = eventData.FindUnderPoint<ITPIn>();
         if (find is not null)
         {
             Node.ReportChanges();

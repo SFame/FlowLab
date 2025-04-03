@@ -77,11 +77,20 @@ public class LineConnector : MonoBehaviour
     private RawImage _endEdgePointImage;
     private RectTransform _lineParent;
     private RectTransform _edgeParent;
+    private LineEdge _draggingEdge;
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
     [SerializeField]private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
+    private LineEdge DraggingEdge
+    {
+        get
+        {
+            _draggingEdge ??= InstantiateNewEdge();
+            return _draggingEdge;
+        }
+    }
     private LineArg[] SidePoints { get; set; } = new LineArg[2];
 
     #endregion
@@ -263,7 +272,6 @@ public class LineConnector : MonoBehaviour
     #endregion
 
     #region Privates
-
     private void OnDestroy()
     {
         if (!_isRemoved)
@@ -331,12 +339,15 @@ public class LineConnector : MonoBehaviour
             {
                 lineArg.Line.SetEndPoint(currentPosition);
                 LineArgs[index + 1].Line.SetStartPoint(currentPosition);
+
+                SetDraggingEdgePosition(currentPosition);
             }
         };
 
         lineArg.Line.OnDragEnd += _ =>
         {
             SetEdges();
+            DisableDraggingEdge();
             OnDragEnd?.Invoke();
             isDragging = false;
         };
@@ -367,10 +378,16 @@ public class LineConnector : MonoBehaviour
         SidePoints[1] = end;
     }
 
-    private LineEdge GetNewEdge()
+    private LineEdge InstantiateNewEdge()
     {
         LineEdge edge = Instantiate(Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH)).GetComponent<LineEdge>();
         edge.transform.SetParent(_edgeParent);
+        return edge;
+    }
+
+    private LineEdge GetNewEdge()
+    {
+        LineEdge edge = InstantiateNewEdge();
         edge.OnDragEnd += () => OnDragEnd?.Invoke();
         return edge;
     }
@@ -400,8 +417,19 @@ public class LineConnector : MonoBehaviour
             Edges[i].EndArg = LineArgs[i + 1];
             Edges[i].SetPositionToEdge();
         }
-        #endregion
     }
+
+    private void SetDraggingEdgePosition(Vector2 position)
+    {
+        DraggingEdge.gameObject.SetActive(true);
+        DraggingEdge.SetPosition(position);
+    }
+
+    private void DisableDraggingEdge()
+    {
+        DraggingEdge.gameObject.SetActive(false);
+    }
+    #endregion
 
     [Serializable]
     public class LineArg
