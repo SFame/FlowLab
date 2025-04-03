@@ -17,6 +17,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     private readonly float _expansionScale = 1.5f;
     private bool _isSetDefaultSize = false;
     private bool _isSetDefaultColor = false;
+    private UILineRenderer _lineRenderer;
     
     private RectTransform Rect
     {
@@ -39,6 +40,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public LineArg StartArg { get; set; }
     public LineArg EndArg { get; set; }
+    public UILineRenderer UILineRenderer { get { return _lineRenderer; } set { _lineRenderer = value; } }
 
     public bool FreezeAttributes { get; set; }
 
@@ -47,6 +49,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     public void SetPosition(Vector2 pos)
     {
         Rect.position = pos;
+        UILineRenderer.SetAllDirty();
     }
 
     public void SetPositionWithLine(Vector2 pos)
@@ -123,6 +126,8 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
                                                             // => 기본적으로 delta를 통해 움직이도록 되어있지만 이 객체는 계속적으로 현재 마우스 position을 기준으로 움직이기 때문에 움직임이 이상하게 안맞아서 이렇게 함.
         else
             SetPositionWithLine(eventData.position);
+
+        _lineRenderer.SetAllDirty();
     }
     
     public void OnEndDrag(PointerEventData eventData)

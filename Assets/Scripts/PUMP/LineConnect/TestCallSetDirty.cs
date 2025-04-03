@@ -1,13 +1,16 @@
-using UnityEngine;
+using UnityEngine.UI;
 
-public class TestCallSetDirty : MonoBehaviour
+public class TestCallSetDirty : Graphic
 {
     public UILineRenderer lineRenderer;
-    void Update()
+
+    protected override void Awake()
     {
-        if (lineRenderer != null)
-        {
-            lineRenderer.test();
-        }
+        lineRenderer = transform.parent.parent.GetComponent<UILineRenderer>();
+    }
+    protected override void OnPopulateMesh(VertexHelper vh)
+    {
+        base.OnPopulateMesh(vh);
+        lineRenderer.SetAllDirty();
     }
 }

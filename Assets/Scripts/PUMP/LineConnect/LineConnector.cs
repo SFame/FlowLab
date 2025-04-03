@@ -78,6 +78,7 @@ public class LineConnector : MonoBehaviour
     private RectTransform _lineParent;
     private RectTransform _edgeParent;
     private LineEdge _draggingEdge;
+    private UILineRenderer _lineRenderer;
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
@@ -92,7 +93,14 @@ public class LineConnector : MonoBehaviour
         }
     }
     private LineArg[] SidePoints { get; set; } = new LineArg[2];
-
+    public UILineRenderer LineRenderer { 
+        get 
+        { 
+            if(_lineRenderer == null)
+                _lineRenderer = GetComponent<UILineRenderer>(); 
+            return _lineRenderer;
+        } 
+    }
     #endregion
 
     #region Interface
@@ -214,6 +222,7 @@ public class LineConnector : MonoBehaviour
         {
             SidePoints[1]?.Line?.SetEndPoint(value);
             EndSidePointRect.position = value;
+            LineRenderer.SetAllDirty();
             _endSidePoint = value;
         }
     }
@@ -341,12 +350,13 @@ public class LineConnector : MonoBehaviour
                 LineArgs[index + 1].Line.SetStartPoint(currentPosition);
 
                 SetDraggingEdgePosition(currentPosition);
+                SetEdges();
             }
         };
 
         lineArg.Line.OnDragEnd += _ =>
         {
-            SetEdges();
+            //SetEdges();
             DisableDraggingEdge();
             OnDragEnd?.Invoke();
             isDragging = false;
@@ -381,6 +391,7 @@ public class LineConnector : MonoBehaviour
     private LineEdge InstantiateNewEdge()
     {
         LineEdge edge = Instantiate(Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH)).GetComponent<LineEdge>();
+        edge.UILineRenderer = LineRenderer;
         edge.transform.SetParent(_edgeParent);
         return edge;
     }

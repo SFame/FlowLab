@@ -13,6 +13,7 @@ public class UILineRenderer : Graphic
     [SerializeField] private float _widthSize = 10f;
     [SerializeField] private Color _color;
     public List<Vector2> AnchorPoints => _anchorPoints;
+    
 
     public void Init()
     {
@@ -29,7 +30,10 @@ public class UILineRenderer : Graphic
         //Draw Vertices
         CreateLineMesh(vh);
     }
-
+    public void SetColor(Color color)
+    {
+        _color = color;
+    }
     public void SetAnchorPoints()
     {
         Init();
@@ -96,10 +100,5 @@ public class UILineRenderer : Graphic
             vh.AddTriangle(index + 0, index + 2, index + 1);
             vh.AddTriangle(index + 1, index + 2, index + 3);
         }
-    }
-    public void test()
-    {
-        SetAllDirty();
-        Debug.Log("called SetAllDirty");
     }
 }
