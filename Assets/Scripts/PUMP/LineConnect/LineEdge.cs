@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static LineConnector;
 
+
 [RequireComponent(typeof(RectTransform), typeof(RawImage))]
 public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IDragSelectable, IHighlightable
 {

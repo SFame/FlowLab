@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
     #region singleton
     public static GameManager Instance { get; private set; }
     #endregion
-
+    public string stageName;
     private void Awake()
     {
         // 싱글톤 처리

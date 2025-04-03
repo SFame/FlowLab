@@ -647,23 +647,14 @@ MonoBehaviour:
       Entry: 8
       Data: 
     - Name: _roomList
-      Entry: 7
-      Data: 1|System.Collections.Generic.List`1[[RoomData, Assembly-CSharp]], mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
+      Entry: 6
       Data: 
     - Name: _lastSaveTime
       Entry: 7
       Data: System.DateTime, mscorlib
     - Name: 
       Entry: 3
-      Data: -8584586110558236725
+      Data: -8584580057178943175
     - Name: 
       Entry: 8
       Data: 
@@ -673,7 +664,7 @@ MonoBehaviour:
   _data:
     _playerPosition: {x: 0, y: 0, z: 0}
     _playerRotation: {x: 0, y: 0, z: 0, w: 1}
-    _roomList: []
+  _roomList: []
 --- !u!114 &664105853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -686,6 +677,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 740389379d541a54e97369ef016edf8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stageName: 
 --- !u!1 &678542183
 GameObject:
   m_ObjectHideFlags: 0
