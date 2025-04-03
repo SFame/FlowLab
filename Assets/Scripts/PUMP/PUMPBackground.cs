@@ -738,9 +738,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     #endregion
 
     #region Selecting
-    private const string SELECTED_RANGE_PREFAB_PATH = "PUMP/Prefab/Other/SelectedRange";
-    private GameObject _rangePrefab;
-    private RectTransform _rangeRect;
+    private const string DRAGGING_RANGE_PREFAB_PATH = "PUMP/Prefab/Other/DraggingRange";
+    private GameObject _draggingRangePrefab;
+    private RectTransform _draggingRangeRect;
     private readonly List<IDragSelectable> _draggables = new();
     private Vector2 _selectStartPos;
     private GraphicRaycaster _raycaster;
@@ -760,29 +760,29 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
     }
 
-    private GameObject RangePrefab
+    private GameObject DraggingRangePrefab
     {
         get
         {
-            if (_rangePrefab is null)
-                _rangePrefab = Resources.Load<GameObject>(SELECTED_RANGE_PREFAB_PATH);
-            return _rangePrefab;
+            if (_draggingRangePrefab is null)
+                _draggingRangePrefab = Resources.Load<GameObject>(DRAGGING_RANGE_PREFAB_PATH);
+            return _draggingRangePrefab;
         }
     }
 
-    private RectTransform RangeRect
+    private RectTransform DraggingRangeRect
     {
         get
         {
-            if (_rangeRect is null)
+            if (_draggingRangeRect is null)
             {
-                _rangeRect = Instantiate(RangePrefab, m_DraggingZone).GetComponent<RectTransform>();
-                _rangeRect.sizeDelta = Vector2.zero;
-                _rangeRect.anchorMin = new Vector2(0f, 1f);
-                _rangeRect.anchorMax = new Vector2(0f, 1f);
-                _rangeRect.SetAsLastSibling();
+                _draggingRangeRect = Instantiate(DraggingRangePrefab, m_DraggingZone).GetComponent<RectTransform>();
+                _draggingRangeRect.sizeDelta = Vector2.zero;
+                _draggingRangeRect.anchorMin = new Vector2(0f, 1f);
+                _draggingRangeRect.anchorMax = new Vector2(0f, 1f);
+                _draggingRangeRect.SetAsLastSibling();
             }
-            return _rangeRect;
+            return _draggingRangeRect;
         }
     }
     
@@ -867,16 +867,19 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (!HasIntersection(FindUnderPoint<IDragSelectable>(eventData.position), _draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
+        List<IDragSelectable> foundDraggables = Raycaster.FindUnderPoint<IDragSelectable>(eventData.position);
+        if (!foundDraggables.HasIntersection(_draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
+        {
             ClearDraggables();
+        }
     }
     
     public void OnBeginDrag(PointerEventData eventData)
     {
         ClearDraggables();
         _selectStartPos = eventData.position;
-        RangeRect.gameObject.SetActive(true);
-        RangeRect.sizeDelta = Vector2.zero;
+        DraggingRangeRect.gameObject.SetActive(true);
+        DraggingRangeRect.sizeDelta = Vector2.zero;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -885,21 +888,21 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         
         float pivotX = currentPos.x < _selectStartPos.x ? 1 : 0;
         float pivotY = currentPos.y < _selectStartPos.y ? 1 : 0;
-        RangeRect.pivot = new Vector2(pivotX, pivotY);
+        DraggingRangeRect.pivot = new Vector2(pivotX, pivotY);
         
         float width = Mathf.Abs(currentPos.x - _selectStartPos.x);
         float height = Mathf.Abs(currentPos.y - _selectStartPos.y);
-        RangeRect.sizeDelta = new Vector2(width, height);
+        DraggingRangeRect.sizeDelta = new Vector2(width, height);
         
-        RangeRect.position = _selectStartPos;
+        DraggingRangeRect.position = _selectStartPos;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        RangeRect.gameObject.SetActive(false);
+        DraggingRangeRect.gameObject.SetActive(false);
         
         Vector2 selectEndPos = eventData.position;
-        HashSet<IDragSelectable> selectables = GridRaycast<IDragSelectable>(_selectStartPos, selectEndPos, 20f);
+        HashSet<IDragSelectable> selectables = Raycaster.GridRaycast<IDragSelectable>(_selectStartPos, selectEndPos, 20f);
     
         foreach (IDragSelectable selectable in selectables)
         {
@@ -907,58 +910,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             AddDraggable(selectable);
         }
     }
-    
-    private bool HasIntersection<T>(List<T> list1, List<T> list2)
-    {
-        return list1.Intersect(list2).Any();
-    }
-    
-    private List<T> FindUnderPoint<T>(Vector2 point)
-    {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-        pointerData.position = point;
-   
-        List<RaycastResult> results = new List<RaycastResult>();
-        Raycaster.Raycast(pointerData, results);
-   
-        List<T> foundComponents = new List<T>();
-        foreach (RaycastResult result in results)
-        {
-            if (result.gameObject.TryGetComponent(out T component))
-                foundComponents.Add(component);
-        }
-        return foundComponents;
-    }
-
-    // 394ms ㅅㅂㅠㅠ 아 바꿀게 바꾼다고
-    private HashSet<T> GridRaycast<T>(Vector2 startPos, Vector2 endPos, float gridSize = 10f)
-    {
-        PointerEventData pointerData = new PointerEventData(EventSystem.current);
-        
-        float minX = Mathf.Min(startPos.x, endPos.x);
-        float maxX = Mathf.Max(startPos.x, endPos.x);
-        float minY = Mathf.Min(startPos.y, endPos.y);
-        float maxY = Mathf.Max(startPos.y, endPos.y);
-        
-        List<RaycastResult> results = new List<RaycastResult>();
-        for (float x = minX; x <= maxX; x += gridSize)
-        {
-            for (float y = minY; y <= maxY; y += gridSize)
-            {
-                pointerData.position = new Vector2(x, y);
-                Raycaster.Raycast(pointerData, results);
-            }
-        }
-        
-        HashSet<T> selectedObjects = new HashSet<T>();
-        foreach (RaycastResult result in results)
-        {
-            if (result.gameObject.TryGetComponent(out T component))
-                selectedObjects.Add(component);
-        }
-        return selectedObjects;
-    }
-
     #endregion
 }
 
