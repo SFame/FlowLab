@@ -134,7 +134,7 @@ public class TPIn : TransitionPoint, ITPIn
         ITPOut find = eventData.FindUnderPoint<ITPOut>();
         if (find is not null)
         {
-            OnSuccessFinding(find);
+            LinkTo(find);
             Node.ReportChanges();
         }
         else
@@ -144,11 +144,6 @@ public class TPIn : TransitionPoint, ITPIn
             
             Connection?.Disconnect();
         }
-    }
-
-    private void OnSuccessFinding(ITPOut find)
-    {
-        LinkTo(find);
     }
     #endregion
 }

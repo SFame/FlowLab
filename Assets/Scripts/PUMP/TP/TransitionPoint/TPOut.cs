@@ -135,7 +135,7 @@ public class TPOut : TransitionPoint, ITPOut
         if (find is not null)
         {
             Node.ReportChanges();
-            OnSuccessFinding(find);
+            LinkTo(find);
         }
         else
         {
@@ -144,11 +144,6 @@ public class TPOut : TransitionPoint, ITPOut
             
             Connection?.Disconnect();
         }
-    }
-
-    private void OnSuccessFinding(ITPIn find)
-    {
-        LinkTo(find);
     }
     #endregion
 }
