@@ -9,15 +9,18 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     [Header("Puzzle Configuration")]
     [SerializeField] private string puzzleName;
     [SerializeField] private GameObject highlightIndicator;
-    [SerializeField] private GameObject puzzlePumpCanvasPrefab;
+    [SerializeField] private GameObject puzzleUIPrefab;
     [SerializeField] private string fileName = "puzzle_data.bin";
+    [SerializeField] private PUMPSeparator PUMPSeparator;
+    private PUMPBackground _pumpBackground;
 
     // 퍼즐 완료 이벤트
     public event Action<bool> OnPuzzleSolved;
 
     private bool _onSelected = false;
-    private GameObject _instantiatedCanvas;
+    private GameObject _pumpUI;
 
+    [SerializeField] private float successDelayBeforeClose = 3.0f; // 퍼즐 성공 후 닫기까지의 지연 시간
     public bool OnSelected
     {
         get => _onSelected;
@@ -52,89 +55,77 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
             return;
         }
 
-        if (puzzlePumpCanvasPrefab == null)
+        if (puzzleUIPrefab == null)
         {
             return;
         }
 
-        try
+        // 데이터 로드
+        var puzzleData = (await PUMPSerializeManager.GetDatas(fileName))
+            .Where(structure => structure.Name == puzzleName)
+            .FirstOrDefault();
+
+        if (puzzleData == null)
         {
-            // 이미 캔버스가 존재하면 제거
-            if (_instantiatedCanvas != null)
-            {
-                Destroy(_instantiatedCanvas);
-            }
-
-            // 데이터 로드
-            var puzzleData = (await PUMPSerializeManager.GetDatas(fileName))
-                .Where(structure => structure.Name == puzzleName)
-                .FirstOrDefault();
-
-            if (puzzleData == null)
-            {
-                Debug.LogError($"Could not find puzzle with name: {puzzleName}");
-                return;
-            }
-
-            // 캔버스 인스턴스화
-            _instantiatedCanvas = Instantiate(puzzlePumpCanvasPrefab);
-
-            // PuzzleBackground 컴포넌트 찾기
-            var puzzleBackground = _instantiatedCanvas.GetComponentInChildren<PuzzleBackground>();
-            if (puzzleBackground == null)
-            {
-                Destroy(_instantiatedCanvas);
-                return;
-            }
-
-            // 퍼즐 캔버스 설정
-            puzzleBackground.SetPuzzleCanvas(_instantiatedCanvas);
-            // 데이터 설정
-            puzzleBackground.currentData = puzzleData;
-
-            // 퍼즐 검증 결과 이벤트 구독
-            puzzleBackground.OnValidationComplete += HandlePuzzleValidationComplete;
-
-            // PUMPBackground에 노드 정보 설정
-            var pumpBackground = puzzleBackground.pumpBackground;
-            if (pumpBackground != null)
-            {
-                pumpBackground.SetSerializeNodeInfos(puzzleData.NodeInfos);
-                //((IChangeObserver)background).ReportChanges();
-            }
-            // PuzzleData 설정 (테스트 케이스)
-            if (puzzleData.Tag is PuzzleData taggedPuzzleData)
-            {
-                // PuzzleTestCasePanel에 테스트 케이스 데이터 설정
-                var puzzleTestCasePanel = _instantiatedCanvas.GetComponentInChildren<PuzzleTestCasePanel>();
-                if (puzzleTestCasePanel != null)
-                {
-                    // 테스트 케이스 패널에 직접 데이터 설정
-                    puzzleTestCasePanel.SetupTestCases(taggedPuzzleData);
-                }
-
-                // 문제 검증을 위해 PuzzleBackground에도 퍼즐 데이터 설정
-                if (puzzleBackground != null)
-                {
-                    puzzleBackground.SetPuzzleData(taggedPuzzleData);
-                }
-            }
-            else
-            {
-                Debug.LogError("PUMPBackground component not found");
-            }
-
-            Debug.Log($"Loaded puzzle: {puzzleName}");
+            Debug.LogError($"Could not find puzzle with name: {puzzleName}");
+            return;
         }
-        catch (Exception e)
+
+        PUMPSeparator.SetVisible(true);
+        _pumpBackground = PUMPSeparator.GetBackground();
+        _pumpBackground.Open();
+
+       
+        if (_pumpBackground.GetComponentInChildZone<PuzzleBackground>() == null)
         {
-            Debug.LogError($"Error loading puzzle: {e.Message}");
-            if (_instantiatedCanvas != null)
+            _pumpUI = Instantiate(puzzleUIPrefab);
+            RectTransform rect = _pumpUI.GetComponent<RectTransform>();
+            _pumpBackground.SetChildZoneAsFull(rect);
+        }
+
+        PuzzleBackground puzzleBackground = _pumpBackground.GetComponentInChildZone<PuzzleBackground>();
+        puzzleBackground.pumpBackground = _pumpBackground;
+        puzzleBackground.testCasePanel = _pumpBackground.GetComponentInChildZone<PuzzleTestCasePanel>();
+        puzzleBackground.exitButton.onClick.AddListener(() => ClosePuzzle());
+
+        // 데이터 설정
+        puzzleBackground.currentData = puzzleData;
+
+        // 퍼즐 검증 결과 이벤트 구독
+        puzzleBackground.OnValidationComplete += HandlePuzzleValidationComplete;
+        if (_pumpBackground != null)
+        {
+            _pumpBackground.SetSerializeNodeInfos(puzzleData.NodeInfos);
+            //((IChangeObserver)background).ReportChanges();
+        }
+        else
+        {
+            Debug.LogError("PUMPBackground component not found");
+        }
+        // PuzzleData 설정 (테스트 케이스)
+        if (puzzleData.Tag is PuzzleData taggedPuzzleData)
+        {
+            // PuzzleTestCasePanel에 테스트 케이스 데이터 설정
+            //var puzzleTestCasePanel = _pumpUI.GetComponentInChildren<PuzzleTestCasePanel>();
+            if (puzzleBackground.testCasePanel != null)
             {
-                Destroy(_instantiatedCanvas);
-                _instantiatedCanvas = null;
+                // 테스트 케이스 패널에 직접 데이터 설정
+                //puzzleTestCasePanel.SetupTestCases(taggedPuzzleData);
+                puzzleBackground.testCasePanel.SetupTestCases(taggedPuzzleData);
+            }
+
+            // 문제 검증을 위해 PuzzleBackground에도 퍼즐 데이터 설정
+            if (puzzleBackground != null)
+            {
+                puzzleBackground.SetPuzzleData(taggedPuzzleData);
             }
         }
+        else
+        {
+            Debug.LogError("PuzzleData not found in the loaded data.");
+        }
+
+        Debug.Log($"Loaded puzzle: {puzzleName}");
     }
 
     private void HandlePuzzleValidationComplete(bool success)
@@ -142,21 +133,24 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         // 로컬 이벤트 발생
         OnPuzzleSolved?.Invoke(success);
 
-        // 전역 이벤트 발생하고 (반응할 오브젝트가 전역 이벤트 구독하거나 PuzzleInteraction을 참조시켜서 연결해야함)
-        //PuzzleEvents.TriggerPuzzleCompleted(puzzleName, success);
-
-        // if (success)로 성공이면
-        // 퍼즐UI도 닫고
-        // else로 실패면 프리펩 속 Panel이 틀린거 보여주니깐 그냥 풀게냅두기
+        if (success)
+        {
+            DelayedClosePuzzle().Forget();
+        }
+    }
+    private async UniTaskVoid DelayedClosePuzzle()
+    {
+        // 지정된 시간만큼 대기 후 닫기
+        await UniTask.Delay(TimeSpan.FromSeconds(successDelayBeforeClose));
+        ClosePuzzle();
     }
 
     // 캔버스를 닫는 메서드, 퍼즐캔버스 속 Exit버튼이 있지만 퍼즐완료했을때를 위해 추가
     public void ClosePuzzle()
     {
-        if (_instantiatedCanvas != null)
-        {
-            Destroy(_instantiatedCanvas);
-            _instantiatedCanvas = null;
-        }
+        
+        PUMPSeparator.SetVisible(false);
+        _pumpBackground.Close();
+
     }
 }

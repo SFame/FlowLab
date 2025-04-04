@@ -5,7 +5,7 @@ using UnityEngine;
 /// 입력 및 출력 게이트웨이 노드 수를 관리하는 클래스
 /// PUMPCanvas 프리팹에 추가하여 사용
 /// </summary>
-public class PUMPInputOutputManager : MonoBehaviour
+public class PUMPInputOutputController : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TMP_InputField inputCountField;

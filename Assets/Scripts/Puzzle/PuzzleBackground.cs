@@ -8,21 +8,24 @@ using UnityEngine.UI;
 public class PuzzleBackground : MonoBehaviour
 {
     public PUMPBackground pumpBackground;
+    public PuzzleTestCasePanel testCasePanel;
 
     [SerializeField] private Button testButton;
-    [SerializeField] private Button exitButton;
+    public Button exitButton;
 
-    [SerializeField] private float testCaseDelay = 0.2f;
+    [SerializeField] private float testCaseDelay = 0.3f;
 
     public PUMPSaveDataStructure currentData;
     public PuzzleData currentPuzzleData;
     private bool isValidating = false;
 
-    private GameObject puzzleCanvas;
 
     // 테스트 결과 이벤트
     public event Action<bool> OnValidationComplete;
     public event Action<int, bool> OnTestCaseComplete; // 테스트케이스 인덱스, 성공 여부
+
+    // 테스트케이스 판넬 속 Output을 위한 이벤트
+    public event Action<int, bool[], bool> OnTestCaseResultDetailed;
 
     private void Start()
     {
@@ -30,11 +33,7 @@ public class PuzzleBackground : MonoBehaviour
         {
             testButton.onClick.AddListener(() => ValidateAllTestCases().Forget());
         }
-        // Exit 버튼 이벤트 연결
-        if (exitButton != null)
-        {
-            exitButton.onClick.AddListener(CloseCanvas);
-        }
+        
     }
 
     public void SetPuzzleData(PuzzleData puzzleData)
@@ -66,6 +65,7 @@ public class PuzzleBackground : MonoBehaviour
             return;
         }
 
+        pumpBackground.CanInteractive = false;
         isValidating = true;
         bool allTestsPassed = true;
 
@@ -73,6 +73,7 @@ public class PuzzleBackground : MonoBehaviour
 
         for (int i = 0; i < currentPuzzleData.testCases.Count; i++)
         {
+
             TestCase testCase = currentPuzzleData.testCases[i];
             bool testPassed = await ValidateTestCase(testCase, i);
 
@@ -89,6 +90,7 @@ public class PuzzleBackground : MonoBehaviour
         OnValidationComplete?.Invoke(allTestsPassed);
         Debug.Log($"All test cases validation completed. Result: {(allTestsPassed ? "PASSED" : "FAILED")}");
 
+        pumpBackground.CanInteractive = true;
         isValidating = false;
     }
     // 단일 테스트케이스 검증
@@ -116,37 +118,29 @@ public class PuzzleBackground : MonoBehaviour
 
         // 출력값 검증
         bool testPassed = true;
+        bool[] actualOutputStates = new bool[pumpBackground.ExternalOutput.GateCount]; // 실제 출력 상태를 저장할 배열
         if (testCase.ExternalOutputStates != null)
         {
-            for (int i = 0; i < testCase.ExternalOutputStates.Count && i < pumpBackground.ExternalOutput.GateCount; i++)
+            for (int i = 0; i < testCase.ExternalOutputStates.Count; i++)
             {
-                bool expected = testCase.ExternalOutputStates[i];
-                bool actual = pumpBackground.ExternalOutput[i].State;
+                bool expected = testCase.ExternalOutputStates[i]; // 예상 출력 상태 - 유저가 만들어야 하는 상태
+                bool actual = pumpBackground.ExternalOutput[i].State; // 실제 출력 상태 - 현재 퍼즐의 상태
+
+                actualOutputStates[i] = actual; // 실제 출력을 저장 -> 테스트케이스Item 속 Toggle들을 켜기 위함
 
                 if (expected != actual)
                 {
                     Debug.Log($"Test case {index} failed at output {i}: Expected {expected}, got {actual}");
                     testPassed = false;
-                    break;
                 }
             }
         }
+        OnTestCaseResultDetailed?.Invoke(index, actualOutputStates, testPassed);
 
         Debug.Log($"Test case {index} validation result: {(testPassed ? "PASSED" : "FAILED")}");
         return testPassed;
     }
 
-    public void CloseCanvas()
-    {
-        if (puzzleCanvas != null)
-        {
-            Destroy(puzzleCanvas);
-            Debug.Log("Puzzle canvas closed");
-        } 
-    }
-    // 퍼즐 캔버스 설정(퍼즐 상호작용부분에서)
-    public void SetPuzzleCanvas(GameObject canvas)
-    {
-        puzzleCanvas = canvas;
-    }
+    
+ 
 }
