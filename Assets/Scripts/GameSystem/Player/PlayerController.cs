@@ -19,23 +19,25 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer spriteRenderer; // flip
 
     private bool _isInteracting = false;
+    private bool _isPuzzleActive = false;
 
-    private void OnEnable()
+    void OnEnable()
     {
         TextDisplay.OnDialogueStarted += HandleDialogueStarted;
         TextDisplay.OnDialogueEnded += HandleDialogueEnded;
+
     }
-    private void OnDisable()
+    void OnDisable()
     {
 
         TextDisplay.OnDialogueStarted -= HandleDialogueStarted;
         TextDisplay.OnDialogueEnded -= HandleDialogueEnded;
     }
 
-    private void Awake()
+    void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
         if (animator == null)
         {
@@ -43,9 +45,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
-        if (_isInteracting)
+        if (_isInteracting || _isPuzzleActive)
         {
             return;
         }
@@ -69,12 +71,18 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (_isInteracting)
+        if (_isInteracting || _isPuzzleActive)
         {
             rb.linearVelocity = Vector2.zero;
             return;
         }
         rb.linearVelocity = movementDirection * moveSpeed;
+    }
+
+    // 퍼즐 활성화 상태를 설정하는 public 메서드
+    public void SetPuzzleActive(bool isActive)
+    {
+        _isPuzzleActive = isActive;
     }
 
     private void HandleDialogueStarted(string dialogueId)
@@ -86,6 +94,8 @@ public class PlayerController : MonoBehaviour
     {
         _isInteracting = false;
     }
+ 
+
 
     private void OnTriggerStay2D(Collider2D collision)
     {
