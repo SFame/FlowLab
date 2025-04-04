@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(UILineRenderer))]
+//[RequireComponent(typeof(UILineRenderer))]
 [RequireComponent(typeof(RectTransform))]
 public class LineConnector : MonoBehaviour
 {
@@ -82,7 +83,7 @@ public class LineConnector : MonoBehaviour
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
-    [SerializeField]private List<LineArg> LineArgs { get; set; } = new();
+    [SerializeField] private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
     private LineEdge DraggingEdge
     {
@@ -93,7 +94,8 @@ public class LineConnector : MonoBehaviour
         }
     }
     private LineArg[] SidePoints { get; set; } = new LineArg[2];
-    public UILineRenderer LineRenderer { 
+    public UILineRenderer LineRenderer
+    { 
         get 
         { 
             if(_lineRenderer == null)
@@ -154,6 +156,7 @@ public class LineConnector : MonoBehaviour
             vertices.Add(arg.Start);
         }
         vertices.Add(LineArgs[^1].End);
+
         return vertices;
     }
 
@@ -212,6 +215,7 @@ public class LineConnector : MonoBehaviour
             SidePoints[0]?.Line?.SetStartPoint(value);
             StartSidePointRect.position = value;
             _startSidePoint = value;
+            LineUpdated?.Invoke();
         }
     }
 
@@ -222,12 +226,13 @@ public class LineConnector : MonoBehaviour
         {
             SidePoints[1]?.Line?.SetEndPoint(value);
             EndSidePointRect.position = value;
-            LineRenderer.SetAllDirty();
             _endSidePoint = value;
+            LineUpdated?.Invoke();
         }
     }
     
     public event Action OnDragEnd;
+    public event Action LineUpdated;
     public event Action OnRemove;
 
     public bool FreezeLinesAttributes
@@ -331,6 +336,8 @@ public class LineConnector : MonoBehaviour
 
             AddArgToNext(lineArg, dragStartPosition, lineArg.End);
             lineArg.Line.SetEndPoint(dragStartPosition);
+
+            LineUpdated?.Invoke();
         };
 
         lineArg.Line.OnDragging += eventData =>
@@ -348,17 +355,18 @@ public class LineConnector : MonoBehaviour
             {
                 lineArg.Line.SetEndPoint(currentPosition);
                 LineArgs[index + 1].Line.SetStartPoint(currentPosition);
+                LineUpdated?.Invoke();
 
                 SetDraggingEdgePosition(currentPosition);
-                SetEdges();
             }
         };
 
         lineArg.Line.OnDragEnd += _ =>
         {
-            //SetEdges();
+            SetEdges();
             DisableDraggingEdge();
             OnDragEnd?.Invoke();
+            LineUpdated?.Invoke();
             isDragging = false;
         };
     }
@@ -391,7 +399,6 @@ public class LineConnector : MonoBehaviour
     private LineEdge InstantiateNewEdge()
     {
         LineEdge edge = Instantiate(Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH)).GetComponent<LineEdge>();
-        edge.UILineRenderer = LineRenderer;
         edge.transform.SetParent(_edgeParent);
         return edge;
     }
@@ -400,6 +407,8 @@ public class LineConnector : MonoBehaviour
     {
         LineEdge edge = InstantiateNewEdge();
         edge.OnDragEnd += () => OnDragEnd?.Invoke();
+        edge.OnDragEnd += () => LineUpdated?.Invoke();
+        edge.OnDragging += () => LineUpdated?.Invoke();
         return edge;
     }
 

@@ -3,16 +3,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-//[RequireComponent(typeof(RectTransform), typeof(RawImage))]
+[RequireComponent(typeof(RectTransform), typeof(Image))]
 public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPointerExitHandler, IHighlightable
 {
     private Image Image
     {
         get
         {
-            if (_rawImage is null)
-                _rawImage = GetComponent<Image>();
-            return _rawImage;
+            if (_image is null)
+                _image = GetComponent<Image>();
+            return _image;
         }
     }
 
@@ -28,7 +28,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     
     private Vector2 _startPoint;
     private Vector2 _endPoint;
-    private Image _rawImage;
+    private Image _image;
     private RectTransform _rect;
     private Color _defaultColor;
     private Color _highlightedColor = Color.green;

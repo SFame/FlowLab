@@ -40,16 +40,15 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public LineArg StartArg { get; set; }
     public LineArg EndArg { get; set; }
-    public UILineRenderer UILineRenderer { get { return _lineRenderer; } set { _lineRenderer = value; } }
 
     public bool FreezeAttributes { get; set; }
 
+    public event Action OnDragging;
     public event Action OnDragEnd;
 
     public void SetPosition(Vector2 pos)
     {
         Rect.position = pos;
-        UILineRenderer.SetAllDirty();
     }
 
     public void SetPositionWithLine(Vector2 pos)
@@ -127,7 +126,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         else
             SetPositionWithLine(eventData.position);
 
-        _lineRenderer.SetAllDirty();
+        OnDragging?.Invoke();
     }
     
     public void OnEndDrag(PointerEventData eventData)
