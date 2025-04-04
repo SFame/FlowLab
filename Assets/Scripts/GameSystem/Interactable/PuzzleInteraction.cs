@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PuzzleInteraction : MonoBehaviour, IInteractable
 {
@@ -13,6 +12,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     [SerializeField] private string fileName = "puzzle_data.bin";
     [SerializeField] private PUMPSeparator PUMPSeparator;
     private PUMPBackground _pumpBackground;
+    private PlayerController playerController;
 
     // 퍼즐 완료 이벤트
     public event Action<bool> OnPuzzleSolved;
@@ -34,6 +34,20 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
                     highlightIndicator.SetActive(value);
                 }
             }
+        }
+    }
+
+    private void Awake()
+    {
+        // PUMPSeparator가 설정되지 않았다면 자동으로 찾기
+        if (PUMPSeparator == null)
+        {
+            PUMPSeparator = FindFirstObjectByType<PUMPSeparator>();
+        }
+        // 참조가 설정되지 않았다면 자동으로 찾기
+        if (playerController == null)
+        {
+            playerController = FindFirstObjectByType<PlayerController>();
         }
     }
 
@@ -72,6 +86,12 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         }
 
         PUMPSeparator.SetVisible(true);
+
+        if (playerController != null)
+        {
+            playerController.SetPuzzleActive(true);
+        }
+
         _pumpBackground = PUMPSeparator.GetBackground();
         _pumpBackground.Open();
 
@@ -150,6 +170,12 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     {
         
         PUMPSeparator.SetVisible(false);
+
+        if (playerController != null)
+        {
+            playerController.SetPuzzleActive(false);
+        }
+
         _pumpBackground.Close();
 
     }
