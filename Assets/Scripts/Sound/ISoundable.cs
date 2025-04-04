@@ -5,7 +5,7 @@ using UnityEngine;
 /// </summary>
 public interface ISoundable
 {
-    event SoundEventHandler SoundEvent;
+    event SoundEventHandler OnSounded;
 }
 
 public class SoundEventArgs

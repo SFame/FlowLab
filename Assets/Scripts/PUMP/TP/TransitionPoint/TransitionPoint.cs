@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDraggable //������ �������̽� ����
+public abstract class TransitionPoint : MonoBehaviour, 
+                                        ITransitionPoint, IPointerEnterHandler, 
+                                        IPointerExitHandler, IPointerClickHandler, IDraggable
 {
     #region Privates
     private RectTransform _imageRect;
@@ -70,6 +70,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
             _nameText.text = value;
         }
     }
+    public bool BlockConnect { get; set; }
     public GameObject GameObject => gameObject;
     public Vector2 Location => (Vector2)ImageRect?.position;
 

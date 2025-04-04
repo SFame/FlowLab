@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
 [ResourceGetter("PUMP/Sprite/ingame/null_node")]
-public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable
+public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable, IDeserializingListenable
 {
     #region Privates
     private bool _initialized = false;
@@ -24,6 +24,8 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     private bool _inEnumActive = true;
     private bool _outEnumActive = true;
+
+    private bool _onDeserializing = false;
     #endregion
 
     #region Protected
@@ -84,6 +86,30 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     public Vector2 Location => Rect.position;
 
+    public bool OnDeserializing
+    {
+        get => _onDeserializing;
+        set
+        {
+            _onDeserializing = value;
+            foreach (ITransitionPoint tp in InputToken)
+            {
+                if (tp is IDeserializingListenable listenable)
+                {
+                    listenable.OnDeserializing = value;
+                }
+            }
+
+            foreach (ITransitionPoint tp in OutputToken)
+            {
+                if (tp is IDeserializingListenable listenable)
+                {
+                    listenable.OnDeserializing = value;
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// 직렬화 시 TP의 연결정보 Get
     /// </summary>
@@ -103,7 +129,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     /// 역 직렬화 시 TP의 연결정보 Set
     /// </summary>
     /// <param name="connectionInfo"></param>
-    public void SetTPConnectionInfo(TPConnectionInfo connectionInfo)
+    public void SetTPConnectionInfo(TPConnectionInfo connectionInfo, DeserializationCompleteReceiver completeReceiver)
     {
         if (!_initialized)
         {
@@ -111,8 +137,8 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             return;
         }
 
-        InputToken.Enumerator.SetTPsConnection(connectionInfo.InConnectionTargets, connectionInfo.InVertices);
-        OutputToken.Enumerator.SetTPsConnection(connectionInfo.OutConnectionTargets, connectionInfo.OutVertices);
+        InputToken.Enumerator.SetTPsConnection(connectionInfo.InConnectionTargets, connectionInfo.InVertices, completeReceiver);
+        OutputToken.Enumerator.SetTPsConnection(connectionInfo.OutConnectionTargets, connectionInfo.OutVertices, completeReceiver);
     }
 
     public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()

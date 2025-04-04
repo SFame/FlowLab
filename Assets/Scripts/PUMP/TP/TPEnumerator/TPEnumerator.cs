@@ -52,15 +52,31 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
         }
     }
 
-    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices)
+    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
     {
         if (!(targetTps.Length == vertices.Length && vertices.Length == TPs.Count))
         {
-            Debug.Log(@$"{GetType().Name}: 
-            targetTps({targetTps.Length}), 
-            vertices({vertices.Length}), 
-            TPs({TPs.Count}) 
-            Length dosen't match");
+            Debug.Log($"{name}: 직렬화 정보와 불일치: data: {targetTps.Length} / TP: {TPs.Count}");
+
+            foreach (ITransitionPoint tp in TPs)
+            {
+                tp.Connection?.Disconnect();
+                tp.BlockConnect = true;
+            }
+
+            // subscribe (no action)
+            completeReceiver.Subscribe(() =>
+            {
+                foreach (ITransitionPoint tp in TPs)
+                {
+                    if (tp != null)
+                    {
+                        tp.BlockConnect = false;
+                    }
+                }
+            });
+            // ---------------------
+
             return;
         }
 

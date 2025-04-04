@@ -16,6 +16,11 @@ public interface ILocatable
     public Vector2 Location { get; }
 }
 
+public interface IDeserializingListenable
+{
+    public bool OnDeserializing { get; set; }
+}
+
 /// <summary>
 /// 노드를 잇는 말단 객체
 /// Connection.Disconnect()는 양쪽 모두의 커넥션을 해제를 의미
@@ -28,6 +33,7 @@ public interface ITransitionPoint : INameable, IStateful, ILocatable
     public TPConnection Connection { get; set; }
     public GameObject GameObject { get; }
     public Node Node { get; set; }
+    public bool BlockConnect { get; set; }
     public void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
     public void Connect(TPConnection connection);
     public void Disconnect();

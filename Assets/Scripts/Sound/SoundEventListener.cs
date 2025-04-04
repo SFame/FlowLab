@@ -37,7 +37,7 @@ public class SoundEventListener : MonoBehaviour
 
     protected virtual void OnSoundEvent(ISoundable sender, SoundEventArgs args)
     {
-        if (m_AudioSource != null)
+        if (!AudioSourceIsNull())
         {
             AudioClip targetClip = GetClipByIndex(args.AudioIndex);
 
@@ -65,23 +65,22 @@ public class SoundEventListener : MonoBehaviour
     {
         if (m_IsListen)
         {
-            AudioSourceNullCheck();
             OnSoundEvent(sender, args);
         }
     }
 
-    private void AudioSourceNullCheck()
+    private bool AudioSourceIsNull()
     {
         if (m_AudioSource == null)
         {
             Debug.LogWarning("AudioSource component is missing.");
+            return true;
         }
+        return false;
     }
 
     private void Initialize()
     {
-        AudioSourceNullCheck();
-
         if (m_SoundableComponent != null)
         {
             foreach (Component component in m_SoundableComponent) // 인스펙터 등록 컴포넌트 => soundables 이동
@@ -104,7 +103,7 @@ public class SoundEventListener : MonoBehaviour
 
         foreach (ISoundable soundable in _soundables)
         {
-            soundable.SoundEvent += InternalOnSoundEvent;
+            soundable.OnSounded += InternalOnSoundEvent;
         }
     }
 
@@ -114,7 +113,7 @@ public class SoundEventListener : MonoBehaviour
         {
             if (soundable != null)
             {
-                soundable.SoundEvent -= InternalOnSoundEvent;
+                soundable.OnSounded -= InternalOnSoundEvent;
             }
         }
     }

@@ -562,6 +562,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     {
         object blocker = new();
         _isOnChangeBlocker.Add(blocker);
+        using DeserializationCompleteReceiver completeReceiver = new();
 
         try
         {
@@ -570,8 +571,18 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             foreach (SerializeNodeInfo info in infos)
             {
                 Node newNode = AddNewNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
+                
                 if (newNode is null)
-                    continue;
+                {
+                    Debug.LogError($"{name}: InstantiateNewNodeAndApplyArgs Null 반환");
+                    return;
+                } 
+
+                if (newNode is IDeserializingListenable listenable) // 역직렬화 시작을 알림
+                {
+                    listenable.OnDeserializing = true;
+                    completeReceiver.Subscribe(() => listenable.OnDeserializing = false);
+                }
 
                 newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
             }
@@ -640,13 +651,19 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 }
 
                 TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
-                Nodes[i].SetTPConnectionInfo(connectionInfo);
+                Nodes[i].SetTPConnectionInfo(connectionInfo, completeReceiver);
             }
 
             SetGateway();
 
+            completeReceiver.Invoke();
+
             if (invokeOnChange)
                 OnChanged?.Invoke();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"SetSerializeNodeInfos failed: {e.Message}");
         }
         finally
         {
@@ -1090,6 +1107,30 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     {
         if (ObjectIsNull)
             throw new NullReferenceException();
+    }
+}
+
+public class DeserializationCompleteReceiver : IDisposable
+{
+    private List<Action> _onCompletes = new();
+
+    public void Subscribe(Action action)
+    {
+        _onCompletes.Add(action);
+    }
+
+    public void Invoke()
+    {
+        for (int i = 0; i < _onCompletes.Count; i++)
+        {
+            _onCompletes[i]?.Invoke();
+        }
+    }
+
+    public void Dispose()
+    {
+        _onCompletes.Clear();
+        _onCompletes = null;
     }
 }
 

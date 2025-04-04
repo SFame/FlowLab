@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(Image))]
-public class TPIn : TransitionPoint, ITPIn
+public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
 {
     #region Privates
     [SerializeField]
@@ -59,17 +59,32 @@ public class TPIn : TransitionPoint, ITPIn
         }
     }
 
+    public bool OnDeserializing { get; set; }
+
     public event StateChangeEventHandler OnStateChange;
+    public event SoundEventHandler OnSounded;
 
     public override void Connect(TPConnection connection)
     {
         Connection?.Disconnect();
 
         connection.TargetState = this;
-        Connection = connection;
 
-        OnMove = uguiPos => OnNodeMove(connection.LineConnector);
-        Node.OnMove += OnMove;
+        if (!BlockConnect)
+        {
+            Connection = connection;
+
+            OnMove = uguiPos => OnNodeMove(connection.LineConnector);
+            Node.OnMove += OnMove;
+
+            if (!OnDeserializing)
+            {
+                OnSounded?.Invoke(this, new(0, Location));
+            }
+            return;
+        }
+
+        connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
     }
     
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
@@ -91,6 +106,11 @@ public class TPIn : TransitionPoint, ITPIn
         Connection = null;
         Node.OnMove -= OnMove;
         OnMove = null;
+
+        if (!OnDeserializing)
+        {
+            OnSounded?.Invoke(this, new(1, Location));
+        }
     }
     #endregion
 

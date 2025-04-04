@@ -41,6 +41,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         Rect.pivot = new Vector2(0, 0.5f);
         _defaultColor = Image.color;
         Thickness = _defaultThickness;
+        SetThickness(_defaultThickness);
     }
 
     public Vector2 StartPoint => _startPoint;

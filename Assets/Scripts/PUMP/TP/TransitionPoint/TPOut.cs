@@ -1,14 +1,14 @@
-using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
 
-public class TPOut : TransitionPoint, ITPOut
+public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenable
 {
     #region Privates
     [SerializeField]
     private bool _state;
     private LineConnector _lineConnector;
+
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
@@ -45,22 +45,11 @@ public class TPOut : TransitionPoint, ITPOut
         }
     }
 
-    public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
-    {
-        Connection?.Disconnect();
-
-        if (connection is null)
-            connection = new();
-
-        connection = SetTPConnectionLineConnector(connection);
-        connection.SourceState = this;
-        Connection = connection;
-
-        targetTp.Connect(connection);
-    }
     #endregion
 
     #region Interface
+    public event SoundEventHandler OnSounded;
+
     public override bool State
     {
         get => _state;
@@ -75,15 +64,42 @@ public class TPOut : TransitionPoint, ITPOut
         }
     }
 
+    public bool OnDeserializing { get; set; }
+
+    public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
+    {
+        Connection?.Disconnect();
+
+        if (connection is null)
+            connection = new();
+
+        connection = SetTPConnectionLineConnector(connection);
+        connection.SourceState = this;
+        Connection = connection;
+
+        targetTp.Connect(connection);
+    }
+
     public override void Connect(TPConnection connection)
     {
         Connection?.Disconnect();
 
         connection.SourceState = this;
-        Connection = connection;
+        if (!BlockConnect)
+        {
+            Connection = connection;
 
-        OnMove = uguiPos => OnNodeMove(connection.LineConnector);
-        Node.OnMove += OnMove;
+            OnMove = uguiPos => OnNodeMove(connection.LineConnector);
+            Node.OnMove += OnMove;
+
+            if (!OnDeserializing)
+            {
+                OnSounded?.Invoke(this, new(0, Location));
+            }
+            return;
+        }
+
+        connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
     }
 
     public override void Disconnect()
@@ -91,6 +107,11 @@ public class TPOut : TransitionPoint, ITPOut
         Connection = null;
         Node.OnMove -= OnMove;
         OnMove = null;
+
+        if (!OnDeserializing)
+        {
+            OnSounded?.Invoke(this, new(1, Location));
+        }
     }
     #endregion
 

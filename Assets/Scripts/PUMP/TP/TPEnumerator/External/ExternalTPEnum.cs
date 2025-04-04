@@ -232,15 +232,31 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         return this;
     }
 
-    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices)
+    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
     {
         if (!(targetTps.Length == vertices.Length && vertices.Length == Handles.Count))
         {
-            Debug.Log(@$"{GetType().Name}: 
-            targetTps({targetTps.Length}), 
-            vertices({vertices.Length}), 
-            Handles({Handles.Count}) 
-            Length dosen't match");
+            Debug.Log($"{name}: 직렬화 정보와 불일치: data: {targetTps.Length} / TP: {Handles.Count}");
+
+            IEnumerable<ITransitionPoint> tps = Handles.Select(handle => handle.TP);
+            
+            foreach (ITransitionPoint tp in tps)
+            {
+                tp.Connection?.Disconnect();
+                tp.BlockConnect = true;
+            }
+
+            completeReceiver.Subscribe(() =>
+            {
+                foreach (ITransitionPoint tp in tps)
+                {
+                    if (tp != null)
+                    {
+                        tp.BlockConnect = false;
+                    }
+                }
+            });
+
             return;
         }
 
