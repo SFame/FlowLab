@@ -4,95 +4,53 @@ using System.Collections.Generic;
 using OdinSerializer;
 using System.Text;
 using System;
+using System.Linq;
 
 [Serializable]
 public class Room : MonoBehaviour
 {
-    [OdinSerialize][SerializeField] private string _roomID;
-    [OdinSerialize][SerializeField] private List<Stage> _stageList;
-    [OdinSerialize][SerializeField] private bool _clear;
-    [OdinSerialize][SerializeField] private object _tag;
+    [SerializeField]private string roomName;
+    [SerializeField]private List<GameObject> roomObjects;
 
-    #region Properties
-    public string RoomID
+    public RoomData GetRoomData()
     {
-        get { return _roomID; }
-        set { _roomID = value; }
+        return new RoomData(roomName, roomObjects);
     }
-    public List<Stage> StageList
+    public void SetRoomData(RoomData roomData)
     {
-        get { return _stageList; }
-        set { _stageList = value; }
-    }
-    public bool Clear
-    {
-        get { return _clear; }
-        set { _clear = value; }
-    }
-    public object Tag
-    {
-        get { return _tag; }
-        set { _tag = value; }
-    }
-    #endregion
-    public Room()
-    {
-        _roomID = string.Empty;
-        _stageList = new List<Stage>();
-        _clear = false;
-        _tag = null;
-    }
-    public void UpdateClearStatus()
-    {
-        if (_stageList.Count == 0)
+        for (int i = 0; i < roomObjects.Count; i++)
         {
-            _clear = false;
-            return;
+            roomObjects[i].GetComponent<ISaveLoad>().objectData = roomData.ObjectDatas[i];
         }
-
-        foreach (var state in _stageList)
-        {
-            if (!state)
-            {
-                _clear = false;
-                return;
-            }
-        }
-
-        _clear = true;
     }
-    public float GetRoomCompletionRate()
+}
+
+[Serializable]
+public class RoomData 
+{ 
+    [OdinSerialize][SerializeField]private string _name;
+    [OdinSerialize][SerializeField]private List<ObjectData> _objectDatas;
+
+    public String Name
     {
-        if (_stageList.Count == 0)
-            return 0f;
-
-        int clearedStages = 0;
-
-        foreach (var state in _stageList)
-        {
-            if (state)
-                clearedStages++;
-        }
-
-        return (float)clearedStages / _stageList.Count;
+        get { return _name; }
+        set { _name = value; }
     }
-    public override string ToString()
+    public List<ObjectData> ObjectDatas
     {
-        var sb = new StringBuilder();
-        sb.AppendLine($"[SerializeRoomInfo]");
-        sb.AppendLine("{");
-        sb.AppendLine($"    [NodeType]: {_roomID ?? "null"}");
-        sb.AppendLine($"    [StageCount]: {_stageList.Count}");
-        sb.AppendLine($"    [StageStates]");
-        sb.AppendLine("    {");
-        foreach (var state in _stageList)
-        {
-            sb.AppendLine($"        [Stage ID]: {state.StageID}");
-            sb.AppendLine($"        [Stage Clear]: {state.Clear}");
+        get { 
+            _objectDatas ??= new List<ObjectData>();
+            return _objectDatas; 
         }
-        sb.AppendLine("    }");
-        sb.Append("}");
+        set { _objectDatas = value; }
+    }
 
-        return sb.ToString();
+    public RoomData(string name, List<GameObject> roomObjects)
+    {
+        Name = name;
+        for (int i = 0; i < roomObjects.Count; i++)
+        {
+            ObjectDatas.Add(roomObjects[i].GetComponent<ISaveLoad>().objectData);
+        }
     }
 }

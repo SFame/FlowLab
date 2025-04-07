@@ -1,16 +1,17 @@
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 
 public class Obstacle : MonoBehaviour
 {
-    [SerializeField] private PuzzleInteraction linkedPuzzle; // Á÷Á¢ ¿¬°á
+    [SerializeField] private PuzzleInteraction linkedPuzzle; // ì§ì ‘ ì—°ê²°
 
     private void Start()
     {
         
-        // ¹æ¹ı 2: Á÷Á¢ ÆÛÁñ ¿ÀºêÁ§Æ® ¿¬°á
+        // ë°©ë²• 2: ì§ì ‘ í¼ì¦ ì˜¤ë¸Œì íŠ¸ ì—°ê²°
         if (linkedPuzzle != null)
         {
-            linkedPuzzle.OnPuzzleSolved += HandleDirectPuzzleSolved;
+            linkedPuzzle.OnPuzzleValidation += HandleDirectPuzzleSolved;
         }
     }
 
@@ -24,7 +25,7 @@ public class Obstacle : MonoBehaviour
 
     private void PuzzleSolved()
     {
-        // ¾Ö´Ï¸ŞÀÌ¼Ç Àç»ı, Äİ¶óÀÌ´õ ºñÈ°¼ºÈ­ µîÀÇ ÀÛ¾÷
+        // ì• ë‹ˆë©”ì´ì…˜ ì¬ìƒ, ì½œë¼ì´ë” ë¹„í™œì„±í™” ë“±ì˜ ì‘ì—…
         this.gameObject.SetActive(false);
     }
 
@@ -32,7 +33,7 @@ public class Obstacle : MonoBehaviour
     {
         if (linkedPuzzle != null)
         {
-            linkedPuzzle.OnPuzzleSolved -= HandleDirectPuzzleSolved;
+            linkedPuzzle.OnPuzzleValidation -= HandleDirectPuzzleSolved;
         }
     }
 }
