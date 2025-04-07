@@ -650,7 +650,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4881920020802191066
 RectTransform:
   m_ObjectHideFlags: 0
@@ -729,7 +729,10 @@ MonoBehaviour:
   addTestCaseButton: {fileID: 4555446264421624427}
   saveButton: {fileID: 7013285812848252721}
   closeButton: {fileID: 6629583478653983808}
+  openButton: {fileID: 0}
   testCaseItemPrefab: {fileID: 7581726178363861602, guid: 2b81a8154f4b3dc4a95580bf960580fe, type: 3}
+  background: {fileID: 0}
+  testCasePanel: {fileID: 0}
   currentPuzzleData:
     testCases: []
 --- !u!114 &4922705669264914803
@@ -866,7 +869,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 546233769332858257}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!1 &5729930872132264517
 GameObject:
   m_ObjectHideFlags: 0

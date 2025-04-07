@@ -1621,7 +1621,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6084d0734d28ec74c9dc9b32888d4cb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  puzzleName: 1
+  puzzleName: 123
   highlightIndicator: {fileID: 0}
   puzzleUIPrefab: {fileID: 2719730820727447711, guid: 8da26425d5c54b24bbefc731242bb003, type: 3}
   fileName: node_data.bin
