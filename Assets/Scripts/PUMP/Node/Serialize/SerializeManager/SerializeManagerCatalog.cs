@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UnityEditor.Overlays;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// Serialize Manager 여러개를 관리 DataDirectory에 따라 사용자 AppData path에 저장할지, 리소스에 포함할 지 선택 가능

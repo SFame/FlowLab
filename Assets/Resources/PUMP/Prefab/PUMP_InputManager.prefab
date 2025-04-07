@@ -51,4 +51,10 @@ MonoBehaviour:
   - m_ActionType: 2
     m_Modifiers: 32010000
     m_ActionKeys: 13010000
+  - m_ActionType: 3
+    m_Modifiers: 
+    m_ActionKeys: 7f000000
+  - m_ActionType: 4
+    m_Modifiers: 
+    m_ActionKeys: 08000000
   m_Enable: 1

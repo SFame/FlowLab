@@ -824,17 +824,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
         _draggables.Clear();
     }
-
-    private void AddDraggable(IDragSelectable draggable)
-    {
-        _draggables.Add(draggable);
-        draggable.OnSelectedMove += DraggablesMoveCallback;
-        draggable.SelectRemoveRequest += ClearDraggables;
-        Func<List<ContextElement>> contextGetter = () => SelectContextElements;
-        draggable.SelectingTag = contextGetter;
-    }
-
-    private void DestroyDraggables()
+    
+    public void DestroyDraggables()
     {
         foreach (IDragSelectable draggable in _draggables.ToList())
         {
@@ -846,7 +837,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         ((IChangeObserver)this).ReportChanges();
     }
 
-    private void DisconnectDraggables()
+    public void DisconnectDraggables()
     {
         foreach (IDragSelectable draggable in _draggables.ToList())
         {
@@ -854,6 +845,15 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 node.Disconnect();
         }
         ((IChangeObserver)this).ReportChanges();
+    }
+    
+    private void AddDraggable(IDragSelectable draggable)
+    {
+        _draggables.Add(draggable);
+        draggable.OnSelectedMove += DraggablesMoveCallback;
+        draggable.SelectRemoveRequest += ClearDraggables;
+        Func<List<ContextElement>> contextGetter = () => SelectContextElements;
+        draggable.SelectingTag = contextGetter;
     }
     
     /// <summary>

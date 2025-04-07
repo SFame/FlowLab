@@ -111,14 +111,14 @@ public class BackgroundActionKeyMap
         }
     }
 
-    private bool IsKeyMapInvalid => m_Modifiers == null || m_Modifiers.Count == 0 || m_ActionKeys == null || m_ActionKeys.Count == 0;
+    private bool IsKeyMapInvalid => m_Modifiers == null || m_ActionKeys == null || m_ActionKeys.Count == 0;
 
     private bool StateCheck()
     {
         if (IsKeyMapInvalid)
             return false;
 
-        if (m_Modifiers.All(Input.GetKey))
+        if (m_Modifiers.Count == 0 || m_Modifiers.All(Input.GetKey))
         {
             bool result = false;
             if (_lastKey != null && Input.GetKeyDown(_lastKey.Value))
@@ -168,6 +168,8 @@ public enum BackgroundActionType
     NoAction,
     Undo,
     Redo,
+    DragDelete,
+    DragDisconnect,
 }
 
 /// <summary>
@@ -179,6 +181,8 @@ public static class BackgroundActionMapper
     {
         BackgroundActionType.Undo => UndoAction,
         BackgroundActionType.Redo => RedoAction,
+        BackgroundActionType.DragDelete => DragDeleteAction,
+        BackgroundActionType.DragDisconnect => DragDisconnectAction,
         BackgroundActionType.NoAction => null,
         _ => null
     };
@@ -192,6 +196,16 @@ public static class BackgroundActionMapper
     private static void RedoAction()
     {
         PUMPBackground.Current?.Redo();
+    }
+
+    private static void DragDeleteAction()
+    {
+        PUMPBackground.Current?.DestroyDraggables();
+    }
+
+    private static void DragDisconnectAction()
+    {
+        PUMPBackground.Current?.DisconnectDraggables();
     }
     #endregion
 }
