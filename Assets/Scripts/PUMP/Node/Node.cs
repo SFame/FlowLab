@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
 [ResourceGetter("PUMP/Sprite/ingame/null_node")]
-public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable, IDeserializingListenable
+public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable, IDeserializingListenable, ISoundable
 {
     #region Privates
     private bool _initialized = false;
@@ -166,6 +166,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void CallCompletePlacementFromPalette()
     {
         OnCompletePlacementFromPalette();
+        PlaySound(0);
         ReportChanges();
     }
 
@@ -500,9 +501,18 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
                 tpIn.OnStateChange += StateUpdate;
         }
     }
+
+    private void PlaySound(int index)
+    {
+        if (!OnDeserializing)
+        {
+            OnSounded?.Invoke(this, new(index, Location));
+        }
+    }
     #endregion
 
     #region  Other (ToString()..)
+    public event SoundEventHandler OnSounded;
     public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName}";
     public virtual void OnPointerClick(PointerEventData eventData)
     {

@@ -6,7 +6,7 @@ using static LineConnector;
 
 
 [RequireComponent(typeof(RectTransform), typeof(RawImage))]
-public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IDragSelectable, IHighlightable
+public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragSelectable, IHighlightable
 {
     #region Privates
     private RectTransform _rect;
@@ -45,6 +45,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public event Action OnDragging;
     public event Action OnDragEnd;
+    public event Action<PointerEventData> OnRightClick;
 
     public void SetPosition(Vector2 pos)
     {
@@ -150,6 +151,13 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         }
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            OnRightClick?.Invoke(eventData);
+        }
+    }
     #region Selecting handler
     public bool IsSelected
     {
@@ -200,5 +208,6 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         SelectRemoveRequest?.Invoke();
         IsSelected = false;
     }
+
     #endregion
 }

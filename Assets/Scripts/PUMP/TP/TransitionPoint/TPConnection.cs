@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Utils;
 
 public class TPConnection : IStateful, IDisposable
 {
@@ -28,6 +29,17 @@ public class TPConnection : IStateful, IDisposable
                 DrawLine();
                 _initialized = true;
             }
+        }
+    }
+
+    private List<ContextElement> ContextElements
+    {
+        get
+        {
+            return new List<ContextElement>()
+            {
+                new ContextElement("Disconnect", Disconnect),
+            };
         }
     }
     #endregion
@@ -92,7 +104,7 @@ public class TPConnection : IStateful, IDisposable
                 return new() { SourceState.Location, TargetState.Location };
             }
             
-            if (_lineEdges.Count < 2)
+            if (_lineEdges.Count < 2) // Invalid
             {
                 _lineEdges = null;
                 return new() { SourceState.Location, TargetState.Location };
@@ -157,6 +169,7 @@ public class TPConnection : IStateful, IDisposable
         }
 
         LineConnector.Initialize(LineEdges);
+        LineConnector.ContextElements = ContextElements;
     }
 
     private async UniTaskVoid TargetStateUpdateAsync()

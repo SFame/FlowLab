@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(RectTransform), typeof(Image))]
-public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPointerExitHandler, IHighlightable
+public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IHighlightable
 {
     private Image Image
     {
@@ -51,6 +52,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     public event Action<PointerEventData> OnDragStart;
     public event Action<PointerEventData> OnDragging;
     public event Action<PointerEventData> OnDragEnd;
+    public event Action<PointerEventData> OnRightClick;
 
     public bool FreezeAttributes { get; set; }
 
@@ -160,5 +162,13 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     {
         SetHighlight(false);
         SetThickness(_defaultThickness);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            OnRightClick?.Invoke(eventData);
+        }
     }
 }

@@ -19,13 +19,11 @@ public class SoundEventListener : MonoBehaviour
     [SerializeField] private List<Component> m_SoundableComponent;
     #endregion
 
-    private HashSet<ISoundable> _soundables = new();
-
     #region Protected
     protected List<AudioClip> AudioList => m_AudioList;
     protected HashSet<ISoundable> Soundables => _soundables;
 
-    protected virtual void Awake()
+    protected virtual void Start()
     {
         Initialize();
     }
@@ -50,6 +48,8 @@ public class SoundEventListener : MonoBehaviour
     #endregion
 
     #region Privates
+    private HashSet<ISoundable> _soundables = new();
+
     private AudioClip GetClipByIndex(int index)
     {
         if (index < 0 || index >= m_AudioList.Count)

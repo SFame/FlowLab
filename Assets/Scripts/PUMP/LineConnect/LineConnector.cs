@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 //[RequireComponent(typeof(UILineRenderer))]
 [RequireComponent(typeof(RectTransform))]
@@ -69,9 +70,19 @@ public class LineConnector : MonoBehaviour
         }
     }
 
+    private Canvas RootCanvas
+    {
+        get
+        {
+            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
+            return _rootCanvas;
+        }
+    }
+
     private GameObject _imageLine;
     private Vector2 _startSidePoint;
     private Vector2 _endSidePoint;
+    private Canvas _rootCanvas;
     private RectTransform _startEdgePoint;
     private RectTransform _endEdgePoint;
     private RawImage _startSidePointImage;
@@ -106,6 +117,30 @@ public class LineConnector : MonoBehaviour
     #endregion
 
     #region Interface
+    public event Action OnDragEnd;
+    public event Action LineUpdated;
+    public event Action OnRemove;
+
+    public List<ContextElement> ContextElements { get; set; }
+
+    public bool FreezeLinesAttributes
+    {
+        get => _freezeLinesAttributes;
+        set
+        {
+            _freezeLinesAttributes = value;
+
+            foreach (LineArg arg in LineArgs)
+                arg.Line.FreezeAttributes = value;
+
+            foreach (LineEdge edge in Edges)
+            {
+                edge.FreezeAttributes = value;
+            }
+        }
+    }
+
+
     public void Initialize(Vector2 start, Vector2 end)
     {
         AddLineEdgeParent();
@@ -230,27 +265,6 @@ public class LineConnector : MonoBehaviour
             LineUpdated?.Invoke();
         }
     }
-    
-    public event Action OnDragEnd;
-    public event Action LineUpdated;
-    public event Action OnRemove;
-
-    public bool FreezeLinesAttributes
-    {
-        get => _freezeLinesAttributes;
-        set
-        {
-            _freezeLinesAttributes = value;
-
-            foreach (LineArg arg in LineArgs)
-                arg.Line.FreezeAttributes = value;
-
-            foreach (LineEdge edge in Edges)
-            {
-                edge.FreezeAttributes = value;
-            }
-        }
-    }
 
     public void SetColor(Color color)
     {
@@ -369,6 +383,8 @@ public class LineConnector : MonoBehaviour
             LineUpdated?.Invoke();
             isDragging = false;
         };
+
+        lineArg.Line.OnRightClick += ShowContext;
     }
 
     private LineArg AddArgToNext(LineArg current, Vector2 start, Vector2 end)
@@ -409,6 +425,7 @@ public class LineConnector : MonoBehaviour
         edge.OnDragEnd += () => OnDragEnd?.Invoke();
         edge.OnDragEnd += () => LineUpdated?.Invoke();
         edge.OnDragging += () => LineUpdated?.Invoke();
+        edge.OnRightClick += ShowContext;
         return edge;
     }
 
@@ -448,6 +465,14 @@ public class LineConnector : MonoBehaviour
     private void DisableDraggingEdge()
     {
         DraggingEdge.gameObject.SetActive(false);
+    }
+
+    private void ShowContext(PointerEventData eventData)
+    {
+        if (ContextElements != null && ContextElements.Count > 0)
+        {
+            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
+        }
     }
     #endregion
 
