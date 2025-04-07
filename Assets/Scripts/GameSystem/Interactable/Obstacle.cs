@@ -10,7 +10,7 @@ public class Obstacle : MonoBehaviour
         // 방법 2: 직접 퍼즐 오브젝트 연결
         if (linkedPuzzle != null)
         {
-            linkedPuzzle.OnPuzzleSolved += HandleDirectPuzzleSolved;
+            linkedPuzzle.OnPuzzleValidation += HandleDirectPuzzleSolved;
         }
     }
 
@@ -32,7 +32,7 @@ public class Obstacle : MonoBehaviour
     {
         if (linkedPuzzle != null)
         {
-            linkedPuzzle.OnPuzzleSolved -= HandleDirectPuzzleSolved;
+            linkedPuzzle.OnPuzzleValidation -= HandleDirectPuzzleSolved;
         }
     }
 }
