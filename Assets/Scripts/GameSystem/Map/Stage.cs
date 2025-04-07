@@ -3,10 +3,22 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class Stage : MonoBehaviour
+
+public class ObjectData
+{
+
+}
+
+[Serializable]
+public class StageData : ObjectData
 {
     [OdinSerialize][SerializeField] private string _stageID;
     [OdinSerialize][SerializeField] private bool _clear;
+    public StageData(string puzzleName, bool claer)
+    {
+        _stageID = puzzleName;
+        _clear = claer;
+    }
 
     public bool Clear
     {

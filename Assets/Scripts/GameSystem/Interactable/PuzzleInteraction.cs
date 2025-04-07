@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-public class PuzzleInteraction : MonoBehaviour, IInteractable
+public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
 {
     [Header("Puzzle Configuration")]
     [SerializeField] private string puzzleName;
@@ -13,14 +13,14 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     [SerializeField] private PUMPSeparator PUMPSeparator;
     private PUMPBackground _pumpBackground;
     private PlayerController playerController;
-
-    // ÆÛÁñ ¿Ï·á ÀÌº¥Æ®
+    private bool _clear = false;
+    // í¼ì¦ ì™„ë£Œ ì´ë²¤íŠ¸
     public event Action<bool> OnPuzzleSolved;
 
     private bool _onSelected = false;
     private GameObject _pumpUI;
 
-    [SerializeField] private float successDelayBeforeClose = 3.0f; // ÆÛÁñ ¼º°ø ÈÄ ´İ±â±îÁöÀÇ Áö¿¬ ½Ã°£
+    [SerializeField] private float successDelayBeforeClose = 3.0f; // í¼ì¦ ì„±ê³µ í›„ ë‹«ê¸°ê¹Œì§€ì˜ ì§€ì—° ì‹œê°„
     public bool OnSelected
     {
         get => _onSelected;
@@ -37,14 +37,15 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         }
     }
 
+
     private void Awake()
     {
-        // PUMPSeparator°¡ ¼³Á¤µÇÁö ¾Ê¾Ò´Ù¸é ÀÚµ¿À¸·Î Ã£±â
+        // PUMPSeparatorê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ìë™ìœ¼ë¡œ ì°¾ê¸°
         if (PUMPSeparator == null)
         {
             PUMPSeparator = FindFirstObjectByType<PUMPSeparator>();
         }
-        // ÂüÁ¶°¡ ¼³Á¤µÇÁö ¾Ê¾Ò´Ù¸é ÀÚµ¿À¸·Î Ã£±â
+        // ì°¸ì¡°ê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ë‹¤ë©´ ìë™ìœ¼ë¡œ ì°¾ê¸°
         if (playerController == null)
         {
             playerController = FindFirstObjectByType<PlayerController>();
@@ -74,7 +75,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
             return;
         }
 
-        // µ¥ÀÌÅÍ ·Îµå
+        // ë°ì´í„° ë¡œë“œ
         var puzzleData = (await PUMPSerializeManager.GetDatas(fileName))
             .Where(structure => structure.Name == puzzleName)
             .FirstOrDefault();
@@ -108,10 +109,10 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         puzzleBackground.testCasePanel = _pumpBackground.GetComponentInChildZone<PuzzleTestCasePanel>();
         puzzleBackground.exitButton.onClick.AddListener(() => ClosePuzzle());
 
-        // µ¥ÀÌÅÍ ¼³Á¤
+        // ë°ì´í„° ì„¤ì •
         puzzleBackground.currentData = puzzleData;
 
-        // ÆÛÁñ °ËÁõ °á°ú ÀÌº¥Æ® ±¸µ¶
+        // í¼ì¦ ê²€ì¦ ê²°ê³¼ ì´ë²¤íŠ¸ êµ¬ë…
         puzzleBackground.OnValidationComplete += HandlePuzzleValidationComplete;
         if (_pumpBackground != null)
         {
@@ -122,19 +123,19 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         {
             Debug.LogError("PUMPBackground component not found");
         }
-        // PuzzleData ¼³Á¤ (Å×½ºÆ® ÄÉÀÌ½º)
+        // PuzzleData ì„¤ì • (í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤)
         if (puzzleData.Tag is PuzzleData taggedPuzzleData)
         {
-            // PuzzleTestCasePanel¿¡ Å×½ºÆ® ÄÉÀÌ½º µ¥ÀÌÅÍ ¼³Á¤
+            // PuzzleTestCasePanelì— í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ ë°ì´í„° ì„¤ì •
             //var puzzleTestCasePanel = _pumpUI.GetComponentInChildren<PuzzleTestCasePanel>();
             if (puzzleBackground.testCasePanel != null)
             {
-                // Å×½ºÆ® ÄÉÀÌ½º ÆĞ³Î¿¡ Á÷Á¢ µ¥ÀÌÅÍ ¼³Á¤
+                // í…ŒìŠ¤íŠ¸ ì¼€ì´ìŠ¤ íŒ¨ë„ì— ì§ì ‘ ë°ì´í„° ì„¤ì •
                 //puzzleTestCasePanel.SetupTestCases(taggedPuzzleData);
                 puzzleBackground.testCasePanel.SetupTestCases(taggedPuzzleData);
             }
 
-            // ¹®Á¦ °ËÁõÀ» À§ÇØ PuzzleBackground¿¡µµ ÆÛÁñ µ¥ÀÌÅÍ ¼³Á¤
+            // ë¬¸ì œ ê²€ì¦ì„ ìœ„í•´ PuzzleBackgroundì—ë„ í¼ì¦ ë°ì´í„° ì„¤ì •
             if (puzzleBackground != null)
             {
                 puzzleBackground.SetPuzzleData(taggedPuzzleData);
@@ -150,22 +151,23 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
 
     private void HandlePuzzleValidationComplete(bool success)
     {
-        // ·ÎÄÃ ÀÌº¥Æ® ¹ß»ı
+        // ë¡œì»¬ ì´ë²¤íŠ¸ ë°œìƒ
         OnPuzzleSolved?.Invoke(success);
 
         if (success)
         {
+            _clear = true;
             DelayedClosePuzzle().Forget();
         }
     }
     private async UniTaskVoid DelayedClosePuzzle()
     {
-        // ÁöÁ¤µÈ ½Ã°£¸¸Å­ ´ë±â ÈÄ ´İ±â
+        // ì§€ì •ëœ ì‹œê°„ë§Œí¼ ëŒ€ê¸° í›„ ë‹«ê¸°
         await UniTask.Delay(TimeSpan.FromSeconds(successDelayBeforeClose));
         ClosePuzzle();
     }
 
-    // Äµ¹ö½º¸¦ ´İ´Â ¸Ş¼­µå, ÆÛÁñÄµ¹ö½º ¼Ó Exit¹öÆ°ÀÌ ÀÖÁö¸¸ ÆÛÁñ¿Ï·áÇßÀ»¶§¸¦ À§ÇØ Ãß°¡
+    // ìº”ë²„ìŠ¤ë¥¼ ë‹«ëŠ” ë©”ì„œë“œ, í¼ì¦ìº”ë²„ìŠ¤ ì† Exitë²„íŠ¼ì´ ìˆì§€ë§Œ í¼ì¦ì™„ë£Œí–ˆì„ë•Œë¥¼ ìœ„í•´ ì¶”ê°€
     public void ClosePuzzle()
     {
         
@@ -179,4 +181,16 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         _pumpBackground.Close();
 
     }
+    public ObjectData objectData { get => GetStageData(); set => SetStageData(value); }
+
+    private ObjectData GetStageData()
+    {
+        StageData stageData = new StageData(puzzleName, _clear);
+        return stageData;
+    }
+    private void SetStageData(ObjectData stageData)
+    {
+        _clear = ((StageData)stageData).Clear;
+    }
+
 }

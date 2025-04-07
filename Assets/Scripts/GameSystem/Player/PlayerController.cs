@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = movementDirection * moveSpeed;
     }
 
-    // ÆÛÁñ È°¼ºÈ­ »óÅÂ¸¦ ¼³Á¤ÇÏ´Â public ¸Ş¼­µå
+    // í¼ì¦ í™œì„±í™” ìƒíƒœë¥¼ ì„¤ì •í•˜ëŠ” public ë©”ì„œë“œ
     public void SetPuzzleActive(bool isActive)
     {
         _isPuzzleActive = isActive;
@@ -93,17 +93,5 @@ public class PlayerController : MonoBehaviour
     private void HandleDialogueEnded(string dialogueId)
     {
         _isInteracting = false;
-    }
- 
-
-
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if(collision.CompareTag("Key") && Input.GetKey(KeyCode.Return))
-        {
-            GameManager.Instance.stageName = collision.GetComponent<Stage>().StageID;
-            SceneManager.LoadSceneAsync("3.StageScene");
-        }
-
     }
 }

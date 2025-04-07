@@ -35,13 +35,15 @@ public class GameSaveManager : SerializedMonoBehaviour
     }
     public void SaveGame()
     {
+        _data = new GameSaveData();
         // 플레이어 현재 위치 및 회전 업데이트
         UpdatePlayerTransform();
-
+        UpdateRoomState();
         _data.UpdateSaveTime();
 
         SaveData(FILE_NAME, _data);
     }
+
     public void LoadGame()
     {
         _data = LoadData<GameSaveData>(FILE_NAME);
@@ -70,84 +72,18 @@ public class GameSaveManager : SerializedMonoBehaviour
             player.transform.rotation = _data.PlayerRotation;
         }
     }
-    private void ApplyRoomState()
+    private void UpdateRoomState()
     {
         for (int i = 0; i < _roomList.Count; i++)
         {
-            string roomName = _roomList[i].RoomID;
-            _roomList[i] = _data.RoomList[roomName];
+            _data.RoomDataList.Add(_roomList[i].GetRoomData());
         }
     }
-    public void UpdateRoomData(Room roomData)
+    private void ApplyRoomState()
     {
-        for (int i = 0; i < _data.RoomList.Count; i++)
+        for (int i = 0; i < _data.RoomDataList.Count; i++)
         {
-            if (_data.RoomList.ContainsKey(roomData.RoomID))
-            {
-                _data.RoomList[roomData.RoomID] = roomData;
-                return;
-            }
+            _roomList[i].SetRoomData(_data.RoomDataList[i]);
         }
-
-        // 존재하지 않으면 추가
-        _data.RoomList[roomData.RoomID] = roomData;
-    }
-    public Room GetRoomData(string roomID)
-    {
-        if (_data.RoomList.ContainsKey(roomID))
-        {
-            return _data.RoomList[roomID];
-        }
-        return null;
-    }
-    public void SetStageCleared(string roomID, int stageID, bool cleared)
-    {
-        Room roomData = GetRoomData(roomID);
-        roomData.UpdateClearStatus();
-        UpdateRoomData(roomData);
-    }
-    public float GetRoomCompletionRate(string roomID)
-    {
-        return GetRoomData(roomID).GetRoomCompletionRate();
-    }
-}
-
-[Serializable]
-public class GameSaveData
-{
-    [OdinSerialize][SerializeField] private Vector3 _playerPosition;
-    [OdinSerialize][SerializeField] private Quaternion _playerRotation;
-    [OdinSerialize][SerializeField] private Dictionary<string, Room> _roomList;
-    [OdinSerialize][SerializeField] private DateTime _lastSaveTime;
-
-    #region Properties
-    public Vector3 PlayerPosition
-    {
-        get { return _playerPosition; }
-        set { _playerPosition = value; }
-    }
-    public Quaternion PlayerRotation
-    {
-        get { return _playerRotation; }
-        set { _playerRotation = value; }
-    }
-    public Dictionary<string, Room> RoomList
-    {
-        get{ return RoomList; }
-        set {  RoomList = value; }
-    }
-    public DateTime LastSaveTime => _lastSaveTime;
-    #endregion
-
-    public GameSaveData()
-    {
-        _playerPosition = Vector3.zero;
-        _playerRotation = Quaternion.identity;
-        _lastSaveTime = DateTime.Now;
-        _roomList = new Dictionary<string, Room>();
-    }
-    public void UpdateSaveTime()
-    {
-        _lastSaveTime = DateTime.Now;
     }
 }
