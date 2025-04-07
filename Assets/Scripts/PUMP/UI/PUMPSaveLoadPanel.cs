@@ -25,7 +25,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private SaveLoadUiController _uiController;
     private RecyclableScrollRect _scrollRect;
     private Canvas _rootCanvas;
-    private PUMPSerializeManager _serializer;
+    private PUMPAppdataSerializeManager _serializer;
     private List<PUMPSaveDataStructure> _saveDatas;
     private bool _initialized = false;
 
@@ -55,7 +55,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private void OnDestroy()
     {
-        PUMPSerializeManager.OnDataUpdated.RemoveEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(DataDirectory.PumpAppData).RemoveEvent(savePath, ReloadData);
     }
 
     private async UniTaskVoid AddNewSave(string saveName)
@@ -63,7 +63,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         if (Extract(saveName, out PUMPSaveDataStructure newStructure))
         {
             newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
-            await PUMPSerializeManager.AddData(savePath, newStructure);
+            await SerializeManagerCatalog.AddData(DataDirectory.PumpAppData, savePath, newStructure);
 
             ReloadDataAsync().Forget();
         }
@@ -99,13 +99,13 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
             TextGetterManager.Set(RootCanvas, newName => AddNewSave(newName).Forget(), "Save name", defaultSaveName);
         });
 
-        PUMPSerializeManager.OnDataUpdated.AddEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(DataDirectory.PumpAppData).AddEvent(savePath, ReloadData);
         _initialized = true;
     }
 
     private async UniTask GetDatasFromManager()
     {
-        _saveDatas = await PUMPSerializeManager.GetDatas(savePath);
+        _saveDatas = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
 
         foreach (PUMPSaveDataStructure data in _saveDatas)
             data.SubscribeUpdateNotification(RefreshEventAdapter);

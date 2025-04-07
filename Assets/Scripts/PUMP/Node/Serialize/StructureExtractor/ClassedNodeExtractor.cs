@@ -140,7 +140,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             return;
         }
 
-        List<PUMPSaveDataStructure> pumpData = await PUMPSerializeManager.GetDatas(savePath);
+        List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
         PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(id) ?
             null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(id));
 
@@ -202,7 +202,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
     private async UniTask AddNewAsync(IClassedNode classedNode)
     {
-        List<PUMPSaveDataStructure> pumpData = await PUMPSerializeManager.GetDatas(savePath);
+        List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
         PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(classedNode.Id) ?
             null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(classedNode.Id));
 
@@ -270,7 +270,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         if (ValidateBeforeSerialization(newStructure))
         {
-            await PUMPSerializeManager.AddData(savePath, newStructure);
+            await SerializeManagerCatalog.AddData(DataDirectory.PumpAppData, savePath, newStructure);
         }
     }
 

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using SerializationUtility = OdinSerializer.SerializationUtility;
 
 namespace Utils
 {
@@ -677,7 +678,172 @@ namespace Utils
         }
         #endregion
     }
-    
+
+    public static class ResourceSerializer
+    {
+        public static void SaveToResources<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.JSON)
+        {
+#if UNITY_EDITOR
+            fileName = FileNameTrimming(fileName, format);
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Debug.LogError("fileName is null or empty");
+                return;
+            }
+
+            try
+            {
+                string resourcesPath = Path.Combine(Application.dataPath, "Resources");
+                string directoryPath = string.IsNullOrEmpty(subfolder) ? resourcesPath : Path.Combine(resourcesPath, subfolder);
+
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
+
+                byte[] bytes = SerializationUtility.SerializeValue(data, format);
+                string path = Path.Combine(directoryPath, fileName);
+                File.WriteAllBytes(path, bytes);
+
+                AssetDatabase.Refresh();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error saving to Resources: {e.Message}");
+            }
+#else
+            Debug.LogError("SaveToResources only works in Editor mode");
+#endif
+        }
+
+        public static async Task SaveToResourcesAsync<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.JSON)
+        {
+#if UNITY_EDITOR
+            fileName = FileNameTrimming(fileName, format);
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Debug.LogError("fileName is null or empty");
+                return;
+            }
+
+            try
+            {
+                string resourcesPath = Path.Combine(Application.dataPath, "Resources");
+                string directoryPath = string.IsNullOrEmpty(subfolder) ? resourcesPath : Path.Combine(resourcesPath, subfolder);
+
+                if (!Directory.Exists(directoryPath))
+                    Directory.CreateDirectory(directoryPath);
+
+                byte[] bytes = await Task.Run(() => SerializationUtility.SerializeValue(data, format));
+
+                string path = Path.Combine(directoryPath, fileName);
+                await File.WriteAllBytesAsync(path, bytes);
+
+                AssetDatabase.Refresh();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error saving to Resources async: {e.Message}");
+            }
+#else
+            Debug.LogError("SaveToResourcesAsync only works in Editor mode");
+            await Task.CompletedTask;
+#endif
+        }
+
+        public static T LoadFromResources<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.JSON)
+        {
+            fileName = FileNameTrimming(fileName, format);
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Debug.LogError("fileName is null or empty");
+                return default;
+            }
+
+            try
+            {
+                string resourcePath = string.IsNullOrEmpty(subfolder)
+                    ? Path.GetFileNameWithoutExtension(fileName)
+                    : Path.Combine(subfolder, Path.GetFileNameWithoutExtension(fileName));
+
+                TextAsset textAsset = Resources.Load<TextAsset>(resourcePath);
+
+                if (textAsset == null)
+                {
+                    Debug.LogWarning($"Resource not found: {resourcePath}");
+                    return default;
+                }
+
+                T result = SerializationUtility.DeserializeValue<T>(textAsset.bytes, format);
+                return result;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error loading from Resources: {e.Message}");
+                return default;
+            }
+        }
+
+        public static async Task<T> LoadFromResourcesAsync<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.JSON)
+        {
+            fileName = FileNameTrimming(fileName, format);
+
+            if (string.IsNullOrEmpty(fileName))
+            {
+                Debug.LogError("fileName is null or empty");
+                return default;
+            }
+
+            try
+            {
+                string resourcePath = string.IsNullOrEmpty(subfolder)
+                    ? Path.GetFileNameWithoutExtension(fileName)
+                    : Path.Combine(subfolder, Path.GetFileNameWithoutExtension(fileName));
+
+                Object loaded = await Resources.LoadAsync<TextAsset>(resourcePath);
+
+                TextAsset textAsset = loaded as TextAsset;
+
+                if (textAsset == null)
+                {
+                    Debug.LogWarning($"Resource not found: {resourcePath}");
+                    return default;
+                }
+
+                byte[] bytesCopy = new byte[textAsset.bytes.Length];
+                Buffer.BlockCopy(textAsset.bytes, 0, bytesCopy, 0, textAsset.bytes.Length); // textAsset.bytes 접근은 메인스레드에서만 가능하다네요
+
+                return await Task.Run(() => SerializationUtility.DeserializeValue<T>(bytesCopy, format));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error loading from Resources: {e.Message}");
+                return default;
+            }
+        }
+
+        #region Privates
+        private static string FileNameTrimming(string fileName, DataFormat format)
+        {
+            if (string.IsNullOrEmpty(fileName))
+                return fileName;
+
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+            string newExtension = format switch
+            {
+                DataFormat.Binary => ".bytes", // Unity에서 바이너리 파일은 .bytes
+                DataFormat.JSON => ".json",
+                DataFormat.Nodes => ".asset",
+                _ => throw new ArgumentOutOfRangeException(nameof(format), format, null)
+            };
+
+            return fileNameWithoutExtension + newExtension;
+        }
+        #endregion
+    }
+
     public static class ContextMenuManager
     {
         public static void ShowContextMenu([NotNull]Canvas rootCanvas, Vector2 position, [NotNull]params ContextElement[] contextElements)

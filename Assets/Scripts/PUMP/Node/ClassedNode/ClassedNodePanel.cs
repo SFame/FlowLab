@@ -103,20 +103,39 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
         Destroy(gameObject);
     }
 
-    public void ClosePanelWithAskSave()
+    public void ClosePanelWithAskSave()  // 버튼 인스펙터에서 참조중
     {
         if (DataManager.GetCurrent().IsChanged)
         {
-            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOption, () => CloseWithoutSave().Forget());
+            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
             return;
         }
 
         ClosePanel();
     }
 
+    /// <summary>
+    /// 세이브 옵션 띄우고 세이브 된 후 나가지 않음
+    /// </summary>
     public void OpenSaveOption()
     {
         TextGetterManager.Set(RootCanvas, DataManager.Push, "Save Name", defaultSaveName);
+    }
+
+    /// <summary>
+    /// 세이브 옵션 띄우고 세이브 된 후 나감
+    /// </summary>
+    public void OpenSaveOptionWithExit()
+    {
+        TextGetterManager.Set(
+        RootCanvas,
+        saveName =>
+        {
+            DataManager.Push(saveName);
+            ClosePanel();
+        },
+        "Save Name",
+        defaultSaveName);
     }
 
     public void SetSlider(PUMPBackground background)

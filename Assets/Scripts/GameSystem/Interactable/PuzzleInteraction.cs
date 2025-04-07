@@ -15,7 +15,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     private PlayerController playerController;
     private bool _clear = false;
     // 퍼즐 완료 이벤트
-    public event Action<bool> OnPuzzleSolved;
+    public event Action<bool> OnPuzzleValidation;
 
     private bool _onSelected = false;
     private GameObject _pumpUI;
@@ -76,7 +76,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         }
 
         // 데이터 로드
-        var puzzleData = (await PUMPSerializeManager.GetDatas(fileName))
+        var puzzleData = (await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, fileName))
             .Where(structure => structure.Name == puzzleName)
             .FirstOrDefault();
 
@@ -152,7 +152,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     private void HandlePuzzleValidationComplete(bool success)
     {
         // 로컬 이벤트 발생
-        OnPuzzleSolved?.Invoke(success);
+        OnPuzzleValidation?.Invoke(success);
 
         if (success)
         {
