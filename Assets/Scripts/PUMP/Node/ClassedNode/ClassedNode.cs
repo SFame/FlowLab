@@ -6,6 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
+[ResourceGetter("PUMP/Sprite/ingame/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<ClassedNodeSerializeInfo>
 {
     #region Privates
@@ -43,6 +44,8 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     protected override int DefaultInputCount => 2;
 
     protected override int DefaultOutputCount => 2;
+
+    public override string NodePrefebPath => "PUMP/Prefab/Node/CLASSED";
 
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 

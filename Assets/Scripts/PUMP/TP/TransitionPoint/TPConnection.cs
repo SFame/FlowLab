@@ -16,7 +16,7 @@ public class TPConnection : IStateful, IDisposable
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
     private CancellationTokenSource _cts = new CancellationTokenSource();
-    private bool _stateUpdateRequested = false;
+    private UniTask _targetStateUpdateTask = UniTask.CompletedTask;
     private bool _disposed = false;
     
     private void InitializCheck()
@@ -51,8 +51,10 @@ public class TPConnection : IStateful, IDisposable
         set
         {
             _stateChache = value;
-            if (TargetState is not null)
-                TargetStateUpdateAsync().Forget();
+            if (TargetState is not null && _targetStateUpdateTask.Status != UniTaskStatus.Pending)
+            {
+                _targetStateUpdateTask = TargetStateUpdateAsync();
+            }
         }
     }
 
@@ -138,8 +140,8 @@ public class TPConnection : IStateful, IDisposable
             return;
         }
 
-        SourceState.Disconnect();
-        TargetState.Disconnect();
+        SourceState.ClearConnection();
+        TargetState.ClearConnection();
 
         TargetState.State = false;
 
@@ -155,6 +157,8 @@ public class TPConnection : IStateful, IDisposable
         
         _cts.Cancel();
         _cts.Dispose();
+        _sourceState = null;
+        _targetState = null;
         _disposed = true;
     }
     #endregion
@@ -172,13 +176,8 @@ public class TPConnection : IStateful, IDisposable
         LineConnector.ContextElements = ContextElements;
     }
 
-    private async UniTaskVoid TargetStateUpdateAsync()
-    {
-        if (_stateUpdateRequested)
-            return;
-        
-        _stateUpdateRequested = true;
-        
+    private async UniTask TargetStateUpdateAsync()
+    {      
         try
         {
             await UniTask.WaitForEndOfFrame(_cts.Token);
@@ -190,10 +189,6 @@ public class TPConnection : IStateful, IDisposable
             }
         }
         catch (OperationCanceledException) { }
-        finally
-        {
-            _stateUpdateRequested = false;
-        }
     }
     #endregion
 }

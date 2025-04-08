@@ -28,40 +28,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private bool _onDeserializing = false;
     #endregion
 
-    #region Protected
-    protected Image Image
-    {
-        get
-        {
-            if (_image is null)
-                _image = GetComponent<Image>();
-
-            return _image;
-        }
-    }
-
-    protected TextMeshProUGUI NodeNameText
-    {
-        get
-        {
-            if ( _nodeNameText is null)
-                _nodeNameText = GetComponentInChildren<TextMeshProUGUI>();
-
-            return _nodeNameText;
-        }
-    }
-
-    protected Canvas RootCanvas
-    {
-        get
-        {
-            if (_rootCanvas is null)
-                _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
-            return _rootCanvas;
-        }
-    }
-    #endregion
-
     #region Interface
     public PUMPBackground Background
     {
@@ -109,6 +75,8 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             }
         }
     }
+
+    public event Action<Node> OnDestroy;
 
     /// <summary>
     /// 직렬화 시 TP의 연결정보 Get
@@ -170,12 +138,11 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         ReportChanges();
     }
 
-    public event Action<Node> OnDestroy;
-
     public void Destroy()
     {
         Disconnect();
         OnDestroy?.Invoke(this);
+        OnRemove();
         Destroy(gameObject);
     }
 
@@ -193,18 +160,64 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     {
         Image.color = highlighted ? HighlightedColor : DefaultColor;
     }
+
+    /// <summary>
+    /// 변경사항 발생시 호출
+    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
+    /// </summary>
+    public void ReportChanges()
+    {
+        ((IChangeObserver)Background)?.ReportChanges();
+    }
     #endregion
 
-    #region IO
+    #region Protected
+    // Components -----------------------------
+    protected Image Image
+    {
+        get
+        {
+            _image ??= GetComponent<Image>();
+            return _image;
+        }
+    }
+
+    protected TextMeshProUGUI NodeNameText
+    {
+        get
+        {
+            _nodeNameText ??= GetComponentInChildren<TextMeshProUGUI>();
+            return _nodeNameText;
+        }
+    }
+
+    protected Canvas RootCanvas
+    {
+        get
+        {
+            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
+            return _rootCanvas;
+        }
+    }
+
+
+    // IO -----------------------------
     protected TPEnumeratorToken InputToken { get; set; } // InputToken[n].State를 set 하지 말 것.
     protected TPEnumeratorToken OutputToken { get; set; }
-    #endregion
 
-    #region Overriding required
+
+    // Life Cycle -----------------------------
     protected virtual void OnLoad_BeforeStateUpdate() { }
     protected virtual void OnLoad_AfterStateUpdate() { }
     protected virtual void OnCompletePlacementFromPalette() { }
+    protected virtual void OnRemove() { }
 
+
+    // Input TP States Update Callback (Overriding required) -----------------------------
+    protected abstract void StateUpdate(TransitionEventArgs args = null);
+
+
+    // Overriding required -----------------------------
     protected virtual List<ContextElement> ContextElements
     {
         get => new List<ContextElement>()
@@ -214,19 +227,19 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
                 {
                     Destroy();
                     ReportChanges();
-                }, 
+                },
                 text: "Remove"),
-            
+
             new ContextElement(
                 clickAction: () =>
                 {
                     Disconnect();
                     ReportChanges();
-                }, 
+                },
                 text: "Disconnect"),
         };
     }
-    
+
     public virtual string NodePrefebPath { get; }
     protected virtual string TP_EnumInPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string TP_EnumOutPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
@@ -247,9 +260,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected abstract Vector2 EnumeratorTPSize { get; }
     protected abstract Vector2 DefaultNodeSize { get; }
     protected virtual bool SizeFreeze { get; } = false;
-    #endregion
 
-    #region Can use in child
+
+    // Child Utils -----------------------------
     protected bool InEnumActive
     {
         get => _inEnumActive;
@@ -269,7 +282,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             _outEnumActive = value;
         }
     }
-    
+
     protected void ResetToken(bool stateUpdate = true)
     {
         if (InputToken?.Enumerator == null || OutputToken?.Enumerator == null)
@@ -277,7 +290,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             Debug.LogError($"{GetType().Name}: Token(or Token's Enumerator) is null");
             return;
         }
-        
+
         SetToken(InputToken.Enumerator, OutputToken.Enumerator);
 
         if (stateUpdate)
@@ -291,19 +304,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     {
         SelectRemoveRequest?.Invoke();
     }
-
-    /// <summary>
-    /// 변경사항이 있다면 호출
-    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
-    /// </summary>
-    public void ReportChanges()
-    {
-        ((IChangeObserver)Background)?.ReportChanges();
-    }
-    #endregion
-
-    #region In TP State Update Callback (Overriding required)
-    protected abstract void StateUpdate(TransitionEventArgs args = null);
     #endregion
 
     #region Initialize

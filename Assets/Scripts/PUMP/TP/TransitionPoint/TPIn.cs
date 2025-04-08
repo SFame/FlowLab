@@ -64,7 +64,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
     public event StateChangeEventHandler OnStateChange;
     public event SoundEventHandler OnSounded;
 
-    public override void Connect(TPConnection connection)
+    public override void AcceptLink(TPConnection connection)
     {
         Connection?.Disconnect();
 
@@ -98,10 +98,10 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         connection.TargetState = this;
         Connection = connection;
 
-        targetTp.Connect(connection);
+        targetTp.AcceptLink(connection);
     }
 
-    public override void Disconnect()
+    public override void ClearConnection()
     {
         Connection = null;
         Node.OnMove -= OnMove;

@@ -3,22 +3,32 @@ using UnityEngine;
 
 public interface INameable
 {
-    public string Name { get; set; }
+    string Name { get; set; }
 }
 
 public interface IStateful
 {
-    public bool State { get; set; }
+    bool State { get; set; }
 }
 
 public interface ILocatable
 {
-    public Vector2 Location { get; }
+    Vector2 Location { get; }
 }
 
 public interface IDeserializingListenable
 {
-    public bool OnDeserializing { get; set; }
+    bool OnDeserializing { get; set; }
+}
+
+public interface IGameObject
+{
+    GameObject GameObject { get; }
+}
+
+public interface IMoveable
+{
+    Action<UGUIPosition> OnMove { get; set; }
 }
 
 /// <summary>
@@ -30,14 +40,12 @@ public interface IDeserializingListenable
 /// </summary>
 public interface ITransitionPoint : INameable, IStateful, ILocatable
 {
-    public TPConnection Connection { get; set; }
-    public GameObject GameObject { get; }
-    public Node Node { get; set; }
-    public bool BlockConnect { get; set; }
-    public void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
-    public void Connect(TPConnection connection);
-    public void Disconnect();
-    public Action<UGUIPosition> OnMove { get; set; }
+    TPConnection Connection { get; set; }
+    Node Node { get; set; }
+    bool BlockConnect { get; set; }
+    void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
+    void AcceptLink(TPConnection connection);
+    void ClearConnection();
 }
 
 public interface ITPIn : ITransitionPoint
@@ -45,7 +53,7 @@ public interface ITPIn : ITransitionPoint
     /// <summary>
     /// Node에서 이벤트 구독
     /// </summary>
-    public event StateChangeEventHandler OnStateChange;
+    event StateChangeEventHandler OnStateChange;
 }
 
 public interface ITPOut : ITransitionPoint { }

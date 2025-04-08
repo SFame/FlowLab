@@ -77,10 +77,10 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         connection.SourceState = this;
         Connection = connection;
 
-        targetTp.Connect(connection);
+        targetTp.AcceptLink(connection);
     }
 
-    public override void Connect(TPConnection connection)
+    public override void AcceptLink(TPConnection connection)
     {
         Connection?.Disconnect();
 
@@ -102,7 +102,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
     }
 
-    public override void Disconnect()
+    public override void ClearConnection()
     {
         Connection = null;
         Node.OnMove -= OnMove;

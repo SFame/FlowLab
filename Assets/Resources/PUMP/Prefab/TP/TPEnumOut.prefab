@@ -70,7 +70,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4497657773934959123}
   - component: {fileID: 1758665000431517490}
-  - component: {fileID: 7799453763011419145}
+  - component: {fileID: 3501307964574463478}
   m_Layer: 5
   m_Name: TPEnumOut
   m_TagString: Untagged
@@ -106,7 +106,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2565211687163840527}
   m_CullTransparentMesh: 1
---- !u!114 &7799453763011419145
+--- !u!114 &3501307964574463478
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -115,7 +115,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 2565211687163840527}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02449c7ea60b4e545bc75e6fe0ea3970, type: 3}
+  m_Script: {fileID: 11500000, guid: 53ad456a1702ab842a1ec95ebc31999c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layout: {fileID: 3996566184000000415}
+  m_TpPrefab: {fileID: 6813147461074221346, guid: 99756fd272919af40810d0bad3233f4f, type: 3}
+  m_Layout: {fileID: 3996566184000000415}

@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public abstract class TransitionPoint : MonoBehaviour, 
-                                        ITransitionPoint, IPointerEnterHandler, 
+                                        ITransitionPoint, IPointerEnterHandler, IMoveable, IGameObject,
                                         IPointerExitHandler, IPointerClickHandler, IDraggable
 {
     #region Privates
@@ -37,8 +37,7 @@ public abstract class TransitionPoint : MonoBehaviour,
     {
         get
         {
-            if (_imageRect == null)
-                _imageRect = _image?.GetComponent<RectTransform>();
+            _imageRect ??= _image?.GetComponent<RectTransform>();
             return _imageRect;
         }
     }
@@ -46,8 +45,7 @@ public abstract class TransitionPoint : MonoBehaviour,
     {
         get
         {
-            if (_rootCanvas is null)
-                _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
+            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
             return _rootCanvas;
         }
     }
@@ -75,8 +73,8 @@ public abstract class TransitionPoint : MonoBehaviour,
     public Vector2 Location => (Vector2)ImageRect?.position;
 
     public abstract void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
-    public abstract void Connect(TPConnection connection);
-    public abstract void Disconnect();
+    public abstract void AcceptLink(TPConnection connection);
+    public abstract void ClearConnection();
     #endregion
 
     #region Use in child

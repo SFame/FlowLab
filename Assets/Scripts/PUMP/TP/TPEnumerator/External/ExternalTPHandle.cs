@@ -59,7 +59,10 @@ public class ExternalTPHandle : MonoBehaviour, IDragHandler, IPointerEnterHandle
         if (TP != null)
         {
             TP.Connection?.Disconnect();
-            Destroy(TP.GameObject);
+            if (TP is IGameObject gameObject)
+            {
+                Destroy(gameObject.GameObject);
+            }
         }
         Destroy(gameObject);
     }

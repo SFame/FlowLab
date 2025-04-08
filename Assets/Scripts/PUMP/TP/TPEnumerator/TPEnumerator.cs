@@ -5,11 +5,15 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
+public class TPEnumerator : MonoBehaviour, ITPEnumerator
 {
+    #region On Inspactor
+    [SerializeField] private GameObject m_TpPrefab;
+    [SerializeField] protected GridLayoutGroup m_Layout;
+    #endregion
+
     #region Privates
     protected bool _hasSet = false;
-    private GameObject _tp_Prefeb;
     private Node _node;
     private RectTransform _rect;
     private readonly Color _highlightColor = Color.green;
@@ -23,14 +27,6 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
             return _rect;
         }
     }
-    #endregion
-
-    #region On Inspector
-    [SerializeField] protected GridLayoutGroup layout;
-    #endregion
-
-    #region Need Override
-    protected abstract string PrefebPath { get; }
     #endregion
     
     #region Interface to child
@@ -95,7 +91,16 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
     /// Token Get
     /// </summary>
     /// <returns></returns>
-    public abstract TPEnumeratorToken GetToken();
+    public TPEnumeratorToken GetToken()
+    {
+        if (!_hasSet)
+        {
+            Debug.LogError("Require TPEnum set first");
+            return null;
+        }
+
+        return new TPEnumeratorToken(TPs, this);
+    }
 
 
     public void SetActive(bool active)
@@ -124,7 +129,7 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
             ITransitionPoint inOut = TPObj.GetComponent<ITransitionPoint>();
             inOut.Node = Node;
 
-            TPObj.transform.SetParent(layout.transform);
+            TPObj.transform.SetParent(m_Layout.transform);
 
             TPs.Add(inOut);
         }
@@ -136,13 +141,13 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
 
     public ITPEnumerator SetTPSize(Vector2 value)
     {
-        layout.cellSize = value;
+        m_Layout.cellSize = value;
         return this;
     }
 
     public ITPEnumerator SetTPsMargin(float value)
     {
-        layout.spacing = new Vector2(0f, value);
+        m_Layout.spacing = new Vector2(0f, value);
         return this;
     }
 
@@ -159,16 +164,11 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
     {
         get
         {
-            if (_tp_Prefeb is null)
+            if (m_TpPrefab is null)
             {
-                _tp_Prefeb = Resources.Load<GameObject>(PrefebPath);
-                if (_tp_Prefeb is null)
-                {
-                    Debug.LogError($"{GetType().Name}: Cannot find prefeb");
-                    return null;
-                }
+                Debug.LogError($"{name}: Can't find TP Prefab");
             }
-            return _tp_Prefeb;
+            return m_TpPrefab;
         }
     }
 
@@ -176,13 +176,13 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
     {
         int count = TPs.Count;
         
-        float height = (layout.cellSize.y * count) + 
-                       (layout.spacing.y * (count - 1)) + 
-                       layout.padding.top + layout.padding.bottom;
+        float height = (m_Layout.cellSize.y * count) + 
+                       (m_Layout.spacing.y * (count - 1)) + 
+                       m_Layout.padding.top + m_Layout.padding.bottom;
         
         height = Mathf.Max(height, MinHeight);
 
-        float width = layout.cellSize.x;
+        float width = m_Layout.cellSize.x;
         
         Vector2 size = new Vector2(width, height);
         Rect.sizeDelta = size;
@@ -209,7 +209,10 @@ public abstract class TPEnumerator : MonoBehaviour, ITPEnumerator
         foreach (ITransitionPoint tp in TPs)
         {
             tp.Connection?.Disconnect();
-            Destroy(tp.GameObject);  
+            if (tp is IGameObject gameObject)
+            {
+                Destroy(gameObject.GameObject);
+            }
         }
         TPs.Clear();
     }

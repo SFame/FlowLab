@@ -115,7 +115,10 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         if (ratio < 0 || ratio > 1)
             handle.Rect.localPosition = new Vector2(0f, currentYPos);
 
-        handle.TP.OnMove?.Invoke(default);
+        if (handle.TP is IMoveable moveable)
+        {
+            moveable.OnMove?.Invoke(default);
+        }
     }
 
     private void HandleEndDragCallback(PointerEventData eventData, ExternalTPHandle handle)
