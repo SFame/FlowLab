@@ -681,7 +681,7 @@ namespace Utils
 
     public static class ResourceSerializer
     {
-        public static void SaveToResources<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.JSON)
+        public static void SaveToResources<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.Binary)
         {
 #if UNITY_EDITOR
             fileName = FileNameTrimming(fileName, format);
@@ -715,7 +715,7 @@ namespace Utils
 #endif
         }
 
-        public static async Task SaveToResourcesAsync<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.JSON)
+        public static async Task SaveToResourcesAsync<T>(string fileName, T data, string subfolder = "", DataFormat format = DataFormat.Binary)
         {
 #if UNITY_EDITOR
             fileName = FileNameTrimming(fileName, format);
@@ -751,7 +751,7 @@ namespace Utils
 #endif
         }
 
-        public static T LoadFromResources<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.JSON)
+        public static T LoadFromResources<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.Binary)
         {
             fileName = FileNameTrimming(fileName, format);
 
@@ -785,7 +785,7 @@ namespace Utils
             }
         }
 
-        public static async Task<T> LoadFromResourcesAsync<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.JSON)
+        public static async Task<T> LoadFromResourcesAsync<T>(string fileName, string subfolder = "", DataFormat format = DataFormat.Binary)
         {
             fileName = FileNameTrimming(fileName, format);
 

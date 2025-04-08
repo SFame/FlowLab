@@ -972,7 +972,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveButton: {fileID: 1992749393802155284}
-  savePath: node_data.bin
+  m_TargetDirectory: 1
+  savePath: puzzle_data.bytes
   extractor: {fileID: 6803479210796153579}
   defaultSaveName: My Background
 --- !u!114 &479035916251999172

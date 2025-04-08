@@ -76,7 +76,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         }
 
         // 데이터 로드
-        var puzzleData = (await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, fileName))
+        var puzzleData = (await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpResources, fileName))
             .Where(structure => structure.Name == puzzleName)
             .FirstOrDefault();
 

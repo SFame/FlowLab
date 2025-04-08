@@ -9,6 +9,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 {
     #region On Inspector
     [SerializeField] private Button saveButton;
+    [SerializeField] private DataDirectory m_TargetDirectory = DataDirectory.PumpAppData;
     [SerializeField] private string savePath;
     [SerializeField] private SaveLoadStructureExtractor extractor;
     [SerializeField] private string defaultSaveName = string.Empty;
@@ -55,7 +56,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private void OnDestroy()
     {
-        SerializeManagerCatalog.GetOnDataUpdatedEvent(DataDirectory.PumpAppData).RemoveEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData);
     }
 
     private async UniTaskVoid AddNewSave(string saveName)
@@ -63,7 +64,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         if (Extract(saveName, out PUMPSaveDataStructure newStructure))
         {
             newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
-            await SerializeManagerCatalog.AddData(DataDirectory.PumpAppData, savePath, newStructure);
+            await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, newStructure);
 
             ReloadDataAsync().Forget();
         }
@@ -99,13 +100,13 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
             TextGetterManager.Set(RootCanvas, newName => AddNewSave(newName).Forget(), "Save name", defaultSaveName);
         });
 
-        SerializeManagerCatalog.GetOnDataUpdatedEvent(DataDirectory.PumpAppData).AddEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).AddEvent(savePath, ReloadData);
         _initialized = true;
     }
 
     private async UniTask GetDatasFromManager()
     {
-        _saveDatas = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
+        _saveDatas = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(m_TargetDirectory, savePath);
 
         foreach (PUMPSaveDataStructure data in _saveDatas)
             data.SubscribeUpdateNotification(RefreshEventAdapter);
