@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -16,14 +17,20 @@ public class PaletteElem : MonoBehaviour, IDraggable
     #region Privates
     private string _displayName;
     private Vector2 _dragOffset;
-    private bool _isDragging;
+    private bool _mouseOnPalette;
     private List<RaycastResult> _raycastResults = new();
     private PUMPBackground _background;
     private Node _newNode;
+
+    private void SetPosition(Vector2 position)
+    {
+        Rect.position = new Vector2(position.x, Rect.position.y);
+    }
     #endregion
     
     public event Action OnDragStart;
     public event Action OnDragEnd;
+    public event Action OnPaletteExit;
     public event Action OnInstantiate;
 
     public RectTransform Rect => m_Rect;
@@ -47,7 +54,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        _isDragging = true;
+        _mouseOnPalette = true;
         _background = null;
         _dragOffset = (Vector2)Rect.position - eventData.position;
         OnDragStart?.Invoke();
@@ -55,25 +62,23 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (_isDragging)
-            Rect.position = eventData.position + _dragOffset;
+        if (_mouseOnPalette)
+            SetPosition(eventData.position + _dragOffset);
         
         FindPumpBackground(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (_isDragging)
-        {
-            OnDragEnd?.Invoke();
-        }
+        OnDragEnd?.Invoke();
+        
         Rect.localScale = Vector3.one;
         
         if (_background != null && _newNode != null)
             _newNode.CallCompletePlacementFromPalette();
         
         _newNode = null;
-        _isDragging = false;
+        _mouseOnPalette = true;
         _background = null;
     }
 
@@ -84,13 +89,18 @@ public class PaletteElem : MonoBehaviour, IDraggable
             _raycastResults.Clear();
             EventSystem.current.RaycastAll(eventData, _raycastResults);
 
-            foreach (RaycastResult result in _raycastResults)
+            if (_mouseOnPalette)
             {
-                if (result.gameObject.GetComponent<NodePalette>() != null)
+                _mouseOnPalette = _raycastResults.Any(result => result.gameObject.TryGetComponent<NodePalette>(out _));
+                
+                if (_mouseOnPalette)
                 {
                     _raycastResults.Clear();
                     _background = null;
-                    break;
+                }
+                else
+                {
+                    OnPaletteExit?.Invoke();
                 }
             }
             
@@ -109,9 +119,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
         
         if (_background is null)
             return;
-        
-        _isDragging = false;
-        OnDragEnd?.Invoke();
         
         _newNode.SetPosition(eventData.position);
     }

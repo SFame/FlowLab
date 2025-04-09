@@ -5,12 +5,12 @@ using UnityEngine.UI;
 using static LineConnector;
 
 
-[RequireComponent(typeof(RectTransform), typeof(RawImage))]
+[RequireComponent(typeof(RectTransform), typeof(Image))]
 public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragSelectable, IHighlightable
 {
     #region Privates
     private RectTransform _rect;
-    private RawImage _rawImage;
+    private Image _image;
     private Vector2 _defaultSize;
     private Color _defaultColor;
     private readonly Color _highlightedColor = Color.green;
@@ -28,12 +28,12 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         }
     }
 
-    private RawImage RawImage
+    private Image Image
     {
         get
         {
-            _rawImage ??= GetComponent<RawImage>();
-            return _rawImage;
+            _image ??= GetComponent<Image>();
+            return _image;
         }
     }
     #endregion
@@ -75,7 +75,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         if (FreezeAttributes)
             return;
         
-        RawImage.color = color;
+        Image.color = color;
         _defaultColor = color;
     }
 
@@ -85,8 +85,8 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
             return;
         
         _defaultColor.a = alpha;
-        Color currentColor = RawImage.color;
-        RawImage.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha); 
+        Color currentColor = Image.color;
+        Image.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha); 
         
     }
 
@@ -110,7 +110,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         Vector2 size = highlighted ? _defaultSize * _expansionScale : _defaultSize;
         Color color = highlighted ? _highlightedColor : _defaultColor;
         Rect.sizeDelta = size;
-        RawImage.color = color;
+        Image.color = color;
     }
 
     public void Remove()
@@ -194,7 +194,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         if(_isSetDefaultColor)
             return;
 
-        _defaultColor = RawImage.color;
+        _defaultColor = Image.color;
         _isSetDefaultColor = true;
     }
 

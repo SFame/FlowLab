@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [ResourceGetter("PUMP/Sprite/ingame/classed_node_palette")]
@@ -12,6 +13,16 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
     private string _name;
+    private UiMouseListener _mouseListener;
+
+    private UiMouseListener MouseListener
+    {
+        get
+        {
+            _mouseListener ??= transform.GetOrAddComponent<UiMouseListener>();
+            return _mouseListener;
+        }
+    }
 
     private void OnDestroyAdapter(Node node)
     {
@@ -78,6 +89,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
         base.OnLoad_BeforeStateUpdate();
         OnDestroy += OnDestroyAdapter;
         ClassedNodePanel.JoinPanel(this);
+        MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);
     }
 
     protected override string DefineInputName(int tpNumber)

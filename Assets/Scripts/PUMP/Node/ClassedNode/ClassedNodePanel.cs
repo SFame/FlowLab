@@ -59,15 +59,6 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         return panel;
     }
-
-    public static ClassedNodePanel GetInstance(RectTransform findStartRect)
-    {
-        if (TryFindPanel(findStartRect, out ClassedNodePanel panel))
-            return panel;
-
-        Debug.LogError("Static - ClassedNodePanel: SetPanel first");
-        return null;
-    }
     #endregion
 
     #region Instance Interface
@@ -265,22 +256,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
         panel = null;
         return false;
     }
-
-    private static bool TryFindPanel(RectTransform rect, out ClassedNodePanel panel)
-    {
-        RectTransform parent = rect.GetRootCanvasRect();
-        foreach (RectTransform child in parent)
-        {
-            if (child.TryGetComponent(out ClassedNodePanel findPanel))
-            {
-                panel = findPanel;
-                return true;
-            }
-        }
-        panel = null;
-        return false;
-    }
-
+    
     private void OpenBackground(IClassedNode classedNode)
     {
         DataManager.SetCurrent(classedNode);

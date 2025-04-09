@@ -50,22 +50,22 @@ public class LineConnector : MonoBehaviour
         }
     }
 
-    private RawImage StartSidePointImage
+    private Image StartSidePointImage
     {
         get
         {
             if (_startSidePointImage == null)
-                _startSidePointImage = EndSidePointRect.GetComponent<RawImage>();
+                _startSidePointImage = EndSidePointRect.GetComponent<Image>();
             return _startSidePointImage;
         }
     }
 
-    private RawImage EndSidePointImage
+    private Image EndSidePointImage
     {
         get
         {
             if (_endEdgePointImage == null)
-                _endEdgePointImage = EndSidePointRect.GetComponent<RawImage>();
+                _endEdgePointImage = EndSidePointRect.GetComponent<Image>();
             return _endEdgePointImage;
         }
     }
@@ -85,8 +85,8 @@ public class LineConnector : MonoBehaviour
     private Canvas _rootCanvas;
     private RectTransform _startEdgePoint;
     private RectTransform _endEdgePoint;
-    private RawImage _startSidePointImage;
-    private RawImage _endEdgePointImage;
+    private Image _startSidePointImage;
+    private Image _endEdgePointImage;
     private RectTransform _lineParent;
     private RectTransform _edgeParent;
     private LineEdge _draggingEdge;

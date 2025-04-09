@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using OdinSerializer;
@@ -81,6 +82,68 @@ namespace Utils
                 .Select(result => result.gameObject.GetComponent<T>())
                 .FirstOrDefault(selected => !selected.IsUnityNull());
         }
+
+        public static async UniTask LerpAction(float duration, Action<float> action, Action finalizer = null, CancellationToken token = default)
+        {
+            float elapsed = 0;
+
+            try
+            {
+                while (elapsed < duration && !token.IsCancellationRequested)
+                {
+                    float t = elapsed / duration;
+                    action?.Invoke(t);
+                    await UniTask.Yield(token);
+                    elapsed += Time.deltaTime;
+                }
+
+                if (!token.IsCancellationRequested)
+                {
+                    action?.Invoke(1.0f);
+                }
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                finalizer?.Invoke();
+            }
+        }
+        
+        public static async UniTask CurveAction(this AnimationCurve curve, float duration, Action<float> action, Action finalizer = null, CancellationToken token = default)
+        {
+            float elapsed = 0;
+
+            try
+            {
+                while (elapsed < duration && !token.IsCancellationRequested)
+                {
+                    float t = elapsed / duration;
+                    action?.Invoke(curve.Evaluate(t));
+                    await UniTask.Yield(token);
+                    elapsed += Time.deltaTime;
+                }
+
+                if (!token.IsCancellationRequested)
+                {
+                    action?.Invoke(curve.Evaluate(1.0f));
+                }
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                finalizer?.Invoke();
+            }
+        }
+    }
+
+    public static class UtilsDebug
+    {
+        public static T Log<T>(this T logObject, LogType logType = LogType.Log)
+        {
+            Debug.unityLogger.Log(logType, logObject);
+            return logObject;
+        }
+
     }
 
     public static class RaycasterUtil

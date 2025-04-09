@@ -77,6 +77,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     }
 
     public event Action<Node> OnDestroy;
+    public event Action<Node> OnPlacement;
 
     /// <summary>
     /// 직렬화 시 TP의 연결정보 Get
@@ -134,6 +135,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void CallCompletePlacementFromPalette()
     {
         OnCompletePlacementFromPalette();
+        OnPlacement?.Invoke(this);
         PlaySound(0);
         ReportChanges();
     }

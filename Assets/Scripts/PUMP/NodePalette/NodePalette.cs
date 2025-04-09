@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Cysharp.Threading.Tasks;
-using NUnit.Compatibility;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -27,6 +25,7 @@ public abstract class NodePalette : MonoBehaviour
     private GameObject _elementPrefab;
     private readonly List<PaletteElem> _elements = new();
     private RectTransform _rootRect;
+    private IRaycastAlphaControl _parentAplhaControl;
 
     private const string ELEMENT_PREFAB_PATH = "PUMP/Prefab/NodePalette/PaletteElem";
 
@@ -40,6 +39,7 @@ public abstract class NodePalette : MonoBehaviour
             return _elementPrefab;
         }
     }
+    
     private ScrollRect ScrollRect
     {
         get
@@ -59,6 +59,15 @@ public abstract class NodePalette : MonoBehaviour
                 _rootRect = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
             
             return _rootRect;
+        }
+    }
+
+    private IRaycastAlphaControl ParentAlphaControl
+    {
+        get
+        {
+            _parentAplhaControl ??= GetComponentInParent<IRaycastAlphaControl>();
+            return _parentAplhaControl;
         }
     }
     
@@ -129,12 +138,26 @@ public abstract class NodePalette : MonoBehaviour
             elem.ContentFixPosition = elem.Rect.anchoredPosition;
             elem.Rect.SetParent(RootRect, true);
         };
+        
+        elem.OnPaletteExit += () =>
+        {
+            elem.Rect.SetParent(Content, true);
+            elem.Rect.anchoredPosition = elem.ContentFixPosition;
+            ParentAlphaControl.SetInteract(false);
+        };
+        
+        elem.OnInstantiate += () =>
+        {
+            OnNodeAdded?.Invoke(elem.NewNode);
+        };
+        
         elem.OnDragEnd += () =>
         {
             elem.Rect.SetParent(Content, true);
             elem.Rect.anchoredPosition = elem.ContentFixPosition;
+            ParentAlphaControl.SetInteract(true);
         };
-        elem.OnInstantiate += () => OnNodeAdded?.Invoke(elem.NewNode);
+        
     }
 
     private Sprite GetSprite(Type nodeType)

@@ -92,6 +92,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveButton: {fileID: 579025804810471754}
+  m_TargetDirectory: 0
   savePath: node_data.bin
   extractor: {fileID: 4910561010743960146}
   defaultSaveName: My Background
@@ -131,6 +132,7 @@ GameObject:
   - component: {fileID: 6310688627850453173}
   - component: {fileID: 7973034616062062785}
   - component: {fileID: 1249412674276274451}
+  - component: {fileID: 9054245740632942581}
   m_Layer: 5
   m_Name: PumpSector
   m_TagString: Untagged
@@ -199,6 +201,14 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!222 &9054245740632942581
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510068913751018988}
+  m_CullTransparentMesh: 1
 --- !u!1 &1800470323001121840
 GameObject:
   m_ObjectHideFlags: 0
@@ -1270,6 +1280,7 @@ GameObject:
   - component: {fileID: 8127848256770278446}
   - component: {fileID: 2980979143456577513}
   - component: {fileID: 2243038441894218538}
+  - component: {fileID: 6816140203187834275}
   m_Layer: 5
   m_Name: PUMP_Tool
   m_TagString: Untagged
@@ -1387,6 +1398,19 @@ MonoBehaviour:
     m_RotationOrder: 4
   rectMoveDuration: 0.5
   openButtonFadeDuration: 0.2
+  interactAlphaFadeDuration: 0.15
+--- !u!225 &6816140203187834275
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5433319851091942582}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6151003974654542711
 GameObject:
   m_ObjectHideFlags: 0
@@ -1879,7 +1903,7 @@ MonoBehaviour:
   m_Content: {fileID: 3126078662632295668}
   m_Horizontal: 0
   m_Vertical: 1
-  m_MovementType: 1
+  m_MovementType: 2
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
