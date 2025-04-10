@@ -42,7 +42,7 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
         {
             float normalizedTime = elapsed / duration;
 
-            float t = normalizedTime * normalizedTime * (3f - 2f * normalizedTime);
+            float t = normalizedTime * normalizedTime * (3f - 2f * normalizedTime); // y = 3x^2 - 2x^3
             CanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
 
             elapsed += Time.deltaTime;

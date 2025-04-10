@@ -4,6 +4,7 @@ using PolyAndCode.UI;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
+using Debug = UnityEngine.Debug;
 
 public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 {
@@ -50,8 +51,10 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private async void Awake()
     {
+        var progress = Loading.GetProgress();
         await Initialize();
-        ReloadDataAsync().Forget();
+        await ReloadDataAsync();
+        progress.SetComplete();
     }
 
     private void OnDestroy()

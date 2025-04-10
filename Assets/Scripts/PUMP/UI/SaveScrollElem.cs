@@ -1,5 +1,4 @@
 using System;
-using PolyAndCode.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -82,11 +81,13 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     {
         if (Data == null)
             return;
-        
+
+        var progress = Loading.GetProgress();
         nameText.text = Data.Name;
         DateTime date = Data.LastUpdate;
         dateText.text = $"<b>{date.Month:D2}</b> / <b>{date.Day:D2}</b> / <b>{date.Year}</b>\n<b>{date.Hour:D2}</b>:<b>{date.Minute:D2}</b>";
         SetImage(Capture.LoadTextureFromFile(Data.ImagePath));
+        progress.SetComplete();
     }
 
     public void Initialize(PUMPSaveDataStructure data)

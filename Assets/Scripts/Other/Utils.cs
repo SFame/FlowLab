@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -12,6 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static Utils.Loading;
 using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
@@ -19,6 +22,13 @@ namespace Utils
 {
     public static class Other // 짬통
     {
+        public static int Clamp(this int value, int min, int max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
+
         public static T GetComponentInSibling<T>(this Component component, bool includeInactive = true) where T : Component
         {
             if (component == null)
@@ -60,9 +70,9 @@ namespace Utils
         {
             foreach (var item in enumerable)
             {
-                if (predicate(item))
+                if (predicate?.Invoke(item) ?? false)
                 {
-                    action(item);
+                    action?.Invoke(item);
                 }
             }
 
@@ -144,6 +154,29 @@ namespace Utils
             return logObject;
         }
 
+        /// <summary>
+        /// Logging Enumerable elements
+        /// </summary>
+        /// <typeparam name="T">where : IEnumerable</typeparam>
+        /// <param name="logEnumerable">Enumerable instance</param>
+        /// <param name="logType">LogType</param>
+        /// <returns></returns>
+        public static T LogE<T>(this T logEnumerable, LogType logType = LogType.Log) where T : IEnumerable
+        {
+            if (logEnumerable == null)
+            {
+                Debug.unityLogger.Log(logType, "Null");
+                return logEnumerable;
+            }
+
+            StringBuilder sb = new();
+            foreach (object obj in logEnumerable)
+            {
+                sb.AppendLine($"[{obj.ToString()}]");
+            }
+            Debug.unityLogger.Log(logType, sb);
+            return logEnumerable;
+        }
     }
 
     public static class RaycasterUtil
@@ -210,7 +243,7 @@ namespace Utils
             }
 
             // 1) 캔버스 찾고, 원본 상태 백업
-            Canvas canvas = targetRect.GetComponentInParent<Canvas>();
+            Canvas canvas = targetRect.GetRootCanvas();
             if (canvas == null)
             {
                 Debug.LogError("[CaptureRect] targetRect가 어떤 Canvas에도 속해있지 않습니다.");
@@ -1232,5 +1265,363 @@ namespace Utils
             List<Action> buttonActions = new List<Action> { onYes, onNo };
             Show(rootCanvas, title, buttonTexts, buttonActions);
         }
+    }
+
+    public static class Loading
+    {
+        #region Privates
+        private const string PREFAB_PATH = "Prefab/UI/LoadingCanvas";
+        private const float COMPLETE_WAIT_TIME = 0.1f;
+        private static GameObject _prefab;
+        private static GameObject _loadingGameObject;
+        private static Slider _loadingSlider;
+        private static bool _isShowing = false;
+        private static CancellationTokenSource _cts;
+        private static List<IProgressManagable> _currentProgresses = new();
+
+        private static Pool<IProgressManagable> _progressPool = new
+        (
+            createFunc: () => new Progress(),
+            initSize: 20,
+            maxSize: 10000,
+            actionOnDestroy: p => p.Dispose()
+        );
+
+        private static Pool<IProgressManagable> _progressTaskPool = new
+        (
+            createFunc: () => new ProgressTask(),
+            initSize: 20,
+            maxSize: 5000,
+            actionOnDestroy: pt => pt.Dispose()
+        );
+
+        private static GameObject Prefab
+        {
+            get
+            {
+                _prefab ??= Resources.Load<GameObject>(PREFAB_PATH);
+                return _prefab;
+            }
+        }
+
+        private static GameObject LoadingGameObject
+        {
+            get
+            {
+                if (_loadingGameObject == null)
+                {
+                    _loadingGameObject = Object.Instantiate(Prefab);
+                    _loadingGameObject.SetActive(false);
+                }
+                
+                return _loadingGameObject;
+            }
+        }
+
+        private static Slider LoadingSlider
+        {
+            get
+            {
+                _loadingSlider ??= LoadingGameObject.GetComponentInChildren<Slider>();
+                return _loadingSlider;
+            }
+        }
+
+        private static void ProgressUpdated()
+        {
+            int currentProgressAvg = GetProgressAverage();
+            FillUpdate(currentProgressAvg);
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new();
+            CheckProgressCompleteAsync(_cts.Token).Forget();
+        }
+
+        private static void Show()
+        {
+            if (_isShowing)
+                return;
+
+            _isShowing = true;
+            LoadingGameObject?.SetActive(true);
+            LoadingSlider.value = 0;
+        }
+
+        private static void Hide()
+        {
+            _isShowing = false;
+            LoadingGameObject?.SetActive(false);
+            LoadingSlider.value = 0;
+        }
+
+        private static int GetProgressAverage()
+        {
+            int progressCount = _currentProgresses.Count;
+
+            if (progressCount <= 0)
+                return 100;
+
+            int progressSum = 0;
+            for (int i = 0; i < progressCount; i++)
+            {
+                progressSum += _currentProgresses[i].GetProgress();
+            }
+
+            return progressSum / progressCount;
+        }
+
+        private static async UniTask CheckProgressCompleteAsync(CancellationToken cts)
+        {
+            try
+            {
+                await UniTask.WaitForSeconds(COMPLETE_WAIT_TIME, true, PlayerLoopTiming.Update, cts);
+                if (!cts.IsCancellationRequested && GetProgressAverage() >= 100)
+                {
+                    Reset();
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        private static void InitProgressManagable(IProgressManagable managable, object tag)
+        {
+            _currentProgresses.Add(managable);
+            managable.ProgressUpdated += ProgressUpdated;
+            if (!managable.Initialize(tag))
+            {
+                throw new InvalidCastException();
+            }
+        }
+
+        private static void TerminateProgressManagable(IProgressManagable managable)
+        {
+            managable.Dispose();
+            _currentProgresses.Remove(managable);
+        }
+
+        private static void Reset()
+        {
+            foreach (IProgressManagable pm in _currentProgresses.ToList()) // 순회중 Enumerable 변경에 의해 복사본 전달
+            {
+                TerminateProgressManagable(pm);
+
+                if (pm is Progress)
+                {
+                    _progressPool.Release(pm);
+                }
+                else if (pm is ProgressTask)
+                {
+                    _progressTaskPool.Release(pm);
+                }
+            }
+            _currentProgresses.Clear();
+            Hide();
+        }
+
+        private static void FillUpdate(int value)
+        {
+            float fillValue = value / 100f;
+            fillValue = Mathf.Clamp01(fillValue);
+            LoadingSlider.value = fillValue;
+        }
+        #endregion
+
+        #region Interface
+        public static Progress GetProgress()
+        {
+            Show();
+            IProgressManagable managable = _progressPool.Get();
+            InitProgressManagable(managable, null);
+            return managable as Progress;
+        }
+
+        public static Task AddTask(Task task)
+        {
+            Show();
+            IProgressManagable progressTask = _progressTaskPool.Get();
+            InitProgressManagable(progressTask, task);
+            return (progressTask as IProgressManagable<Task>)?.ProcessingObject;
+        }
+
+        public static UniTask AddTask(UniTask task)
+        {
+            return AddTask(task.AsTask()).AsUniTask();
+        }
+
+        public static void ForceReset()
+        {
+            Reset();
+        }
+        #endregion
+
+        #region Progress Class
+        public sealed class Progress : IProgressManagable
+        {
+            #region Manage Only
+            private int _progress = 0;
+            private Action _progressUpdated;
+
+            event Action IProgressManagable.ProgressUpdated
+            {
+                add => _progressUpdated += value;
+                remove => _progressUpdated -= value;        
+            }
+
+            int IProgressManagable.GetProgress()
+            {
+                return _progress;
+            }
+
+            bool IProgressManagable.Initialize(object _)
+            {
+                _progress = 0;
+                _progressUpdated?.Invoke();
+                return true;
+            }
+
+            void IProgressManagable.Dispose()
+            {
+                _progress = 0;
+                _progressUpdated = null;
+            }
+            #endregion
+
+            /// <summary>
+            /// 작업 상태에 따라 0 ~ 100사이의 값 진행 중 업데이트
+            /// </summary>
+            /// <param name="progress"></param>
+            public void SetProgress(int progress)
+            {
+                _progress = progress.Clamp(0, 100);
+                _progressUpdated?.Invoke();
+            }
+
+            /// <summary>
+            /// 작업 완료 보고
+            /// (SetProgress(100)과 동일)
+            /// </summary>
+            public void SetComplete()
+            {
+                SetProgress(100);
+            }
+        }
+
+        private sealed class ProgressTask : IProgressManagable<Task>
+        {
+            private const float TASK_OBSERVING_DELAY = 0.1f;
+            private CancellationTokenSource _cts;
+            private int _progress = 0;
+
+            private async UniTaskVoid MonitorTask(Task originalTask, Task observeTask, TaskCompletionSource<bool> tcs)
+            {
+                try
+                {
+                    await Task.WhenAll(originalTask, observeTask);
+                    tcs.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    if (originalTask.IsCompletedSuccessfully)
+                    {
+                        tcs.SetResult(true);
+                    }
+                    else if (originalTask.IsFaulted)
+                    {
+                        tcs.SetException(originalTask.Exception ?? ex);
+                    }
+                    else if (originalTask.IsCanceled)
+                    {
+                        tcs.SetCanceled();
+                    }
+                    else if (!originalTask.IsCompleted)
+                    {
+                        try
+                        {
+                            await originalTask;
+                            tcs.SetResult(true);
+                        }
+                        catch (Exception inEx)
+                        {
+                            if (originalTask.IsCompletedSuccessfully)
+                            {
+                                tcs.SetResult(true);
+                            }
+                            else if (originalTask.IsCanceled)
+                            {
+                                tcs.SetCanceled();
+                            }
+                            else if (originalTask.IsFaulted)
+                            {
+                                tcs.SetException(inEx);
+                            }
+                            else
+                            {
+                                throw inEx;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
+            }
+
+            public Task ProcessingObject { get; private set; }
+
+            public event Action ProgressUpdated;
+
+            public int GetProgress()
+            {
+                return _progress;
+            }
+
+            public bool Initialize(object tag)
+            {
+                if (tag is Task task)
+                {
+                    _cts?.Cancel();
+                    _cts?.Dispose();
+                    _cts = new();
+                    ProgressUpdated?.Invoke();
+
+                    Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
+                    {
+                        _progress = 100;
+                        UniTask.Post(() => ProgressUpdated?.Invoke());
+                    },
+                    _cts.Token);
+
+                    TaskCompletionSource<bool> tcs = new();
+                    MonitorTask(task, observeTask, tcs).Forget();
+                    ProcessingObject = tcs.Task;
+                    return true;
+                }
+                return false;
+            }
+
+            public void Dispose()
+            {
+                _progress = 0;
+                ProgressUpdated = null;
+                _cts?.Cancel();
+                _cts?.Dispose();
+                _cts = null;
+            }
+        }
+
+        private interface IProgressManagable
+        {
+            event Action ProgressUpdated;
+            int GetProgress();
+            bool Initialize(object tag);
+            void Dispose();
+        }
+
+        private interface IProgressManagable<T> : IProgressManagable
+        {
+            T ProcessingObject { get; }
+        }
+        #endregion
     }
 }

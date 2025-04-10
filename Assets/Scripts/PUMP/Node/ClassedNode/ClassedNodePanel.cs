@@ -66,8 +66,8 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     {
         _baseBackground = classedNode.GetNode().Background;
         _baseBackground.OnDestroyed += DestroyPanel;
+        //Loading.AddTask(DataManager.AddNew(classedNode));
         DataManager.AddNew(classedNode);
-
         classedNode.OpenPanel += OpenPanel;
         classedNode.OnDestroy += DataManager.DestroyClassed;
 

@@ -202,10 +202,16 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
     private async UniTask AddNewAsync(IClassedNode classedNode)
     {
+        Loading.Progress prog = Loading.GetProgress();
+
+        prog.SetProgress(20);
+
         List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
+
+        prog.SetProgress(60);
+
         PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(classedNode.Id) ?
             null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(classedNode.Id));
-
         PUMPBackground newBackground = BackgroundGetter?.Invoke();
         if (matchedStructure != null)
         {
@@ -213,12 +219,16 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             classedNode.Name = matchedStructure.Name;
         }
 
+        prog.SetProgress(80);
+
         LinkClassedToExternal(classedNode, newBackground.ExternalInput, newBackground.ExternalOutput);
 
         newBackground.ExternalInput.OnCountUpdate += _ => OnExternalCountUpdateHandler(classedNode, newBackground);
         newBackground.ExternalOutput.OnCountUpdate += _ => OnExternalCountUpdateHandler(classedNode, newBackground);
 
         ClassedDict.Add(classedNode, newBackground);
+
+        prog.SetComplete();
     }
 
     /// <summary>
