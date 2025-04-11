@@ -1,14 +1,18 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InteractionSystem : MonoBehaviour
 {
     [Header("Interaction Settings")]
     [SerializeField] private float interactionRadius = 2f;
-    [SerializeField] private LayerMask interactableLayer;
     [SerializeField] private Transform interactionPoint;
 
+    private CircleCollider2D _interactionCollider;
     private IInteractable closestInteractable;
     private bool _isInteracting = false;
+
+    private Dictionary<Collider2D, IInteractable> _interactablesInRange = new Dictionary<Collider2D, IInteractable>();
+
     private void OnEnable()
     {
         TextDisplay.OnDialogueStarted += HandleDialogueStarted;
@@ -19,6 +23,14 @@ public class InteractionSystem : MonoBehaviour
 
         TextDisplay.OnDialogueStarted -= HandleDialogueStarted;
         TextDisplay.OnDialogueEnded -= HandleDialogueEnded;
+    }
+    private void Awake()
+    {
+        //플레이어 프리펩에 주변 오브젝트 체크용 CircleCollider2D 추가 요망
+        _interactionCollider = GetComponent<CircleCollider2D>();
+
+        _interactionCollider.radius = interactionRadius;
+        _interactionCollider.isTrigger = true;
     }
     private void Start()
     {
@@ -34,6 +46,7 @@ public class InteractionSystem : MonoBehaviour
         {
             return;
         }
+
         IInteractable newClosestInteractable = FindClosestInteractable();
 
         if (newClosestInteractable != closestInteractable) 
@@ -55,15 +68,32 @@ public class InteractionSystem : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        IInteractable interactable = other.GetComponent<IInteractable>();
+        if (interactable != null)
+        {
+            _interactablesInRange[other] = interactable;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (_interactablesInRange.ContainsKey(other))
+        {
+            if (_interactablesInRange[other] == closestInteractable)
+            {
+                closestInteractable.OnSelected = false;
+                closestInteractable = null;
+            }
+
+            _interactablesInRange.Remove(other);
+        }
+    }
+
     private IInteractable FindClosestInteractable()
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(
-            interactionPoint.position,
-            interactionRadius,
-            interactableLayer
-        );
-
-        if (colliders.Length == 0)
+        if (_interactablesInRange.Count == 0)
         {
             return null;
         }
@@ -71,23 +101,31 @@ public class InteractionSystem : MonoBehaviour
         float closestDistance = float.MaxValue;
         IInteractable closest = null;
 
-        foreach (Collider2D collider in colliders)
+        List<Collider2D> toRemove = new List<Collider2D>();
+        foreach (var entry in _interactablesInRange)
         {
-            IInteractable interactable = collider.GetComponent<IInteractable>();
-
-            if (interactable != null)
+            if (entry.Key == null || entry.Value == null || entry.Value.GetTransform() == null)
             {
-                float distance = Vector2.Distance(
-                    interactionPoint.position,
-                    interactable.GetTransform().position
-                );
-
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closest = interactable;
-                }
+                toRemove.Add(entry.Key);
+                continue;
             }
+
+            float distance = Vector2.Distance(
+                transform.position,
+                entry.Value.GetTransform().position
+            );
+
+            if (distance < closestDistance)
+            {
+                closestDistance = distance;
+                closest = entry.Value;
+            }
+        }
+
+        // Remove any null entries
+        foreach (var key in toRemove)
+        {
+            _interactablesInRange.Remove(key);
         }
 
         return closest;

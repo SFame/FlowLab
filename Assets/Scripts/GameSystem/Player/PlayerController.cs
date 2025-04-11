@@ -26,12 +26,17 @@ public class PlayerController : MonoBehaviour
         TextDisplay.OnDialogueStarted += HandleDialogueStarted;
         TextDisplay.OnDialogueEnded += HandleDialogueEnded;
 
+        CutsceneDisplay.OnCutsceneStarted += HandleDialogueStarted;
+        CutsceneDisplay.OnCutsceneEnded += HandleDialogueEnded;
     }
     void OnDisable()
     {
 
         TextDisplay.OnDialogueStarted -= HandleDialogueStarted;
         TextDisplay.OnDialogueEnded -= HandleDialogueEnded;
+
+        CutsceneDisplay.OnCutsceneStarted -= HandleDialogueStarted;
+        CutsceneDisplay.OnCutsceneEnded -= HandleDialogueEnded; // 역할 비슷하니 그냥 재사용
     }
 
     void Awake()
