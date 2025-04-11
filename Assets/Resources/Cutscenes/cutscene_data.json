@@ -1,0 +1,64 @@
+{
+  "sequences": [
+    {
+      "cutsceneId": "opening_sequence",
+      "title": "Game Opening",
+      "entries": [
+        {
+          "id": "opening_1",
+          "imagePath": "Cutscenes/Images/1",
+          "dialogueId": "opening_dialogue_1",
+          "duration": 0,
+          "nextCutsceneId": "opening_2",
+          "transition": 0,
+          "transitionDuration": 0.0
+        },
+        {
+          "id": "opening_2",
+          "imagePath": "Cutscenes/Images/2",
+          "dialogueId": "opening_dialogue_2",
+          "duration": 0,
+          "nextCutsceneId": "opening_3",
+          "transition": 1,
+          "transitionDuration": 1.0
+        },
+        {
+          "id": "opening_3",
+          "imagePath": "Cutscenes/Images/3",
+          "dialogueId": "opening_dialogue_3",
+          "duration": 0,
+          "nextCutsceneId": "opening_4",
+          "transition": 1,
+          "transitionDuration": 1.0
+        },
+        {
+          "id": "opening_4",
+          "imagePath": "Cutscenes/Images/4",
+          "dialogueId": "opening_dialogue_4",
+          "duration": 0,
+          "nextCutsceneId": "opening_5",
+          "transition": 1,
+          "transitionDuration": 1.0
+        },
+        {
+          "id": "opening_5",
+          "imagePath": "Cutscenes/Images/5",
+          "dialogueId": "opening_dialogue_5",
+          "duration": 0,
+          "nextCutsceneId": "opening_6",
+          "transition": 1,
+          "transitionDuration": 1.0
+        },
+        {
+          "id": "opening_6",
+          "imagePath": "Cutscenes/Images/6",
+          "dialogueId": "opening_dialogue_6",
+          "duration": 0,
+          "nextCutsceneId": "",
+          "transition": 1,
+          "transitionDuration": 1.0
+        }
+      ]
+    }
+  ]
+}

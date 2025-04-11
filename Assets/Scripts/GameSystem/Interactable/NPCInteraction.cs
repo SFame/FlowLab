@@ -6,8 +6,6 @@ public class NPCInteraction : MonoBehaviour, IInteractable
     [SerializeField] private string npcDialogueId;
     [SerializeField] private GameObject highlightIndicator;
 
-    [Header("Optional")]
-    [SerializeField] private bool disableInteractionDuringDialogue = true;
 
     private bool _onSelected = false;
     private bool _interactionInProgress = false;
@@ -56,15 +54,14 @@ public class NPCInteraction : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        // 대화중이거나 대화를 시작할 수 없는 상태라면 대화를 시작하지 않음
-        if (disableInteractionDuringDialogue && TextDisplay.IsDialogueActive())
+        if (TextDisplay.IsDialogueActive())
         {
             // 대화중이면 다음 대화로 진행
             TextDisplay.AdvanceDialogue();
             return;
         }
 
-        // If we don't have a dialogue ID, we can't start a dialogue
+        // 대화데이터에 대화ID가 없으면 경고
         if (string.IsNullOrEmpty(npcDialogueId))
         {
             Debug.LogWarning($"NPC {gameObject.name} doesn't have a dialogue ID assigned");
