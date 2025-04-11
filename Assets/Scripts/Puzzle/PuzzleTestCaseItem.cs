@@ -145,11 +145,25 @@ public class PuzzleTestCaseItem : MonoBehaviour
             // 파티클 효과 추가예정
         }
     }
+    public void ResetResult()
+    {
+        // 결과 이미지 초기화 및 숨김
+        if (resultImageObject != null)
+        {
+            resultImageObject.SetActive(false);
+        }
+
+        // 텍스트 색상 초기화
+        caseNumberText.color = passedColor;
+
+        // 모든 토글 초기화
+        foreach (var toggle in outputToggles)
+        {
+            toggle.isOn = false;
+        }
+    }
     public void SetDetailedValidationResult(bool[] actualOutputs, bool passed)
     {
-
-        // 기본 결과 표시 호출
-        SetValidationResult(passed);
 
         // 실제 출력값에 따라 토글 상태만 업데이트하고, Effect는 변경하지 않음
         for (int i = 0; i < actualOutputs.Length && i < outputToggles.Count; i++)

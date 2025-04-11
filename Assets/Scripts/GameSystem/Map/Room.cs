@@ -23,6 +23,10 @@ public class Room : MonoBehaviour
             roomObjects[i].GetComponent<ISaveLoad>().objectData = roomData.ObjectDatas[i];
         }
     }
+    public List<GameObject> GetRoomObjects()
+    {
+        return roomObjects;
+    }
 }
 
 [Serializable]

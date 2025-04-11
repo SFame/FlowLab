@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class PuzzleTestCasePanel : MonoBehaviour
+public class PuzzleTestCasePanel : MonoBehaviour, ISoundable
 {
     [SerializeField] private Transform testCaseSection;
     [SerializeField] private GameObject puzzleTestCaseItemPrefab;
@@ -13,6 +13,8 @@ public class PuzzleTestCasePanel : MonoBehaviour
 
     [SerializeField]  private Animator animator;
     private bool isShow = true;
+
+    public event SoundEventHandler OnSounded;
 
     private void Awake()
     {
@@ -85,6 +87,16 @@ public class PuzzleTestCasePanel : MonoBehaviour
         {
             PuzzleTestCaseItem item = testCaseItems[index];
             item?.SetValidationResult(passed);
+            //결과 이미지 호출과 함께 사운드 호출
+            // 결과에 따라 다른 사운드
+            if (passed)
+            {
+                OnSounded?.Invoke(this, new (1, gameObject.transform.position)); // 성공 사운드 1
+            }
+            else
+            {
+                OnSounded?.Invoke(this, new (2, gameObject.transform.position)); // 실패 사운드 2
+            }
         }
     }
 
@@ -116,10 +128,20 @@ public class PuzzleTestCasePanel : MonoBehaviour
     {
         animator.SetBool("IsShow", true);
         isShow = true;
+
+        OnSounded?.Invoke(this, new (0, gameObject.transform.position)); // Panel 사운드 0
+
+        for (int i = 0; i < testCaseItems.Count; i++)
+        {
+            testCaseItems[i].ResetResult(); // 처음 상태의 테스트케이스UI로 초기화 - 창을 닫고,열때마다
+        }
     }
     public void HidePanel()
     {
         animator.SetBool("IsShow", false);
         isShow = false;
+
+        OnSounded?.Invoke(this, new (0, gameObject.transform.position)); // Panel 사운드 0
+
     }
 }

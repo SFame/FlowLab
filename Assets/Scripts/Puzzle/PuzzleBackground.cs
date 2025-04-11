@@ -5,7 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PuzzleBackground : MonoBehaviour
+public class PuzzleBackground : MonoBehaviour, ISoundable
 {
     public PUMPBackground pumpBackground;
     public PuzzleTestCasePanel testCasePanel;
@@ -26,6 +26,8 @@ public class PuzzleBackground : MonoBehaviour
 
     // 테스트케이스 판넬 속 Output을 위한 이벤트
     public event Action<int, bool[], bool> OnTestCaseResultDetailed;
+
+    public event SoundEventHandler OnSounded;
 
     private void Start()
     {
@@ -59,6 +61,8 @@ public class PuzzleBackground : MonoBehaviour
     // 모든 테스트케이스 검증
     public async UniTaskVoid ValidateAllTestCases()
     {
+        //OnSounded?.Invoke(this, new (0, gameObject.transform.position)); // 검증 사운드 0.... 그냥 버튼 Onclick에 사운드 붙이는게 낫나?
+
         if (isValidating || currentPuzzleData.testCases == null || currentPuzzleData.testCases.Count == 0)
         {
             Debug.LogWarning("No test cases to validate or validation already in progress.");

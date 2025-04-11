@@ -111,6 +111,90 @@
           "choices": []
         }
       ]
+    },
+    {
+      "id": "opening_dialogue_1",
+      "title": "Working on Computer",
+      "entries": [
+        {
+          "speakerName": "Player",
+          "messageText": "soon done",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        },
+        {
+          "speakerName": "Player",
+          "messageText": "Finally.........?",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "opening_dialogue_2",
+      "title": "Blue Screen",
+      "entries": [
+        {
+          "speakerName": "",
+          "messageText": "beeeeeeeeeee",
+          "speakerImagePath": "",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "opening_dialogue_3",
+      "title": "Angry Response",
+      "entries": [
+        {
+          "speakerName": "Player",
+          "messageText": "NO!!!!!",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        },
+        {
+          "speakerName": "Player",
+          "messageText": "(KWANG!!!)",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "opening_dialogue_4",
+      "title": "Hitting Computer",
+      "entries": [
+        {
+          "speakerName": "Player",
+          "messageText": "(KICK!!)",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "opening_dialogue_5",
+      "title": "Glowing Computer",
+      "entries": [
+        {
+          "speakerName": "Player",
+          "messageText": "What?",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        }
+      ]
+    },
+    {
+      "id": "opening_dialogue_6",
+      "title": "Pulled In",
+      "entries": [
+        {
+          "speakerName": "Player",
+          "messageText": "Kaaaaaac",
+          "speakerImagePath": "Characters/Player",
+          "choices": []
+        }
+      ]
     }
   ]
 }
