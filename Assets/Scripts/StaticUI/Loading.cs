@@ -129,6 +129,8 @@ public static class Loading
         {
             throw new InvalidCastException();
         }
+
+        ProgressUpdated();
     }
 
     private static void TerminateProgressManagable(IProgressManagable managable)
@@ -274,7 +276,6 @@ public static class Loading
         bool IProgressManagable.Initialize(object _)
         {
             _progress = 0;
-            _progressUpdated?.Invoke();
             return true;
         }
 
@@ -376,7 +377,6 @@ public static class Loading
                 catch { }
                 _cts?.Dispose();
                 _cts = new();
-                InvokeProgressUpdated();
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
@@ -464,7 +464,6 @@ public static class Loading
                 catch { }
                 _cts?.Dispose();
                 _cts = new();
-                InvokeProgressUpdated();
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
