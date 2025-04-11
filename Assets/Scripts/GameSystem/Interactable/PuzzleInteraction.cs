@@ -14,6 +14,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     private PUMPBackground _pumpBackground;
     private PlayerController playerController;
     private bool _clear = false;
+    public bool Clear { get => _clear; }
     // 퍼즐 완료 이벤트
     public event Action<bool> OnPuzzleValidation;
 

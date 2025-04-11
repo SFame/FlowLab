@@ -5,6 +5,17 @@ public class GameManager : MonoBehaviour
     #region singleton
     public static GameManager Instance { get; private set; }
     #endregion
+
+    private GameObject player;
+    public GameObject Player
+    {
+        get
+        {
+            player ??= GameObject.FindGameObjectWithTag("Player");
+            return player;
+        }
+    }
+
     private void Awake()
     {
         // 싱글톤 처리
@@ -21,5 +32,6 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         GlobalEventManager.OnGameStartEvent();
+
     }
 }
