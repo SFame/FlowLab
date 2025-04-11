@@ -4,13 +4,14 @@ public class BaseCamera : MonoBehaviour
 {
     [SerializeField]
     private Transform Target;
-
+    [SerializeField] float FollowSpeed = 2f;
 
     // Update is called once per frame
     void Update()
     {
         if (!Target) return;
-        // x,y ÁÂÇ¥¸¸ µû¶ó°¡°í zÁÂÇ¥´Â À¯Áö
-        transform.position = new Vector3(Target.position.x, Target.position.y, transform.position.z);
+        // x,y ì¢Œí‘œë§Œ ë”°ë¼ê°€ê³  zì¢Œí‘œëŠ” ìœ ì§€
+        Vector3 newPos = new Vector3(Target.position.x, Target.position.y, -10f);
+        transform.position = Vector3.Slerp(transform.position, newPos, FollowSpeed);
     }
 }
