@@ -6,7 +6,6 @@ using System.Linq;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 
 [ResourceGetter("PUMP/Sprite/ingame/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<ClassedNodeSerializeInfo>

@@ -53,6 +53,7 @@ public abstract class TransitionPoint : MonoBehaviour,
 
     #region Interface
     public abstract bool State { get; set; }
+    public int Index { get; set; }
     public TPConnection Connection { get; set; }
     public string Name
     {

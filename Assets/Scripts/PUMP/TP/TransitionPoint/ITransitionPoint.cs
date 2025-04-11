@@ -40,6 +40,7 @@ public interface IMoveable
 /// </summary>
 public interface ITransitionPoint : INameable, IStateful, ILocatable
 {
+    int Index { get; set; }
     TPConnection Connection { get; set; }
     Node Node { get; set; }
     bool BlockConnect { get; set; }

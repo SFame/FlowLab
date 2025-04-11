@@ -1,21 +1,28 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 public class TransitionEventArgs : EventArgs
 {
-    public List<ITransitionPoint> PassedTP { get; private set; } = new();
-
-    public TransitionEventArgs AddTP(ITransitionPoint tp)
+    public TransitionEventArgs(int index, bool state, bool isStateChange)
     {
-        PassedTP.Add(tp);
-        return this;
+        Index = index;
+        State = state;
+        IsStateChange = isStateChange;
     }
 
-    public bool HasDuplicates()
-    {
-        return PassedTP.Count != PassedTP.Distinct().Count();
-    }
+    /// <summary>
+    /// 변경된 TP의 Index
+    /// </summary>
+    public int Index { get; }
+
+    /// <summary>
+    /// 현재 TP의 State
+    /// </summary>
+    public bool State { get; }
+
+    /// <summary>
+    /// 이전 값과 비교해서 변경되었는지
+    /// </summary>
+    public bool IsStateChange { get; }
 }
 
 public delegate void StateChangeEventHandler(TransitionEventArgs args);

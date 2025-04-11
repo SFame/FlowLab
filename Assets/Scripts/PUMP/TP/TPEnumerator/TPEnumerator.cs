@@ -126,12 +126,13 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
             if (TPObj is null)
                 break;
 
-            ITransitionPoint inOut = TPObj.GetComponent<ITransitionPoint>();
-            inOut.Node = Node;
+            ITransitionPoint tp = TPObj.GetComponent<ITransitionPoint>();
+            tp.Node = Node;
+            tp.Index = i;
 
             TPObj.transform.SetParent(m_Layout.transform);
 
-            TPs.Add(inOut);
+            TPs.Add(tp);
         }
 
         SizeUpdate();

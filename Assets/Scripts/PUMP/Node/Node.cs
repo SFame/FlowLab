@@ -216,7 +216,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
 
     // Input TP States Update Callback (Overriding required) -----------------------------
-    protected abstract void StateUpdate(TransitionEventArgs args = null);
+    protected abstract void StateUpdate(TransitionEventArgs args = null);  // args가 null이 입력되면 생성시 호출을 의미
 
 
     // Overriding required -----------------------------
@@ -296,7 +296,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SetToken(InputToken.Enumerator, OutputToken.Enumerator);
 
         if (stateUpdate)
-            StateUpdate();
+            StateUpdate(null);
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SetTPEnumerator();
         HeightSynchronizationWithEnum();
         OnLoad_BeforeStateUpdate();
-        StateUpdate();
+        StateUpdate(null);
         OnLoad_AfterStateUpdate();
         _initialized = true;
     }
