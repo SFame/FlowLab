@@ -526,10 +526,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             List<SerializeNodeInfo> result = new();
             foreach (Node node in Nodes)
             {
+                var statesTuple = node.GetTPStates();
                 SerializeNodeInfo nodeInfo = new()
                 {
                     NodeType = node.GetType(), // 노드 타입
                     NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
+                    InTpState = statesTuple.inputStates, // TP 상태정보
+                    OutTpState = statesTuple.outputStates,
                     NodeSerializableArgs = node is INodeModifiableArgs args ? args.ModifiableObject : null // 직렬화 추가정보
                 };
 
@@ -585,6 +588,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 }
 
                 newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
+                newNode.SetTPStates(info.InTpState, info.OutTpState);
             }
 
             if (Nodes.Count != infos.Count)

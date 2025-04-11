@@ -95,6 +95,17 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     }
 
     /// <summary>
+    /// 직렬화 시 TP의 State 정보 Get
+    /// </summary>
+    /// <returns></returns>
+    public (bool[] inputStates, bool[] outputStates) GetTPStates()
+    {
+        bool[] inputStates = InputToken.Select(tp => tp.State).ToArray();
+        bool[] outputStates = OutputToken.Select(tp => tp.State).ToArray();
+        return (inputStates, outputStates);
+    }
+
+    /// <summary>
     /// 역 직렬화 시 TP의 연결정보 Set
     /// </summary>
     /// <param name="connectionInfo"></param>
@@ -108,6 +119,60 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         InputToken.Enumerator.SetTPsConnection(connectionInfo.InConnectionTargets, connectionInfo.InVertices, completeReceiver);
         OutputToken.Enumerator.SetTPsConnection(connectionInfo.OutConnectionTargets, connectionInfo.OutVertices, completeReceiver);
+    }
+
+    /// <summary>
+    /// 역 직렬화 시 TP State 정보 Set
+    /// </summary>
+    /// <param name="inputStates"></param>
+    /// <param name="outputStates"></param>
+    public void SetTPStates(bool[] inputStates, bool[] outputStates)
+    {
+        if (inputStates != null)
+        {
+            if (inputStates.Length == InputToken.Count)
+            {
+                for (int i = 0; i < inputStates.Length; i++)
+                {
+                    InputToken[i].State = inputStates[i];
+                }
+            }
+            else
+            {
+                Debug.LogError($"{name}: 데이터와 Input의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"{name}: Input States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
+            foreach (ITransitionPoint tp in InputToken)
+            {
+                tp.State = false;
+            }
+        }
+
+        if (outputStates != null)
+        {
+            if (outputStates.Length == OutputToken.Count)
+            {
+                for (int i = 0; i < outputStates.Length; i++)
+                {
+                    OutputToken[i].State = outputStates[i];
+                }
+            }
+            else
+            {
+                Debug.LogError($"{name}: 데이터와 Output의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"{name}: Output States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
+            foreach (ITransitionPoint tp in OutputToken)
+            {
+                tp.State = false;
+            }
+        }
     }
 
     public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()

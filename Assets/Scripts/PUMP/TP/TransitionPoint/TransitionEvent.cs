@@ -23,6 +23,8 @@ public class TransitionEventArgs : EventArgs
     /// 이전 값과 비교해서 변경되었는지
     /// </summary>
     public bool IsStateChange { get; }
+
+    public override string ToString() => $"Index: [{Index}]\nState: [{State}]\nIsStateChange: [{IsStateChange}]";
 }
 
 public delegate void StateChangeEventHandler(TransitionEventArgs args);
