@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using static UnityEditor.FilePathAttribute;
 
 public class UI_MiniMap : MonoBehaviour, ISoundable
 {
