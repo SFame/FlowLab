@@ -5,7 +5,7 @@ using OdinSerializer;
 using TMPro;
 using UnityEngine;
 
-public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.ComparatorSerializeInfo>
+public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.ComparatorSerializeInfo>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
@@ -133,7 +133,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
     private string Operator { get; set; } = "<";
     #endregion
 
-    public ComparatorSerializeInfo ModifiableTObject
+    public ComparatorSerializeInfo AdditionalTArgs
     {
         get => new() { _inputCount = InputCount, _compareNumber = CompareNumber, _operator = Operator };
 
@@ -145,7 +145,7 @@ public class Comparator : DynamicIONode, INodeModifiableArgs<Comparator.Comparat
         }
     }
     
-    public object ModifiableObject { get => ModifiableTObject; set => ModifiableTObject = (ComparatorSerializeInfo)value; }
+    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ComparatorSerializeInfo)value; }
     
     [Serializable]
     public struct ComparatorSerializeInfo

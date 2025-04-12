@@ -6,7 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<ExternalNodeSerializeInfo>
+public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
     public ITransitionPoint this[int index] => InputToken[index];
@@ -130,7 +130,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
 
     #region Serialize
     public List<float> _handleRatios;
-    public ExternalNodeSerializeInfo ModifiableTObject
+    public ExternalNodeSerializeInfo AdditionalTArgs
     {
         get
         {
@@ -146,7 +146,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeModifiableArgs<
             _handleRatios = value._handlePositions;
         }
     }
-    public object ModifiableObject { get => ModifiableTObject; set => ModifiableTObject = (ExternalNodeSerializeInfo)value; }
+    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ExternalNodeSerializeInfo)value; }
     #endregion
 }
 

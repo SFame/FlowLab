@@ -112,7 +112,7 @@ public class PUMPSeparator : MonoBehaviour
         }
     }
     #endregion
-    Loading.Progress p;
+
     #region Interface
     /// <summary>
     /// PUMPBackground Get

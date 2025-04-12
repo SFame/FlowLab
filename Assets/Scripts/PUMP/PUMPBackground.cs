@@ -145,11 +145,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     {
         Node node = NodeInstantiator.GetNode(nodeType);
 
-        if (node is INodeModifiableArgs args)
+        if (node is INodeAdditionalArgs args)
         {
             try
             {
-                args.ModifiableObject = nodeSerializableArgs;
+                args.AdditionalArgs = nodeSerializableArgs;
             }
             catch (InvalidCastException e)
             {
@@ -157,6 +157,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             }
         }
         
+        if (node is INodeLifecycleCallable callable)
+        {
+            callable.CallOnAfterSetAdditionalArgs();
+        }
+
         return node;
     }
 
@@ -494,23 +499,30 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     public Node AddNewNode(Type nodeType)
     {
         Node node = NodeInstantiator.GetNode(nodeType);
-        return AddNewNode(node);
+        return AddNode(node);
     }
 
-    public Node AddNewNode(Node node)
+    public Node AddNode(Node node)
     {
         if (node is null)
         {
             Debug.LogError($"Node is null");
             return null;
         }
-        
+
+        INodeLifecycleCallable callable = node;
+
+        // Node's Rect, Parent, etc... Set
         node.Background = this;
         node.Rect.SetParent(m_NodeParent);
         node.BoundaryRect = Rect;
         node.Rect.anchoredPosition = Vector2.zero;
         SubscribeNodeAction(node);
+
+        callable.CallOnBeforeInit();
         node.Initialize();
+        callable.CallOnAfterInit();
+
         Nodes.Add(node);
         return node;
     }
@@ -533,7 +545,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                     NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
                     InTpState = statesTuple.inputStates, // TP 상태정보
                     OutTpState = statesTuple.outputStates,
-                    NodeSerializableArgs = node is INodeModifiableArgs args ? args.ModifiableObject : null // 직렬화 추가정보
+                    NodeSerializableArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
 
                 // 연결정보
@@ -573,7 +585,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             // 연결정보 제외 로드
             foreach (SerializeNodeInfo info in infos)
             {
-                Node newNode = AddNewNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
+                Node newNode = AddNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
                 
                 if (newNode is null)
                 {

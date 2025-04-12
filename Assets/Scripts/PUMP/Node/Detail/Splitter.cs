@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class Splitter : DynamicIONode, INodeModifiableArgs<int>
+public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/SPLIT";
@@ -49,6 +49,6 @@ public class Splitter : DynamicIONode, INodeModifiableArgs<int>
     }
     private TMP_Dropdown _dropdown;
 
-    public int ModifiableTObject { get => OutputCount; set => OutputCount = value; }
-    public object ModifiableObject { get => ModifiableTObject; set => ModifiableTObject = (int)value; }
+    public int AdditionalTArgs { get => OutputCount; set => OutputCount = value; }
+    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (int)value; }
 }

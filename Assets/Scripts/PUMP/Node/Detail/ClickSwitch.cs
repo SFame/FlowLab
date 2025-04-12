@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ClickSwitch : Node, IStateful, INodeModifiableArgs<bool>
+public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
@@ -34,16 +34,16 @@ public class ClickSwitch : Node, IStateful, INodeModifiableArgs<bool>
         Image.color = DefaultColor;
     }
 
-    public bool ModifiableTObject
+    public bool AdditionalTArgs
     {
         get => State;
         set => State = value;
     }
 
-    object INodeModifiableArgs.ModifiableObject
+    object INodeAdditionalArgs.AdditionalArgs
     {
-        get => ModifiableTObject;
-        set => ModifiableTObject = (bool)value;
+        get => AdditionalTArgs;
+        set => AdditionalTArgs = (bool)value;
     }
     
     public bool State { get; set; }

@@ -74,8 +74,10 @@ public class PaletteElem : MonoBehaviour, IDraggable
         
         Rect.localScale = Vector3.one;
         
-        if (_background != null && _newNode != null)
-            _newNode.CallCompletePlacementFromPalette();
+        if (_background != null && _newNode != null && _newNode is INodeLifecycleCallable callable)
+        {
+            callable.CallOnCompletePlacementFromPalette();
+        }
         
         _newNode = null;
         _mouseOnPalette = true;

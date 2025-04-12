@@ -9,7 +9,8 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
 [ResourceGetter("PUMP/Sprite/ingame/null_node")]
-public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, ILocatable, IHighlightable, IDeserializingListenable, ISoundable
+public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, INodeLifecycleCallable,
+                                            ILocatable, IHighlightable, IDeserializingListenable, ISoundable
 {
     #region Privates
     private bool _initialized = false;
@@ -197,14 +198,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         return -1;
     }
 
-    public void CallCompletePlacementFromPalette()
-    {
-        OnCompletePlacementFromPalette();
-        OnPlacement?.Invoke(this);
-        PlaySound(0);
-        ReportChanges();
-    }
-
     public void Destroy()
     {
         Disconnect();
@@ -276,6 +269,10 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     // Life Cycle -----------------------------
     protected virtual void OnLoad_BeforeStateUpdate() { }
     protected virtual void OnLoad_AfterStateUpdate() { }
+    protected virtual void OnAfterInstantiate() { }
+    protected virtual void OnAfterSetAdditionalArgs() { }
+    protected virtual void OnBeforeInit() { }
+    protected virtual void OnAfterInit() { }
     protected virtual void OnCompletePlacementFromPalette() { }
     protected virtual void OnRemove() { }
 
@@ -569,6 +566,14 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         }
     }
 
+    private void InternalCallOnCompletePlacementFromPalette()
+    {
+        OnCompletePlacementFromPalette();
+        OnPlacement?.Invoke(this);
+        PlaySound(0);
+        ReportChanges();
+    }
+
     private void PlaySound(int index)
     {
         if (!OnDeserializing)
@@ -621,6 +626,15 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SelectRemoveRequest?.Invoke();
         IsSelected = false;
     }
+    #endregion
+
+    #region Lifecycle Callable
+    void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
+    void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs() => OnAfterSetAdditionalArgs();
+    void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
+    void INodeLifecycleCallable.CallOnAfterInit() => OnAfterInit();
+    void INodeLifecycleCallable.CallOnCompletePlacementFromPalette() => InternalCallOnCompletePlacementFromPalette();
+    void INodeLifecycleCallable.CallOnRemove() => OnRemove();
     #endregion
 }
 
@@ -726,4 +740,14 @@ public class TPConnectionInfo
 
         return sb.ToString();
     }
+}
+
+public interface INodeLifecycleCallable
+{
+    void CallOnAfterInstantiate();
+    void CallOnAfterSetAdditionalArgs();
+    void CallOnBeforeInit();
+    void CallOnAfterInit();
+    void CallOnCompletePlacementFromPalette();
+    void CallOnRemove();
 }

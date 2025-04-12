@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArgs<ExternalNodeSerializeInfo>
+public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
     public ITransitionPoint this[int index] => OutputToken[index];
@@ -133,7 +133,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
 
     #region Serialize
     public List<float> _handleRatios;
-    public ExternalNodeSerializeInfo ModifiableTObject
+    public ExternalNodeSerializeInfo AdditionalTArgs
     {
         get
         {
@@ -149,6 +149,6 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeModifiableArg
             _handleRatios = value._handlePositions;
         }
     }
-    public object ModifiableObject { get => ModifiableTObject; set => ModifiableTObject = (ExternalNodeSerializeInfo)value; }
+    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ExternalNodeSerializeInfo)value; }
     #endregion
 }

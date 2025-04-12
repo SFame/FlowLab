@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 [ResourceGetter("PUMP/Sprite/ingame/classed_node_palette")]
-public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<ClassedNodeSerializeInfo>
+public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
 {
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
@@ -147,7 +147,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
     #endregion
 
     #region SerializeData
-    public ClassedNodeSerializeInfo ModifiableTObject
+    public ClassedNodeSerializeInfo AdditionalTArgs
     {
         get
         {
@@ -163,7 +163,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeModifiableArgs<Clas
             Id = value._id;
         }
     }
-    public object ModifiableObject { get => ModifiableTObject; set => ModifiableTObject = (ClassedNodeSerializeInfo)value; }
+    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ClassedNodeSerializeInfo)value; }
     #endregion
 }
 

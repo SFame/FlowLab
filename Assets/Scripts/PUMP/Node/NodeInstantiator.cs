@@ -24,8 +24,18 @@ public static class NodeInstantiator
         GameObject prefab = GetNodePrefab(prefabPath);
         GameObject go = GameObject.Instantiate(prefab);
         
-        go.AddComponent(nodeType);
-        return go.GetComponent<Node>();
+        Node newNode = go.AddComponent(nodeType) as Node;
+
+        if (newNode is INodeLifecycleCallable callable)
+        {
+            callable.CallOnAfterInstantiate();
+        }
+        else
+        {
+            throw new InvalidCastException($"NodeInstantiator: Node is not INodeLifecycleCallable. Node Type: [{nodeType.Name}]");
+        }
+
+        return newNode;
     }
     
     #region Privates
