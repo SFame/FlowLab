@@ -21,17 +21,13 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
 
-    protected override string NodeDisplayName => "Compartor";
+    protected override string NodeDisplayName => "Comparator";
 
     protected override float TextSize => 16f;
 
     protected override void StateUpdate(TransitionEventArgs args = null)
     {
-        int activeCount = InputToken.Count(tp => tp.State);
-        bool result = Operating(activeCount, CompareNumber, Operator);
-        
-        foreach (ITransitionPoint tp in OutputToken)
-            tp.State = result;
+        PushResult();
     }
 
     protected override int DefaultInputCount => 2;
@@ -47,9 +43,20 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         ">=" => a >= b,
         _ => false
     };
-    
-    protected override void OnLoad_AfterStateUpdate()
+
+    private void PushResult()
     {
+        int activeCount = InputToken.Count(tp => tp.State);
+        bool result = Operating(activeCount, CompareNumber, Operator);
+
+        foreach (ITransitionPoint tp in OutputToken)
+            tp.State = result;
+    }
+    
+    protected override void OnAfterInit()
+    {
+        base.OnAfterInit();
+
         // Input count
         InputCountInputCountDropdown.value = InputCount - 1;
         InputCountInputCountDropdown.onValueChanged.AddListener(value => InputCount = value + 1);
@@ -66,7 +73,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
                 CompareNumber = 0;
                 CompareNumberInputField.text = CompareNumber.ToString();
             }
-            StateUpdate();
+            PushResult();
         });
         CompareNumberInputField.onEndEdit.AddListener(countString => ReportChanges());
         
@@ -78,7 +85,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         OperatorDropdown.onValueChanged.AddListener(select =>
         {
             Operator = OperatorDropdown.options[select].text;
-            StateUpdate();
+            PushResult();
         });
         OperatorDropdown.onValueChanged.AddListener(_ => ReportChanges());
     }

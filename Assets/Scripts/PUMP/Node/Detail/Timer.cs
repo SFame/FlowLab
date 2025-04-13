@@ -51,15 +51,10 @@ public class Timer : Node
         _maxTime = value;
     }
 
-    protected override void OnLoad_BeforeStateUpdate()
+    protected override void OnAfterInit()
     {
         TimerSupport.SetText(_maxTime);
         TimerSupport.OnValueChanged += OnTextChange;
-    }
-
-    protected override void OnLoad_AfterStateUpdate()
-    {
-
     }
 
     protected override void StateUpdate(TransitionEventArgs args = null)

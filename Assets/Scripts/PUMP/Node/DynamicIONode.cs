@@ -8,9 +8,11 @@ public abstract class DynamicIONode : Node
     private bool _initialized = false;
     private int _inputCount = -1;  // -1: 미설정 (기본값 대체)
     private int _outputCount = -1;
-    protected override void OnLoad_BeforeStateUpdate() => _initialized = true;
+
     protected sealed override List<string> InputNames => GetNames(DefineInputName, InputCount).ToList();
     protected sealed override List<string> OutputNames => GetNames(DefineOutputName, OutputCount).ToList();
+
+    protected override void OnAfterInit() => _initialized = true;
 
     private IEnumerable<string> GetNames(Func<int, string> builder, int count)
     {

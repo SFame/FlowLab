@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 
 public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 {
+    private bool _state = false;
+
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
     protected override List<string> InputNames { get; } = new List<string>();
@@ -25,13 +27,11 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 
     protected override float TextSize => 25f;
 
+
     protected override void StateUpdate(TransitionEventArgs args = null)
     {
         foreach (ITransitionPoint tp in OutputToken)
             tp.State = State;
-        
-        DefaultColor = State ? Color.red : Color.white;
-        Image.color = DefaultColor;
     }
 
     public bool AdditionalTArgs
@@ -45,8 +45,16 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
         get => AdditionalTArgs;
         set => AdditionalTArgs = (bool)value;
     }
-    
-    public bool State { get; set; }
+
+    public bool State
+    {
+        get => _state;
+        set
+        {
+            _state = value;
+            SetImageColor(value);
+        }
+    }
     
     public override void OnPointerClick(PointerEventData eventData)
     {
@@ -59,5 +67,11 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
             StateUpdate();
             ReportChanges();
         }
+    }
+
+    private void SetImageColor(bool isActive)
+    {
+        DefaultColor = isActive ? Color.red : Color.white;
+        Image.color = DefaultColor;
     }
 }

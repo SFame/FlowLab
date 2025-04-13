@@ -94,9 +94,10 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         return $"in {tpNumber}";
     }
 
-    protected override void OnLoad_BeforeStateUpdate()
+    protected override void OnAfterInit()
     {
-        base.OnLoad_BeforeStateUpdate();
+        base.OnAfterInit();
+
         BlockedMove = true;
         InEnumActive = false;
 
@@ -104,12 +105,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         {
             (OutputToken.Enumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
         }
-    }
-    
-    protected override void OnLoad_AfterStateUpdate()
-    {
-        base.OnLoad_AfterStateUpdate();
-        
+
         if (Dropdown == null)
             return;
         

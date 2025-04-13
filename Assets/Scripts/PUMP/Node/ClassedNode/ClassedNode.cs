@@ -84,9 +84,9 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         }
     }
 
-    protected override void OnLoad_BeforeStateUpdate()
+    protected override void OnAfterInit()
     {
-        base.OnLoad_BeforeStateUpdate();
+        base.OnAfterInit();
         OnDestroy += OnDestroyAdapter;
         ClassedNodePanel.JoinPanel(this);
         MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);

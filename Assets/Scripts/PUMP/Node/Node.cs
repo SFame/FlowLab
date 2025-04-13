@@ -278,8 +278,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
 
     // Life Cycle -----------------------------
-    protected virtual void OnLoad_BeforeStateUpdate() { }
-    protected virtual void OnLoad_AfterStateUpdate() { }
     protected virtual void OnAfterInstantiate() { }
     protected virtual void OnAfterSetAdditionalArgs() { }
     protected virtual void OnBeforeInit() { }
@@ -391,9 +389,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SetRect();
         SetTPEnumerator();
         HeightSynchronizationWithEnum();
-        OnLoad_BeforeStateUpdate();
-        //StateUpdate(null);
-        OnLoad_AfterStateUpdate();
         _initialized = true;
     }
 

@@ -23,6 +23,6 @@ public class XNOR : Node
 
     protected override void StateUpdate(TransitionEventArgs args = null)
     {
-        OutputToken[0].State = !(InputToken[0].State != InputToken[1].State);
+        OutputToken[0].State = InputToken[0].State == InputToken[1].State;
     }
 }
