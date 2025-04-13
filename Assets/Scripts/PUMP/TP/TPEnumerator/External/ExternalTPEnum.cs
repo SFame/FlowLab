@@ -269,7 +269,9 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             {
                 TPConnection newConnection = new() { LineEdges = vertices[i] };
 
+                newConnection.DisableFlush = true;
                 Handles[i].TP.LinkTo(targetTps[i], newConnection);
+                newConnection.DisableFlush = false;
             }
         }
     }

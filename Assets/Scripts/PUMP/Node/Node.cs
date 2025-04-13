@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 [RequireComponent(typeof(Image))]
 [ResourceGetter("PUMP/Sprite/ingame/null_node")]
@@ -83,7 +85,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     /// <summary>
     /// 직렬화 시 TP의 연결정보 Get
     /// </summary>
-    /// <returns></returns>
     public TPConnectionInfo GetTPConnectionInfo()
     {
         if (!_initialized)
@@ -98,7 +99,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     /// <summary>
     /// 직렬화 시 TP의 State 정보 Get
     /// </summary>
-    /// <returns></returns>
     public (bool[] inputStates, bool[] outputStates) GetTPStates()
     {
         bool[] inputStates = InputToken.Select(tp => tp.State).ToArray();
@@ -107,9 +107,22 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     }
 
     /// <summary>
+    /// 직렬화 시 TP의 Connection Pending정보 Get
+    /// </summary>
+    public bool[] GetPending()
+    {
+        if (OutputToken.TPs.All(tp => tp is ITPOut))
+        {
+            return OutputToken.TPs.Select(tp => ((ITPOut)tp).IsStatePending).ToArray();
+        }
+
+        Debug.LogError("OutputToken.TPs element is not ITPOut");
+        return Enumerable.Repeat(false, OutputToken.Count).ToArray();
+    }
+
+    /// <summary>
     /// 역 직렬화 시 TP의 연결정보 Set
     /// </summary>
-    /// <param name="connectionInfo"></param>
     public void SetTPConnectionInfo(TPConnectionInfo connectionInfo, DeserializationCompleteReceiver completeReceiver)
     {
         if (!_initialized)
@@ -125,8 +138,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     /// <summary>
     /// 역 직렬화 시 TP State 정보 Set
     /// </summary>
-    /// <param name="inputStates"></param>
-    /// <param name="outputStates"></param>
     public void SetTPStates(bool[] inputStates, bool[] outputStates)
     {
         if (inputStates != null)
@@ -381,7 +392,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SetTPEnumerator();
         HeightSynchronizationWithEnum();
         OnLoad_BeforeStateUpdate();
-        StateUpdate(null);
+        //StateUpdate(null);
         OnLoad_AfterStateUpdate();
         _initialized = true;
     }

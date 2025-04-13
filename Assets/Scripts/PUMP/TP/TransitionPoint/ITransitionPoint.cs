@@ -57,4 +57,8 @@ public interface ITPIn : ITransitionPoint
     event StateChangeEventHandler OnStateChange;
 }
 
-public interface ITPOut : ITransitionPoint { }
+public interface ITPOut : ITransitionPoint
+{
+    bool IsStatePending { get; }
+    void PushToConnection();
+}

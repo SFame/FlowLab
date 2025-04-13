@@ -9,7 +9,6 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     private bool _state;
     private LineConnector _lineConnector;
 
-
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
@@ -56,15 +55,22 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         set
         {
             _state = value;
-            if (Connection is not null)
-            {
-                Connection.State = value;
-            }
+            PushToConnection();
             SetImageColor(_state ? _activeColor : _defaultColor);
         }
     }
 
+    public bool IsStatePending => Connection?.IsFlushing ?? false;
+
     public bool OnDeserializing { get; set; }
+
+    public void PushToConnection()
+    {
+        if (Connection != null)
+        {
+            Connection.State = State;
+        }
+    }
 
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
     {

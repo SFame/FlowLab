@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -107,7 +106,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         };
     }
     
-
     private (int nodeIndex, int tpIndex) GetNodeAndTpIndex(ITransitionPoint findTp)
     {
         for (int i = 0; i < Nodes.Count; i++)
@@ -120,7 +118,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         return (-1, -1);
     }
 
-    private void TargetsListUpdate(ITransitionPoint[] source, TPConnectionIndexInfo[] saveTarget, List<Vector2>[] vertices)
+    private void MapTransitionPointsToIndexInfo(TPConnectionIndexInfo[] saveTarget, ITransitionPoint[] source, List<Vector2>[] vertices)
     {
         for (int i = 0; i < source.Length; i++)
         {
@@ -527,6 +525,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         return node;
     }
 
+    public Task WaitForCreationAsync()
+    {
+        return _tcs.Task;
+    }
+    #endregion
+
+    #region Serialization
     public List<SerializeNodeInfo> GetSerializeNodeInfos()
     {
         object blocker = new();
@@ -545,6 +550,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                     NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
                     InTpState = statesTuple.inputStates, // TP 상태정보
                     OutTpState = statesTuple.outputStates,
+                    Pending = node.GetPending(),
                     NodeSerializableArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
 
@@ -552,10 +558,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 TPConnectionInfo connectionInfo = node.GetTPConnectionInfo();
 
                 nodeInfo.InConnectionTargets = new TPConnectionIndexInfo[connectionInfo.InConnectionTargets.Length];
-                TargetsListUpdate(connectionInfo.InConnectionTargets, nodeInfo.InConnectionTargets, connectionInfo.InVertices);
+                MapTransitionPointsToIndexInfo(nodeInfo.InConnectionTargets, connectionInfo.InConnectionTargets, connectionInfo.InVertices);
 
                 nodeInfo.OutConnectionTargets = new TPConnectionIndexInfo[connectionInfo.OutConnectionTargets.Length];
-                TargetsListUpdate(connectionInfo.OutConnectionTargets, nodeInfo.OutConnectionTargets, connectionInfo.OutVertices);
+                MapTransitionPointsToIndexInfo(nodeInfo.OutConnectionTargets, connectionInfo.OutConnectionTargets, connectionInfo.OutVertices);
 
                 result.Add(nodeInfo);
             }
@@ -685,11 +691,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         {
             _isOnChangeBlocker.Remove(blocker);
         }
-    }
-
-    public Task WaitForCreationAsync()
-    {
-        return _tcs.Task;
     }
     #endregion
 

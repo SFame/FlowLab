@@ -82,7 +82,9 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
             {
                 TPConnection newConnection = new() { LineEdges = vertices[i] };
 
+                newConnection.DisableFlush = true;
                 TPs[i].LinkTo(targetTps[i], newConnection);
+                newConnection.DisableFlush = false;
             }
         }
     }

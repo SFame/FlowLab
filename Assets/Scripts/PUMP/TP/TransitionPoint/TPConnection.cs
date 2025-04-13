@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Utils;
 
 public class TPConnection : IStateful, IDisposable
 {
     #region Privates
     private bool _state = false;
-    private bool _stateChache = false;
+    private bool _stateCache = false;
     private ITransitionPoint _sourceState = null;
     private ITransitionPoint _targetState = null;
     private LineConnector _lineConnector = null;
@@ -19,7 +18,7 @@ public class TPConnection : IStateful, IDisposable
     private UniTask _targetStateUpdateTask = UniTask.CompletedTask;
     private bool _disposed = false;
     
-    private void InitializCheck()
+    private void InitializeCheck()
     {
         if (!_initialized)
         {
@@ -32,16 +31,12 @@ public class TPConnection : IStateful, IDisposable
         }
     }
 
-    private List<ContextElement> ContextElements
-    {
-        get
+    private List<ContextElement> ContextElements =>
+        new()
         {
-            return new List<ContextElement>()
-            {
-                new ContextElement("Disconnect", Disconnect),
-            };
-        }
-    }
+            new("Disconnect", Disconnect),
+        };
+
     #endregion
 
     #region Interface
@@ -50,13 +45,23 @@ public class TPConnection : IStateful, IDisposable
         get => _state;
         set
         {
-            _stateChache = value;
+            if (DisableFlush)
+            {
+                _state = value;
+                return;
+            }
+
+            _stateCache = value;
             if (TargetState is not null && _targetStateUpdateTask.Status != UniTaskStatus.Pending)
             {
                 _targetStateUpdateTask = TargetStateUpdateAsync();
             }
         }
     }
+
+    public bool DisableFlush { get; set; }
+
+    public bool IsFlushing => _targetStateUpdateTask.Status == UniTaskStatus.Pending;
 
     public ITransitionPoint SourceState
     {
@@ -66,7 +71,7 @@ public class TPConnection : IStateful, IDisposable
             if (_sourceState is null)
             {
                 _sourceState = value;
-                InitializCheck();
+                InitializeCheck();
             }
         }
     }
@@ -79,7 +84,7 @@ public class TPConnection : IStateful, IDisposable
             if (_targetState is null)
             {
                 _targetState = value;
-                InitializCheck();
+                InitializeCheck();
             }
         }
     }
@@ -184,8 +189,8 @@ public class TPConnection : IStateful, IDisposable
 
             if (TargetState is not null && !_cts.Token.IsCancellationRequested)
             {
-                _state = _stateChache;
-                TargetState.State = _stateChache;
+                _state = _stateCache;
+                TargetState.State = _stateCache;
             }
         }
         catch (OperationCanceledException) { }
