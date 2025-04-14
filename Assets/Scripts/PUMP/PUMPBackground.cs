@@ -18,7 +18,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
-
+    [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.062f, 0.5f);
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion
 
@@ -39,11 +39,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     private CanvasGroup _canvasGroup;
     private ExternalInputAdapter _externalInputAdapter = new();
     private ExternalOutputAdapter _externalOutputAdapter = new();
-    private readonly Vector2 _gatewayStartPositionRatio = new Vector2(0.062f, 0.5f);
     private int _defaultExternalInputCount = 2;
     private int _defaultExternalOutputCount = 2;
     private PUMPSeparator _separator;
-    private TaskCompletionSource<bool> _tcs = new();
+    private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
 
     private List<Node> Nodes { get; } = new();
 
@@ -216,7 +215,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                         newInputCount = newExternalInput.GateCount;
                     }
 
-                    newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
+                    newNode.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
                 }
                 else
                 {
@@ -235,7 +234,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                     newInputCount = newExternalInput.GateCount;
                 }
 
-                newNode.Rect.PositionRectTransformByRatio(Rect, _gatewayStartPositionRatio);
+                newNode.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
             }
 
             if (Nodes.FirstOrDefault(node => node is IExternalOutput) is IExternalOutput externalOutput)
@@ -253,7 +252,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                         newOutputCount = newExternalOutput.GateCount;
                     }
 
-                    newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
+                    newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
                 }
                 else
                 {
@@ -272,7 +271,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                     newOutputCount = newExternalOutput.GateCount;
                 }
 
-                newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - _gatewayStartPositionRatio);
+                newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
             }
 
             if (newInputCount != -1)
@@ -318,7 +317,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     private void Start()
     {
-        _tcs.SetResult(true);
+        _creationAwaitTcs.SetResult(true);
     }
 
     private void OnDestroy()
@@ -533,7 +532,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     public Task WaitForCreationAsync()
     {
-        return _tcs.Task;
+        return _creationAwaitTcs.Task;
     }
     #endregion
 
