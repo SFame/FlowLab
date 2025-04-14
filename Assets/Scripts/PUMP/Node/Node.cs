@@ -28,6 +28,19 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private bool _outEnumActive = true;
 
     private bool _onDeserializing = false;
+
+    private bool _isDestroyed = false;
+
+    private void OnDestroy()
+    {
+        if (_isDestroyed)
+            return;
+
+        _isDestroyed = true;
+        OnBeforeRemove();
+        Disconnect();
+        OnRemove?.Invoke(this);
+    }
     #endregion
 
     #region Interface
@@ -78,7 +91,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         }
     }
 
-    public event Action<Node> OnDestroy;
+    public event Action<Node> OnRemove;
     public event Action<Node> OnPlacement;
 
     public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()
@@ -103,11 +116,12 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         return -1;
     }
 
-    public void Destroy()
+    public void Remove()
     {
+        _isDestroyed = true;
+        OnBeforeRemove();
         Disconnect();
-        OnDestroy?.Invoke(this);
-        OnRemove();
+        OnRemove?.Invoke(this);
         Destroy(gameObject);
     }
 
@@ -307,7 +321,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected virtual void OnBeforeInit() { }
     protected virtual void OnAfterInit() { }
     protected virtual void OnCompletePlacementFromPalette() { }
-    protected virtual void OnRemove() { }
+    protected virtual void OnBeforeRemove() { }
 
 
     // Output TP states when place for the first time from palette (Not Deserialize) -----------------------------
@@ -326,7 +340,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             new ContextElement(
                 clickAction: () =>
                 {
-                    Destroy();
+                    Remove();
                     ReportChanges();
                 },
                 text: "Remove"),
@@ -693,7 +707,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             OutputToken[i].State = outputStates[i];
         }
     }
-    void INodeLifecycleCallable.CallOnRemove() => OnRemove();
+    void INodeLifecycleCallable.CallOnBeforeRemove() => OnBeforeRemove();
     #endregion
 }
 
@@ -809,5 +823,5 @@ public interface INodeLifecycleCallable
     void CallOnAfterInit();
     void CallOnCompletePlacementFromPalette();
     void CallSetInitializeState();
-    void CallOnRemove();
+    void CallOnBeforeRemove();
 }

@@ -1,18 +1,14 @@
+using System;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using OdinSerializer;
+using Utils;
+using static Timer;
 
-public class Timer : Node
+public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 {
-    #region Privates
-    private TimerSupport _timerSupport;
-    private float _maxTime = 0;
-    private float _currentTime = 0;
-    private UniTask _timerTask = UniTask.CompletedTask;
-    private CancellationTokenSource _cts;
-    #endregion
-
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
     public override string NodePrefebPath => "PUMP/Prefab/Node/TIMER";
@@ -33,28 +29,30 @@ public class Timer : Node
 
     protected override string NodeDisplayName => "Timer";
 
-    private TimerSupport TimerSupport
-    {
-        get
-        {
-            if (_timerSupport == null)
-            {
-                _timerSupport = GetComponent<TimerSupport>();
-                _timerSupport.Initialize();
-            }
-            return _timerSupport;
-        }
-    }
-
-    private void OnTextChange(float value)
-    {
-        _maxTime = value;
-    }
+    protected override void OnAfterSetAdditionalArgs() => _argSet = true;
 
     protected override void OnAfterInit()
     {
+        if (_argSet)
+        {
+            _maxTime = _arg._maxTime;
+            _currentTime = _arg._currentTime;
+        }
+        else
+        {
+            _currentTime = _maxTime;
+        }
+
         TimerSupport.SetText(_maxTime);
+        TimerSupport.SliderUpdate(GetProgressValue());
         TimerSupport.OnValueChanged += OnTextChange;
+
+        if (_argSet && _arg._isStarted)
+        {
+            _cts?.Cancel();
+            OutputToken[0].State = false;
+            _timerTask = TimerStart(GetCancellationToken(), _currentTime);
+        }
     }
 
     protected override void StateUpdate(TransitionEventArgs args = null)
@@ -65,10 +63,9 @@ public class Timer : Node
             {
                 if (args.Index == 0) // Start 요청
                 {
-                    if (_timerTask.Status != UniTaskStatus.Pending)  // 타이머 진행중이 아닐 때
+                    if (!IsStarted) // 타이머 진행중이 아닐 때
                     {
-                        ResetTimer();
-                        _timerTask = TimerStart(GetCancellationToken());
+                        RestartTimer();
                     }
                 }
                 else if (args.Index == 1) // Reset 요청
@@ -79,15 +76,108 @@ public class Timer : Node
         }
     }
 
-    private async UniTask TimerStart(CancellationToken token)
+    protected override void OnBeforeRemove()
     {
+        try
+        {
+            _cts?.Cancel();
+        }
+        catch { }
 
+        _cts?.Dispose();
+    }
+
+    #region Privates
+    private TimerSupport _timerSupport;
+    private float _maxTime = 5;
+    private float _currentTime = 0;
+    private UniTask _timerTask = UniTask.CompletedTask;
+    private CancellationTokenSource _cts;
+    private TimerSerializeInfo _arg;
+    private bool _argSet = false;
+    private bool IsStarted => _timerTask.Status == UniTaskStatus.Pending;
+    private TimerSupport TimerSupport
+    {
+        get
+        {
+            if (_timerSupport == null)
+            {
+                _timerSupport = GetComponent<TimerSupport>();
+                _timerSupport.Initialize();
+            }
+
+            return _timerSupport;
+        }
+    }
+
+    private void OnTextChange(float value)
+    {
+        _maxTime = value;
+        if (_timerTask.Status != UniTaskStatus.Pending)
+        {
+            _currentTime = value;
+        }
+        ReportChanges();
+    }
+
+    private async UniTask TimerStart(CancellationToken token, float startTime)
+    {
+        _currentTime = Mathf.Clamp(startTime, 0f, _maxTime);
+        float progress = GetProgressValue();
+        TimerSupport.SliderUpdate(progress);
+
+        try
+        {
+            while (_currentTime > 0f)
+            {
+                await UniTask.Yield(token);
+
+                if (_maxTime <= float.Epsilon)
+                {
+                    break;
+                }
+
+                _currentTime = Mathf.Clamp(_currentTime, 0f, _maxTime);
+                _currentTime -= Time.deltaTime;
+                progress = GetProgressValue();
+                TimerSupport.SliderUpdate(progress);
+            }
+
+            _currentTime = 0f;
+            TimerSupport.SliderUpdate(0f);
+            OutputToken[0].State = true;
+        }
+        catch (OperationCanceledException)
+        {
+            if (!this.IsAlive())
+                return;
+
+            TimerSupport?.SliderUpdate(1f);
+            OutputToken[0].State = false;
+        }
+    }
+
+    private float GetProgressValue()
+    {
+        if (_maxTime <= float.Epsilon)
+        {
+            return 1f;
+        }
+
+        return _currentTime / _maxTime;
+    }
+
+    private void RestartTimer()
+    {
+        ResetTimer();
+        _timerTask = TimerStart(GetCancellationToken(), _maxTime);
     }
 
     private void ResetTimer()
     {
         _cts?.Cancel();
         TimerSupport.SliderUpdate(1f);
+        OutputToken[0].State = false;
     }
 
     private CancellationToken GetCancellationToken()
@@ -97,8 +187,45 @@ public class Timer : Node
             _cts?.Cancel();
         }
         catch { }
+
         _cts?.Dispose();
 
+        _cts = new CancellationTokenSource();
         return _cts.Token;
     }
+    #endregion
+
+    #region AdditionalArgs
+    public object AdditionalArgs
+    {
+        get => AdditionalTArgs;
+        set => AdditionalTArgs = (TimerSerializeInfo)value;
+    }
+
+    public TimerSerializeInfo AdditionalTArgs
+    {
+        get
+        {
+            return new()
+            {
+                _currentTime = _currentTime,
+                _maxTime = _maxTime,
+                _isStarted = IsStarted
+            };
+        }
+        set => _arg = value;
+    }
+
+    public struct TimerSerializeInfo
+    {
+        [OdinSerialize] public float _currentTime;
+        [OdinSerialize] public float _maxTime;
+        [OdinSerialize] public bool _isStarted;
+
+        public override string ToString()
+        {
+            return $"Max time: {_maxTime}, Current time: {_currentTime}, Is Started: {_isStarted}";
+        }
+    }
+    #endregion
 }

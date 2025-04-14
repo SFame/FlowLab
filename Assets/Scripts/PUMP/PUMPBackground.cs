@@ -99,7 +99,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     private void SubscribeNodeAction(Node node)
     {
-        node.OnDestroy += n =>
+        node.OnRemove += n =>
         {
             Nodes.Remove(n);
         };
@@ -182,7 +182,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 foreach (Node duplicateInput in inputNodes.Skip(1))
                 {
                     if (duplicateInput)
-                        duplicateInput.Destroy();
+                        duplicateInput.Remove();
                 }
 
                 newInputCount = ((IExternalInput)inputNodes[0]).GateCount;
@@ -194,7 +194,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 foreach (Node duplicateOutput in outputNodes.Skip(1))
                 {
                     if (duplicateOutput)
-                        duplicateOutput.Destroy();
+                        duplicateOutput.Remove();
                 }
 
                 newOutputCount = ((IExternalOutput)outputNodes[0]).GateCount;
@@ -291,7 +291,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         ClearDraggables();
 
         foreach (Node node in Nodes.ToList())
-            node?.Destroy();
+            node?.Remove();
         
         Nodes.Clear();
     }
@@ -857,7 +857,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         foreach (IDragSelectable draggable in _draggables.ToList())
         {
             if (draggable is Node node and not IExternalGateway)
-                node.Destroy();
+                node.Remove();
         }
 
         ClearDraggables();

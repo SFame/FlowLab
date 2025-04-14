@@ -6,6 +6,7 @@ public class PaletteTest : NodePalette
 {
     public override Dictionary<Type, string> NodeTypes { get; set; } = new()
     {
+        { typeof(ClassedNode), "Classed" },
         { typeof(AND), "AND" },
         { typeof(OR), "OR" },
         { typeof(NAND), "NAND" },
@@ -16,7 +17,7 @@ public class PaletteTest : NodePalette
         { typeof(ClickSwitch), "ClickSwitch" },
         { typeof(Splitter), "Split" },
         { typeof(Comparator), "Compartor" },
-        { typeof(ClassedNode), "Classed" },
+        { typeof(Timer), "Timer" },
     };
 
     private void Awake()

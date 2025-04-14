@@ -24,7 +24,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         }
     }
 
-    private void OnDestroyAdapter(Node node)
+    private void OnRemoveAdapter(Node node)
     {
         foreach (Action<IClassedNode> action in _onDeleteActions.ToList())  // 순회 도중 Enumerable 변경 예외처리
             action?.Invoke(this);
@@ -87,7 +87,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     protected override void OnAfterInit()
     {
         base.OnAfterInit();
-        OnDestroy += OnDestroyAdapter;
+        OnRemove += OnRemoveAdapter;
         ClassedNodePanel.JoinPanel(this);
         MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);
     }

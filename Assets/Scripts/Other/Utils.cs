@@ -52,6 +52,11 @@ namespace Utils
             return null;
         }
 
+        public static bool IsAlive<T>(this T component) where T : Component
+        {
+            return component != null && component.gameObject && !component.gameObject.IsDestroyed();
+        }
+
         public static async UniTask InvokeActionDelay(Action action , PlayerLoopTiming timing = PlayerLoopTiming.Update)
         {
             await UniTask.Yield(timing);

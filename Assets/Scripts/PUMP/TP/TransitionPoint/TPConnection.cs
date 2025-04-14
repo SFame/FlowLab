@@ -15,7 +15,6 @@ public class TPConnection : IStateful, IDisposable
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
     private CancellationTokenSource _cts = new CancellationTokenSource();
-    private UniTask _targetStateUpdateTask = UniTask.CompletedTask;
     private bool _disposed = false;
     
     private void InitializeCheck()
@@ -52,16 +51,16 @@ public class TPConnection : IStateful, IDisposable
             }
 
             _stateCache = value;
-            if (TargetState is not null && _targetStateUpdateTask.Status != UniTaskStatus.Pending)
+            if (TargetState is not null && !IsFlushing)
             {
-                _targetStateUpdateTask = TargetStateUpdateAsync();
+                TargetStateUpdateAsync();
             }
         }
     }
 
     public bool DisableFlush { get; set; }
 
-    public bool IsFlushing => _targetStateUpdateTask.Status == UniTaskStatus.Pending;
+    public bool IsFlushing { get; private set; }
 
     public ITransitionPoint SourceState
     {
@@ -181,8 +180,10 @@ public class TPConnection : IStateful, IDisposable
         LineConnector.ContextElements = ContextElements;
     }
 
-    private async UniTask TargetStateUpdateAsync()
-    {      
+    private async UniTaskVoid TargetStateUpdateAsync()
+    {
+        IsFlushing = true;
+
         try
         {
             await UniTask.WaitForEndOfFrame(_cts.Token);
@@ -190,10 +191,19 @@ public class TPConnection : IStateful, IDisposable
             if (TargetState is not null && !_cts.Token.IsCancellationRequested)
             {
                 _state = _stateCache;
+                IsFlushing = false;
                 TargetState.State = _stateCache;
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+            IsFlushing = false;
+        }
+        catch
+        {
+            IsFlushing = false;
+            throw;
+        }
     }
     #endregion
 }
