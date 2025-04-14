@@ -139,7 +139,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
     }
 
-    private Node InstantiateNewNodeAndApplyArgs(Type nodeType, object nodeSerializableArgs)
+    private Node AddNewNodeWithArgs(Type nodeType, object nodeSerializableArgs)
     {
         Node node = NodeInstantiator.GetNode(nodeType);
 
@@ -496,11 +496,17 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     public Node AddNewNode(Type nodeType)
     {
-        Node node = NodeInstantiator.GetNode(nodeType);
-        return AddNode(node);
+        Node newNode = JoinNode(NodeInstantiator.GetNode(nodeType));
+
+        if (newNode is INodeLifecycleCallable callable)
+        {
+            callable.CallSetInitializeState();
+        }
+
+        return newNode;
     }
 
-    public Node AddNode(Node node)
+    public Node JoinNode(Node node)
     {
         if (node is null)
         {
@@ -550,7 +556,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                     NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
                     InTpState = statesTuple.inputStates, // TP 상태정보
                     OutTpState = statesTuple.outputStates,
-                    Pending = node.GetPending(),
+                    StatePending = node.GetStatePending(),
                     NodeSerializableArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
 
@@ -591,11 +597,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             // 연결정보 제외 로드
             foreach (SerializeNodeInfo info in infos)
             {
-                Node newNode = AddNode(InstantiateNewNodeAndApplyArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
+                Node newNode = JoinNode(AddNewNodeWithArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
                 
                 if (newNode is null)
                 {
-                    Debug.LogError($"{name}: InstantiateNewNodeAndApplyArgs Null 반환");
+                    Debug.LogError($"{name}: AddNewNodeWithArgs Null 반환");
                     return;
                 } 
 
@@ -674,6 +680,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
                 TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
                 Nodes[i].SetTPConnectionInfo(connectionInfo, completeReceiver);
+            }
+
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Nodes[i].ReplayStatePending(infos[i].StatePending);
             }
 
             SetGateway();

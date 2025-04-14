@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,7 +9,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(Image))]
-[ResourceGetter("PUMP/Sprite/ingame/null_node")]
+[ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
 public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, INodeLifecycleCallable,
                                             ILocatable, IHighlightable, IDeserializingListenable, ISoundable
 {
@@ -82,6 +81,62 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public event Action<Node> OnDestroy;
     public event Action<Node> OnPlacement;
 
+    public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()
+    {
+        return (InputToken.TPs, OutputToken.TPs);
+    }
+
+    public int GetTPIndex(ITransitionPoint findTp)
+    {
+        for (int i = 0; i < InputToken.Count; i++)
+        {
+            if (InputToken[i] == findTp)
+                return i;
+        }
+        
+        for (int i = 0; i < OutputToken.Count; i++)
+        {
+            if (OutputToken[i] == findTp)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public void Destroy()
+    {
+        Disconnect();
+        OnDestroy?.Invoke(this);
+        OnRemove();
+        Destroy(gameObject);
+    }
+
+    public void Disconnect()
+    {
+        SelectRemoveRequest?.Invoke();
+        foreach (ITransitionPoint tp in InputToken)
+            tp.Connection?.Disconnect();
+
+        foreach (ITransitionPoint tp in OutputToken)
+            tp.Connection?.Disconnect();
+    }
+    
+    public virtual void SetHighlight(bool highlighted)
+    {
+        Image.color = highlighted ? HighlightedColor : DefaultColor;
+    }
+
+    /// <summary>
+    /// 변경사항 발생시 호출
+    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
+    /// </summary>
+    public void ReportChanges()
+    {
+        ((IChangeObserver)Background)?.ReportChanges();
+    }
+    #endregion
+
+    #region Serialization Util
     /// <summary>
     /// 직렬화 시 TP의 연결정보 Get
     /// </summary>
@@ -109,7 +164,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     /// <summary>
     /// 직렬화 시 TP의 Connection Pending정보 Get
     /// </summary>
-    public bool[] GetPending()
+    public bool[] GetStatePending()
     {
         if (OutputToken.TPs.All(tp => tp is ITPOut))
         {
@@ -187,58 +242,27 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         }
     }
 
-    public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()
+    public void ReplayStatePending(bool[] pending)
     {
-        return (InputToken.TPs, OutputToken.TPs);
-    }
-
-    public int GetTPIndex(ITransitionPoint findTp)
-    {
-        for (int i = 0; i < InputToken.Count; i++)
+        if (pending == null)
         {
-            if (InputToken[i] == findTp)
-                return i;
+            Debug.LogError($"{name}: Pending data is null");
+            return;
         }
-        
+
+        if (OutputToken.Count != pending.Length)
+        {
+            Debug.LogError($"{name}: Count mismatch detected: Expected {pending.Length} pending info data but found {OutputToken.Count} Output.TPs");
+            return;
+        }
+
         for (int i = 0; i < OutputToken.Count; i++)
         {
-            if (OutputToken[i] == findTp)
-                return i;
+            if (pending[i] && OutputToken[i] is ITPOut tpOut)
+            {
+                tpOut.PushToConnection();
+            }
         }
-
-        return -1;
-    }
-
-    public void Destroy()
-    {
-        Disconnect();
-        OnDestroy?.Invoke(this);
-        OnRemove();
-        Destroy(gameObject);
-    }
-
-    public void Disconnect()
-    {
-        SelectRemoveRequest?.Invoke();
-        foreach (ITransitionPoint tp in InputToken)
-            tp.Connection?.Disconnect();
-
-        foreach (ITransitionPoint tp in OutputToken)
-            tp.Connection?.Disconnect();
-    }
-    
-    public virtual void SetHighlight(bool highlighted)
-    {
-        Image.color = highlighted ? HighlightedColor : DefaultColor;
-    }
-
-    /// <summary>
-    /// 변경사항 발생시 호출
-    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
-    /// </summary>
-    public void ReportChanges()
-    {
-        ((IChangeObserver)Background)?.ReportChanges();
     }
     #endregion
 
@@ -286,7 +310,11 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected virtual void OnRemove() { }
 
 
-    // Input TP States Update Callback (Overriding required) -----------------------------
+    // Output TP states when place for the first time from palette (Not Deserialize) -----------------------------
+    protected virtual bool[] SetInitializeState(int outputCount) => null;
+
+
+    // Input TP states update callback (Overriding required) -----------------------------
     protected abstract void StateUpdate(TransitionEventArgs args = null);  // args가 null이 입력되면 생성시 호출을 의미
 
 
@@ -568,7 +596,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         foreach (ITransitionPoint tp in InputToken)
         {
             if (tp is ITPIn tpIn)
+            {
                 tpIn.OnStateChange += StateUpdate;
+            }
         }
     }
 
@@ -640,6 +670,29 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
     void INodeLifecycleCallable.CallOnAfterInit() => OnAfterInit();
     void INodeLifecycleCallable.CallOnCompletePlacementFromPalette() => InternalCallOnCompletePlacementFromPalette();
+    void INodeLifecycleCallable.CallSetInitializeState()
+    {
+        int outputCount = OutputToken.Count;
+        bool[] outputStates = SetInitializeState(outputCount);
+
+        if (outputStates == null)
+        {
+            StateUpdate(null);
+            return;
+        }
+
+        if (outputStates.Length != outputCount)
+        {
+            Debug.LogError($"{name}: Init states({outputStates.Length}) and the output token count({outputCount}) do not match ");
+            StateUpdate(null);
+            return;
+        }
+
+        for (int i = 0; i < outputCount; i++)
+        {
+            OutputToken[i].State = outputStates[i];
+        }
+    }
     void INodeLifecycleCallable.CallOnRemove() => OnRemove();
     #endregion
 }
@@ -755,5 +808,6 @@ public interface INodeLifecycleCallable
     void CallOnBeforeInit();
     void CallOnAfterInit();
     void CallOnCompletePlacementFromPalette();
+    void CallSetInitializeState();
     void CallOnRemove();
 }

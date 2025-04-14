@@ -25,13 +25,9 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override float TextSize => 16f;
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
-    {
-        PushResult();
-    }
-
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 1;
+    protected override void StateUpdate(TransitionEventArgs args = null) => PushResult();
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => "out";
 

@@ -12,7 +12,7 @@ public struct SerializeNodeInfo
     [OdinSerialize][field: SerializeReference] public object NodeSerializableArgs { get; set; }
     [OdinSerialize] public bool[] InTpState { get; set; }
     [OdinSerialize] public bool[] OutTpState { get; set; }
-    [OdinSerialize] public bool[] Pending { get; set; }
+    [OdinSerialize] public bool[] StatePending { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] InConnectionTargets { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] OutConnectionTargets { get; set; }
     

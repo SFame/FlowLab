@@ -75,42 +75,6 @@ public class PUMPSeparator : MonoBehaviour
             }
         }
     }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            PUMPBackground background = GetBackground();
-            if (background != null)
-            {
-                background.Open();
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            PUMPBackground background = GetBackground();
-            if (background != null)
-            {
-                background.Close();
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            SetVisible(true);
-        }
-
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            SetVisible(false);
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            PUMPBackground.Current.Destroy();
-        }
-    }
     #endregion
 
     #region Interface

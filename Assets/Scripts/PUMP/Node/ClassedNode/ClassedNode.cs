@@ -7,7 +7,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
-[ResourceGetter("PUMP/Sprite/ingame/classed_node_palette")]
+[ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
 {
     #region Privates
