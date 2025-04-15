@@ -12,7 +12,7 @@ public class TimerSupport : MonoBehaviour
 
     public void Initialize()
     {
-        m_InputField.onEndEdit.AddListener(InvokeValuChangeEvent);
+        m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
         m_Slider.value = 1f;
     }
 
@@ -27,7 +27,7 @@ public class TimerSupport : MonoBehaviour
         m_Slider.value = value;
     }
 
-    private void InvokeValuChangeEvent(string value)
+    private void InvokeValueChangeEvent(string value)
     {
         if (float.TryParse(value, out float result))
         {

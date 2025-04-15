@@ -41,6 +41,12 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         Disconnect();
         OnRemove?.Invoke(this);
     }
+
+    private void OnDisable()
+    {
+        SelectRemoveRequest?.Invoke();
+        IsSelected = false;
+    }
     #endregion
 
     #region Interface
@@ -355,6 +361,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         };
     }
 
+    // Node property -----------------------------
     public virtual string NodePrefebPath { get; }
     protected virtual string TP_EnumInPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string TP_EnumOutPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
@@ -670,12 +677,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     
     public event OnSelectedMoveHandler OnSelectedMove;
     public event Action SelectRemoveRequest;
-
-    private void OnDisable()
-    {
-        SelectRemoveRequest?.Invoke();
-        IsSelected = false;
-    }
     #endregion
 
     #region Lifecycle Callable

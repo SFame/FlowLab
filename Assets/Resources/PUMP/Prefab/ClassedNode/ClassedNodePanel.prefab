@@ -308,7 +308,7 @@ GameObject:
   - component: {fileID: 3004922145781305519}
   - component: {fileID: 5263053732062091724}
   - component: {fileID: 3556687200241000454}
-  - component: {fileID: 172031740274278605}
+  - component: {fileID: 6345159039674329134}
   m_Layer: 5
   m_Name: NodePalette
   m_TagString: Untagged
@@ -374,7 +374,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &172031740274278605
+--- !u!114 &6345159039674329134
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -383,7 +383,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 343159097199608642}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d320f5f5b9d45487fb68f09db6b041a0, type: 3}
+  m_Script: {fileID: 11500000, guid: eba84a4f35c03174faaf099c05237984, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &400049353854287874

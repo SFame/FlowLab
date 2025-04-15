@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-public class PaletteTest : NodePalette
+public class ClassedPalette : NodePalette
 {
     public override Dictionary<Type, string> NodeTypes { get; set; } = new()
     {
-        { typeof(ClassedNode), "Classed" },
         { typeof(AND), "AND" },
         { typeof(OR), "OR" },
         { typeof(NAND), "NAND" },
