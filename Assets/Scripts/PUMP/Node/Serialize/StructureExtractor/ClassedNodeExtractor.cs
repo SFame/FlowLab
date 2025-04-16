@@ -39,7 +39,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     {
         if (HasCurrent())
         {
-            return GetCurrent().PairBackground.GetSerializeNodeInfos();
+            return GetCurrent().PairBackground.GetInfos();
         }
 
         return null;
@@ -125,7 +125,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             return;
         }
         var current = GetCurrent();
-        current.PairBackground.SetSerializeNodeInfos(structure.NodeInfos, true);
+        current.PairBackground.SetInfos(structure.NodeInfos, true);
         current.ClassedNode.Id = structure.Tag.ToString();
         current.ClassedNode.Name = structure.Name;
         current.ClearChangeFlag();
@@ -148,7 +148,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         if (matchedStructure != null)
         {
-            current.PairBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos, true);
+            current.PairBackground.SetInfos(matchedStructure.NodeInfos, true);
             current.ClassedNode.Name = matchedStructure.Name;
             current.ClassedNode.Id = matchedStructure.Tag.ToString();
             current.ClearChangeFlag();
@@ -156,7 +156,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             return;
         }
 
-        current.PairBackground.SetSerializeNodeInfos(new(), true);
+        current.PairBackground.SetInfos(new(), true);
         current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         current.ClassedNode.Id = string.Empty;
         current.ClearChangeFlag();
@@ -215,7 +215,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         PUMPBackground newBackground = BackgroundGetter?.Invoke();
         if (matchedStructure != null)
         {
-            newBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos, true);
+            newBackground.SetInfos(matchedStructure.NodeInfos, true);
             classedNode.Name = matchedStructure.Name;
         }
 

@@ -185,6 +185,39 @@ namespace Utils
 
     public static class RaycasterUtil
     {
+        public static List<RaycastResult> FindUnderPoint(this GraphicRaycaster raycaster, Vector2 point)
+        {
+            PointerEventData pointerData = new PointerEventData(EventSystem.current);
+            pointerData.position = point;
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            raycaster.Raycast(pointerData, results);
+
+            return results.DistinctBy(r => r.gameObject).ToList();
+        }
+
+        public static List<RaycastResult> GridRaycast(this GraphicRaycaster raycaster, Vector2 startPos, Vector2 endPos, float gridSize = 10f)
+        {
+            PointerEventData pointerData = new PointerEventData(EventSystem.current);
+
+            float minX = Mathf.Min(startPos.x, endPos.x);
+            float maxX = Mathf.Max(startPos.x, endPos.x);
+            float minY = Mathf.Min(startPos.y, endPos.y);
+            float maxY = Mathf.Max(startPos.y, endPos.y);
+
+            List<RaycastResult> results = new List<RaycastResult>();
+            for (float x = minX; x <= maxX; x += gridSize)
+            {
+                for (float y = minY; y <= maxY; y += gridSize)
+                {
+                    pointerData.position = new Vector2(x, y);
+                    raycaster.Raycast(pointerData, results);
+                }
+            }
+
+            return results.DistinctBy(r => r.gameObject).ToList();
+        }
+
         public static List<T> FindUnderPoint<T>(this GraphicRaycaster raycaster, Vector2 point)
         {
             PointerEventData pointerData = new PointerEventData(EventSystem.current);

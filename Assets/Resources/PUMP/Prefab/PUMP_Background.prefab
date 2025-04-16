@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6360745568194141331}
   - component: {fileID: 6810463794762530773}
   - component: {fileID: 2128914228309382544}
+  - component: {fileID: 6341105819460128539}
   - component: {fileID: 6736030158677057566}
   - component: {fileID: 5503982140588132566}
   - component: {fileID: 3852178875346839596}
@@ -99,7 +100,25 @@ MonoBehaviour:
   m_NodeParent: {fileID: 9199168667862927995}
   m_DraggingZone: {fileID: 5021579165764981370}
   m_ChildZone: {fileID: 8053971875587748987}
+  m_GatewayStartPositionRatio: {x: 0.062, y: 0.5}
+  m_SelectionAreaController: {fileID: 6341105819460128539}
   <RecordOnInitialize>k__BackingField: 1
+--- !u!114 &6341105819460128539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2619789075046056597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce92ae401e4f4a547a91b262a4875732, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Raycaster: {fileID: 3852178875346839596}
+  m_SelectionRangePrefab: {fileID: 7855203412584261223, guid: 808dbad1a916240908851fb1e93c1a4e, type: 3}
+  m_SelectingZone: {fileID: 5021579165764981370}
+  m_GridSize: 20
 --- !u!114 &6736030158677057566
 MonoBehaviour:
   m_ObjectHideFlags: 0

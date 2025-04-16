@@ -5,20 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using Utils;
 using static Utils.RectTransformPosition;
 using Debug = UnityEngine.Debug;
 
-[RequireComponent(typeof(GraphicRaycaster), typeof(CanvasGroup))]
-public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandler, IDraggable, ISeparatorSectorable, ICreationAwaitable
+[RequireComponent(typeof(CanvasGroup))]
+public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorable, ICreationAwaitable
 {
     #region On Inspector
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
     [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.062f, 0.5f);
+    [SerializeField] private SelectionAreaController m_SelectionAreaController;
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion
 
@@ -43,6 +42,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     private int _defaultExternalOutputCount = 2;
     private PUMPSeparator _separator;
     private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
+    private UniTask _changeInvokeTask = UniTask.CompletedTask;
 
     private List<Node> Nodes { get; } = new();
 
@@ -80,6 +80,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         OnChanged += RecordHistory;
 
         SetGateway();
+        SetSelectionAreaController();
 
         if (RecordOnInitialize)
             RecordHistory();
@@ -136,30 +137,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
                 
             saveTarget[i] = null;
         }
-    }
-
-    private Node AddNewNodeWithArgs(Type nodeType, object nodeSerializableArgs)
-    {
-        Node node = NodeInstantiator.GetNode(nodeType);
-
-        if (node is INodeAdditionalArgs args)
-        {
-            try
-            {
-                args.AdditionalArgs = nodeSerializableArgs;
-            }
-            catch (InvalidCastException e)
-            {
-                Debug.LogError($"Failed to convert SerializableArgs {nodeType}: {e.Message}");
-            }
-        }
-        
-        if (node is INodeLifecycleCallable callable)
-        {
-            callable.CallOnAfterSetAdditionalArgs();
-        }
-
-        return node;
     }
 
     /// <summary>
@@ -298,7 +275,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
 
     /// <summary>
     /// 지속적으로 호출하더라도 이벤트 호출 프레임당 1회로 제한
-    /// SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 호출하지 말 것.
+    /// SetInfos() 메서드의 트랜지션에 영향받는 위치에서 호출하지 말 것.
     /// </summary>
     void IChangeObserver.ReportChanges()
     {
@@ -505,6 +482,30 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         return newNode;
     }
 
+    private Node AddNewNodeWithArgs(Type nodeType, object nodeSerializableArgs)
+    {
+        Node node = NodeInstantiator.GetNode(nodeType);
+
+        if (node is INodeAdditionalArgs args)
+        {
+            try
+            {
+                args.AdditionalArgs = nodeSerializableArgs;
+            }
+            catch (InvalidCastException e)
+            {
+                Debug.LogError($"Failed to convert SerializableArgs {nodeType}: {e.Message}");
+            }
+        }
+
+        if (node is INodeLifecycleCallable callable)
+        {
+            callable.CallOnAfterSetAdditionalArgs();
+        }
+
+        return node;
+    }
+
     public Node JoinNode(Node node)
     {
         if (node is null)
@@ -537,7 +538,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     #endregion
 
     #region Serialization
-    public List<SerializeNodeInfo> GetSerializeNodeInfos()
+    public List<SerializeNodeInfo> GetInfos()
     {
         object blocker = new();
         _isOnChangeBlocker.Add(blocker);
@@ -575,7 +576,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
         catch (Exception e)
         {
-            Debug.LogError($"GetSerializeNodeInfos failed: {e.Message}");
+            Debug.LogError($"GetInfos failed: {e.Message}");
             return null;
         }
         finally
@@ -584,7 +585,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
     }
 
-    public void SetSerializeNodeInfos(List<SerializeNodeInfo> infos, bool invokeOnChange = true)
+    public void SetInfos(List<SerializeNodeInfo> infos, bool invokeOnChange = true)
     {
         object blocker = new();
         _isOnChangeBlocker.Add(blocker);
@@ -695,7 +696,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
         catch (Exception e)
         {
-            Debug.LogError($"SetSerializeNodeInfos failed: {e.Message}");
+            Debug.LogError($"SetInfos failed: {e.Message}");
         }
         finally
         {
@@ -705,89 +706,59 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
     #endregion
 
     #region Undo/Redo
-    private List<List<SerializeNodeInfo>> _historyInfos = new();
-    private List<SerializeNodeInfo> _latestHistoryInfo = null;  // 노드 비어있는 상태
-    private int _currentHistoryIndex = -1;
-    private int _maxHistoryCapacity = 10;
-    private UniTask _changeInvokeTask = UniTask.CompletedTask;
+    private UndoDelegate<List<SerializeNodeInfo>> _undoDelegate;
 
-    private void PushHistory(List<SerializeNodeInfo> historyInfo)
+    private UndoDelegate<List<SerializeNodeInfo>> UndoDelegate
     {
-        if (_currentHistoryIndex >= 0)
+        get
         {
-            int removeCount = _historyInfos.Count - (_currentHistoryIndex + 1);
-            if (removeCount > 0)
-                _historyInfos.RemoveRange(_currentHistoryIndex + 1, removeCount);
-        }
-        
-        while (_historyInfos.Count >= _maxHistoryCapacity)
-        {
-            _historyInfos.RemoveAt(0);
-            _currentHistoryIndex--;
-        }
-        
-        _historyInfos.Add(historyInfo);
-        _currentHistoryIndex = Mathf.Clamp(++_currentHistoryIndex, -1, _historyInfos.Count - 1);
-    }
+            if (_undoDelegate == null)
+            {
+                _undoDelegate = new
+                (
+                    recordGetter: GetInfos,
+                    onUndo: result =>
+                    {
+                        ClearDraggables();
+                        SetInfos(result, false);
+                    },
+                    maxCapacity: 15
+                );
+                _undoDelegate.RecordAfterClear = true;
+            }
 
-    private List<SerializeNodeInfo> PopHistory(bool moveLeft)
-    {
-        int nextIndex = moveLeft ? _currentHistoryIndex - 1 : _currentHistoryIndex + 1;
-        
-        if (nextIndex >= 0 && nextIndex < _historyInfos.Count)
-        {
-            _currentHistoryIndex = nextIndex;
-            return _historyInfos[_currentHistoryIndex];
+            return _undoDelegate;
         }
-    
-        return null;
     }
 
     /// <summary>
     /// 히스토리 저장.
-    /// SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 호출하지 말 것.
+    /// SetInfos의 트레이스의 영향을 받는 위치에서 호출하지 말 것.
     /// </summary>
     private void RecordHistory()
     {
-        _latestHistoryInfo = GetSerializeNodeInfos();
-        PushHistory(_latestHistoryInfo);
+        UndoDelegate.Record();
     }
 
     public void ClearHistory()
     {
-        _historyInfos.Clear();
-        _currentHistoryIndex = -1;
-        RecordHistory();
+        UndoDelegate.Clear();
     }
 
     public void Undo()
     {
-        if (PopHistory(true) is not null and var historyInfo)
-        {
-            ClearDraggables();
-            _latestHistoryInfo = historyInfo;
-            SetSerializeNodeInfos(_latestHistoryInfo, false);
-        }
+        UndoDelegate.Undo();
     }
 
     public void Redo()
     {
-        if (PopHistory(false) is not null and var historyInfo)
-        {
-            ClearDraggables();
-            _latestHistoryInfo = historyInfo;
-            SetSerializeNodeInfos(_latestHistoryInfo, false);
-        }
+        UndoDelegate.Redo();
     }
     #endregion
 
     #region Selecting
-    private const string DRAGGING_RANGE_PREFAB_PATH = "PUMP/Prefab/Other/DraggingRange";
-    private GameObject _draggingRangePrefab;
-    private RectTransform _draggingRangeRect;
     private readonly List<IDragSelectable> _draggables = new();
-    private Vector2 _selectStartPos;
-    private GraphicRaycaster _raycaster;
+
     private List<ContextElement> SelectContextElements
     {
         get
@@ -804,40 +775,34 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
         }
     }
 
-    private GameObject DraggingRangePrefab
+    private void SetSelectionAreaController()
     {
-        get
+        m_SelectionAreaController.OnMouseDown += results =>
         {
-            if (_draggingRangePrefab is null)
-                _draggingRangePrefab = Resources.Load<GameObject>(DRAGGING_RANGE_PREFAB_PATH);
-            return _draggingRangePrefab;
-        }
-    }
+            IEnumerable<IDragSelectable> foundDraggables = results
+                .Select(result => result.gameObject.GetComponent<IDragSelectable>())
+                .Where(result => result != null);
 
-    private RectTransform DraggingRangeRect
-    {
-        get
-        {
-            if (_draggingRangeRect is null)
+            if (!foundDraggables.HasIntersection(_draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
             {
-                _draggingRangeRect = Instantiate(DraggingRangePrefab, m_DraggingZone).GetComponent<RectTransform>();
-                _draggingRangeRect.sizeDelta = Vector2.zero;
-                _draggingRangeRect.anchorMin = new Vector2(0f, 1f);
-                _draggingRangeRect.anchorMax = new Vector2(0f, 1f);
-                _draggingRangeRect.SetAsLastSibling();
+                ClearDraggables();
             }
-            return _draggingRangeRect;
-        }
-    }
-    
-    private GraphicRaycaster Raycaster
-    {
-        get
+        };
+
+        m_SelectionAreaController.OnMouseBeginDrag += ClearDraggables;
+
+        m_SelectionAreaController.OnMouseEndDrag += results =>
         {
-            if (_raycaster is null)
-                _raycaster = GetComponent<GraphicRaycaster>();
-            return _raycaster;
-        }
+            IEnumerable<IDragSelectable> selectables = results
+                .Select(result => result.gameObject.GetComponent<IDragSelectable>())
+                .Where(result => result != null);
+
+            foreach (IDragSelectable selectable in selectables)
+            {
+                selectable.IsSelected = true;
+                AddDraggable(selectable);
+            }
+        };
     }
 
     public void ClearDraggables()
@@ -908,52 +873,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, IPointerDownHandle
             Debug.LogError($"{GetType().Name}: Exception caught - {e}");
         }
     }
-    
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        List<IDragSelectable> foundDraggables = Raycaster.FindUnderPoint<IDragSelectable>(eventData.position);
-        if (!foundDraggables.HasIntersection(_draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
-        {
-            ClearDraggables();
-        }
-    }
-    
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        ClearDraggables();
-        _selectStartPos = eventData.position;
-        DraggingRangeRect.gameObject.SetActive(true);
-        DraggingRangeRect.sizeDelta = Vector2.zero;
-    }
-
-    public void OnDrag(PointerEventData eventData)
-    {
-        Vector2 currentPos = eventData.position;
-        
-        float pivotX = currentPos.x < _selectStartPos.x ? 1 : 0;
-        float pivotY = currentPos.y < _selectStartPos.y ? 1 : 0;
-        DraggingRangeRect.pivot = new Vector2(pivotX, pivotY);
-        
-        float width = Mathf.Abs(currentPos.x - _selectStartPos.x);
-        float height = Mathf.Abs(currentPos.y - _selectStartPos.y);
-        DraggingRangeRect.sizeDelta = new Vector2(width, height);
-        
-        DraggingRangeRect.position = _selectStartPos;
-    }
-
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        DraggingRangeRect.gameObject.SetActive(false);
-        
-        Vector2 selectEndPos = eventData.position;
-        HashSet<IDragSelectable> selectables = Raycaster.GridRaycast<IDragSelectable>(_selectStartPos, selectEndPos, 20f);
-    
-        foreach (IDragSelectable selectable in selectables)
-        {
-            selectable.IsSelected = true;
-            AddDraggable(selectable);
-        }
-    }
     #endregion
 }
 
@@ -1006,7 +925,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
     {
         get
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             return _reference[index];
         }
     }
@@ -1017,12 +936,12 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
     {
         get
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             return _reference.GateCount;
         }
         set
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             _reference.GateCount = value;
         }
     }
@@ -1036,12 +955,11 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public IEnumerator<ITransitionPoint> GetEnumerator()
     {
-        CheckNullAndThrowNullExeption();
+        CheckNullAndThrowNullException();
         return _reference.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
 
     public override void UpdateReference(IExternalGateway externalGateway)
     {
@@ -1049,13 +967,13 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
             _reference.OnCountUpdate -= InvokeOnCountUpdate;
 
         _reference = externalGateway as IExternalInput;
-        CheckNullAndThrowNullExeption();
+        CheckNullAndThrowNullException();
         _reference.OnCountUpdate += InvokeOnCountUpdate;
 
         InvokeOnCountUpdate(_reference.GateCount);
     }
 
-    private void CheckNullAndThrowNullExeption()
+    private void CheckNullAndThrowNullException()
     {
         if (ObjectIsNull)
             throw new NullReferenceException();
@@ -1070,7 +988,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     {
         get
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             return _reference[index];
         }
     }
@@ -1081,16 +999,15 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     {
         get
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             return _reference.GateCount;
         }
         set
         {
-            CheckNullAndThrowNullExeption();
+            CheckNullAndThrowNullException();
             _reference.GateCount = value;
         }
     }
-
 
     public event Action OnStateUpdate;
 
@@ -1108,7 +1025,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     public IEnumerator<ITransitionPoint> GetEnumerator()
     {
-        CheckNullAndThrowNullExeption();
+        CheckNullAndThrowNullException();
         return _reference.GetEnumerator();
     }
 
@@ -1123,14 +1040,14 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         }
 
         _reference = externalGateway as IExternalOutput;
-        CheckNullAndThrowNullExeption();
+        CheckNullAndThrowNullException();
         _reference.OnStateUpdate += InvokeOnStateUpdate;
         _reference.OnCountUpdate += InvokeOnCountUpdate;
 
         InvokeOnCountUpdate(_reference.GateCount);
     }
 
-    private void CheckNullAndThrowNullExeption()
+    private void CheckNullAndThrowNullException()
     {
         if (ObjectIsNull)
             throw new NullReferenceException();
@@ -1175,3 +1092,5 @@ public interface IDestroyTarget
 {
     void Destroy(object sender);
 }
+
+// 🥕🥕🥕 (대충 당근 흔드는짤)

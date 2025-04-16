@@ -32,7 +32,7 @@ using UnityEngine;
 ///     PUMPBackground newBackground = BackgroundGetter?.Invoke();
 ///     if (matchedStructure != null)
 ///     {
-///         newBackground.SetSerializeNodeInfos(matchedStructure.NodeInfos, true);
+///         newBackground.SetInfos(matchedStructure.NodeInfos, true);
 ///         classedNode.Name = matchedStructure.Name;
 ///     }
 ///

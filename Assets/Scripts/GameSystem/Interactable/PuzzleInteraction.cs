@@ -117,7 +117,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         puzzleBackground.OnValidationComplete += HandlePuzzleValidationComplete;
         if (_pumpBackground != null)
         {
-            _pumpBackground.SetSerializeNodeInfos(puzzleData.NodeInfos);
+            _pumpBackground.SetInfos(puzzleData.NodeInfos);
             //((IChangeObserver)background).ReportChanges();
         }
         else

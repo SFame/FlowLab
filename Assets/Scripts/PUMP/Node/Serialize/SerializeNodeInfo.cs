@@ -15,7 +15,7 @@ public struct SerializeNodeInfo
     [OdinSerialize] public bool[] StatePending { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] InConnectionTargets { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] OutConnectionTargets { get; set; }
-    
+
     public override string ToString()
     {
         var sb = new StringBuilder();
@@ -24,7 +24,40 @@ public struct SerializeNodeInfo
         sb.AppendLine($"    [NodeType]: {NodeType?.Name ?? "null"}\n");
         sb.AppendLine($"    [Position]: {NodePosition}\n");
         sb.AppendLine($"    [SerializableArgs]: {NodeSerializableArgs?.ToString() ?? "null"}\n");
-       
+
+        sb.AppendLine($"    [InTpState] ({InTpState?.Length ?? 0})");
+        sb.AppendLine("    {");
+        if (InTpState != null)
+        {
+            for (int i = 0; i < InTpState.Length; i++)
+            {
+                sb.AppendLine($"        [{i}]: {InTpState[i]}");
+            }
+        }
+        sb.AppendLine("    }\n");
+
+        sb.AppendLine($"    [OutTpState] ({OutTpState?.Length ?? 0})");
+        sb.AppendLine("    {");
+        if (OutTpState != null)
+        {
+            for (int i = 0; i < OutTpState.Length; i++)
+            {
+                sb.AppendLine($"        [{i}]: {OutTpState[i]}");
+            }
+        }
+        sb.AppendLine("    }\n");
+
+        sb.AppendLine($"    [StatePending] ({StatePending?.Length ?? 0})");
+        sb.AppendLine("    {");
+        if (StatePending != null)
+        {
+            for (int i = 0; i < StatePending.Length; i++)
+            {
+                sb.AppendLine($"        [{i}]: {StatePending[i]}");
+            }
+        }
+        sb.AppendLine("    }\n");
+
         sb.AppendLine($"    [InConnections] ({InConnectionTargets?.Length ?? 0})");
         sb.AppendLine("    {");
         if (InConnectionTargets != null)
@@ -47,7 +80,6 @@ public struct SerializeNodeInfo
         }
         sb.AppendLine("    }");
         sb.Append("}");
-
         return sb.ToString();
     }
 }

@@ -8,7 +8,7 @@ public class DefaultExtractor : SaveLoadStructureExtractor
 
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
-        background.SetSerializeNodeInfos(structure.NodeInfos, true);
+        background.SetInfos(structure.NodeInfos, true);
     }
 
     public override string GetImagePath()
@@ -18,7 +18,7 @@ public class DefaultExtractor : SaveLoadStructureExtractor
 
     public override List<SerializeNodeInfo> GetNodeInfos()
     {
-        return background.GetSerializeNodeInfos();
+        return background.GetInfos();
     }
 
     public override object GetTag()

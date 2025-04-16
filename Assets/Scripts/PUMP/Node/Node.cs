@@ -148,7 +148,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     /// <summary>
     /// 변경사항 발생시 호출
-    /// PUMPBackground.SetSerializeNodeInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
+    /// PUMPBackground.SetInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
     /// </summary>
     public void ReportChanges()
     {
@@ -431,6 +431,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     #region Initialize
     public void Initialize()
     {
+        if (_initialized)
+            return;
+
         OnDragging += pointerEventArgs => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
         MoveEnd += _ => ReportChanges();
         SetName();
