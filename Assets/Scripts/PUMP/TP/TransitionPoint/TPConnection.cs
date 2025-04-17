@@ -53,7 +53,7 @@ public class TPConnection : IStateful, IDisposable
             _stateCache = value;
             if (TargetState is not null && !IsFlushing)
             {
-                TargetStateUpdateAsync();
+                TargetStateUpdateAsync().Forget();
             }
         }
     }

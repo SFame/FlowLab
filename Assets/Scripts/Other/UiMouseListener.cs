@@ -1,11 +1,9 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using Utils;
 
 public class UiMouseListener : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {

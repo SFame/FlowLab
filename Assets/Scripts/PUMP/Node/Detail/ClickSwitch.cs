@@ -64,7 +64,7 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
         {
             SelectedRemoveRequestInvoke();
             State = !State;
-            StateUpdate();
+            ((INodeLifecycleCallable)this).CallStateUpdate();
             ReportChanges();
         }
     }

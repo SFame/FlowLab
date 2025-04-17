@@ -37,7 +37,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             return;
 
         _isDestroyed = true;
-        OnBeforeRemove();
+        ((INodeLifecycleCallable)this).CallOnBeforeRemove();
         Disconnect();
         OnRemove?.Invoke(this);
     }
@@ -125,7 +125,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void Remove()
     {
         _isDestroyed = true;
-        OnBeforeRemove();
+        ((INodeLifecycleCallable)this).CallOnBeforeRemove();
         Disconnect();
         OnRemove?.Invoke(this);
         Destroy(gameObject);
@@ -134,11 +134,18 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     public void Disconnect()
     {
         SelectRemoveRequest?.Invoke();
-        foreach (ITransitionPoint tp in InputToken)
-            tp.Connection?.Disconnect();
 
-        foreach (ITransitionPoint tp in OutputToken)
-            tp.Connection?.Disconnect();
+        if (InputToken != null)
+        {
+            foreach (ITransitionPoint tp in InputToken)
+                tp.Connection?.Disconnect();
+        }
+
+        if (OutputToken != null)
+        {
+            foreach (ITransitionPoint tp in OutputToken)
+                tp.Connection?.Disconnect();
+        }
     }
     
     public virtual void SetHighlight(bool highlighted)
@@ -321,12 +328,20 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected TPEnumeratorToken OutputToken { get; set; }
 
 
-    // Life Cycle -----------------------------
-    protected virtual void OnAfterInstantiate() { }
+    // Life Cycle (Deserialize)-----------------------------
     protected virtual void OnAfterSetAdditionalArgs() { }
+    protected virtual void OnBeforeAutoConnect() { }
+    protected virtual void OnBeforeReplayPending(bool[] pendings) { }
+
+
+    // Life Cycle (From palette)-----------------------------
+    protected virtual void OnCompletePlacementFromPalette() { }
+
+
+    // Life Cycle (Common)-----------------------------
+    protected virtual void OnAfterInstantiate() { }
     protected virtual void OnBeforeInit() { }
     protected virtual void OnAfterInit() { }
-    protected virtual void OnCompletePlacementFromPalette() { }
     protected virtual void OnBeforeRemove() { }
 
 
@@ -384,7 +399,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected virtual bool SizeFreeze { get; } = false;
 
 
-    // Child Utils -----------------------------
+    // Utils for Child -----------------------------
     protected bool InEnumActive
     {
         get => _inEnumActive;
@@ -416,7 +431,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         SetToken(InputToken.Enumerator, OutputToken.Enumerator);
 
         if (stateUpdate)
-            StateUpdate(null);
+        {
+            ((INodeLifecycleCallable)this).CallStateUpdate(null);
+        }
     }
 
     /// <summary>
@@ -621,7 +638,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         {
             if (tp is ITPIn tpIn)
             {
-                tpIn.OnStateChange += StateUpdate;
+                tpIn.OnStateChange += ((INodeLifecycleCallable)this).CallStateUpdate;
             }
         }
     }
@@ -683,10 +700,20 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     #endregion
 
     #region Lifecycle Callable
+
+    void INodeLifecycleCallable.CallStateUpdate(TransitionEventArgs args = null)
+    {
+        if (_isDestroyed)
+            return;
+
+        StateUpdate(args);
+    }
     void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
     void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs() => OnAfterSetAdditionalArgs();
     void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
     void INodeLifecycleCallable.CallOnAfterInit() => OnAfterInit();
+    void INodeLifecycleCallable.CallOnBeforeAutoConnect() => OnBeforeAutoConnect();
+    void INodeLifecycleCallable.CallOnBeforeReplayPending(bool[] pendings) => OnBeforeReplayPending(pendings);
     void INodeLifecycleCallable.CallOnCompletePlacementFromPalette() => InternalCallOnCompletePlacementFromPalette();
     void INodeLifecycleCallable.CallSetInitializeState()
     {
@@ -695,14 +722,14 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         if (outputStates == null)
         {
-            StateUpdate(null);
+            ((INodeLifecycleCallable)this).CallStateUpdate(null);
             return;
         }
 
         if (outputStates.Length != outputCount)
         {
             Debug.LogError($"{name}: Init states({outputStates.Length}) and the output token count({outputCount}) do not match ");
-            StateUpdate(null);
+            ((INodeLifecycleCallable)this).CallStateUpdate(null);
             return;
         }
 
@@ -821,10 +848,13 @@ public class TPConnectionInfo
 
 public interface INodeLifecycleCallable
 {
+    void CallStateUpdate(TransitionEventArgs args = null);
     void CallOnAfterInstantiate();
     void CallOnAfterSetAdditionalArgs();
     void CallOnBeforeInit();
     void CallOnAfterInit();
+    void CallOnBeforeAutoConnect();
+    void CallOnBeforeReplayPending(bool[] pendings);
     void CallOnCompletePlacementFromPalette();
     void CallSetInitializeState();
     void CallOnBeforeRemove();

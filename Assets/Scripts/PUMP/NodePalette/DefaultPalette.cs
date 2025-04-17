@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class PaletteTest : NodePalette
+public class DefaultPalette : NodePalette
 {
     public override Dictionary<Type, string> NodeTypes { get; set; } = new()
     {
@@ -17,6 +17,7 @@ public class PaletteTest : NodePalette
         { typeof(Splitter), "Split" },
         { typeof(Comparator), "Comparator" },
         { typeof(Timer), "Timer" },
+        { typeof(EdgeDetector), "Edge Detector" },
     };
 
     private void Awake()

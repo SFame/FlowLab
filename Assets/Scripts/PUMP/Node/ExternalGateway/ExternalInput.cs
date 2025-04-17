@@ -119,7 +119,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     {
         base.SetHighlight(highlighted);
 
-        if (OutputToken.Enumerator is IHighlightable highlightable)
+        if (OutputToken is { Enumerator: IHighlightable highlightable })
         {
             highlightable.SetHighlight(highlighted);
         }

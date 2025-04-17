@@ -52,6 +52,20 @@ namespace Utils
             return null;
         }
 
+        public static void SafeCancelAndDispose(this CancellationTokenSource cts)
+        {
+            if (cts == null)
+                return;
+
+            try
+            {
+                cts.Cancel();
+            }
+            catch { }
+
+            cts.Dispose();
+        }
+
         public static bool IsAlive<T>(this T component) where T : Component
         {
             return component != null && component.gameObject && !component.gameObject.IsDestroyed();

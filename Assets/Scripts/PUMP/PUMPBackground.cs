@@ -621,6 +621,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 return;
             }
 
+            List<INodeLifecycleCallable> callables = Nodes.Select(node => (INodeLifecycleCallable)node).ToList();
+
+            foreach (INodeLifecycleCallable callable in callables) // 생명주기: 자동 커넥션 이전
+            {
+                callable.CallOnBeforeAutoConnect();
+            }
+
             // 연결정보 로드
             for (int i = 0; i < Nodes.Count; i++)
             {
@@ -680,6 +687,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
                 TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
                 Nodes[i].SetTPConnectionInfo(connectionInfo, completeReceiver);
+            }
+
+            for (int i = 0; i < callables.Count; i++)
+            {
+                INodeLifecycleCallable callable = callables[i];
+                callable.CallOnBeforeReplayPending(infos[i].StatePending.ToArray());
             }
 
             for (int i = 0; i < Nodes.Count; i++)

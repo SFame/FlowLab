@@ -16,6 +16,7 @@ public class ClassedPalette : NodePalette
         { typeof(Splitter), "Split" },
         { typeof(Comparator), "Comparator" },
         { typeof(Timer), "Timer" },
+        { typeof(EdgeDetector), "Edge Detector" },
     };
 
     private void Awake()
