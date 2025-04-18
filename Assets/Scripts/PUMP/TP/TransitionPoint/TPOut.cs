@@ -43,7 +43,6 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             Connection.LineConnector.SetAlpha(1f);
         }
     }
-
     #endregion
 
     #region Interface

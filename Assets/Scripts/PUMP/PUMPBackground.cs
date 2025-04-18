@@ -587,31 +587,39 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void SetInfos(List<SerializeNodeInfo> infos, bool invokeOnChange = true)
     {
+        // Add change blocker ---------
         object blocker = new();
         _isOnChangeBlocker.Add(blocker);
+
+        // Can receive complete SetInfos() for this object ---------
         using DeserializationCompleteReceiver completeReceiver = new();
 
         try
         {
             ClearNodes();
-            // 연결정보 제외 로드
+            // Load without connection info ==>
             foreach (SerializeNodeInfo info in infos)
             {
+                // Instantiate new node and apply arg, Initialize ---------
                 Node newNode = JoinNode(AddNewNodeWithArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
                 
                 if (newNode is null)
                 {
                     Debug.LogError($"{name}: AddNewNodeWithArgs Null 반환");
                     return;
-                } 
+                }
 
+                // Notify the node of the deserialization ---------
                 if (newNode is IDeserializingListenable listenable) // 역직렬화 시작을 알림
                 {
                     listenable.OnDeserializing = true;
                     completeReceiver.Subscribe(() => listenable.OnDeserializing = false);
                 }
 
+                // Set node position ---------
                 newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
+
+                // Set Transition Point states ---------
                 newNode.SetTPStates(info.InTpState, info.OutTpState);
             }
 
@@ -621,14 +629,16 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 return;
             }
 
+            // For call Node's lifecycle method ---------
             List<INodeLifecycleCallable> callables = Nodes.Select(node => (INodeLifecycleCallable)node).ToList();
 
+            // Lifecycle call 1: OnBeforeAutoConnect ---------
             foreach (INodeLifecycleCallable callable in callables) // 생명주기: 자동 커넥션 이전
             {
                 callable.CallOnBeforeAutoConnect();
             }
 
-            // 연결정보 로드
+            // Load connection info ==>
             for (int i = 0; i < Nodes.Count; i++)
             {
                 if (Nodes[i] == null)
@@ -645,42 +655,58 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 ITransitionPoint[] outConnectionTargets = new ITransitionPoint[outCount];
                 List<Vector2>[] outVertices = new List<Vector2>[outCount];
 
+                // In connection's target (target is TPOut) ---------
                 for (int j = 0; j < inCount; j++)
                 {
                     if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex || inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
                         continue;
 
+                    // Find target node ---------
                     Node targetNode = Nodes[inConnectionTargetInfos[j].NodeIndex];
+
+                    // Target's TP (out) ---------
                     ITransitionPoint[] targetOutTps = targetNode.GetTPs().outTps;
+
+                    // Index info ---------
                     int targetTpIndex = inConnectionTargetInfos[j].TpIndex;
 
                     if (targetTpIndex <= -1 || targetOutTps.Length <= targetTpIndex)
                         continue;
 
+                    // Match index to TP ---------
                     ITransitionPoint targetInTp = targetOutTps[targetTpIndex];
                     if (targetInTp == null)
                         continue;
 
+                    // Apply to array ---------
                     inConnectionTargets[j] = targetInTp;
                     inVertices[j] = ConvertLocalToWorldPositions(inConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
                 }
 
+                // Out connection's target (target is TPIn)
                 for (int j = 0; j < outCount; j++)
                 {
                     if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex || outConnectionTargetInfos[j].NodeIndex <= -1)
                         continue;
 
+                    // Find target node ---------
                     Node targetNode = Nodes[outConnectionTargetInfos[j].NodeIndex];
+
+                    // Target's TP (in) ---------
                     ITransitionPoint[] targetInTps = targetNode.GetTPs().inTps;
+
+                    // Index info ---------
                     int targetTpIndex = outConnectionTargetInfos[j].TpIndex;
 
                     if (targetTpIndex <= -1 || targetInTps.Length <= targetTpIndex)
                         continue;
 
+                    // Match index to TP ---------
                     ITransitionPoint targetOutTp = targetInTps[targetTpIndex];
                     if (targetOutTp == null)
                         continue;
 
+                    // Apply to array ---------
                     outConnectionTargets[j] = targetOutTp;
                     outVertices[j] = ConvertLocalToWorldPositions(outConnectionTargetInfos[j].Vertices, Rect, RootCanvas);
                 }
@@ -689,19 +715,23 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Nodes[i].SetTPConnectionInfo(connectionInfo, completeReceiver);
             }
 
+            // Lifecycle call 2: OnBeforeReplayPending ---------
             for (int i = 0; i < callables.Count; i++)
             {
                 INodeLifecycleCallable callable = callables[i];
                 callable.CallOnBeforeReplayPending(infos[i].StatePending.ToArray());
             }
 
+            // Replay Pending ---------
             for (int i = 0; i < Nodes.Count; i++)
             {
                 Nodes[i].ReplayStatePending(infos[i].StatePending);
             }
 
+            // Ensures the integrity of the gateway ---------
             SetGateway();
 
+            // Invoke DeserializationCompleteReceiver ---------
             completeReceiver.Invoke();
 
             if (invokeOnChange)
@@ -713,6 +743,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
         finally
         {
+            // Remove change blocker ---------
             _isOnChangeBlocker.Remove(blocker);
         }
     }
