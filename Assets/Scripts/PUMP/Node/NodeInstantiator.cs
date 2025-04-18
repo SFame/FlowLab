@@ -39,7 +39,7 @@ public static class NodeInstantiator
     }
     
     #region Privates
-    private static readonly string DEFAULT_PREFAB_PATH = "PUMP/Prefab/Node/NODE";
+    private static readonly string DEFAULT_PREFAB_PATH = "PUMP/Prefab/NODE";
     private static readonly Dictionary<string, GameObject> _prefebCache = new();
     
     private static GameObject GetNodePrefab(string prefabPath = "")

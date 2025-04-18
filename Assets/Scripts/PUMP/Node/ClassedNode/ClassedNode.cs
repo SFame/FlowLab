@@ -113,7 +113,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         get => _name;
         set
         {
-            NodeNameText.text = value;
+            Support.NameText.text = value;
             name = value;
         }
     }

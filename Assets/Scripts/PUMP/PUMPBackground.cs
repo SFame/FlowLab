@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Utils;
-using static Utils.RectTransformPosition;
+using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(CanvasGroup))]

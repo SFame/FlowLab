@@ -71,7 +71,7 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 
     private void SetImageColor(bool isActive)
     {
-        DefaultColor = isActive ? Color.red : Color.white;
-        Image.color = DefaultColor;
+        Support.DefaultColor = isActive ? Color.red : Color.white;
+        Support.Image.color = Support.DefaultColor;
     }
 }

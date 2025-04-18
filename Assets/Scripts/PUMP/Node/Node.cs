@@ -2,24 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using Utils;
 
-[RequireComponent(typeof(Image))]
 [ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
 public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, INodeLifecycleCallable,
-                                            ILocatable, IHighlightable, IDeserializingListenable, ISoundable
+                                            ILocatable, IHighlightable, IDeserializingListenable
 {
     #region Privates
     private bool _initialized = false;
-    private Image _image;
-    private TextMeshProUGUI _nodeNameText;
+    private NodeSupport _support;
     private PUMPBackground _background;
     private bool _isBackgroundSet = false;
-    private Canvas _rootCanvas;
 
     private float _inEnumHeight;
     private float _outEnumHeight;
@@ -150,7 +145,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     
     public virtual void SetHighlight(bool highlighted)
     {
-        Image.color = highlighted ? HighlightedColor : DefaultColor;
+        Support.SetHighlight(highlighted);
     }
 
     /// <summary>
@@ -294,31 +289,24 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     #endregion
 
     #region Protected
-    // Components -----------------------------
-    protected Image Image
+    // NodeSupport -----------------------------
+    protected NodeSupport Support
     {
         get
         {
-            _image ??= GetComponent<Image>();
-            return _image;
-        }
-    }
+            if (_support == null)
+            {
+                _support = GetComponent<NodeSupport>();
 
-    protected TextMeshProUGUI NodeNameText
-    {
-        get
-        {
-            _nodeNameText ??= GetComponentInChildren<TextMeshProUGUI>();
-            return _nodeNameText;
-        }
-    }
+                if (_support == null)
+                {
+                    throw new NullReferenceException($"{name}: NodeSupport must exist on the same object");
+                }
 
-    protected Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
-            return _rootCanvas;
+                _support.Initialize(this);
+            }
+
+            return _support;
         }
     }
 
@@ -377,16 +365,13 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     }
 
     // Node property -----------------------------
-    public virtual string NodePrefebPath { get; }
+    public virtual string NodePrefebPath { get; } = "PUMP/Prefab/NODE";
     protected virtual string TP_EnumInPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string TP_EnumOutPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
-    protected virtual Color DefaultColor { get; set; } = Color.white;
-    protected virtual Color HighlightedColor { get; set; } = Color.green;
-    protected virtual float TextSize { get; } = 30f;
-
     protected abstract string SpritePath { get; }
     protected abstract string NodeDisplayName { get; }
+    protected virtual float TextSize { get; } = 30f;
     protected abstract List<string> InputNames { get; }
     protected abstract List<string> OutputNames { get; }
 
@@ -453,36 +438,13 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         OnDragging += pointerEventArgs => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
         MoveEnd += _ => ReportChanges();
-        SetName();
-        SetSprite();
-        SetRect();
+        Support.SetText(NodeDisplayName);
+        Support.SetFontSize(TextSize);
+        Support.SetSpriteForResourcesPath(SpritePath);
+        Support.SetRectDeltaSize(DefaultNodeSize);
         SetTPEnumerator();
         HeightSynchronizationWithEnum();
         _initialized = true;
-    }
-
-    private void SetSprite()
-    {
-        Sprite sprite = Resources.Load<Sprite>(SpritePath);
-        if (sprite is null)
-        {
-            Debug.LogError($"{GetType().Name}: Can't find resource <Sprite>");
-            return;
-        }
-
-        Image.sprite = sprite;
-    }
-
-    private void SetName()
-    {
-        name = GetType().Name;
-        NodeNameText.text = NodeDisplayName;
-        NodeNameText.fontSize = TextSize;
-    }
-
-    private void SetRect()
-    {
-        Rect.sizeDelta = DefaultNodeSize;
     }
 
     /// <summary>
@@ -497,16 +459,16 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         RectTransform inRect = tuple.Value.enumIn.GetComponent<RectTransform>();
         RectTransform outRect = tuple.Value.enumOut.GetComponent<RectTransform>();
 
-        SetParent(Rect, inRect, outRect);
+        RectTransformUtils.SetParent(Rect, inRect, outRect);
 
-        SetAnchor(rect: inRect, min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
-        SetAnchor(rect: outRect, min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
+        inRect.SetAnchor(min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
+        outRect.SetAnchor(min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
 
-        SetOffset(rect: inRect, min: new Vector2(inRect.offsetMin.x, 0f), max: new Vector2(inRect.offsetMax.x, 0f));
-        SetOffset(rect: outRect, min: new Vector2(outRect.offsetMin.x, 0f), max: new Vector2(outRect.offsetMax.x, 0f));
+        inRect.SetOffset(min: new Vector2(inRect.offsetMin.x, 0f), max: new Vector2(inRect.offsetMax.x, 0f));
+        outRect.SetOffset(min: new Vector2(outRect.offsetMin.x, 0f), max: new Vector2(outRect.offsetMax.x, 0f));
 
-        SetXPos(rect: inRect, value: InEnumeratorXPos);
-        SetXPos(rect: outRect, value: OutEnumeratorXPos);
+        inRect.SetXPos(InEnumeratorXPos);
+        outRect.SetXPos(OutEnumeratorXPos);
 
         ITPEnumerator tpEnumIn = inRect.GetComponent<ITPEnumerator>();
         ITPEnumerator tpEnumOut = outRect.GetComponent<ITPEnumerator>();
@@ -589,35 +551,10 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         return (Instantiate(enumIn), Instantiate(enumOut));
     }
 
-    private void SetParent(Transform parent, params Transform[] childs)
-    {
-        foreach (Transform child in childs)
-            child.SetParent(parent);
-    }
-
-    private void SetAnchor(RectTransform rect, Vector2 min, Vector2 max)
-    {
-        rect.anchorMin = min;
-        rect.anchorMax = max;
-    }
-
-    private void SetOffset(RectTransform rect, Vector2 min, Vector2 max)
-    {
-        rect.offsetMin = min;
-        rect.offsetMax = max;
-    }
-
-    private void SetXPos(RectTransform rect, float value)
-    {
-        Vector2 position = rect.anchoredPosition;
-        position.x = value;
-        rect.anchoredPosition = position;
-    }
-
     private float HeightSynchronizationWithEnum()
     {
         float maxHeight = Mathf.Max(_inEnumHeight, _outEnumHeight, DefaultNodeSize.y);
-        Rect.sizeDelta = new Vector2(DefaultNodeSize.x, maxHeight);
+        Support.Rect.sizeDelta = new Vector2(DefaultNodeSize.x, maxHeight);
         return maxHeight;
     }
 
@@ -647,28 +584,19 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     {
         OnCompletePlacementFromPalette();
         OnPlacement?.Invoke(this);
-        PlaySound(0);
+        Support.PlaySound(0);
         ReportChanges();
-    }
-
-    private void PlaySound(int index)
-    {
-        if (!OnDeserializing)
-        {
-            OnSounded?.Invoke(this, new(index, Location));
-        }
     }
     #endregion
 
     #region  Other (ToString()..)
-    public event SoundEventHandler OnSounded;
     public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName}";
     public virtual void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             List<ContextElement> currentContextElements = _selectedContextElements?.Invoke() ?? ContextElements;
-            Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, currentContextElements.ToArray());
+            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
         }
     }
     #endregion
@@ -700,7 +628,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     #endregion
 
     #region Lifecycle Callable
-
     void INodeLifecycleCallable.CallStateUpdate(TransitionEventArgs args = null)
     {
         if (_isDestroyed)
@@ -708,13 +635,21 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         StateUpdate(args);
     }
+
     void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
+
     void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs() => OnAfterSetAdditionalArgs();
+
     void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
+
     void INodeLifecycleCallable.CallOnAfterInit() => OnAfterInit();
+
     void INodeLifecycleCallable.CallOnBeforeAutoConnect() => OnBeforeAutoConnect();
+
     void INodeLifecycleCallable.CallOnBeforeReplayPending(bool[] pendings) => OnBeforeReplayPending(pendings);
+
     void INodeLifecycleCallable.CallOnCompletePlacementFromPalette() => InternalCallOnCompletePlacementFromPalette();
+
     void INodeLifecycleCallable.CallSetInitializeState()
     {
         int outputCount = OutputToken.Count;
@@ -738,6 +673,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             OutputToken[i].State = outputStates[i];
         }
     }
+
     void INodeLifecycleCallable.CallOnBeforeRemove() => OnBeforeRemove();
     #endregion
 }

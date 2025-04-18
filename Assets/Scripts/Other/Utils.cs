@@ -1,13 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using JetBrains.Annotations;
 using OdinSerializer;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -1050,13 +1050,13 @@ namespace Utils
         #endregion
     }
 
-    public static class RectTransformPosition
+    public static class RectTransformUtils
     {
         public static List<Vector2> ConvertWorldToLocalPositions([NotNull]List<Vector2> positions, [NotNull]RectTransform anchoredRect, [NotNull]Canvas rootCanvas)
         {
             if (positions == null || positions.Count == 0 || anchoredRect == null || rootCanvas == null)
             {
-                Debug.LogWarning("RectTransformPosition.ConvertWorldToLocalPositions(): Check param");
+                Debug.LogWarning("RectTransformUtils.ConvertWorldToLocalPositions(): Check param");
                 return positions;
             }
          
@@ -1081,7 +1081,7 @@ namespace Utils
         {
             if (anchoredRect == null || rootCanvas == null)
             {
-                Debug.LogWarning("RectTransformPosition.ConvertWorldToLocalPosition(): Check param.");
+                Debug.LogWarning("RectTransformUtils.ConvertWorldToLocalPosition(): Check param.");
                 return position;
             }
 
@@ -1100,7 +1100,7 @@ namespace Utils
         {
             if (localPositions == null || localPositions.Count == 0 || anchoredRect == null || rootCanvas == null)
             {
-                Debug.LogWarning("RectTransformPosition.ConvertLocalToWorldPositions(): Check param.");
+                Debug.LogWarning("RectTransformUtils.ConvertLocalToWorldPositions(): Check param.");
                 return localPositions;
             }
     
@@ -1123,7 +1123,7 @@ namespace Utils
         {
             if (anchoredRect == null || rootCanvas == null)
             {
-                Debug.LogWarning("RectTransformPosition.ConvertLocalToWorldPosition(): Check param.");
+                Debug.LogWarning("RectTransformUtils.ConvertLocalToWorldPosition(): Check param.");
                 return localPosition;
             }
             
@@ -1136,7 +1136,7 @@ namespace Utils
             
         }
 
-        public static void PositionRectTransformByRatio(this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
+        public static void PositionRectTransformByRatio([NotNull]this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
         {
             if (rectTransform && parentRect)
             {
@@ -1152,28 +1152,54 @@ namespace Utils
             }
         }
 
-        public static Canvas GetRootCanvas(this RectTransform rectTransform) => rectTransform.GetComponentInParent<Canvas>().rootCanvas;
+        public static Canvas GetRootCanvas([NotNull]this RectTransform rectTransform) => rectTransform.GetComponentInParent<Canvas>().rootCanvas;
         public static RectTransform GetRootCanvasRect(this RectTransform rectTransform)
         {
              return rectTransform.GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
         }
 
-        public static void SetAnchor(this RectTransform rect, Vector2 min, Vector2 max)
+        public static void SetAnchor([NotNull]this RectTransform rect, Vector2 min, Vector2 max)
         {
             rect.anchorMin = min;
             rect.anchorMax = max;
         }
 
-        public static void SetEdges(this RectTransform rect, float left, float right, float top, float bottom)
+        public static void SetOffset([NotNull]this RectTransform rect, Vector2 min, Vector2 max)
+        {
+            rect.offsetMin = min;
+            rect.offsetMax = max;
+        }
+
+        public static void SetEdges([NotNull]this RectTransform rect, float left, float right, float top, float bottom)
         {
             rect.offsetMin = new Vector2(left, bottom);
             rect.offsetMax = new Vector2(-right, -top);
         }
 
-        public static void SetRectFull(this RectTransform rect)
+        public static void SetRectFull([NotNull]this RectTransform rect)
         {
             rect.SetAnchor(Vector2.zero, Vector2.one);
             rect.SetEdges(0f, 0f, 0f, 0f);
+        }
+
+        public static void SetParent([CanBeNull]Transform parent, params Transform[] childs)
+        {
+            foreach (Transform child in childs)
+                child.SetParent(parent);
+        }
+
+        public static void SetXPos([NotNull]this RectTransform rect, float value)
+        {
+            Vector2 position = rect.anchoredPosition;
+            position.x = value;
+            rect.anchoredPosition = position;
+        }
+
+        public static void SetYPos([NotNull]this RectTransform rect, float value)
+        {
+            Vector2 position = rect.anchoredPosition;
+            position.y = value;
+            rect.anchoredPosition = position;
         }
     }
 
