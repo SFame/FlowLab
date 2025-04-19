@@ -698,6 +698,7 @@ namespace Utils
                     Directory.CreateDirectory(directoryPath);
 
                 byte[] bytes = SerializationUtility.SerializeValue<T>(data, format);
+
                 string path = Path.Combine(directoryPath, fileName);
                 File.WriteAllBytes(path, bytes);
             }

@@ -89,7 +89,7 @@ public abstract class TransitionPoint : MonoBehaviour,
         }
     }
 
-    public Action<UGUIPosition> OnMove { get; set; }
+    public Action<PositionInfo> OnMove { get; set; }
 
     protected virtual List<ContextElement> ContextElements
     {

@@ -436,8 +436,8 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         if (_initialized)
             return;
 
-        OnDragging += pointerEventArgs => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
-        MoveEnd += _ => ReportChanges();
+        OnDragging += (pointerEventArgs, _) => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
+        OnDragEnd += (_, _) => ReportChanges();
         Support.SetText(NodeDisplayName);
         Support.SetFontSize(TextSize);
         Support.SetSpriteForResourcesPath(SpritePath);
@@ -554,7 +554,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private float HeightSynchronizationWithEnum()
     {
         float maxHeight = Mathf.Max(_inEnumHeight, _outEnumHeight, DefaultNodeSize.y);
-        Support.Rect.sizeDelta = new Vector2(DefaultNodeSize.x, maxHeight);
+        SetRectSizeDelta(new Vector2(DefaultNodeSize.x, maxHeight));
         return maxHeight;
     }
 

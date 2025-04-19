@@ -14,7 +14,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
         OnMove = uguiPos => OnNodeMove(lineConnector);
-        Node.OnMove += OnMove;
+        Node.OnPositionUpdate += OnMove;
 
         tpConnection.LineConnector = lineConnector;
         return tpConnection;
@@ -95,7 +95,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             Connection = connection;
 
             OnMove = uguiPos => OnNodeMove(connection.LineConnector);
-            Node.OnMove += OnMove;
+            Node.OnPositionUpdate += OnMove;
 
             if (!OnDeserializing)
             {
@@ -110,7 +110,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     public override void ClearConnection()
     {
         Connection = null;
-        Node.OnMove -= OnMove;
+        Node.OnPositionUpdate -= OnMove;
         OnMove = null;
 
         if (!OnDeserializing)

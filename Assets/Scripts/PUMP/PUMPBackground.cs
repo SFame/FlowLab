@@ -557,7 +557,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     InTpState = statesTuple.inputStates, // TP 상태정보
                     OutTpState = statesTuple.outputStates,
                     StatePending = node.GetStatePending(),
-                    NodeSerializableArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
+                    NodeAdditionalArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
 
                 // 연결정보
@@ -601,7 +601,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             foreach (SerializeNodeInfo info in infos)
             {
                 // Instantiate new node and apply arg, Initialize ---------
-                Node newNode = JoinNode(AddNewNodeWithArgs(info.NodeType, info.NodeSerializableArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
+                Node newNode = JoinNode(AddNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
                 
                 if (newNode is null)
                 {

@@ -28,7 +28,7 @@ public interface IGameObject
 
 public interface IMoveable
 {
-    Action<UGUIPosition> OnMove { get; set; }
+    Action<PositionInfo> OnMove { get; set; }
 }
 
 /// <summary>
