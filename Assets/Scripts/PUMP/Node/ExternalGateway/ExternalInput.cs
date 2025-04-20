@@ -1,18 +1,16 @@
-using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
     public ITransitionPoint this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
-    public bool ObjectIsNull => gameObject == null;
+    public bool ObjectIsNull => Support.gameObject == null;
     public int GateCount
     {
         get
@@ -43,7 +41,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         get
         {
             if (_dropdown == null)
-                _dropdown = GetComponentInChildren<TMP_Dropdown>();
+                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
             return _dropdown;
         }
     }
@@ -76,7 +74,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         };
     }
     
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         if (InputToken.Count != OutputToken.Count)
             return;
@@ -95,11 +93,16 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         return $"in {tpNumber}";
     }
 
+    protected override void OnAfterInstantiate()
+    {
+        IgnoreSelectedDelete = true;
+    }
+
     protected override void OnAfterInit()
     {
         base.OnAfterInit();
 
-        BlockedMove = true;
+        Support.BlockedMove = true;
         InEnumActive = false;
 
         if (_handleRatios != null && GateCount == _handleRatios.Count)

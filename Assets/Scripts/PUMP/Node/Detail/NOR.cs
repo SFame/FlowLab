@@ -21,7 +21,7 @@ public class NOR : Node
 
     protected override string NodeDisplayName => "NOR";
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         OutputToken[0].State = !(InputToken[0].State || InputToken[1].State);
     }

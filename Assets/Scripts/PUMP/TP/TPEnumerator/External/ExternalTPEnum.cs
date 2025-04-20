@@ -46,7 +46,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
     #region Interface
     public List<ExternalTPHandle> Handles { get; private set; } = new();
 
-    public List<float> GetHandlesRatio() => Handles.Select(handle => GetPositionRatio(handle)).ToList();
+    public List<float> GetHandlesRatio() => Handles.Select(GetPositionRatio).ToList();
     public void SetHandlePositionsToRatio(List<float> ratios)
     {
         if (Handles.Count != ratios.Count)
@@ -65,7 +65,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
     private float GetPositionRatio(ExternalTPHandle handle)
     {
         float parentHeight = _tpSlider.rect.height;
-        float parentMinY = _tpSlider.rect.min.y;
         float parentMaxY = _tpSlider.rect.max.y;
         float handleHeight = handle.Rect.rect.height;
 
@@ -84,7 +83,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
     private void SetPositionToRatio(ExternalTPHandle handle, float ratio)
     {
         float parentHeight = _tpSlider.rect.height;
-        float parentMinY = _tpSlider.rect.min.y;
         float parentMaxY = _tpSlider.rect.max.y;
         float handleHeight = handle.Rect.rect.height;
         float handlePivotY = handle.Rect.pivot.y;
@@ -119,11 +117,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         {
             moveable.OnMove?.Invoke(default);
         }
-    }
-
-    private void HandleEndDragCallback(PointerEventData eventData, ExternalTPHandle handle)
-    {
-        Node.ReportChanges();
     }
 
     private ExternalTPHandle InstantiateHandle()
@@ -161,6 +154,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
                 _node = value;
         }
     }
+
     public float MinHeight
     {
         get => _minHeight;

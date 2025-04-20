@@ -28,7 +28,7 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
     protected override float TextSize => 25f;
 
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         foreach (ITransitionPoint tp in OutputToken)
             tp.State = State;
@@ -56,13 +56,13 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
         }
     }
     
-    public override void OnPointerClick(PointerEventData eventData)
+    protected override void OnNodeUiClick(PointerEventData eventData)
     {
-        base.OnPointerClick(eventData);
+        base.OnNodeUiClick(eventData);
         
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            SelectedRemoveRequestInvoke();
+            Support.SelectedRemoveRequestInvoke();
             State = !State;
             ((INodeLifecycleCallable)this).CallStateUpdate();
             ReportChanges();

@@ -34,7 +34,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
         {
             if (_edgeSupport == null)
             {
-                _edgeSupport = GetComponent<EdgeSupport>();
+                _edgeSupport = Support.GetComponent<EdgeSupport>();
                 _edgeSupport.Initialize(SetDuration);
             }
 
@@ -72,7 +72,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
     }
 
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         if (args == null || !args.IsStateChange)
             return;

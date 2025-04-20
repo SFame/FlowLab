@@ -19,7 +19,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     {
         get
         {
-            _mouseListener ??= transform.GetOrAddComponent<UiMouseListener>();
+            _mouseListener ??= Support.transform.GetOrAddComponent<UiMouseListener>();
             return _mouseListener;
         }
     }
@@ -102,7 +102,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         return "out" + tpNumber;
     }
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         OnInputUpdate?.Invoke(InputToken.Select(tp => tp.State).ToArray());
     }
@@ -114,7 +114,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         set
         {
             Support.NameText.text = value;
-            name = value;
+            Support.name = value;
         }
     }
     public string Id { get; set; } = string.Empty;

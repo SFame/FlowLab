@@ -18,7 +18,7 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override string NodeDisplayName => "SPLIT";
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         bool state = InputToken[0].State;
         
@@ -45,7 +45,7 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
         get
         {
             if (_dropdown == null)
-                _dropdown = GetComponentInChildren<TMP_Dropdown>();
+                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
             return _dropdown;
         }
     }

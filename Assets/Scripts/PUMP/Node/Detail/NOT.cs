@@ -21,7 +21,7 @@ public class NOT : Node
 
     protected override string NodeDisplayName => "NOT";
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         OutputToken[0].State = !InputToken[0].State;
     }

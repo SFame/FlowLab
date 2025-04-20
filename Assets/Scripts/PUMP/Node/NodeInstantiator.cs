@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public static class NodeInstantiator
 {
@@ -12,19 +14,25 @@ public static class NodeInstantiator
             return null;
         }
         
-        Node instance = Activator.CreateInstance(nodeType) as Node;
-        if (instance is null)
+        Node newNode = Activator.CreateInstance(nodeType) as Node;
+        if (newNode is null)
         {
-            Debug.LogError($"NodeInstantiator: Could not create node of type {nodeType}");
-            return null;
+            throw new InvalidCastException($"NodeInstantiator: Could not create node of type {nodeType}");
         }
         
-        string prefabPath = instance.NodePrefebPath;
+        string prefabPath = newNode.NodePrefebPath;
         
         GameObject prefab = GetNodePrefab(prefabPath);
-        GameObject go = GameObject.Instantiate(prefab);
-        
-        Node newNode = go.AddComponent(nodeType) as Node;
+        GameObject go = Object.Instantiate(prefab);
+
+        INodeSupportInitializable newNodeSupport = go.GetComponent<NodeSupport>();
+
+        if (newNodeSupport.IsUnityNull())
+        {
+            throw new MissingComponentException($"{newNode.GetType().Name} => The prefab is missing the NodeSupport component. Please add it.");
+        }
+
+        newNodeSupport.Initialize(newNode);
 
         if (newNode is INodeLifecycleCallable callable)
         {
@@ -49,9 +57,8 @@ public static class NodeInstantiator
 
         if (_prefebCache.TryGetValue(path, out GameObject prefab))
             return prefab;
-        
-        Debug.LogError($"NodeInstantiator: Could not find prefab {path}");
-        return null;
+
+        throw new System.IO.FileNotFoundException($"NodeInstantiator: Could not find prefab {path}");
     }
 
     private static void CachingPrefab(string prefabPath)

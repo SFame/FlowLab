@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Utils;
 
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
@@ -11,7 +12,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     public event Action<int> OnCountUpdate;
     public event Action OnStateUpdate;
 
-    public bool ObjectIsNull => gameObject == null;
+    public bool ObjectIsNull => Support.gameObject == null;
 
     public int GateCount
     {
@@ -43,7 +44,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         get
         {
             if (_dropdown == null)
-                _dropdown = GetComponentInChildren<TMP_Dropdown>();
+                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
             return _dropdown;
         }
     }
@@ -76,7 +77,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         };
     }
     
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         if (InputToken.Count != OutputToken.Count)
             return;
@@ -96,12 +97,17 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     {
         return $"out {tpNumber}";
     }
-    
+
+    protected override void OnAfterInstantiate()
+    {
+        IgnoreSelectedDelete = true;
+    }
+
     protected override void OnAfterInit()
     {
         base.OnAfterInit();
 
-        BlockedMove = true;
+        Support.BlockedMove = true;
         OutEnumActive = false;
 
         if (_handleRatios != null && GateCount == _handleRatios.Count)

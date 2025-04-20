@@ -71,6 +71,11 @@ namespace Utils
             return component != null && component.gameObject && !component.gameObject.IsDestroyed();
         }
 
+        public static T[] GetResources<T>(params string[] pathStrings) where T : Object
+        {
+            return pathStrings.Select(Resources.Load<T>).ToArray();
+        }
+
         public static async UniTask InvokeActionDelay(Action action , PlayerLoopTiming timing = PlayerLoopTiming.Update)
         {
             await UniTask.Yield(timing);

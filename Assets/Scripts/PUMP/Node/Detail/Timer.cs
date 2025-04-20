@@ -55,7 +55,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         }
     }
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         if (args != null)
         {
@@ -102,7 +102,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         {
             if (_timerSupport == null)
             {
-                _timerSupport = GetComponent<TimerSupport>();
+                _timerSupport = Support.GetComponent<TimerSupport>();
                 _timerSupport.Initialize();
             }
 
@@ -149,7 +149,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         }
         catch (OperationCanceledException)
         {
-            if (!this.IsAlive())
+            if (!Support.IsAlive())
                 return;
 
             TimerSupport?.SliderUpdate(1f);

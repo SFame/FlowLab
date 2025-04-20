@@ -16,7 +16,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
         OnMove = uguiPos => OnNodeMove(lineConnector);   // 커넥션 제거 시 구독 해제를 위해 Action에 할당
-        Node.OnPositionUpdate += OnMove;
+        Node.Support.OnPositionUpdate += OnMove;
 
         tpConnection.LineConnector = lineConnector;
         return tpConnection;
@@ -79,7 +79,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             Connection = connection;
 
             OnMove = uguiPos => OnNodeMove(connection.LineConnector);
-            Node.OnPositionUpdate += OnMove;
+            Node.Support.OnPositionUpdate += OnMove;
 
             if (!OnDeserializing)
             {
@@ -108,7 +108,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
     public override void ClearConnection()
     {
         Connection = null;
-        Node.OnPositionUpdate -= OnMove;
+        Node.Support.OnPositionUpdate -= OnMove;
         OnMove = null;
 
         if (!OnDeserializing)

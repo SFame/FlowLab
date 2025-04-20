@@ -14,9 +14,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
     {
         get
         {
-            if (_rect is null)
-                _rect = GetComponent<RectTransform>();
-
+            _rect ??= GetComponent<RectTransform>();
             return _rect;
         }
     }

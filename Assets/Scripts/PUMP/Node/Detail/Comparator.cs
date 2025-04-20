@@ -27,7 +27,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 1;
-    protected override void StateUpdate(TransitionEventArgs args = null) => PushResult();
+    protected override void StateUpdate(TransitionEventArgs args) => PushResult();
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => "out";
 
@@ -94,7 +94,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         get
         {
             if (_inputCountDropdown is null)
-                _inputCountDropdown = transform.Find(INPUT_COUNT_OBJECT_NAME).GetComponent<TMP_Dropdown>();
+                _inputCountDropdown = Support.transform.Find(INPUT_COUNT_OBJECT_NAME).GetComponent<TMP_Dropdown>();
                 
             return _inputCountDropdown;
         }
@@ -108,7 +108,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         get
         {
             if (_operatorDropdown is null)
-                _operatorDropdown = transform.Find(OPERATOR_OBJECT_NAME).GetComponent<TMP_Dropdown>();
+                _operatorDropdown = Support.transform.Find(OPERATOR_OBJECT_NAME).GetComponent<TMP_Dropdown>();
             
             return _operatorDropdown;
         }
@@ -123,7 +123,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         get
         {
             if (_compareNumberInputField is null)
-                _compareNumberInputField = transform.Find(COMPARE_NUMBER_OBJECT_NAME).GetComponent<TMP_InputField>();
+                _compareNumberInputField = Support.transform.Find(COMPARE_NUMBER_OBJECT_NAME).GetComponent<TMP_InputField>();
             return _compareNumberInputField;
         }
     }

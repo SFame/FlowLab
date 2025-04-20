@@ -7,17 +7,17 @@ using UnityEngine.EventSystems;
 using Utils;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
-public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectable, INodeLifecycleCallable,
-                                            ILocatable, IHighlightable, IDeserializingListenable
+public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
+                            ILocatable, IHighlightable, IDeserializingListenable
 {
     #region Privates
     private bool _initialized = false;
+    private bool _isSupportSet = false;
     private NodeSupport _support;
     private PUMPBackground _background;
-    private bool _isBackgroundSet = false;
 
-    private float _inEnumHeight;
-    private float _outEnumHeight;
+    private ITPEnumerator _inputEnumerator;
+    private ITPEnumerator _outputEnumerator;
 
     private bool _inEnumActive = true;
     private bool _outEnumActive = true;
@@ -25,31 +25,27 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     private bool _onDeserializing = false;
 
     private bool _isDestroyed = false;
-
-    private void OnDestroy()
-    {
-        if (_isDestroyed)
-            return;
-
-        _isDestroyed = true;
-        ((INodeLifecycleCallable)this).CallOnBeforeRemove();
-        Disconnect();
-        OnRemove?.Invoke(this);
-    }
-
-    private void OnDisable()
-    {
-        SelectRemoveRequest?.Invoke();
-        IsSelected = false;
-    }
     #endregion
 
     #region Interface
+    public NodeSupport Support
+    {
+        get
+        {
+            if (_support == null)
+            {
+                throw new NullReferenceException($"{GetType().Name}: NodeSupport is null");
+            }
+
+            return _support;
+        }
+    }
+
     public PUMPBackground Background
     {
         get
         {
-            if (!_isBackgroundSet || _background == null)
+            if (_background == null)
                 Debug.LogError("Set Node field 'Background' in PUMPBackground");
             return _background;
         }
@@ -62,11 +58,10 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
                 return;
             }
             _background = value;
-            _isBackgroundSet = true;
         }
     }
 
-    public Vector2 Location => Rect.position;
+    public Vector2 Location => Support.Location;
 
     public bool OnDeserializing
     {
@@ -91,6 +86,9 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             }
         }
     }
+
+    public bool IgnoreSelectedDelete { get; set; } = false;
+    public bool IgnoreSelectedDisconnect { get; set; } = false;
 
     public event Action<Node> OnRemove;
     public event Action<Node> OnPlacement;
@@ -119,16 +117,19 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     public void Remove()
     {
+        if (_isDestroyed)
+            return;
+
         _isDestroyed = true;
         ((INodeLifecycleCallable)this).CallOnBeforeRemove();
         Disconnect();
         OnRemove?.Invoke(this);
-        Destroy(gameObject);
+        Support.DestroyObject();
     }
 
     public void Disconnect()
     {
-        SelectRemoveRequest?.Invoke();
+        Support.SelectedRemoveRequestInvoke();
 
         if (InputToken != null)
         {
@@ -228,12 +229,12 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             }
             else
             {
-                Debug.LogError($"{name}: 데이터와 Input의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+                Debug.LogError($"{Support.name}: 데이터와 Input의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
             }
         }
         else
         {
-            Debug.LogWarning($"{name}: Input States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
+            Debug.LogWarning($"{Support.name}: Input States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
             foreach (ITransitionPoint tp in InputToken)
             {
                 tp.State = false;
@@ -251,12 +252,12 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             }
             else
             {
-                Debug.LogError($"{name}: 데이터와 Output의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+                Debug.LogError($"{Support.name}: 데이터와 Output의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
             }
         }
         else
         {
-            Debug.LogWarning($"{name}: Output States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
+            Debug.LogWarning($"{Support.name}: Output States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
             foreach (ITransitionPoint tp in OutputToken)
             {
                 tp.State = false;
@@ -268,13 +269,13 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     {
         if (pending == null)
         {
-            Debug.LogError($"{name}: Pending data is null");
+            Debug.LogError($"{Support.name}: Pending data is null");
             return;
         }
 
         if (OutputToken.Count != pending.Length)
         {
-            Debug.LogError($"{name}: Count mismatch detected: Expected {pending.Length} pending info data but found {OutputToken.Count} Output.TPs");
+            Debug.LogError($"{Support.name}: Count mismatch detected: Expected {pending.Length} pending info data but found {OutputToken.Count} Output.TPs");
             return;
         }
 
@@ -289,28 +290,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     #endregion
 
     #region Protected
-    // NodeSupport -----------------------------
-    protected NodeSupport Support
-    {
-        get
-        {
-            if (_support == null)
-            {
-                _support = GetComponent<NodeSupport>();
-
-                if (_support == null)
-                {
-                    throw new NullReferenceException($"{name}: NodeSupport must exist on the same object");
-                }
-
-                _support.Initialize(this);
-            }
-
-            return _support;
-        }
-    }
-
-
     // IO -----------------------------
     protected TPEnumeratorToken InputToken { get; set; } // InputToken[n].State를 set 하지 말 것.
     protected TPEnumeratorToken OutputToken { get; set; }
@@ -338,7 +317,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
 
     // Input TP states update callback (Overriding required) -----------------------------
-    protected abstract void StateUpdate(TransitionEventArgs args = null);  // args가 null이 입력되면 생성시 호출을 의미
+    protected abstract void StateUpdate(TransitionEventArgs args);  // args가 null이 입력되면 생성시 호출을 의미
 
 
     // Overriding required -----------------------------
@@ -383,7 +362,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
     protected abstract Vector2 DefaultNodeSize { get; }
     protected virtual bool SizeFreeze { get; } = false;
 
-
     // Utils for Child -----------------------------
     protected bool InEnumActive
     {
@@ -413,7 +391,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
             return;
         }
 
-        SetToken(InputToken.Enumerator, OutputToken.Enumerator);
+        SetToken();
 
         if (stateUpdate)
         {
@@ -421,12 +399,13 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         }
     }
 
-    /// <summary>
-    /// Selected 관리자에게 선택 객체들 해제 요청
-    /// </summary>
-    protected void SelectedRemoveRequestInvoke()
+    protected virtual void OnNodeUiClick(PointerEventData eventData)
     {
-        SelectRemoveRequest?.Invoke();
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            List<ContextElement> currentContextElements = ContextElements;
+            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
+        }
     }
     #endregion
 
@@ -436,95 +415,54 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
         if (_initialized)
             return;
 
-        OnDragging += (pointerEventArgs, _) => OnSelectedMove?.Invoke(this, pointerEventArgs.delta);
-        OnDragEnd += (_, _) => ReportChanges();
+        Support.OnDragEnd += (_, _) => ReportChanges();
+        Support.OnClick += OnNodeUiClick;
         Support.SetText(NodeDisplayName);
         Support.SetFontSize(TextSize);
         Support.SetSpriteForResourcesPath(SpritePath);
         Support.SetRectDeltaSize(DefaultNodeSize);
-        SetTPEnumerator();
-        HeightSynchronizationWithEnum();
+        (_inputEnumerator, _outputEnumerator) = Support.GetTPEnumerator(
+            TP_EnumInPrefebPath, TP_EnumOutPrefebPath, InEnumeratorXPos, 
+            OutEnumeratorXPos, DefaultNodeSize, SizeFreeze);
+        SetToken();
+        Support.HeightSynchronizationWithEnum();
         _initialized = true;
     }
 
-    /// <summary>
-    /// TransitionPoint 관련 설정
-    /// </summary>
-    private void SetTPEnumerator()
+    void INodeSupportSettable.SetSupport(NodeSupport support)
     {
-        var tuple = GetTPEnumResources();
-        if (tuple is null)
+        if (_isSupportSet)
             return;
 
-        RectTransform inRect = tuple.Value.enumIn.GetComponent<RectTransform>();
-        RectTransform outRect = tuple.Value.enumOut.GetComponent<RectTransform>();
-
-        RectTransformUtils.SetParent(Rect, inRect, outRect);
-
-        inRect.SetAnchor(min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
-        outRect.SetAnchor(min: new Vector2(0.5f, 0.5f), max: new Vector2(0.5f, 0.5f));
-
-        inRect.SetOffset(min: new Vector2(inRect.offsetMin.x, 0f), max: new Vector2(inRect.offsetMax.x, 0f));
-        outRect.SetOffset(min: new Vector2(outRect.offsetMin.x, 0f), max: new Vector2(outRect.offsetMax.x, 0f));
-
-        inRect.SetXPos(InEnumeratorXPos);
-        outRect.SetXPos(OutEnumeratorXPos);
-
-        ITPEnumerator tpEnumIn = inRect.GetComponent<ITPEnumerator>();
-        ITPEnumerator tpEnumOut = outRect.GetComponent<ITPEnumerator>();
-        
-        tpEnumIn.MinHeight = DefaultNodeSize.y;
-        tpEnumOut.MinHeight = DefaultNodeSize.y;
-
-
-        if (!SizeFreeze)
-        {
-            tpEnumIn.OnSizeUpdatedWhenTPChange += size =>
-            {
-                _inEnumHeight = size.y;
-                float maxValue = HeightSynchronizationWithEnum();
-                tpEnumIn.SetHeight(maxValue);
-                tpEnumOut.SetHeight(maxValue);
-            };
-
-            tpEnumOut.OnSizeUpdatedWhenTPChange += size =>
-            {
-                _outEnumHeight = size.y;
-                float maxValue = HeightSynchronizationWithEnum();
-                tpEnumIn.SetHeight(maxValue);
-                tpEnumOut.SetHeight(maxValue);
-            }; 
-        }
-
-        tpEnumIn.Node = this;
-        tpEnumOut.Node = this;
-        
-        SetToken(tpEnumIn, tpEnumOut);
+        _support = support;
+        _isSupportSet = true;
     }
 
     /// <summary>
-    /// 처음 토큰 설정
+    /// 최초 토큰 설정
     /// </summary>
-    private void SetToken(ITPEnumerator enumIn, ITPEnumerator enumOut)
+    private void SetToken()
     {
-        if (enumIn == null || enumOut == null)
+        if (_inputEnumerator == null || _outputEnumerator == null)
         {
-            Debug.LogError($"{GetType().Name}.SetToken(): enum is null");
-            return;
+            throw new NullReferenceException($"{GetType().Name}: Enumerator가 없는 상태로 Token 설정 불가");
         }
-        
-        InputToken = SetTPEnumSize(enumIn)
+
+        InputToken = _inputEnumerator
+            .SetTPsMargin(EnumeratorTPMargin)
+            .SetTPSize(EnumeratorTPSize)
             .SetTPs(InputNames.Count)
             .GetToken();
 
-        OutputToken = SetTPEnumSize(enumOut)
+        OutputToken = _outputEnumerator
+            .SetTPsMargin(EnumeratorTPMargin)
+            .SetTPSize(EnumeratorTPSize)
             .SetTPs(OutputNames.Count)
             .GetToken();
         
         if (InputToken is null || OutputToken is null)
         {
-            Debug.LogError("Token casting fail");
-            return;
+            throw new Exception("Token casting fail");
         }
         
         InputToken.SetNames(InputNames);
@@ -532,33 +470,6 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         SubscribeTPInStateUpdateEvent();
     }
-
-    /// <summary>
-    /// Resources에서 TPEnumerator 프리펩 가져옴
-    /// </summary>
-    /// <returns></returns>
-    private (GameObject enumIn, GameObject enumOut)? GetTPEnumResources()
-    {
-        GameObject enumIn = Resources.Load<GameObject>(TP_EnumInPrefebPath);
-        GameObject enumOut = Resources.Load<GameObject>(TP_EnumOutPrefebPath);
-
-        if (enumIn is null || enumOut is null)
-        {
-            Debug.LogError($"{GetType().Name}: TPEnumResources can't find");
-            return null;
-        }
-
-        return (Instantiate(enumIn), Instantiate(enumOut));
-    }
-
-    private float HeightSynchronizationWithEnum()
-    {
-        float maxHeight = Mathf.Max(_inEnumHeight, _outEnumHeight, DefaultNodeSize.y);
-        SetRectSizeDelta(new Vector2(DefaultNodeSize.x, maxHeight));
-        return maxHeight;
-    }
-
-    private ITPEnumerator SetTPEnumSize(ITPEnumerator tpEnum) => tpEnum.SetTPsMargin(EnumeratorTPMargin).SetTPSize(EnumeratorTPSize);
 
     /// <summary>
     /// TP In의 변경 시의 이벤트 구독
@@ -591,44 +502,10 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
     #region  Other (ToString()..)
     public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName}";
-    public virtual void OnPointerClick(PointerEventData eventData)
-    {
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            List<ContextElement> currentContextElements = _selectedContextElements?.Invoke() ?? ContextElements;
-            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
-        }
-    }
-    #endregion
-
-    #region Selecting handler
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set
-        {
-            SetHighlight(value);
-            _isSelected = value;
-        }
-    }
-    private bool _isSelected = false;
-
-    public object SelectingTag
-    {
-        get => _selectedContextElements;
-        set => _selectedContextElements = value as Func<List<ContextElement>>;
-    }
-
-    private Func<List<ContextElement>> _selectedContextElements;
-    
-    public void MoveSelected(Vector2 direction) => MovePosition(direction);
-    
-    public event OnSelectedMoveHandler OnSelectedMove;
-    public event Action SelectRemoveRequest;
     #endregion
 
     #region Lifecycle Callable
-    void INodeLifecycleCallable.CallStateUpdate(TransitionEventArgs args = null)
+    void INodeLifecycleCallable.CallStateUpdate(TransitionEventArgs args)
     {
         if (_isDestroyed)
             return;
@@ -663,7 +540,7 @@ public abstract class Node : DraggableUGUI, IPointerClickHandler, IDragSelectabl
 
         if (outputStates.Length != outputCount)
         {
-            Debug.LogError($"{name}: Init states({outputStates.Length}) and the output token count({outputCount}) do not match ");
+            Debug.LogError($"{Support.name}: Init states({outputStates.Length}) and the output token count({outputCount}) do not match ");
             ((INodeLifecycleCallable)this).CallStateUpdate(null);
             return;
         }
@@ -794,4 +671,9 @@ public interface INodeLifecycleCallable
     void CallOnCompletePlacementFromPalette();
     void CallSetInitializeState();
     void CallOnBeforeRemove();
+}
+
+public interface INodeSupportSettable
+{
+    void SetSupport(NodeSupport support);
 }

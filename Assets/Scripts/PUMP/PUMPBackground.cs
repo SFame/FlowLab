@@ -44,6 +44,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
     private UniTask _changeInvokeTask = UniTask.CompletedTask;
 
+    /// <summary>
+    /// All Nodes
+    /// </summary>
     private List<Node> Nodes { get; } = new();
 
     private Canvas RootCanvas
@@ -158,7 +161,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             {
                 foreach (Node duplicateInput in inputNodes.Skip(1))
                 {
-                    if (duplicateInput)
+                    if (duplicateInput.Support)
                         duplicateInput.Remove();
                 }
 
@@ -170,7 +173,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             {
                 foreach (Node duplicateOutput in outputNodes.Skip(1))
                 {
-                    if (duplicateOutput)
+                    if (duplicateOutput.Support)
                         duplicateOutput.Remove();
                 }
 
@@ -192,7 +195,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                         newInputCount = newExternalInput.GateCount;
                     }
 
-                    newNode.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
+                    newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
                 }
                 else
                 {
@@ -211,7 +214,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     newInputCount = newExternalInput.GateCount;
                 }
 
-                newNode.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
+                newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
             }
 
             if (Nodes.FirstOrDefault(node => node is IExternalOutput) is IExternalOutput externalOutput)
@@ -229,7 +232,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                         newOutputCount = newExternalOutput.GateCount;
                     }
 
-                    newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
+                    newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
                 }
                 else
                 {
@@ -248,7 +251,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     newOutputCount = newExternalOutput.GateCount;
                 }
 
-                newNode.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
+                newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
             }
 
             if (newInputCount != -1)
@@ -518,9 +521,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         // Node's Rect, Parent, etc... Set
         node.Background = this;
-        node.Rect.SetParent(m_NodeParent);
-        node.BoundaryRect = Rect;
-        node.Rect.anchoredPosition = Vector2.zero;
+        node.Support.Rect.SetParent(m_NodeParent);
+        node.Support.BoundaryRect = Rect;
+        node.Support.Rect.anchoredPosition = Vector2.zero;
         SubscribeNodeAction(node);
 
         callable.CallOnBeforeInit();
@@ -617,7 +620,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 }
 
                 // Set node position ---------
-                newNode.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
+                newNode.Support.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
 
                 // Set Transition Point states ---------
                 newNode.SetTPStates(info.InTpState, info.OutTpState);
@@ -807,14 +810,14 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         get
         {
-            int draggablesRemoveCount = _draggables.Count(draggables => draggables is Node and not IExternalGateway);
+            int draggablesRemoveCount = _draggables.Count(draggables => draggables.CanDestroy);
             string remove_s_char = draggablesRemoveCount == 1 ? string.Empty : "s";
-            int draggablesDisconnectCount = _draggables.Count(draggables => draggables is Node);
+            int draggablesDisconnectCount = _draggables.Count(draggables => draggables.CanDisconnect);
             string disconnect_s_char = draggablesDisconnectCount == 1 ? string.Empty : "s";
             return new List<ContextElement>()
             {
-                new ContextElement(clickAction: DestroyDraggables, text: $"Remove {draggablesRemoveCount} Node{remove_s_char}"),
-                new ContextElement(clickAction: DisconnectDraggables, text: $"Disconnect {draggablesDisconnectCount} Node{disconnect_s_char}")
+                new (clickAction: DestroyDraggables, text: $"Remove {draggablesRemoveCount} Node{remove_s_char}"),
+                new (clickAction: DisconnectDraggables, text: $"Disconnect {draggablesDisconnectCount} Node{disconnect_s_char}")
             };
         }
     }
@@ -865,8 +868,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         foreach (IDragSelectable draggable in _draggables.ToList())
         {
-            if (draggable is Node node and not IExternalGateway)
-                node.Remove();
+            if (draggable.CanDestroy)
+                draggable.ObjectDestroy();
         }
 
         ClearDraggables();
@@ -877,8 +880,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         foreach (IDragSelectable draggable in _draggables.ToList())
         {
-            if (draggable is Node node)
-                node.Disconnect();
+            if (draggable.CanDisconnect)
+                draggable.ObjectDisconnect();
         }
         ((IChangeObserver)this).ReportChanges();
     }
@@ -922,6 +925,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
 public interface IDragSelectable
 {
+    public bool CanDestroy { get; }
+    public bool CanDisconnect { get; }
     public bool IsSelected { get; set; }
     public object SelectingTag { get; set; }
     
@@ -930,6 +935,16 @@ public interface IDragSelectable
     /// </summary>
     /// <param name="direction"></param>
     public void MoveSelected(Vector2 direction);
+
+    /// <summary>
+    /// 선택객체 파괴
+    /// </summary>
+    public void ObjectDestroy();
+
+    /// <summary>
+    /// 선택객체 연결해제
+    /// </summary>
+    public void ObjectDisconnect();
     
     /// <summary>
     /// 선택객체 이동 시.

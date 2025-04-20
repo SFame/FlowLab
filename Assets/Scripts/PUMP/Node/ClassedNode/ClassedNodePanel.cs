@@ -217,7 +217,6 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     private PUMPBackground _baseBackground;
     private IClassedNodeDataManager _dataManager;
     private Canvas _rootCanvas;
-    private bool _initialized = false;
     private bool _isInputSliderValueChangingBySystem = false;
     private bool _isOutputSliderValueChangingBySystem = false;
     private PUMPSeparator _separator;

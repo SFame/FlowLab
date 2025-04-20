@@ -158,7 +158,11 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
             OnRightClick?.Invoke(eventData);
         }
     }
+
     #region Selecting handler
+    public bool CanDestroy { get; } = false;
+    public bool CanDisconnect { get; } = false;
+
     public bool IsSelected
     {
         get => _isSelected;
@@ -176,7 +180,10 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     {
         MovePositionWithLine(direction);
     }
-    
+
+    public void ObjectDestroy() { }
+    public void ObjectDisconnect() { }
+
     public event OnSelectedMoveHandler OnSelectedMove;
     public event Action SelectRemoveRequest;
 
@@ -208,6 +215,5 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         SelectRemoveRequest?.Invoke();
         IsSelected = false;
     }
-
     #endregion
 }

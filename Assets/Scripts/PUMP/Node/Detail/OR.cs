@@ -21,7 +21,7 @@ public class OR : Node
 
     protected override string NodeDisplayName => "OR";
 
-    protected override void StateUpdate(TransitionEventArgs args = null)
+    protected override void StateUpdate(TransitionEventArgs args)
     {
         OutputToken[0].State = InputToken[0].State || InputToken[1].State;
     }

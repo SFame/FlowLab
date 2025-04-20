@@ -122,6 +122,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
         if (_background is null)
             return;
         
-        _newNode.SetPosition(eventData.position);
+        _newNode.Support.SetPosition(eventData.position);
     }
 }

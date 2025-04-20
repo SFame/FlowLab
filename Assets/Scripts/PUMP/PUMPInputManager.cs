@@ -59,8 +59,6 @@ public class BackgroundActionKeyMap
     #region Privates
     private Action _action;
     private BackgroundActionType _prevType;
-    private List<KeyCode> _actionKeysCache = new();
-    private bool _onCaching = false;
     private KeyCode? _lastKey = null;
 
     private Pool<List<KeyCode>> _pressKeysPool;
