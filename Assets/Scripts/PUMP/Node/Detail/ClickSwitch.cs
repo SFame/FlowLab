@@ -64,14 +64,14 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
         {
             Support.SelectedRemoveRequestInvoke();
             State = !State;
-            ((INodeLifecycleCallable)this).CallStateUpdate();
+            ((INodeLifecycleCallable)this).CallStateUpdate(null);
             ReportChanges();
         }
     }
 
     private void SetImageColor(bool isActive)
     {
-        Support.DefaultColor = isActive ? Color.red : Color.white;
+        Support.DefaultColor = isActive ? new Color(0.7f, 0.7f, 0.7f, 1f) : Color.white;
         Support.Image.color = Support.DefaultColor;
     }
 }

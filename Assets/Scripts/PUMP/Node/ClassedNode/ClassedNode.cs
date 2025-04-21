@@ -3,9 +3,9 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
@@ -141,6 +141,19 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
         for (int i = 0; i < OutputToken.Count; i++)
             OutputToken[i].State = outputs[i];
+    }
+
+    public void InputStateValidate(bool[] exInStates)
+    {
+        if (exInStates.Length != InputToken.Count)
+        {
+            throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
+        }
+
+        if (!InputToken.Select(tp => tp.State).SequenceEqual(exInStates))
+        {
+            StateUpdate(null);
+        }
     }
 
     public Node GetNode() => this;

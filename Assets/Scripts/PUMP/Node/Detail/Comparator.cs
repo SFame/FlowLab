@@ -37,6 +37,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         ">" => a > b,
         "<=" => a <= b,
         ">=" => a >= b,
+        "==" => a == b,
         _ => false
     };
 
@@ -114,7 +115,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         }
     }
     private TMP_Dropdown _operatorDropdown;
-    private readonly List<string> _operatorElement = new() { "<", ">", "<=", ">=" };
+    private readonly List<string> _operatorElement = new() { "<", ">", "<=", ">=", "==" };
     
     // Compare number
     private const string COMPARE_NUMBER_OBJECT_NAME = "CompareNumber";

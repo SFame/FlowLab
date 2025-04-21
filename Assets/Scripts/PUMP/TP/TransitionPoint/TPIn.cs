@@ -58,7 +58,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             SetImageColor(_state ? _activeColor : _defaultColor);
             if (!OnDeserializing)
             {
-                OnStateChange?.Invoke(new TransitionEventArgs(Index, value, isStateChange));
+                TransitionEventArgs args = TransitionEventArgs.Get(Index, value, isStateChange);
+                OnStateChange?.Invoke(args);
+                TransitionEventArgs.Release(args);
             }
         }
     }

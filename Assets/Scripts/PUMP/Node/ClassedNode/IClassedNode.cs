@@ -2,14 +2,15 @@ using System;
 
 public interface IClassedNode
 {
-    public string Name { get; set; }
-    public string Id { get; set; }
-    public int InputCount { get; set; }
-    public int OutputCount { get; set; }
+    string Name { get; set; }
+    string Id { get; set; }
+    int InputCount { get; set; }
+    int OutputCount { get; set; }
 
-    public event Action<bool[]> OnInputUpdate;
-    public event Action<IClassedNode> OpenPanel;
-    public event Action<IClassedNode> OnDestroy;
-    public void OutputStateUpdate(bool[] outputs);
-    public Node GetNode();
+    event Action<bool[]> OnInputUpdate;
+    event Action<IClassedNode> OpenPanel;
+    event Action<IClassedNode> OnDestroy;
+    void OutputStateUpdate(bool[] outputs);
+    void InputStateValidate(bool[] exInStates);
+    Node GetNode();
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -23,8 +24,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     private bool _outEnumActive = true;
 
     private bool _onDeserializing = false;
-
-    private bool _isDestroyed = false;
     #endregion
 
     #region Interface
@@ -87,6 +86,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
         }
     }
 
+    public bool IsDestroyed { get; private set; }
+
     public bool IgnoreSelectedDelete { get; set; } = false;
     public bool IgnoreSelectedDisconnect { get; set; } = false;
 
@@ -117,10 +118,10 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
 
     public void Remove()
     {
-        if (_isDestroyed)
+        if (IsDestroyed)
             return;
 
-        _isDestroyed = true;
+        IsDestroyed = true;
         ((INodeLifecycleCallable)this).CallOnBeforeRemove();
         Disconnect();
         OnRemove?.Invoke(this);
@@ -507,10 +508,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     #region Lifecycle Callable
     void INodeLifecycleCallable.CallStateUpdate(TransitionEventArgs args)
     {
-        if (_isDestroyed)
+        if (IsDestroyed)
             return;
 
-        StateUpdate(args);
+        try
+        {
+            StateUpdate(args);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
@@ -661,7 +669,7 @@ public class TPConnectionInfo
 
 public interface INodeLifecycleCallable
 {
-    void CallStateUpdate(TransitionEventArgs args = null);
+    void CallStateUpdate(TransitionEventArgs args);
     void CallOnAfterInstantiate();
     void CallOnAfterSetAdditionalArgs();
     void CallOnBeforeInit();

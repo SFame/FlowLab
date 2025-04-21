@@ -18,6 +18,7 @@ public class DefaultPalette : NodePalette
         { typeof(Comparator), "Comparator" },
         { typeof(Timer), "Timer" },
         { typeof(EdgeDetector), "Edge Detector" },
+        { typeof(Switch), "Switch" },
     };
 
     private void Awake()

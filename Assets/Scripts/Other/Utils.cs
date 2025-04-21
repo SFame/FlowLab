@@ -184,7 +184,7 @@ namespace Utils
         /// <param name="logEnumerable">Enumerable instance</param>
         /// <param name="logType">LogType</param>
         /// <returns></returns>
-        public static T LogE<T>(this T logEnumerable, LogType logType = LogType.Log) where T : IEnumerable
+        public static IEnumerable<T> LogE<T>(this IEnumerable<T> logEnumerable, LogType logType = LogType.Log)
         {
             if (logEnumerable == null)
             {
@@ -193,9 +193,35 @@ namespace Utils
             }
 
             StringBuilder sb = new();
-            foreach (object obj in logEnumerable)
+            foreach (T obj in logEnumerable)
             {
                 sb.AppendLine($"[{obj.ToString()}]");
+            }
+            Debug.unityLogger.Log(logType, sb);
+            return logEnumerable;
+        }
+
+        /// <summary>
+        /// Logging Enumerable elements
+        /// </summary>
+        /// <typeparam name="T">where : IEnumerable</typeparam>
+        /// <param name="logEnumerable">Enumerable instance</param>
+        /// <param name="logType">LogType</param>
+        /// <returns></returns>
+        public static IEnumerable<T> LogE<T>(this IEnumerable<T> logEnumerable, Func<T, object> logMap, LogType logType = LogType.Log)
+        {
+            logMap ??= (t => t);
+
+            if (logEnumerable == null)
+            {
+                Debug.unityLogger.Log(logType, "Null");
+                return logEnumerable;
+            }
+
+            StringBuilder sb = new();
+            foreach (T obj in logEnumerable)
+            {
+                sb.AppendLine($"[{logMap(obj).ToString()}]");
             }
             Debug.unityLogger.Log(logType, sb);
             return logEnumerable;

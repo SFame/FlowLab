@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Utils;
 
 public class SoundEventListener : MonoBehaviour
 {
@@ -39,7 +40,7 @@ public class SoundEventListener : MonoBehaviour
         {
             AudioClip targetClip = GetClipByIndex(args.AudioIndex);
 
-            if (targetClip != null)
+            if (targetClip != null && m_AudioSource.gameObject.activeInHierarchy)
             {
                 m_AudioSource.PlayOneShot(targetClip);
             }

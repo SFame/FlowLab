@@ -8,7 +8,7 @@ using Utils;
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
-    public ITransitionPoint this[int index] => OutputToken[index];
+    public IStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
     public event Action OnStateUpdate;
 
@@ -33,7 +33,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         }
     }
 
-    public IEnumerator<ITransitionPoint> GetEnumerator() => OutputToken.GetEnumerator();
+    public IEnumerator<IStateful> GetEnumerator() => OutputToken.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion

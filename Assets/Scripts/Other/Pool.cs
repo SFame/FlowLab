@@ -4,33 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>
-/// ������Ʈ Ǯ�� ��� ���� ����
-/// 
-/// **Constructor param
-/// createFunc: ȣ�⸶�� ���ο���� ��ȯ�ϴ� �ν��Ͻ� ���� �޼���
-/// initSize: ���� ���� �ν��Ͻ� ����
-/// maxSize: Ǯ �ִ� ũ��
-/// actionOnGet: Get()�� �ش� �ν��Ͻ��� ������ Action
-/// actionOnRelease: Release()�� �ش� �ν��Ͻ��� ������ Action
-/// actionOnDestroy: �ν��Ͻ� �ı� �� ������ Action
-/// 
-/// **Public properties
-/// CountAll: ��ü �ν��Ͻ� ����
-/// CountActive: Ȱ��ȭ�� �ν��Ͻ� ����
-/// CountInactive: Ǯ �ȿ� �ִ� �ν��Ͻ� ����
-/// 
-/// **Public methods
-/// Get(): Pool���� �ν��Ͻ� Get
-/// Release(T instance): �ν��Ͻ� ȸ��
-/// Release(Predicate<T> predicate): ���ǿ� �´� �ν��Ͻ� ȸ��
-/// Remove(T instance): �ν��Ͻ� �ı�
-/// Release(Predicate<T> predicate): ���ǿ� �´� �ν��Ͻ� �ı�
-/// Clear(): ��ü �ν��Ͻ� �ı�
-/// 
-/// IEnumerable<T>, IDisposable ����
-/// </summary>
-/// <typeparam name="T">Type of pool</typeparam>
 public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 {
     #region Private fields
@@ -51,6 +24,8 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     private readonly int _initSize;
 
     private readonly int _maxSize;
+
+    private readonly HashSet<T> _foundCache = new();
 
     private bool _disposed = false;
     #endregion
@@ -99,21 +74,21 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         CheckDispose();
 
         T pooled = null;
-        if (_pool.Count > 0)  // pool�� �������� ���� ��
+        if (_pool.Count > 0)
         {
-            pooled = _pool.Dequeue();  // pool���� �������� ���� �õ�
-            if (IsNull(pooled))  // pool���� ������ ��ü�� null
+            pooled = _pool.Dequeue();
+            if (IsNull(pooled))
             {
-                RemoveNull();  // ���� ��Ȳ: pool, actives�� null ���� �õ�
-                if (_pool.Count > 0)  // null ���� �� pool���� �������� ���� �õ�
+                RemoveNull();
+                if (_pool.Count > 0)
                 {
                     pooled = _pool.Dequeue();
                 }
-                else if (_activeInstances.Count > 0)  // actives�� �����ִ� ������Ʈ�� �ִٸ� ������ַ� �Ǵ�
+                else if (_activeInstances.Count > 0)
                 {
                     pooled = _createFunc?.Invoke();
                 }
-                else  // pool�� ������� ��. actives�� ����ִٸ� ��ü�� ������ ���� ������ �Ǵ�, Ǯ �ʱ�ȭ
+                else
                 {
                     Debug.LogError("Reinitializing the entire pool");
                     Clear();
@@ -122,23 +97,23 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
                 }
             }
         }
-        else  // pool�� ����ִ� ��Ȳ
+        else
         {
             pooled = _createFunc?.Invoke();
         }
 
-        if (IsNull(pooled))  // �ռ� ����ó���� ��ġ���� null�� ��ȯ�ϸ� �״�� null ��ȯ
+        if (IsNull(pooled))
         {
             Debug.LogError("Create func failed to create object");
             return null;
         }
 
-        if (_activeInstances.Add(pooled))  // �ߺ��� ������Ʈ�� ��� �Ұ�
+        if (_activeInstances.Add(pooled))
         {
             _actionOnGet?.Invoke(pooled);
             return pooled;
         }
-        Debug.LogError("Duplicate instance: " + pooled.ToString());
+        Debug.LogError("Duplicate instance: " + pooled);
         return null;
     }
 
@@ -176,17 +151,19 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        List<T> foundInstances = Filter(predicate, _activeInstances);
-        if (foundInstances == null)
+        bool success = Filter(predicate, _activeInstances, _foundCache);
+
+        if (!success)
         {
             return false;
         }
 
-        foreach (T instance in foundInstances)
+        foreach (T instance in _foundCache)
         {
             Release(instance);
         }
-        return foundInstances.Count > 0;
+
+        return _foundCache.Count > 0;
     }
 
     public bool Remove(T instance)
@@ -217,17 +194,19 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        List<T> foundInstances = Filter(predicate, _activeInstances.Concat(_pool));
-        if (foundInstances == null)
+        bool success = FilterTow(predicate, _activeInstances, _pool, _foundCache);
+
+        if (!success)
         {
             return false;
         }
 
-        foreach (T instance in foundInstances)
+        foreach (T instance in _foundCache)
         {
             Remove(instance);
         }
-        return foundInstances.Count > 0;
+
+        return _foundCache.Count > 0;
     }
 
     public void Clear()
@@ -250,7 +229,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     private void Instantiate()
     {
-        int poolSize = Mathf.Min(_initSize, _maxSize);
+        int poolSize = Math.Min(_initSize, _maxSize);
         for (int i = 0; i < poolSize; i++)
         {
             T instance = _createFunc?.Invoke();
@@ -274,23 +253,64 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         }
     }
 
-    private List<T> Filter(Predicate<T> predicate, IEnumerable<T> instances)
+    private bool Filter(Predicate<T> predicate, IEnumerable<T> instances, HashSet<T> result)
     {
+        if (result == null)
+        {
+            throw new ArgumentNullException("result is null");
+        }
+
+        result.Clear();
+
         if (predicate == null)
         {
             Debug.LogWarning("Predicate cannot be null");
-            return null;
+            return false;
         }
+
         
-        List<T> foundInstances = new();
         foreach (T instance in instances)
         {
             if (!IsNull(instance) && predicate(instance))
             {
-                foundInstances.Add(instance);
+                result.Add(instance);
             }
         }
-        return foundInstances;
+        return true;
+    }
+
+    private bool FilterTow(Predicate<T> predicate, IEnumerable<T> instances1, IEnumerable<T> instances2, HashSet<T> result)
+    {
+        if (result == null)
+        {
+            throw new ArgumentNullException("result is null");
+        }
+
+        result.Clear();
+
+        if (predicate == null)
+        {
+            Debug.LogWarning("Predicate cannot be null");
+            return false;
+        }
+
+
+        foreach (T instance in instances1)
+        {
+            if (!IsNull(instance) && predicate(instance))
+            {
+                result.Add(instance);
+            }
+        }
+
+        foreach (T instance in instances2)
+        {
+            if (!IsNull(instance) && predicate(instance))
+            {
+                result.Add(instance);
+            }
+        }
+        return true;
     }
 
     private void RemoveNull()

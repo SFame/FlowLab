@@ -8,7 +8,7 @@ using Utils;
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
-    public ITransitionPoint this[int index] => InputToken[index];
+    public IStateful this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
     public bool ObjectIsNull => Support.gameObject == null;
     public int GateCount
@@ -30,7 +30,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         }
     }
 
-    public IEnumerator<ITransitionPoint> GetEnumerator() => InputToken.GetEnumerator();
+    public IEnumerator<IStateful> GetEnumerator() => InputToken.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion

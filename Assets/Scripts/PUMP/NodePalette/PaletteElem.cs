@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 public class PaletteElem : MonoBehaviour, IDraggable
 {
@@ -64,7 +65,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     {
         if (_mouseOnPalette)
             SetPosition(eventData.position + _dragOffset);
-        
+
         FindPumpBackground(eventData);
     }
 
@@ -121,7 +122,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
         
         if (_background is null)
             return;
-        
+
         _newNode.Support.SetPosition(eventData.position);
     }
 }

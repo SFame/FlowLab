@@ -67,8 +67,11 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             return;
         }
 
-        List<ContextElement> currentContextElements = _selectedContextElements?.Invoke();
-        ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, currentContextElements.ToArray());
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            List<ContextElement> currentContextElements = _selectedContextElements?.Invoke();
+            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, currentContextElements.ToArray());
+        }
     }
 
     void INodeSupportInitializable.Initialize(Node node)

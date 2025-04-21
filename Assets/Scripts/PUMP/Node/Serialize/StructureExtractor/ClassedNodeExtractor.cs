@@ -252,20 +252,25 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             classed.OutputCount = exOut.GateCount;
         }
 
-        _classedOnInputUpdateCache = states =>
+        _classedOnInputUpdateCache = classedInputStates =>
         {
-            for (int i = 0; i < states.Length; i++)
+            for (int i = 0; i < classedInputStates.Length; i++)
             {
-                exIn[i].State = states[i];
+                if (exIn[i].State != classedInputStates[i])  // 다를 때만 업데이트 (까먹지마)
+                {
+                    exIn[i].State = classedInputStates[i];
+                }
             }
         };
         classed.OnInputUpdate += _classedOnInputUpdateCache;
 
         _exOutOnStateUpdateCache = () =>
         {
-            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray());
+            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray()); // 이 부분
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
+
+        classed.InputStateValidate(exIn.Select(tp => tp.State).ToArray());
     }
 
     private async UniTask PushAsync(string name)
@@ -326,7 +331,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             _currentClassed = classedNode;
             _pairBackground = pairBackground;
 
-            TokenSetter.Set(classedNode, pairBackground);
+            TokenSetter.Set(_currentClassed, _pairBackground);
 
             _pairBackground.Open();
         }
