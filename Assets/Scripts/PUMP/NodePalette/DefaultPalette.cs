@@ -6,6 +6,7 @@ public class DefaultPalette : NodePalette
     public override Dictionary<Type, string> NodeTypes { get; set; } = new()
     {
         { typeof(ClassedNode), "Classed" },
+        { typeof(ScriptingNode), "Scripting" },
         { typeof(AND), "AND" },
         { typeof(OR), "OR" },
         { typeof(NAND), "NAND" },

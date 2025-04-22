@@ -718,7 +718,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
         catch (Exception e)
         {
-            Debug.LogError($"SetInfos failed: {e.Message}");
+            Debug.LogException(e);
         }
         finally
         {

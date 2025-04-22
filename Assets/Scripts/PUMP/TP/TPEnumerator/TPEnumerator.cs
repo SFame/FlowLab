@@ -244,6 +244,19 @@ public class TPEnumeratorToken : IEnumerable<ITransitionPoint>
     public ITransitionPoint[] TPs => _tpArray;
     public int Count => _tpArray.Length;
 
+    public void ApplyStatesAll(IEnumerable<bool> states)
+    {
+        if (states.Count() != Count)
+            throw new ArgumentException("ApplyStatesAll: Token Count와 입력 States Count 불일치");
+
+        int i = 0;
+        foreach (bool state in states)
+        {
+            this[i].State = state;
+            i++;
+        }
+    }
+
     public void SetNames(List<string> names)
     {
         if (names is null)

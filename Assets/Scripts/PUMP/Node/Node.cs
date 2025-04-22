@@ -418,8 +418,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
 
         Support.OnDragEnd += (_, _) => ReportChanges();
         Support.OnClick += OnNodeUiClick;
-        Support.SetText(NodeDisplayName);
-        Support.SetFontSize(TextSize);
+        Support.SetName(NodeDisplayName);
+        Support.SetNameFontSize(TextSize);
         Support.SetSpriteForResourcesPath(SpritePath);
         Support.SetRectDeltaSize(DefaultNodeSize);
         (_inputEnumerator, _outputEnumerator) = Support.GetTPEnumerator(

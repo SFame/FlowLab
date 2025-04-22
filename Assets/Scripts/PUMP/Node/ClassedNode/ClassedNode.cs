@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
