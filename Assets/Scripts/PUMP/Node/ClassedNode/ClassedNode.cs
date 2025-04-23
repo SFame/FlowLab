@@ -78,7 +78,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         get
         {
             List<ContextElement> contexts = base.ContextElements;
-            contexts.Add(new ContextElement("Edit Classed Node", () => OpenPanel?.Invoke(this)));
+            contexts.Add(new ContextElement("Edit", () => OpenPanel?.Invoke(this)));
             return contexts;
         }
     }

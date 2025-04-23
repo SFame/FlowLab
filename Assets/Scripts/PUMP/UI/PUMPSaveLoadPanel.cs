@@ -27,7 +27,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private SaveLoadUiController _uiController;
     private RecyclableScrollRect _scrollRect;
     private Canvas _rootCanvas;
-    private PUMPAppdataSerializeManager _serializer;
     private List<PUMPSaveDataStructure> _saveDatas;
     private bool _initialized = false;
 

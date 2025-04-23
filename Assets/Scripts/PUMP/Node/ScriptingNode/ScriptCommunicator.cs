@@ -7,21 +7,22 @@ using UnityEngine;
 public class ScriptCommunicator : IDisposable
 {
     #region Static / Const
-    private const string OUTPUT_APPLIER_SCRIPT_PATH = "PUMP/Py/OutputApplier";
-    private const string APPLIER_INJECT_CODE = "output_applier = OutputApplier()";
-    private static string _outputApplierScript;
+    private const string CALLBACKS_SCRIPT_PATH = "PUMP/Py/CoreTemplate/script_callbacks";
+    private const string CALLBACKS_INJECT_CODE = @"output_applier = OutputApplier()
+printer = Printer()";
+    private static string _callbacksScript;
     private static ScriptEngine _engine;
 
-    private static string OutputApplierScript
+    private static string CallbacksScript
     {
         get
         {
-            if (string.IsNullOrEmpty(_outputApplierScript))
+            if (string.IsNullOrEmpty(_callbacksScript))
             {
-                _outputApplierScript = Resources.Load<TextAsset>(OUTPUT_APPLIER_SCRIPT_PATH).text;
+                _callbacksScript = Resources.Load<TextAsset>(CALLBACKS_SCRIPT_PATH).text;
             }
 
-            return _outputApplierScript;
+            return _callbacksScript;
         }
     }
 
@@ -40,19 +41,24 @@ public class ScriptCommunicator : IDisposable
     private Action<string> _logger;
     private Action<Exception> _exLogger;
     private Action _initAction;
+    private Action _terminateAction;
     private Action<List<bool>, int, bool, bool> _stateUpdateAction;
     private bool _disposed = false;
 
     private Dictionary<string, dynamic> _essentialMembers = new()
     {
         { "name", null },
-        { "input_counts", null },
-        { "output_counts", null },
+        { "input_list", null },
+        { "output_list", null },
+        { "auto_state_update_after_init", null },
         { "output_applier", null },
+        { "printer", null },
         { "init", null },
+        { "terminate", null },
         { "state_update", null },
     };
     private dynamic OutputApplier { get; set; }
+    private dynamic Printer { get; set; }
     #endregion
 
     #region Interface
@@ -64,7 +70,7 @@ public class ScriptCommunicator : IDisposable
         try
         {
             Scope = Engine.CreateScope();
-            Engine.Execute(OutputApplierScript, Scope);
+            Engine.Execute(CallbacksScript, Scope);
             _logger = logger;
             _exLogger = exLogger;
         }
@@ -80,6 +86,7 @@ public class ScriptCommunicator : IDisposable
 
     public ScriptFieldInfo ScriptFieldInfo { get; private set; }
     public event Action<IList<bool>> OnOutputApply;
+    public event Action<string> OnPrint;
 
     /// <summary>
     /// 반환 확인 필수
@@ -100,13 +107,14 @@ public class ScriptCommunicator : IDisposable
                 {
                     if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
                     {
-                        _logger?.Invoke($"멤버 타입이 일치하지 않습니다: {member.Key}의 기대 타입: {correctType} / 현재 타입: {currentType}");
+                        _logger?.Invoke($"요소 타입이 일치하지 않습니다: {member.Key}의 기대 타입: {correctType} / 현재 타입: {currentType}");
                         return false;
                     }
                     tempMembers[member.Key] = value;
                     continue;
                 }
-                _logger?.Invoke($"멤버가 존재하지 않습니다: {member.Key}");
+
+                _logger?.Invoke($"필소 항목이 존재하지 않습니다: {member.Key}");
                 return false;
             }
 
@@ -115,8 +123,9 @@ public class ScriptCommunicator : IDisposable
                 _essentialMembers[pair.Key] = pair.Value;
             }
 
-            Engine.Execute(APPLIER_INJECT_CODE, Scope);
+            Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
             _essentialMembers["output_applier"] = Scope.GetVariable("output_applier");
+            _essentialMembers["printer"] = Scope.GetVariable("printer");
             return RegistrationMembers();
         }
         catch (Exception e)
@@ -138,7 +147,20 @@ public class ScriptCommunicator : IDisposable
         }
         catch (Exception e)
         {
-            _logger?.Invoke("init 실행 도중 예외 발생");
+            _logger?.Invoke("init 실행 도중 예외가 발생했습니다");
+            _exLogger?.Invoke(e);
+        }
+    }
+
+    public void InvokeTerminate()
+    {
+        try
+        {
+            _terminateAction?.Invoke();
+        }
+        catch (Exception e)
+        {
+            _logger?.Invoke("terminate 실행 도중 예외가 발생했습니다");
             _exLogger?.Invoke(e);
         }
     }
@@ -162,7 +184,7 @@ public class ScriptCommunicator : IDisposable
         }
         catch (Exception e)
         {
-            _logger?.Invoke("state_update 실행 도중 예외 발생");
+            _logger?.Invoke("state_update 실행 도중 예외가 발생했습니다");
             _exLogger?.Invoke(e);
         }
     }
@@ -177,13 +199,22 @@ public class ScriptCommunicator : IDisposable
         try
         {
             OutputApplier?.dispose();
+            Printer?.dispose();
+            InvokeTerminate();
             _initAction = null;
             _stateUpdateAction = null;
+            _terminateAction = null;
             _logger = null;
+            _exLogger = null;
             OnOutputApply = null;
+            OnPrint = null;
             Scope = null;
         }
-        catch { }
+        catch (Exception e)
+        {
+            _logger?.Invoke("terminate 실행 도중 예외가 발생했습니다");
+            _exLogger?.Invoke(e);
+        }
     }
     #endregion
 
@@ -192,23 +223,34 @@ public class ScriptCommunicator : IDisposable
     {
         try
         {
-            OutputApplier = _essentialMembers["output_applier"]; // 딕셔너리에는 객체가 없음
+            OutputApplier = _essentialMembers["output_applier"];
             OutputApplier.set_callback(new Action<IList<bool>>(InvokeApplyOutput));
+
+            Printer = _essentialMembers["printer"];
+            Printer.set_callback(new Action<object>(InvokePrint));
 
             dynamic initFunc = _essentialMembers["init"];
             _initAction = () => initFunc();
+
+            dynamic terminateFunc = _essentialMembers["terminate"];
+            _terminateAction = () => terminateFunc();
 
             dynamic stateUpdateFunc = _essentialMembers["state_update"];
             _stateUpdateAction = (inputs, index, state, isChanged) =>
                 stateUpdateFunc(inputs, index, state, isChanged);
 
-            ScriptFieldInfo =
-                new ScriptFieldInfo(_essentialMembers["name"], _essentialMembers["input_counts"], _essentialMembers["output_counts"]);
+            ScriptFieldInfo = new ScriptFieldInfo
+            (
+                _essentialMembers["name"],
+                _essentialMembers["input_list"],
+                _essentialMembers["output_list"],
+                _essentialMembers["auto_state_update_after_init"]
+            );
             return true;
         }
         catch (Exception e)
         {
-            _logger?.Invoke("인터프리팅 에러");
+            _logger?.Invoke("참조 객체의 매핑을 실패했습니다");
             _exLogger?.Invoke(e);
             return false;
         }
@@ -227,6 +269,19 @@ public class ScriptCommunicator : IDisposable
         }
     }
 
+    private void InvokePrint(object value)
+    {
+        try
+        {
+            OnPrint?.Invoke(value.ToString());
+        }
+        catch (Exception e)
+        {
+            _logger?.Invoke("print 도중 문제가 발생했습니다");
+            _exLogger?.Invoke(e);
+        }
+    }
+
     private bool CheckMemberType(string memberName, dynamic value, out string currentType, out string correctType)
     {
         try
@@ -238,20 +293,31 @@ public class ScriptCommunicator : IDisposable
                     currentType = value?.GetType().Name ?? "null";
                     return value is string;
 
-                case "input_counts":
-                case "output_counts":
-                    correctType = "int";
+                case "input_list":
+                case "output_list":
+                    correctType = "IList<object>";
                     currentType = value?.GetType().Name ?? "null";
-                    return value is int;
+                    return value is IList<object>;
+
+                case "auto_state_update_after_init":
+                    correctType = "bool";
+                    currentType = value?.GetType().Name ?? "null";
+                    return value is bool;
 
                 case "init":
+                case "terminate":
                 case "state_update":
-                    correctType = "function";
-                    currentType = "function" + (IsPythonFunction(value) ? "" : " 아님");
-                    return IsPythonFunction(value);
+                    correctType = "PythonFunction";
+                    currentType = value?.GetType().Name ?? "null";
+                    return value is IronPython.Runtime.PythonFunction;
 
                 case "output_applier":
                     correctType = "OutputApplier";
+                    currentType = value?.GetType().Name ?? "null";
+                    return true;
+
+                case "printer":
+                    correctType = "Printer";
                     currentType = value?.GetType().Name ?? "null";
                     return true;
 
@@ -263,21 +329,8 @@ public class ScriptCommunicator : IDisposable
         }
         catch
         {
-            correctType = "확인 불가";
-            currentType = "확인 불가";
-            return false;
-        }
-    }
-
-    private bool IsPythonFunction(dynamic obj)
-    {
-        try
-        {
-            return obj.GetType().FullName.Contains("Function") ||
-                   obj.GetType().FullName.Contains("Method");
-        }
-        catch
-        {
+            correctType = "unknown";
+            currentType = "unknown";
             return false;
         }
     }
@@ -292,13 +345,15 @@ public class ScriptCommunicator : IDisposable
 
 public struct ScriptFieldInfo
 {
-    public ScriptFieldInfo(string name, int inputCount, int outputCount)
+    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, bool autoStateUpdateAfterInit)
     {
         Name = name;
-        InputCount = inputCount;
-        OutputCount = outputCount;
+        InputList = inputList;
+        OutputList = outputList;
+        AutoStateUpdateAfterInit = autoStateUpdateAfterInit;
     }
     public string Name;
-    public int InputCount;
-    public int OutputCount;
+    public IList<object> InputList;
+    public IList<object> OutputList;
+    public bool AutoStateUpdateAfterInit;
 }

@@ -65,12 +65,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Node
-
-'
+  m_text: Node
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
+  m_sharedMaterial: {fileID: -670870047127894775, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -231,6 +229,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Image: {fileID: 6560553130387192381}
   m_NameTmp: {fileID: 1953344865619092123}
+  m_DefaultColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HighlightedColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!114 &298567353741124581
 MonoBehaviour:
   m_ObjectHideFlags: 0

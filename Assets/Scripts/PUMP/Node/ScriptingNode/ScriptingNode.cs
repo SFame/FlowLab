@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Utils;
 using static ScriptingNode;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
@@ -12,9 +13,15 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private ScriptingSupport _scriptingSupport;
     private bool _isDeserialized;
 
-    private string Script { get; set; }
+    private string Script { get; set; } = String.Empty;
 
-    private ScriptCommunicator Communicator { get; set; }
+    private bool IsScriptReady { get; set; } = false;
+
+    private ScriptCommunicator Communicator { get; set; } = null;
+
+    private Func<int, string> InputNameGetter { get; set; } = null;
+
+    private Func<int, string> OutputNameGetter { get; set; } = null;
 
     private ScriptingSupport ScriptingSupport
     {
@@ -25,47 +32,26 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         }
     }
 
-    private void ClickAction()
+    private void ImportScript()
     {
-        string script = @"# Defines the node's name
-name: str = ""AND Gate""
-# Specifies number of input ports
-input_counts: int = 2
-# Specifies number of output ports
-output_counts: int = 1
-# Object responsible for applying output signals to the node
-output_applier: OutputApplier = None
+         string script = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
 
-def init() -> None:
-    """"""
-    Initialization function called when the node is freshly created or during Undo/Redo operations.
-    Keep it clean, keep it lean.
-    """"""
-    # 초기 상태에서 출력 업데이트 수행
-    outputs = [False]
-    output_applier.apply(outputs)
+         if (string.IsNullOrEmpty(script))
+             return;
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
-    """"""
-    The nerve center - triggered whenever any signal is detected on input ports.
-    
-    Parameters:
-        inputs (list): Boolean list representing the state of each input port
-        index (int): Index of the input port that just changed. -1 when state_update is triggered by system
-        state (bool): The new state value (True/False) of the modified port
-        is_changed (bool): Flag indicating if the value actually changed from previous state
-    """"""
-    # AND 게이트 로직 구현
-    # 두 입력이 모두 True인 경우에만 출력도 True
-    result = all(inputs)
-    
-    # 출력 포트 수에 맞게 출력값 리스트 생성
-    outputs = [result]
-    
-    # 출력 적용
-    output_applier.apply(outputs)";
+         AddScript(script);
+    }
 
-        AddScript(script);
+    private void ExportScript()
+    {
+        if (!IsScriptReady || string.IsNullOrEmpty(Script))
+            return;
+
+        string nodeName = Communicator == null || string.IsNullOrEmpty(Communicator.ScriptFieldInfo.Name)
+            ? "new_script"
+            : Communicator.ScriptFieldInfo.Name;
+
+        FileBrowser.Save(Script, nodeName, new [] { "py", "txt" }, "Export Script", null, null);
     }
     #endregion
 
@@ -75,7 +61,14 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
         get
         {
             List<ContextElement> baseList = base.ContextElements;
-            baseList.Add(new ContextElement("Add New Script", ClickAction));
+            baseList.Add(new ContextElement("Import", ImportScript));
+
+            if (IsScriptReady)
+            {
+                baseList.Add(new ContextElement("Export", ExportScript));
+            }
+
+            baseList.Add(new ContextElement("Show Log", ScriptingSupport.OpenLoggingPanel));
             baseList.Add(new ContextElement("Remove Script", DisposeScript));
             return baseList;
         }
@@ -85,17 +78,17 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
 
     public override string NodePrefebPath => "PUMP/Prefab/Node/SCRIPTING";
 
-    protected override float InEnumeratorXPos => -70f;
+    protected override float InEnumeratorXPos => -88f;
 
-    protected override float OutEnumeratorXPos => 70f;
+    protected override float OutEnumeratorXPos => 88f;
 
     protected override float EnumeratorTPMargin => 10f;
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(210f, 100f);
 
-    protected override string NodeDisplayName => "Script";
+    protected override string NodeDisplayName => "Scripting";
 
     protected override float TextSize => 25f;
 
@@ -103,9 +96,21 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
 
     protected override int DefaultOutputCount => 0;
 
-    protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
+    protected override string DefineInputName(int tpNumber)
+    {
+        if (InputNameGetter == null)
+            return $"in {tpNumber}";
 
-    protected override string DefineOutputName(int tpNumber) => $"out {tpNumber}";
+        return InputNameGetter(tpNumber);
+    }
+
+    protected override string DefineOutputName(int tpNumber)
+    {
+        if (OutputNameGetter == null)
+            return $"out {tpNumber}";
+
+        return OutputNameGetter(tpNumber);
+    }
 
     protected override void OnAfterSetAdditionalArgs() => _isDeserialized = true;
 
@@ -123,6 +128,14 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
         }
 
         InternalAddScript(Script);
+    }
+
+    protected override void OnBeforeReplayPending(bool[] pendings)
+    {
+        if (!_isDeserialized)
+            return;
+
+        InvokeInit();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -157,32 +170,95 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
             if (Communicator.SetScript(Script))
             {
                 Support.SetName(Communicator.ScriptFieldInfo.Name);
-                InputCount = Communicator.ScriptFieldInfo.InputCount;
-                OutputCount = Communicator.ScriptFieldInfo.OutputCount;
+                SetTpWithList(Communicator.ScriptFieldInfo.InputList, Communicator.ScriptFieldInfo.OutputList);
                 Communicator.OnOutputApply += OutputToken.ApplyStatesAll;
-                Communicator.InvokeInit();
+                Communicator.OnPrint += ScriptingSupport.Print;
+
+                IsScriptReady = true;
                 return;
             }
 
             InternalDisposeScript();
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            Debug.LogException(ex);
+            InternalDisposeScript();
+            Debug.LogException(e);
         }
     }
 
     private void InternalDisposeScript(bool countReset = true)
     {
+        IsScriptReady = false;
+
         Script = string.Empty;
         Communicator?.Dispose();
         Communicator = null;
+
         if (countReset)
         {
+            SetNameGetterDefault();
             InputCount = DefaultInputCount;
             OutputCount = DefaultOutputCount;
         }
+
+        ScriptingSupport.RemoveAll();
         Support.SetName(NodeDisplayName);
+    }
+
+    private void InvokeInit()
+    {
+        if (Communicator == null)
+            return;
+
+        try
+        {
+            Communicator.InvokeInit();
+            if (Communicator.ScriptFieldInfo.AutoStateUpdateAfterInit)
+            {
+                StateUpdate(null);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private void SetTpWithList(IList<object> inputList, IList<object> outputList)
+    {
+        int inputCount = inputList.Count;
+        int outputCount = outputList.Count;
+
+        SetNameGetter(inputList, outputList);
+
+        InputCount = inputCount;
+        OutputCount = outputCount;
+    }
+
+    private void SetNameGetter(IList<object> inputList, IList<object> outputList)
+    {
+        InputNameGetter = index =>
+        {
+            if (index >= inputList.Count)
+                return $"null {index}";
+
+            return inputList[index].ToString();
+        };
+
+        OutputNameGetter = index =>
+        {
+            if (index >= outputList.Count)
+                return $"null {index}";
+
+            return outputList[index].ToString();
+        };
+    }
+
+    private void SetNameGetterDefault()
+    {
+        InputNameGetter = null;
+        OutputNameGetter = null;
     }
 
     public void AddScript(string script)
@@ -195,6 +271,7 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
         }
 
         InternalAddScript(script);
+        InvokeInit();
         ReportChanges();
     }
 

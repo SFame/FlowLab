@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using OdinSerializer;
+using SFB;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -82,6 +82,12 @@ namespace Utils
             action?.Invoke();
         }
 
+
+        public static async UniTask InvokeActionWaitTime(Action action, float delay, CancellationToken token = default)
+        {
+            await UniTask.WaitForSeconds(delay, cancellationToken: token);
+            action?.Invoke();
+        }
         public static string AsString(this object obj)
         {
             return obj is string str
@@ -1373,6 +1379,57 @@ namespace Utils
             List<string> buttonTexts = new List<string> { "Yes", "No" };
             List<Action> buttonActions = new List<Action> { onYes, onNo };
             Show(rootCanvas, title, buttonTexts, buttonActions);
+        }
+    }
+
+    public static class FileBrowser
+    {
+        public static void Save(string saveTarget, string defaultName, string[] extensions, string title = "Save", string startPath = null, Action<string> logger = null)
+        {
+            ExtensionFilter[] filter = extensions.Select(extension => new ExtensionFilter("", extension)).ToArray();
+
+            if (string.IsNullOrEmpty(startPath) || !Directory.Exists(startPath))
+                startPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            string path = StandaloneFileBrowser.SaveFilePanel(title, startPath, defaultName, filter);
+
+            try
+            {
+                File.WriteAllText(path, saveTarget);
+                logger?.Invoke($"저장 완료: {path}");
+            }
+            catch
+            {
+                logger?.Invoke($"저장 실패: {path}");
+            }
+        }
+
+        public static string Load(string[] extensions, string title = "Open File", string startPath = null, Action<string> logger = null)
+        {
+            if (extensions == null || extensions.Length == 0)
+                extensions = new[] { "txt", "json", "xml" };
+
+            ExtensionFilter[] filter = { new("Text Files", extensions) };
+
+            if (string.IsNullOrEmpty(startPath) || !Directory.Exists(startPath))
+                startPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            string[] paths = StandaloneFileBrowser.OpenFilePanel(title, startPath, filter, false);
+
+            if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
+                return null;
+
+            try
+            {
+                string content = File.ReadAllText(paths[0]);
+                logger?.Invoke($"불러오기 성공: {paths[0]}");
+                return content;
+            }
+            catch
+            {
+                logger?.Invoke($"불러오기 실패: {paths[0]}");
+                return null;
+            }
         }
     }
 }

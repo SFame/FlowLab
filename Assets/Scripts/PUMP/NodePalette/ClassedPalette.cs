@@ -5,6 +5,7 @@ public class ClassedPalette : NodePalette
 {
     public override Dictionary<Type, string> NodeTypes { get; set; } = new()
     {
+        { typeof(ScriptingNode), "Scripting" },
         { typeof(AND), "AND" },
         { typeof(OR), "OR" },
         { typeof(NAND), "NAND" },
