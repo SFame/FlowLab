@@ -64,13 +64,7 @@ public class Switch : Node, INodeAdditionalArgs<bool>
         OutputToken[0].State = TransB ? InputToken[2].State : InputToken[0].State;
     }
 
-    public object AdditionalArgs
-    {
-        get => AdditionalTArgs;
-        set => AdditionalTArgs = (bool)value;
-    }
-
-    public bool AdditionalTArgs
+    public bool AdditionalArgs
     {
         get => TransB;
         set => TransB = value;

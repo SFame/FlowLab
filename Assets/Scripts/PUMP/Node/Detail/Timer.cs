@@ -196,13 +196,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
     #endregion
 
     #region AdditionalArgs
-    public object AdditionalArgs
-    {
-        get => AdditionalTArgs;
-        set => AdditionalTArgs = (TimerSerializeInfo)value;
-    }
-
-    public TimerSerializeInfo AdditionalTArgs
+    public TimerSerializeInfo AdditionalArgs
     {
         get
         {

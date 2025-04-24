@@ -108,13 +108,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
         ReportChanges();
     }
 
-    public object AdditionalArgs
-    {
-        get => AdditionalTArgs;
-        set => AdditionalTArgs = (float)value;
-    }
-
-    public float AdditionalTArgs
+    public float AdditionalArgs
     {
         get => _duration;
         set => _duration = value;

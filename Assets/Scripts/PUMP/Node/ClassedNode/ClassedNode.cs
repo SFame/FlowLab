@@ -158,7 +158,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     #endregion
 
     #region SerializeData
-    public ClassedNodeSerializeInfo AdditionalTArgs
+    public ClassedNodeSerializeInfo AdditionalArgs
     {
         get
         {
@@ -174,7 +174,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             Id = value._id;
         }
     }
-    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ClassedNodeSerializeInfo)value; }
     #endregion
 }
 

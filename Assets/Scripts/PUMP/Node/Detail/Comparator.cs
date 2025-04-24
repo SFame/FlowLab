@@ -135,7 +135,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
     private string Operator { get; set; } = "<";
     #endregion
 
-    public ComparatorSerializeInfo AdditionalTArgs
+    public ComparatorSerializeInfo AdditionalArgs
     {
         get => new() { _inputCount = InputCount, _compareNumber = CompareNumber, _operator = Operator };
 
@@ -146,8 +146,6 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
             Operator = value._operator;
         }
     }
-    
-    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ComparatorSerializeInfo)value; }
     
     [Serializable]
     public struct ComparatorSerializeInfo

@@ -33,7 +33,7 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
             tp.State = State;
     }
 
-    public bool AdditionalTArgs
+    public bool AdditionalArgs
     {
         get => State;
         set => State = value;
@@ -41,8 +41,8 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 
     object INodeAdditionalArgs.AdditionalArgs
     {
-        get => AdditionalTArgs;
-        set => AdditionalTArgs = (bool)value;
+        get => AdditionalArgs;
+        set => AdditionalArgs = (bool)value;
     }
 
     public bool State

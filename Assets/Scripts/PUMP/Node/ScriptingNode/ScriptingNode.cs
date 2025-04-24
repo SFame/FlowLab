@@ -281,7 +281,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     #endregion
 
     #region Serialization
-    public ScriptingNodeSerializeInfo AdditionalTArgs
+    public ScriptingNodeSerializeInfo AdditionalArgs
     {
         get => new()
         {
@@ -296,13 +296,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             Script = value._script;
         }
     }
-
-    public object AdditionalArgs
-    {
-        get => AdditionalTArgs;
-        set => AdditionalTArgs = (ScriptingNodeSerializeInfo)value;
-    }
-
     [Serializable]
     public struct ScriptingNodeSerializeInfo
     {

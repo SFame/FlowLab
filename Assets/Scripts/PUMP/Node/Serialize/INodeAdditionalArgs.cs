@@ -1,9 +1,15 @@
 public interface INodeAdditionalArgs
 {
-    public object AdditionalArgs { get; set; }
+    object AdditionalArgs { get; set; }
 }
 
 public interface INodeAdditionalArgs<T> : INodeAdditionalArgs
 {
-    public T AdditionalTArgs { get; set; }
+    new T AdditionalArgs { get; set; }
+
+    object INodeAdditionalArgs.AdditionalArgs
+    {
+        get => AdditionalArgs;
+        set => AdditionalArgs = (T)value;
+    }
 }

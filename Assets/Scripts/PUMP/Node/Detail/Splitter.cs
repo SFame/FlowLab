@@ -49,6 +49,5 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
     }
     private TMP_Dropdown _dropdown;
 
-    public int AdditionalTArgs { get => OutputCount; set => OutputCount = value; }
-    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (int)value; }
+    public int AdditionalArgs { get => OutputCount; set => OutputCount = value; }
 }

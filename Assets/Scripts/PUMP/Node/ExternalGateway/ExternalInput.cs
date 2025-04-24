@@ -128,7 +128,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     #region Serialize
     public List<float> _handleRatios;
-    public ExternalNodeSerializeInfo AdditionalTArgs
+    public ExternalNodeSerializeInfo AdditionalArgs
     {
         get
         {
@@ -144,7 +144,6 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             _handleRatios = value._handlePositions;
         }
     }
-    public object AdditionalArgs { get => AdditionalTArgs; set => AdditionalTArgs = (ExternalNodeSerializeInfo)value; }
     #endregion
 }
 
