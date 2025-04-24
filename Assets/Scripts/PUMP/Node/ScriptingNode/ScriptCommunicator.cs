@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using IronPython.Hosting;
+using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using UnityEngine;
+using Utils;
 
 public class ScriptCommunicator : IDisposable
 {
@@ -11,6 +13,8 @@ public class ScriptCommunicator : IDisposable
     private const string CALLBACKS_INJECT_CODE = @"output_applier = OutputApplier()
 printer = Printer()";
     private static string _callbacksScript;
+    private static CompiledCode _callbackCompiled;
+    private static readonly object _callbackCompileLock = new object();
     private static ScriptEngine _engine;
 
     private static string CallbacksScript
@@ -23,6 +27,26 @@ printer = Printer()";
             }
 
             return _callbacksScript;
+        }
+    }
+
+    private static CompiledCode CallbackCompiled
+    {
+        get
+        {
+            if (_callbackCompiled == null)
+            {
+                lock (_callbackCompileLock)
+                {
+                    if (_callbackCompiled == null)
+                    {
+                        ScriptSource callbackScriptSource = _engine.CreateScriptSourceFromString(CallbacksScript);
+                        _callbackCompiled = callbackScriptSource.Compile();
+                    }
+                }
+            }
+
+            return _callbackCompiled;
         }
     }
 
@@ -70,7 +94,7 @@ printer = Printer()";
         try
         {
             Scope = Engine.CreateScope();
-            Engine.Execute(CallbacksScript, Scope);
+            CallbackCompiled.Execute(Scope);
             _logger = logger;
             _exLogger = exLogger;
         }
@@ -97,7 +121,9 @@ printer = Printer()";
     {
         try
         {
-            Engine.Execute(script, Scope);
+            ScriptSource scriptSource = _engine.CreateScriptSourceFromString(script);
+            CompiledCode compiledCode = scriptSource.Compile();
+            compiledCode.Execute(Scope);
 
             Dictionary<string, dynamic> tempMembers = new Dictionary<string, dynamic>();
 
@@ -110,6 +136,7 @@ printer = Printer()";
                         _logger?.Invoke($"요소 타입이 일치하지 않습니다: {member.Key}의 기대 타입: {correctType} / 현재 타입: {currentType}");
                         return false;
                     }
+
                     tempMembers[member.Key] = value;
                     continue;
                 }
@@ -126,7 +153,24 @@ printer = Printer()";
             Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
             _essentialMembers["output_applier"] = Scope.GetVariable("output_applier");
             _essentialMembers["printer"] = Scope.GetVariable("printer");
-            return RegistrationMembers();
+
+            bool isSuccses = RegistrationMembers();
+
+            if (isSuccses)
+            {
+                _logger?.Invoke("<b><color=green>Compile success</color></b>");
+            }
+
+            return isSuccses;
+        }
+        catch (SyntaxErrorException syntaxError)
+        {
+            int startCol = syntaxError.RawSpan.Start.Column;
+            int endCol = syntaxError.RawSpan.End.Column;
+            string errorCode = HighlightErrorCode(syntaxError.GetCodeLine(), startCol, endCol);
+            _logger?.Invoke($"[SyntaxError] <b>Line: {syntaxError.Line}, Column: {syntaxError.Column}</b>\n\"{errorCode}\"");
+            _exLogger?.Invoke(syntaxError);
+            return false;
         }
         catch (Exception e)
         {
@@ -195,6 +239,7 @@ printer = Printer()";
             return;
 
         _disposed = true;
+        GC.SuppressFinalize(this);
 
         try
         {
@@ -335,10 +380,24 @@ printer = Printer()";
         }
     }
 
+    private string HighlightErrorCode(string errorCode, int start, int end)
+    {
+        if (start < 0) start = 0;
+        if (end > errorCode.Length) end = errorCode.Length;
+        if (start >= errorCode.Length || end <= start) return errorCode;
+
+        string highlightedCode = errorCode.Substring(0, start);
+        highlightedCode += "<u>" + errorCode.Substring(start, end - start) + "</u>";
+
+        if (end < errorCode.Length)
+            highlightedCode += errorCode.Substring(end);
+
+        return highlightedCode;
+    }
+
     ~ScriptCommunicator()
     {
-        if (!_disposed)
-            Dispose();
+        Dispose();
     }
     #endregion
 }

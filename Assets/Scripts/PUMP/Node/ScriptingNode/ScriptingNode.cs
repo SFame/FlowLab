@@ -208,7 +208,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     private void InvokeInit()
     {
-        if (Communicator == null)
+        if (!IsScriptReady || Communicator == null)
             return;
 
         try

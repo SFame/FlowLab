@@ -130,7 +130,6 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         return false;
     }
 
-    private int a = 0;
     private void EnqueueLog(string log)
     {
         if (_logQueue.Count > _maxLogCapacity)
@@ -178,7 +177,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
             EnqueueLog(pythonEx);
             return;
         }
-        
+
         Debug.LogException(e);
     }
 
