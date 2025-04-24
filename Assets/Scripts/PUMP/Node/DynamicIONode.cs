@@ -5,14 +5,11 @@ using System.Linq;
 public abstract class DynamicIONode : Node
 {
     #region Privates
-    private bool _isInitialized = false;
     private int _inputCount = -1;  // -1: 미설정 (기본값 대체)
     private int _outputCount = -1;
 
     protected sealed override List<string> InputNames => GetNames(DefineInputName, InputCount).ToList();
     protected sealed override List<string> OutputNames => GetNames(DefineOutputName, OutputCount).ToList();
-
-    protected override void OnAfterInit() => _isInitialized = true;
 
     private IEnumerable<string> GetNames(Func<int, string> builder, int count)
     {
@@ -41,7 +38,7 @@ public abstract class DynamicIONode : Node
         set
         {
             _inputCount = value;
-            if (_isInitialized)
+            if (InputToken != null)
                 ResetToken();
         }
     }
@@ -52,7 +49,7 @@ public abstract class DynamicIONode : Node
         set
         {
             _outputCount = value;
-            if (_isInitialized)
+            if (OutputToken != null)
                 ResetToken();
         }
     }

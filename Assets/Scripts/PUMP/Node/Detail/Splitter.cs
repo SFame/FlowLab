@@ -28,8 +28,6 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
-
         Dropdown.value = OutputCount - 1;
         Dropdown.onValueChanged.AddListener(value => OutputCount = value + 1);
         Dropdown.onValueChanged.AddListener(_ => ReportChanges());

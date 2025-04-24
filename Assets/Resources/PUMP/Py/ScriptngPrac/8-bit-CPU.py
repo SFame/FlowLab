@@ -4,6 +4,9 @@ name: str = "8-bit CPU Node"
 input_list: list = ['Clock', 'Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6', 'Data 7', 'Data 8', 'Reset', 'Mode 1', 'Mode 2']
 # Specifies number of output ports with names
 output_list: list = ['Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6', 'Data 7', 'Data 8', 'Zero Flag', 'Carry Flag']
+# When True, allows this node's methods to be executed asynchronously
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
+is_async: bool = False
 # Controls whether state_update is automatically called after initialization
 auto_state_update_after_init: bool = True
 # Object responsible for applying output signals to the node

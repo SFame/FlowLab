@@ -100,8 +100,6 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
-
         Support.BlockedMove = true;
         InEnumActive = false;
 

@@ -6,6 +6,7 @@ using PolyAndCode.UI;
 using TMPro;
 using UnityEngine;
 using Utils;
+using static UnityEngine.Rendering.DebugUI;
 
 public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 {
@@ -159,6 +160,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     public void Print(string value)
     {
         m_PrintText.text = value;
+        EnqueueLog($"<color=black>{value}</color>");
     }
 
     public void Log(string message)
@@ -174,7 +176,8 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     {
         if (TryFilterPythonException(e, out string pythonEx))
         {
-            EnqueueLog(pythonEx);
+            
+            EnqueueLog($"<color=red>{pythonEx}</color>");
             return;
         }
 

@@ -116,8 +116,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
-
         if (!_isDeserialized)
             return;
 

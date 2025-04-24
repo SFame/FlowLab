@@ -4,6 +4,9 @@ name: str = "ALU Node"
 input_list: list = ['in 1', 'in 2', 'mode']
 # Specifies number of output ports
 output_list: list = ['out 1', 'out 2']
+# When True, allows this node's methods to be executed asynchronously
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
+is_async: bool = False
 # Controls whether state_update is automatically called after initialization
 # When True, system will call state_update once after init() with
 # index=-1, state=False, is_changed=False

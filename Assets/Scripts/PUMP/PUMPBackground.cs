@@ -461,7 +461,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         return newNode;
     }
 
-    private Node AddNewNodeWithArgs(Type nodeType, object nodeSerializableArgs)
+    private Node AddNewNodeWithArgs(Type nodeType, object nodeAdditionalArgs)
     {
         Node node = NodeInstantiator.GetNode(nodeType);
 
@@ -469,7 +469,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         {
             try
             {
-                args.AdditionalArgs = nodeSerializableArgs;
+                args.AdditionalArgs = nodeAdditionalArgs;
             }
             catch (InvalidCastException e)
             {

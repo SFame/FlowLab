@@ -85,7 +85,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
         OnRemove += OnRemoveAdapter;
         ClassedNodePanel.JoinPanel(this);
         MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);

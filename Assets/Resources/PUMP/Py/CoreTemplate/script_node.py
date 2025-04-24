@@ -1,18 +1,27 @@
+# ======================================================
+# Python version in this environment: 3.4.2 (3.4.2.1000)
+# ======================================================
+
 # Defines the node's name
-# This value is only reflected in the node when initially set; changes after initialization have no effect
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
 name: str = "ScriptingNode"
 
 # Specifies number of input ports
-# This value is only reflected in the node when initially set; changes after initialization have no effect
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
 input_list: list = ['in 1', 'in 2']
 
 # Specifies number of output ports
-# This value is only reflected in the node when initially set; changes after initialization have no effect
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
 output_list: list = ['out 1']
+
+# When True, allows this Node's methods to be executed asynchronously (without terminate())
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
+is_async: bool = False
 
 # Controls whether state_update is automatically called after initialization
 # When True, system will call state_update once after init() with
 # index=-1, state=False, is_changed=False
+# ※This value is only reflected in the node when initially set; changes after initialization have no effect
 auto_state_update_after_init: bool = False
 
 # Object responsible for applying output signals to the node
@@ -41,7 +50,6 @@ def terminate() -> None:
     pass
 
 def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
-    
     """
     The nerve center - triggered whenever any signal is detected on input ports.
     

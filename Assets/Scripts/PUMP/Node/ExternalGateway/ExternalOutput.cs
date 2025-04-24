@@ -105,8 +105,6 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
-
         Support.BlockedMove = true;
         OutEnumActive = false;
 

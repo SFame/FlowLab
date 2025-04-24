@@ -52,8 +52,6 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
     
     protected override void OnAfterInit()
     {
-        base.OnAfterInit();
-
         // Input count
         InputCountInputCountDropdown.value = InputCount - 1;
         InputCountInputCountDropdown.onValueChanged.AddListener(value => InputCount = value + 1);
