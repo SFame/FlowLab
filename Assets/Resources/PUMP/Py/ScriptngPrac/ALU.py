@@ -31,7 +31,7 @@ MODE_DIV = 6
 # Current operation mode
 current_mode = MODE_AND
 
-def init() -> None:
+def init(inputs: list) -> None:
     # 초기 상태에서 출력 업데이트 수행
     outputs = [False, False]
     output_applier.apply(outputs)

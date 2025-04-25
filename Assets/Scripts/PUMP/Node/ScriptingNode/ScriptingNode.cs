@@ -211,7 +211,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         try
         {
-            Communicator.InvokeInit();
+            Communicator.InvokeInit(InputToken.Select(tp => tp.State).ToList());
             if (Communicator.ScriptFieldInfo.AutoStateUpdateAfterInit)
             {
                 StateUpdate(null);

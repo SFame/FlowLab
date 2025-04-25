@@ -47,7 +47,7 @@ last_clock = False  # 마지막 클럭 상태
 is_executing = False  # 실행 중인지 여부
 cycle_count = 0  # 사이클 카운터
 
-def init() -> None:
+def init(inputs: list) -> None:
     # 초기화 - 모든 레지스터와 플래그 리셋
     for reg in registers:
         registers[reg] = [False] * 8

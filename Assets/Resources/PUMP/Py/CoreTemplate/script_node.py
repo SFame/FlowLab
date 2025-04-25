@@ -35,10 +35,13 @@ output_applier: OutputApplier = None
 printer: Printer = None
 
 
-def init() -> None:
+def init(inputs: list) -> None:
     """
     Initialization function called when the node is freshly created or during Undo/Redo operations.
     Keep it clean, keep it lean.
+
+    Parameters:
+        inputs (list): Boolean list representing the state of each input port
     """
     pass
 

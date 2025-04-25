@@ -19,9 +19,10 @@ output_applier: OutputApplier = None
 # Used to show string information on the Node.
 printer: Printer = None
 
-def init() -> None:
+def init(inputs: list) -> None:
     # 초기 상태에서 출력 업데이트 수행
-    outputs = [False]
+    result = all(inputs)
+    outputs = [result]
     output_applier.apply(outputs)
 
 def terminate() -> None:

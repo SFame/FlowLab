@@ -85,7 +85,7 @@ def run_timer():
     finally:
         is_timer_running = False
 
-def init() -> None:
+def init(inputs: list) -> None:
     """초기화 함수"""
     global is_timer_running, target_time
     is_timer_running = False

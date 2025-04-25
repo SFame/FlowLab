@@ -64,7 +64,7 @@ printer = Printer()";
     private ScriptScope Scope { get; set; }
     private Action<string> _logger;
     private Action<Exception> _exLogger;
-    private Action _initAction;
+    private Action<List<bool>> _initAction;
     private Action _terminateAction;
     private Action<List<bool>, int, bool, bool> _stateUpdateAction;
     private SafetyCancellationTokenSource _asyncModeCts;
@@ -210,7 +210,7 @@ printer = Printer()";
     /// <summary>
     /// Python 스크립트 init 호출
     /// </summary>
-    public void InvokeInit()
+    public void InvokeInit(List<bool> inputTokenState)
     {
         if (IsAsync)
         {
@@ -218,7 +218,7 @@ printer = Printer()";
             {
                 try
                 {
-                    _initAction?.Invoke();
+                    _initAction?.Invoke(inputTokenState);
                 }
                 catch (Exception e)
                 {
@@ -236,7 +236,7 @@ printer = Printer()";
 
         try
         {
-            _initAction?.Invoke();
+            _initAction?.Invoke(inputTokenState);
         }
         catch (Exception e)
         {
@@ -351,7 +351,7 @@ printer = Printer()";
             Printer.set_callback(new Action<object>(InvokePrint));
 
             dynamic initFunc = _essentialMembers["init"];
-            _initAction = () => initFunc();
+            _initAction = inputs => initFunc(inputs);
 
             dynamic terminateFunc = _essentialMembers["terminate"];
             _terminateAction = () => terminateFunc();
