@@ -1,13 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
 
-public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenable
+public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenable, IDraggable, ITPHideable
 {
     #region Privates
     [SerializeField]
     private bool _state;
     private LineConnector _lineConnector;
+    private ITPHideable _hideTargetTpCache;
+    private HashSet<object> _hiders = new();
+    private readonly object _hider = new();
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
@@ -25,7 +29,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         lineConnector.StartSidePoint = Location;
     }
 
-    private void SetConnectionLineHideMode(bool isHide)
+    private void SetHide(bool isHide)
     {
         if (Connection is null)
             return;
@@ -34,7 +38,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
         if (isHide)
         {
-            Connection.LineConnector.SetAlpha(0.1f);
+            Connection.LineConnector.SetAlpha(0.5f);
             Connection.LineConnector.FreezeLinesAttributes = true;
         }
         else
@@ -42,6 +46,11 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             Connection.LineConnector.FreezeLinesAttributes = false;
             Connection.LineConnector.SetAlpha(1f);
         }
+    }
+
+    private void CheckHide()
+    {
+        SetHide(_hiders.Count > 0);
     }
     #endregion
 
@@ -94,7 +103,8 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         {
             Connection = connection;
 
-            OnMove = uguiPos => OnNodeMove(connection.LineConnector);
+            OnMove = uguiPos => OnNodeMove(Connection.LineConnector);
+            Connection.OnSelfDisconnect += Node.ReportChanges;
             Node.Support.OnPositionUpdate += OnMove;
 
             if (!OnDeserializing)
@@ -118,10 +128,26 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             OnSounded?.Invoke(this, new(1, Location));
         }
     }
+
+    public void AddHider(object hider)
+    {
+        if (_hiders.Add(hider))
+        {
+            CheckHide();
+        }
+    }
+
+    public void SubHider(object hider)
+    {
+        if (_hiders.Remove(hider))
+        {
+            CheckHide();
+        }
+    }
     #endregion
 
     #region MouseEvent
-    public override void OnBeginDrag(PointerEventData eventData)
+    void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
         if (_lineConnector != null)
             _lineConnector.Remove();
@@ -130,24 +156,44 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         _lineConnector.Initialize(Location, Location);
         _lineConnector.FreezeLinesAttributes = true;
 
-        SetConnectionLineHideMode(true);
+        _hiders.Clear();
+        AddHider(_hider);
+        _hideTargetTpCache = null;
     }
 
-    public override void OnDrag(PointerEventData eventData)
+    void IDragHandler.OnDrag(PointerEventData eventData)
     {
         if (_lineConnector != null)
         {
-            Vector2 targetPoint = eventData.position;
-
+            Vector2 targetPoint;
             ITPIn target = eventData.FindUnderPoint<ITPIn>();
-            if (target is not null)
+
+            if (target != null)
+            {
                 targetPoint = target.Location;
-            
+
+                if (target is ITPHideable hideable && _hideTargetTpCache == null)
+                {
+                    _hideTargetTpCache = hideable;
+                    _hideTargetTpCache.AddHider(_hider);
+                }
+            }
+            else
+            {
+                targetPoint = eventData.position;
+                if (_hideTargetTpCache != null)
+                {
+                    _hideTargetTpCache.SubHider(_hider);
+                    CheckHide();
+                    _hideTargetTpCache = null;
+                }
+            }
+
             _lineConnector.EndSidePoint = targetPoint;
         }
     }
 
-    public override void OnEndDrag(PointerEventData eventData)
+    void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
         if (_lineConnector != null)
         {
@@ -155,7 +201,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             _lineConnector = null;
         }
 
-        SetConnectionLineHideMode(false);
+        SubHider(_hider);
+        _hideTargetTpCache?.SubHider(_hider);
+        _hideTargetTpCache = null;
 
         ITPIn find = eventData.FindUnderPoint<ITPIn>();
         if (find is not null)

@@ -31,6 +31,12 @@ public interface IMoveable
     Action<PositionInfo> OnMove { get; set; }
 }
 
+public interface ITPHideable
+{
+    void AddHider(object hider);
+    void SubHider(object hider);
+}
+
 /// <summary>
 /// 노드를 잇는 말단 객체
 /// Connection.Disconnect()는 양쪽 모두의 커넥션을 해제를 의미

@@ -745,7 +745,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                         ClearDraggables();
                         SetInfos(result, false);
                     },
-                    maxCapacity: 15
+                    maxCapacity: 20
                 );
                 _undoDelegate.RecordAfterClear = true;
             }
