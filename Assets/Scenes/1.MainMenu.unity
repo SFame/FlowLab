@@ -473,9 +473,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1465850242329064916, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3992112060959456057, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4140166476570419857, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4296891695291032083, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_Name
       value: UI_Settings
+      objectReference: {fileID: 0}
+    - target: {fileID: 4296891695291032083, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7255452814043589572, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8906128587339112747, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_Pivot.x
