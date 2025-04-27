@@ -140,6 +140,7 @@ public class TPConnection : IStateful, IDisposable
         }
     }
 
+    // LineConnector에서 ContextMenu를 통해 Disconnect 되었을 때
     public event Action OnSelfDisconnect;
 
     public void Disconnect()

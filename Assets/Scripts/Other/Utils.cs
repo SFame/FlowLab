@@ -1288,7 +1288,7 @@ namespace Utils
         }
         #endregion
 
-        public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "")
+        public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "", Action onExit = null)
         {
             if (_isShow && CurrentIsNull)
                 _isShow = false;
@@ -1300,7 +1300,7 @@ namespace Utils
             }
 
             SetRect(CurrentTextGetter.Rect, rootCanvas);
-            CurrentTextGetter.Set(titleString, inputString, callback);
+            CurrentTextGetter.Set(titleString, inputString, callback, onExit);
             _isShow = true;
         }
     }

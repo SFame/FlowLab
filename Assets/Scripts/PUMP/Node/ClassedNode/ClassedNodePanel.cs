@@ -109,7 +109,18 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     /// </summary>
     public void OpenSaveOption()
     {
-        TextGetterManager.Set(RootCanvas, DataManager.Push, "Save Name", defaultSaveName);
+        object blocker = new();
+        PUMPInputManager inputManager = PUMPInputManager.Current;
+        inputManager?.AddBlocker(blocker);
+
+        TextGetterManager.Set
+        (
+            rootCanvas: RootCanvas,
+            callback: DataManager.Push,
+            titleString: "Save Name",
+            inputString: defaultSaveName,
+            onExit: () => inputManager?.SubBlocker(blocker)
+        );
     }
 
     /// <summary>
@@ -117,15 +128,22 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     /// </summary>
     public void OpenSaveOptionWithExit()
     {
-        TextGetterManager.Set(
-        RootCanvas,
-        saveName =>
-        {
-            DataManager.Push(saveName);
-            ClosePanel();
-        },
-        "Save Name",
-        defaultSaveName);
+        object blocker = new();
+        PUMPInputManager inputManager = PUMPInputManager.Current;
+        inputManager?.AddBlocker(blocker);
+
+        TextGetterManager.Set
+        (
+            rootCanvas: RootCanvas,
+            callback: saveName =>
+            {
+                DataManager.Push(saveName);
+                ClosePanel();
+            },
+            titleString: "Save Name",
+            inputString: defaultSaveName,
+            onExit: () => inputManager?.SubBlocker(blocker)
+        );
     }
 
     public void SetSlider(PUMPBackground background)

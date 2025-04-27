@@ -30,7 +30,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
     #endregion
     
     #region Interface to child
-    protected List<ITransitionPoint> TPs { get; private set; } = new();
+    protected List<ITransitionPoint> TPs { get; } = new();
     #endregion
 
     #region Interface
@@ -118,7 +118,6 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
 
         if (Node is null)
         {
-            Debug.LogError("Must set TPEnumerator's Node info first");
             throw new Exception("Must set TPEnumerator's Node info first");
         }
 

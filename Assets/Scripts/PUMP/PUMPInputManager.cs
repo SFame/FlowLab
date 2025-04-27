@@ -8,12 +8,25 @@ using System.Linq;
 /// </summary>
 public class PUMPInputManager : MonoBehaviour
 {
+    #region On Inspector
     [SerializeField] private List<BackgroundActionKeyMap> m_KeyMap;
     [SerializeField] private bool m_Enable = true;
+    #endregion
 
+    #region Interface
+    public static PUMPInputManager Current { get; private set; }
+    public void AddBlocker(object blocker) => _blocker.Add(blocker);
+    public void SubBlocker(object blocker) => _blocker.Remove(blocker);
+    #endregion
+
+    #region Privates
+    private readonly HashSet<object> _blocker = new();
     private void Update()
     {
         if (!m_Enable)
+            return;
+
+        if (_blocker.Count > 0)
             return;
 
         for (int i = 0; i < m_KeyMap.Count; i++)
@@ -22,6 +35,25 @@ public class PUMPInputManager : MonoBehaviour
                 break;
         }
     }
+
+    private void Awake()
+    {
+        if (Current != null)
+        {
+            Destroy(Current.gameObject);
+        }
+
+        Current = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Current == this)
+        {
+            Current = null;
+        }
+    }
+    #endregion
 }
 
 /// <summary>

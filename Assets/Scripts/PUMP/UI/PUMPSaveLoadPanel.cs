@@ -99,7 +99,21 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         
         saveButton?.onClick.AddListener(() =>
         {
-            TextGetterManager.Set(RootCanvas, newName => AddNewSave(newName).Forget(), "Save name", defaultSaveName);
+            object blocker = new();
+            PUMPInputManager inputManager = PUMPInputManager.Current;
+            inputManager?.AddBlocker(blocker);
+
+            TextGetterManager.Set
+            (
+                rootCanvas: RootCanvas,
+                callback: newName =>
+                {
+                    AddNewSave(newName).Forget();
+                },
+                titleString: "Save name",
+                inputString: defaultSaveName,
+                onExit: () => inputManager?.SubBlocker(blocker)
+            );
         });
 
         SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).AddEvent(savePath, ReloadData);
@@ -202,17 +216,26 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                     text: "Rename",
                     clickAction: () =>
                     {
-                        TextGetterManager.Set(RootCanvas, newName =>
-                        {
-                            if (data.Name != newName)
+                        object blocker = new();
+                        PUMPInputManager inputManager = PUMPInputManager.Current;
+                        inputManager?.AddBlocker(blocker);
+
+                        TextGetterManager.Set
+                        (
+                            rootCanvas: RootCanvas,
+                            callback: newName =>
                             {
-                                data.Name = newName;
-                                data.NotifyDataChanged();
-                                elem.Refresh();
-                            }
-                        },
-                        "New name",
-                        data.Name);
+                                if (data.Name != newName)
+                                {
+                                    data.Name = newName;
+                                    data.NotifyDataChanged();
+                                    elem.Refresh();
+                                }
+                            },
+                            titleString: "New name",
+                            inputString: data.Name,
+                            onExit: () => inputManager?.SubBlocker(blocker)
+                        );
                     }
                 )
             };
