@@ -6,7 +6,6 @@ using PolyAndCode.UI;
 using TMPro;
 using UnityEngine;
 using Utils;
-using static UnityEngine.Rendering.DebugUI;
 
 public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 {
@@ -131,6 +130,48 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         return false;
     }
 
+    private bool TryFilterMicrosoftScriptingException(Exception exception, out string scriptingEx)
+    {
+        scriptingEx = string.Empty;
+
+        if (exception == null)
+            return false;
+
+        bool isMicrosoftScriptingException = (exception.GetType().Namespace?.Contains("Microsoft.Scripting") ?? false) ||
+                                             (exception.InnerException?.GetType().Namespace?.Contains("Microsoft.Scripting") ?? false);
+
+        if (!isMicrosoftScriptingException)
+        {
+            string fullMessage = exception.ToString();
+            isMicrosoftScriptingException = fullMessage.Contains("Microsoft.Scripting");
+        }
+
+        if (isMicrosoftScriptingException)
+        {
+            string fullMessage = exception.ToString();
+            int newLineIndex = fullMessage.IndexOf('\n');
+
+            if (newLineIndex > 0)
+            {
+                scriptingEx = fullMessage.Substring(0, newLineIndex).Trim();
+            }
+            else
+            {
+                scriptingEx = exception.Message;
+            }
+
+            const string prefix = "Microsoft.Scripting.";
+            if (scriptingEx.StartsWith(prefix))
+            {
+                scriptingEx = scriptingEx.Substring(prefix.Length);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     private void EnqueueLog(string log)
     {
         if (_logQueue.Count > _maxLogCapacity)
@@ -178,6 +219,12 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         {
             
             EnqueueLog($"<color=red>{pythonEx}</color>");
+            return;
+        }
+
+        if (TryFilterMicrosoftScriptingException(e, out string scriptingEx))
+        {
+            EnqueueLog($"<color=red>{scriptingEx}</color>");
             return;
         }
 

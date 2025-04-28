@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -172,6 +173,21 @@ namespace Utils
             {
                 finalizer?.Invoke();
             }
+        }
+
+        /// <summary>
+        /// 문자열 꺾쇠괄호 제거
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string RemoveRichTextTags(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            string pattern = @"<([a-zA-Z][a-zA-Z0-9]*)(?:[^<>]*)>(.*?)</\1>";
+            string result = Regex.Replace(input, pattern, "$2");
+            return result;
         }
     }
 

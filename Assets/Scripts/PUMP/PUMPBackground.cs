@@ -266,7 +266,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     private async UniTask ReportChangesEndFrameAsync()
     {
-        await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+        await UniTask.WaitForEndOfFrame();
         OnChanged?.Invoke();
     }
 

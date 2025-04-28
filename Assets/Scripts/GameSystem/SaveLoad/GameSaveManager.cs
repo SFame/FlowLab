@@ -1,14 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using OdinSerializer;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
 using static Utils.Serializer;
-using System.IO;
-using UnityEditor.Overlays;
 
-public class GameSaveManager : SerializedMonoBehaviour
+public class GameSaveManager : MonoBehaviour
 {
     #region singleton
     public static GameSaveManager Instance { get; private set; }

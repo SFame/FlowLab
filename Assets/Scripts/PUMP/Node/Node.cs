@@ -149,7 +149,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
 
     /// <summary>
     /// 변경사항 발생시 호출
-    /// PUMPBackground.SetInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
+    /// PUMPBackground.SetInfos() 메서드의 콜 스텍에 영향받는 위치에서 "절대" 호출하지 말 것.
     /// </summary>
     public void ReportChanges()
     {
