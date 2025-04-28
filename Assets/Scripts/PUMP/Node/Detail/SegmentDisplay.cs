@@ -23,7 +23,7 @@ public class SegmentDisplay : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
 
-    protected override string NodeDisplayName => "7Segment_Display";
+    protected override string NodeDisplayName => "";
 
     
     private SegmentSupport _segmentSupport;
@@ -38,7 +38,6 @@ public class SegmentDisplay : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        (Support.GetComponent<SegmentSupport>()).Log();
         SegmentSupport.UpdateSegmentDisplay(InputToken.Select(tp => tp.State).ToArray());
     }
 
