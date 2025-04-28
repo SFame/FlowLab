@@ -1,14 +1,16 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class BinaryDisplay : Node
+public class BinaryDisplay : DynamicIONode
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/BINARYDISPLAY";
 
-    protected override List<string> InputNames { get; } = new List<string> { "1", "2", "3", "4", "5", "6", "7" }; // retouch
-
-    protected override List<string> OutputNames { get; } = new List<string> { };
+    protected override int DefaultInputCount => 4;
+    protected override int DefaultOutputCount => 0;
+    protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
+    protected override string DefineOutputName(int tpNumber) => $"out {tpNumber}";
 
     protected override float InEnumeratorXPos => -67.5f;
 
@@ -23,18 +25,34 @@ public class BinaryDisplay : Node
     protected override string NodeDisplayName => "";
 
 
-    private BinaryDisplaySupport _binaryDisplaySupportt;
+    private BinaryDisplaySupport _binaryDisplaySupport;
     private BinaryDisplaySupport BinaryDisplaySupport
     {
         get
         {
-            _binaryDisplaySupportt ??= Support.GetComponent<BinaryDisplaySupport>();
-            return _binaryDisplaySupportt;
+            if(_binaryDisplaySupport == null)
+            {
+                _binaryDisplaySupport = Support.GetComponent<BinaryDisplaySupport>();
+                _binaryDisplaySupport.Initialize();
+            }
+            return _binaryDisplaySupport;
         }
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        //BinaryDisplaySupport.UpdateSegmentDisplay(InputToken.Select(tp => tp.State).ToArray());
+
+        BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(tp => tp.State).ToArray());
     }
+
+    protected override void OnAfterInit()
+    {
+        BinaryDisplaySupport.OnValueChanged += value =>
+        {
+            InputCount = value + 1;
+            ReportChanges();
+        };
+    }
+        
+
 }
