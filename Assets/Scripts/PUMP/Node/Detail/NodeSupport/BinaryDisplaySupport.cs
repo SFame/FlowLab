@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class BinaryDisplaySupport : MonoBehaviour
 {
     [SerializeField] public TMP_Dropdown m_Dropdown;
+    [SerializeField] private SegmentController[] m_SegmentControllers;
 
     public event Action<int> OnValueChanged;
 
@@ -24,7 +25,7 @@ public class BinaryDisplaySupport : MonoBehaviour
     public void UpdateBinaryDisplay(bool[] states)
     {
         InputNumSum(states);
-        //UpdateDisplay
+        UpdateDisplay();
     }
 
     private void InputNumSum(bool[] states)
@@ -39,10 +40,20 @@ public class BinaryDisplaySupport : MonoBehaviour
         }
     }
 
-    //private void UpdateDisplay
-    //{
-        
-    //}
+    private void UpdateDisplay()
+    {
+        int a, b, c, d = 0;
+
+        a = sum % 10;
+        b = (sum/10) % 10;
+        c = (sum/100) % 10;
+        d = sum/1000;
+
+        m_SegmentControllers[0].SetDisplay(a);
+        m_SegmentControllers[1].SetDisplay(b);
+        m_SegmentControllers[2].SetDisplay(c);
+        m_SegmentControllers[3].SetDisplay(d);
+    }
 
 
 }
