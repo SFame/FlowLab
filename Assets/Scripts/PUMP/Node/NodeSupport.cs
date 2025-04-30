@@ -229,7 +229,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             OutputEnumerator = null;
             Destroy(inputObject);
             Destroy(outputObject);
-            Debug.LogError("Enumerator 속성 설정 과정에서 예외 발생");
+            Debug.LogError($"Enumerator 속성 설정 과정에서 예외 발생\n{e.Message}");
             throw;
         }
     }

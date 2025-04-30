@@ -24,11 +24,23 @@ public class SaveDisplayer : MonoBehaviour
                         newCell.SetActive(false);
                         return newCell.GetComponent<RectTransform>();
                     },
-                    actionOnGet: cell => cell.gameObject.SetActive(true),
-                    actionOnRelease: cell => cell.gameObject.SetActive(false),
+                    actionOnGet: cell =>
+                    {
+                        _currentCells.Add(cell);
+                        cell.gameObject.SetActive(true);
+                    },
+                    actionOnRelease: cell =>
+                    {
+                        _currentCells.Remove(cell);
+                        cell.gameObject.SetActive(false);
+                    },
                     initSize: 20,
                     maxSize: 500,
-                    actionOnDestroy: cell => Destroy(cell.gameObject)
+                    actionOnDestroy: cell =>
+                    {
+                        _currentCells.Remove(cell);
+                        Destroy(cell.gameObject);
+                    }
                 );
             }
 
@@ -36,8 +48,19 @@ public class SaveDisplayer : MonoBehaviour
         }
     }
 
-    public void SetNodeCell(List<Vector2> normalizedPosition)
+    public void SetNodeCells(List<Vector2> normalizedPositions)
     {
+        NodeCellPool.ReleaseAll();
 
+        foreach (Vector2 normalizedPosition in normalizedPositions)
+        {
+            SetNodeCell(normalizedPosition);
+        }
+    }
+
+    private void SetNodeCell(Vector2 normalizedPosition)
+    {
+        RectTransform newCell = NodeCellPool.Get();
+        SetLocalPositionAsNormalizeValue(m_Boundary, newCell, normalizedPosition);
     }
 }

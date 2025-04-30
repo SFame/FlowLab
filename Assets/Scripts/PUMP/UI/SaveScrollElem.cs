@@ -11,6 +11,7 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI dateText;
     [SerializeField] private RawImage image;
+    [SerializeField] private SaveDisplayer m_Displayer;
     #endregion
     
     #region Privates
