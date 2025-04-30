@@ -15,6 +15,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using ArgumentNullException = System.ArgumentNullException;
 using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
@@ -1254,6 +1255,34 @@ namespace Utils
             Vector2 position = rect.anchoredPosition;
             position.y = value;
             rect.anchoredPosition = position;
+        }
+
+        public static Vector2 GetNormalizeLocalPosition(RectTransform parent, RectTransform child)
+        {
+            if (parent == null || child == null)
+            {
+                throw new ArgumentNullException($"GetNormalizeLocalPosition(): Argument is null. Parent: {parent} / Child: {child}");
+            }
+
+            Vector2 parentSize = parent.rect.size;
+            Vector2 childLocalPosition = child.localPosition;
+            return childLocalPosition / parentSize;
+        }
+
+        public static void SetLocalPositionAsNormalizeValue(RectTransform parent, RectTransform child, Vector2 normalizeValue)
+        {
+            if (parent == null || child == null)
+            {
+                throw new ArgumentNullException($"SetLocalPositionAsNormalizeValue(): Argument is null. Parent: {parent} / Child: {child}");
+            }
+
+            if (Mathf.Abs(normalizeValue.x) > 0.5f || Mathf.Abs(normalizeValue.y) > 0.5f)
+            {
+                Debug.LogError($"Normalized position out of bounds: {normalizeValue}. Values must be within ±0.5 range.");
+                return;
+            }
+
+            child.localPosition = parent.rect.size * normalizeValue;
         }
     }
 

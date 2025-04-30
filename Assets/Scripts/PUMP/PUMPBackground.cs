@@ -346,7 +346,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         Current = this;
         Initialize();
     }
-    
+
     public void Close()
     {
         if (Current == this)
