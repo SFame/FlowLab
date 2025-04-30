@@ -12,7 +12,7 @@ public class BinaryDisplay : DynamicIONode
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => $"out {tpNumber}";
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => -230.5f;
 
     protected override float OutEnumeratorXPos => 67.5f;
 
@@ -20,7 +20,7 @@ public class BinaryDisplay : DynamicIONode
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(500f, 250f);
 
     protected override string NodeDisplayName => "";
 
