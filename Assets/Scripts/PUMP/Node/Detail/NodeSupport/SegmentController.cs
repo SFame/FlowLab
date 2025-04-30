@@ -43,8 +43,6 @@ public class SegmentController : MonoBehaviour
         for (int i = 0; i < 7; i++)
         {
             m_Segments[i].color = inputs[i] ? m_OnColor : m_OffColor;
-            m_Segments[i].color.Log();
-            m_OnColor.Log();
         }
     }
 

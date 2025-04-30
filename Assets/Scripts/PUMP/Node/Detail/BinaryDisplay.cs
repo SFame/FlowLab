@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class BinaryDisplay : DynamicIONode
+public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/BINARYDISPLAY";
@@ -24,6 +24,10 @@ public class BinaryDisplay : DynamicIONode
 
     protected override string NodeDisplayName => "";
 
+    protected override void OnAfterSetAdditionalArgs() => _isOnDeserialized = true;
+
+    private bool _isOnDeserialized;
+
 
     private BinaryDisplaySupport _binaryDisplaySupport;
     private BinaryDisplaySupport BinaryDisplaySupport
@@ -39,6 +43,13 @@ public class BinaryDisplay : DynamicIONode
         }
     }
 
+
+    public int AdditionalArgs 
+    { 
+        get => InputCount; 
+        set => InputCount = value; 
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
 
@@ -52,6 +63,11 @@ public class BinaryDisplay : DynamicIONode
             InputCount = value + 1;
             ReportChanges();
         };
+
+        if (_isOnDeserialized)
+        {
+            StateUpdate(null);
+        }
     }
         
 
