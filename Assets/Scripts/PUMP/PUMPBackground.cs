@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using Utils;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
@@ -525,15 +524,18 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         try
         {
-            SetGateway();  //ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
+            SetGateway();  // ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
             List<SerializeNodeInfo> result = new();
+
+
             foreach (Node node in Nodes)
             {
+                Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas);
                 var statesTuple = node.GetTPStates();
                 SerializeNodeInfo nodeInfo = new()
                 {
                     NodeType = node.GetType(), // 노드 타입
-                    NodePosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas), // 위치
+                    NodePosition = GetNormalizeLocalPosition(Rect.rect.size, nodeLocalPosition), // 위치
                     InTpState = statesTuple.inputStates, // TP 상태정보
                     OutTpState = statesTuple.outputStates,
                     StatePending = node.GetStatePending(),
@@ -597,7 +599,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 }
 
                 // Set node position ---------
-                newNode.Support.Rect.position = ConvertLocalToWorldPosition(info.NodePosition, Rect, RootCanvas);
+                Vector2 normalizeValue = info.NodePosition;
+                Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
+                newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect, RootCanvas);
 
                 // Set Transition Point states ---------
                 newNode.SetTPStates(info.InTpState, info.OutTpState);
