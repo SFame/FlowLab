@@ -23,6 +23,38 @@ namespace Utils
 {
     public static class Other // 짬통
     {
+        public static void ConvertToDigitArray(this int number, in int[] result)
+        {
+            // 0인 경우 특별 처리
+            if (number == 0)
+            {
+                for(int i=0; i < result.Length; i++)
+                {
+                    result[i] = 0;
+                }
+            }
+
+            // 음수인 경우 양수로 변환 (절대값 사용)
+            number = Math.Abs(number);
+
+            // 자릿수 계산
+            int temp = number;
+            int digitCount = 0;
+
+            while (temp > 0)
+            {
+                temp /= 10;
+                digitCount++;
+            }
+
+            for (int i = 0; i < digitCount; i++)
+            {
+                if(i >= result.Length) break;
+                result[i] = number % 10;
+                number /= 10;
+            }
+        }
+
         public static int Clamp(this int value, int min, int max)
         {
             if (value < min) return min;

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class BinaryDisplay : DynamicIONode
+public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/BINARYDISPLAY";
@@ -12,7 +12,7 @@ public class BinaryDisplay : DynamicIONode
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => $"out {tpNumber}";
 
-    protected override float InEnumeratorXPos => -230.5f;
+    protected override float InEnumeratorXPos => -0.5f;
 
     protected override float OutEnumeratorXPos => 67.5f;
 
@@ -20,9 +20,13 @@ public class BinaryDisplay : DynamicIONode
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(500f, 250f);
+    protected override Vector2 DefaultNodeSize => new Vector2(40f, 190f);
 
     protected override string NodeDisplayName => "";
+
+    protected override void OnAfterSetAdditionalArgs() => _isOnDeserialized = true;
+
+    private bool _isOnDeserialized;
 
 
     private BinaryDisplaySupport _binaryDisplaySupport;
@@ -39,6 +43,13 @@ public class BinaryDisplay : DynamicIONode
         }
     }
 
+
+    public int AdditionalArgs 
+    { 
+        get => InputCount; 
+        set => InputCount = value; 
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
 
@@ -52,6 +63,11 @@ public class BinaryDisplay : DynamicIONode
             InputCount = value + 1;
             ReportChanges();
         };
+
+        if (_isOnDeserialized)
+        {
+            StateUpdate(null);
+        }
     }
         
 

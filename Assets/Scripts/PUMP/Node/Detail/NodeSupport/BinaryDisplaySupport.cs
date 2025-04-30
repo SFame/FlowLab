@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 public class BinaryDisplaySupport : MonoBehaviour
 {
@@ -42,19 +44,16 @@ public class BinaryDisplaySupport : MonoBehaviour
 
     private void UpdateDisplay()
     {
-        int a, b, c, d = 0;
+        int[] sums = new int[4];
+        sum.ConvertToDigitArray(in sums);
 
-        a = sum % 10;
-        b = (sum/10) % 10;
-        c = (sum/100) % 10;
-        d = sum/1000;
-
-        m_SegmentControllers[0].SetDisplay(a);
-        m_SegmentControllers[1].SetDisplay(b);
-        m_SegmentControllers[2].SetDisplay(c);
-        m_SegmentControllers[3].SetDisplay(d);
+        m_SegmentControllers[0].SetDisplay(sums[0]);
+        m_SegmentControllers[1].SetDisplay(sums[1]);
+        m_SegmentControllers[2].SetDisplay(sums[2]);
+        m_SegmentControllers[3].SetDisplay(sums[3]);
     }
 
+    
 
 }
 
