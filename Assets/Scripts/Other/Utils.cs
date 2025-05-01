@@ -592,7 +592,7 @@ namespace Utils
                 finally
                 {
                     // 5. 임시 텍스처 정리
-                    UnityEngine.Object.Destroy(texture);
+                    Object.Destroy(texture);
                 }
             }
             catch (Exception ex)
@@ -1289,36 +1289,14 @@ namespace Utils
             rect.anchoredPosition = position;
         }
 
-        public static Vector2 GetNormalizeLocalPosition(Vector2 parentSize, Vector2 childPos)
+        public static Vector2 GetNormalizeFromLocalPosition(Vector2 parentSize, Vector2 childPos)
         {
             return childPos / parentSize;
-        }
-
-        public static Vector2 GetNormalizeLocalPosition(RectTransform parent, RectTransform child)
-        {
-            if (parent == null || child == null)
-            {
-                throw new ArgumentNullException($"GetNormalizeLocalPosition(): Argument is null. Parent: {parent} / Child: {child}");
-            }
-
-            Vector2 parentSize = parent.rect.size;
-            Vector2 childLocalPosition = child.localPosition;
-            return childLocalPosition / parentSize;
         }
 
         public static Vector2 GetLocalPositionFromNormalizeValue(Vector2 parentSize, Vector2 normalizeValue)
         {
             return parentSize * normalizeValue;
-        }
-
-        public static void SetLocalPositionAsNormalizeValue(RectTransform parent, RectTransform child, Vector2 normalizeValue)
-        {
-            if (parent == null || child == null)
-            {
-                throw new ArgumentNullException($"SetLocalPositionAsNormalizeValue(): Argument is null. Parent: {parent} / Child: {child}");
-            }
-
-            child.localPosition = parent.rect.size * normalizeValue;
         }
     }
 

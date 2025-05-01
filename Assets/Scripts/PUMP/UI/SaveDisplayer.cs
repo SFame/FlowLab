@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static Utils.RectTransformUtils;
 
-public class SaveDisplayer : MonoBehaviour
+public class SaveDisplayer : MonoBehaviour, IDisposable
 {
     [SerializeField] private RectTransform m_Boundary;
     [SerializeField] private GameObject m_NodeCell;
@@ -48,6 +49,15 @@ public class SaveDisplayer : MonoBehaviour
         }
     }
 
+    private void SetNodeCell(Vector2 normalizedPosition)
+    {
+        RectTransform newCell = NodeCellPool.Get();
+
+        Vector2 boundarySize = m_Boundary.rect.size;
+        Vector2 localPos = GetLocalPositionFromNormalizeValue(boundarySize, normalizedPosition);
+        newCell.localPosition = localPos;
+    }
+
     public void SetNodeCells(List<Vector2> normalizedPositions)
     {
         NodeCellPool.ReleaseAll();
@@ -58,9 +68,8 @@ public class SaveDisplayer : MonoBehaviour
         }
     }
 
-    private void SetNodeCell(Vector2 normalizedPosition)
+    public void Dispose()
     {
-        RectTransform newCell = NodeCellPool.Get();
-        SetLocalPositionAsNormalizeValue(m_Boundary, newCell, normalizedPosition);
+        NodeCellPool.Dispose();
     }
 }

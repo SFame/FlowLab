@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -20,6 +22,7 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     private PUMPSaveDataStructure Data { get; set; }
     private float _lastClickTime;
     private Vector2 _lastClickPos;
+    private List<Type> _displayExclusionType = new() { typeof(ExternalInput), typeof(ExternalOutput) };
     private const float DOUBLE_CLICK_TIME = 0.5f;
     private const float DOUBLE_CLICK_MAX_DISTANCE = 10f; // 픽셀 단위
     
@@ -33,18 +36,25 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         _onDoubleClick?.Invoke(Data);
     }
 
-    private void OnDestroy()
+    private bool IsExclusionType(Type nodeType)
     {
-        SetImage(null);
+        return _displayExclusionType.Contains(nodeType);
     }
 
-    private void SetImage(Texture2D texture)
+    private void SetDisplay(List<Vector2> normalizedPosition)
     {
-        Texture beforeTexture = image.texture;
-        if (beforeTexture != null)
-            Destroy(beforeTexture);
-        
-        image.texture = texture;
+        if (normalizedPosition == null)
+        {
+            Debug.LogError($"{name}: SetDisplay() Received null args");
+            return;
+        }
+
+        m_Displayer.SetNodeCells(normalizedPosition);
+    }
+
+    private void OnDestroy()
+    {
+        m_Displayer.Dispose();
     }
     
     public void OnPointerClick(PointerEventData eventData)
@@ -83,12 +93,13 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         if (Data == null)
             return;
 
-        var progress = Loading.GetProgress();
         nameText.text = Data.Name;
         DateTime date = Data.LastUpdate;
         dateText.text = $"<b>{date.Month:D2}</b> / <b>{date.Day:D2}</b> / <b>{date.Year}</b>\n<b>{date.Hour:D2}</b>:<b>{date.Minute:D2}</b>";
-        SetImage(Capture.LoadTextureFromFile(Data.ImagePath));
-        progress.SetComplete();
+        SetDisplay(Data.NodeInfos
+            .Where(info => !IsExclusionType(info.NodeType))
+            .Select(info => info.NodePosition)
+            .ToList());
     }
 
     public void Initialize(PUMPSaveDataStructure data)

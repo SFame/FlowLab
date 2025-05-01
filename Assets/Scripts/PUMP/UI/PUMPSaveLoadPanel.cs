@@ -75,10 +75,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private bool Extract(string saveName, out PUMPSaveDataStructure structure)
     {
         List<SerializeNodeInfo> nodeInfos = extractor.GetNodeInfos();
-        string imagePath = extractor.GetImagePath();
         object tag = extractor.GetTag();
 
-        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, imagePath, tag);
+        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, tag);
         if (extractor.ValidateBeforeSerialization(newStructure))
         {
             structure = newStructure;
@@ -145,7 +144,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private async UniTaskVoid DeleteData(PUMPSaveDataStructure data)
     {
-        Capture.DeleteCaptureFile(data.ImagePath);
         data.Delete();
         await GetDatasFromManager();
         ScrollRect.ReloadData();
@@ -172,8 +170,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         ISaveScrollElem elem = cell as ISaveScrollElem;
         if (elem == null)
             return;
-        
-        elem.Initialize(_saveDatas[index]);
+
+        elem.Initialize(_saveDatas[_saveDatas.Count - 1 - index]);
         elem.OnDoubleClick += data =>
         {
             extractor.ApplyData(data);
@@ -197,10 +195,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                         UniTask.Create(async () =>
                         {
                             await UniTask.Yield();
-                            string beforeImagePath = data.ImagePath;
                             if (Extract(data.Name, out PUMPSaveDataStructure newStructure))
                             {
-                                Capture.DeleteCaptureFile(beforeImagePath);
                                 data.Paste(newStructure);
                                 data.NotifyDataChanged();
                                 elem.Refresh();

@@ -73,7 +73,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     private readonly int _maxSize;
 
-    private readonly HashSet<T> _foundCache = new();
+    private readonly HashSet<T> _tempCache = new();
 
     private bool _disposed = false;
     #endregion
@@ -214,19 +214,19 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        bool success = Filter(predicate, _activeInstances, _foundCache);
+        bool success = Filter(predicate, _activeInstances, _tempCache);
 
         if (!success)
         {
             return false;
         }
 
-        foreach (T instance in _foundCache)
+        foreach (T instance in _tempCache)
         {
             Release(instance);
         }
 
-        return _foundCache.Count > 0;
+        return _tempCache.Count > 0;
     }
 
     public bool ReleaseAll()
@@ -238,11 +238,16 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
             return false;
         }
 
-        bool isAnyRelease = false;
-
-        foreach (T activeInstance in _activeInstances)
+        _tempCache.Clear();
+        foreach (T instance in _activeInstances)
         {
-            if (Release(activeInstance))
+            _tempCache.Add(instance);
+        }
+
+        bool isAnyRelease = false;
+        foreach (T instance in _tempCache)
+        {
+            if (Release(instance))
             {
                 isAnyRelease = true;
             }
@@ -272,19 +277,19 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        bool success = FilterTwo(predicate, _activeInstances, _pool, _foundCache);
+        bool success = FilterTwo(predicate, _activeInstances, _pool, _tempCache);
 
         if (!success)
         {
             return false;
         }
 
-        foreach (T instance in _foundCache)
+        foreach (T instance in _tempCache)
         {
             Remove(instance);
         }
 
-        return _foundCache.Count > 0;
+        return _tempCache.Count > 0;
     }
 
     public void Clear()

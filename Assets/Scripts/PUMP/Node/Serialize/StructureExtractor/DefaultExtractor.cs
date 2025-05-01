@@ -11,11 +11,6 @@ public class DefaultExtractor : SaveLoadStructureExtractor
         background.SetInfos(structure.NodeInfos, true);
     }
 
-    public override string GetImagePath()
-    {
-        return ((RectTransform)background.Rect.parent).CaptureToFile();
-    }
-
     public override List<SerializeNodeInfo> GetNodeInfos()
     {
         return background.GetInfos();

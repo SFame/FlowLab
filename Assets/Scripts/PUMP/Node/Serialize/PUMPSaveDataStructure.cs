@@ -6,18 +6,16 @@ public class PUMPSaveDataStructure
 {
     public PUMPSaveDataStructure() { }
 
-    public PUMPSaveDataStructure(List<SerializeNodeInfo> nodeInfos, string name, string imagePath, object tag = null)
+    public PUMPSaveDataStructure(List<SerializeNodeInfo> nodeInfos, string name, object tag = null)
     {
         NodeInfos = nodeInfos;
         Name = name;
-        ImagePath = imagePath;
         Tag = tag;
     }
 
     #region Serialize Data
     [OdinSerialize] public List<SerializeNodeInfo> NodeInfos { get; set; }
     [OdinSerialize] public string Name { get; set; }
-    [OdinSerialize] public string ImagePath { get; set; } // Optional
     [OdinSerialize] public object Tag { get; set; } // Optional
     #endregion
 
@@ -68,7 +66,6 @@ public class PUMPSaveDataStructure
     {
         NodeInfos = structure.NodeInfos;
         Name = structure.Name;
-        ImagePath = structure.ImagePath;
         Tag = structure.Tag;
     }
 

@@ -20,11 +20,6 @@ public class PuzzleExtractor : SaveLoadStructureExtractor
         }
     }
 
-    public override string GetImagePath()
-    {
-        return ((RectTransform)background.Rect.parent).CaptureToFile();
-    }
-
     public override List<SerializeNodeInfo> GetNodeInfos()
     {
         return background.GetInfos();
