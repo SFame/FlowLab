@@ -7,19 +7,25 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 
-public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler
+public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler, IClassedDataTargetUi
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI dateText;
     [SerializeField] private RawImage image;
     [SerializeField] private SaveDisplayer m_Displayer;
+
+    [Space(10)]
+
+    [SerializeField] private Image m_HighlightImage;
+    [SerializeField] private Color m_HighlightColor;
+    [SerializeField] private Color m_DefaultColor;
     #endregion
-    
+
     #region Privates
     private Action<PUMPSaveDataStructure> _onDoubleClick;
     private Action<PUMPSaveDataStructure, PointerEventData> _onRightClick;
-    private PUMPSaveDataStructure Data { get; set; }
+    private bool _classedDataTarget_IsPointerEnter;
     private float _lastClickTime;
     private Vector2 _lastClickPos;
     private List<Type> _displayExclusionType = new() { typeof(ExternalInput), typeof(ExternalOutput) };
@@ -56,9 +62,24 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     {
         m_Displayer.Dispose();
     }
-    
+
+    public PUMPSaveDataStructure Data { get; set; }
+
+    void IClassedDataTargetUi.IsPointEnter(bool isEnter)
+    {
+        _classedDataTarget_IsPointerEnter = isEnter;
+
+        if (m_HighlightImage == null)
+            return;
+
+        m_HighlightImage.color = isEnter ? m_HighlightColor : m_DefaultColor;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (_classedDataTarget_IsPointerEnter)
+            return;
+
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             InvokeOnRightClick(eventData);

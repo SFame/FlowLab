@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using PolyAndCode.UI;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 using Utils;
 using Debug = UnityEngine.Debug;
 
-public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
+public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource, IClassedImportTarget
 {
     #region On Inspector
     [SerializeField] private Button saveButton;
@@ -59,6 +60,14 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private void OnDestroy()
     {
         SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData);
+    }
+
+    async Task IClassedImportTarget.Import(PUMPSaveDataStructure structure)
+    {
+        structure.SubscribeUpdateNotification(RefreshEventAdapter);
+        await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, structure);
+
+        ReloadDataAsync().Forget();
     }
 
     private async UniTaskVoid AddNewSave(string saveName)
@@ -171,7 +180,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         if (elem == null)
             return;
 
-        elem.Initialize(_saveDatas[_saveDatas.Count - 1 - index]);
+        PUMPSaveDataStructure currentData = _saveDatas[_saveDatas.Count - 1 - index];
+        elem.Initialize(currentData);
         elem.OnDoubleClick += data =>
         {
             extractor.ApplyData(data);

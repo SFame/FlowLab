@@ -6,17 +6,17 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefebPath => "PUMP/Prefab/Node/SPLIT";
 
-    protected override float InEnumeratorXPos => -70f;
+    protected override float InEnumeratorXPos => -32f;
 
-    protected override float OutEnumeratorXPos => 70f;
+    protected override float OutEnumeratorXPos => 32f;
     
     protected override float EnumeratorTPMargin => 10f;
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "SPLIT";
+    protected override string NodeDisplayName => "S";
 
     protected override void StateUpdate(TransitionEventArgs args)
     {

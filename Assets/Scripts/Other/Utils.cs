@@ -285,6 +285,9 @@ namespace Utils
 
     public static class RaycasterUtil
     {
+        private static List<RaycastResult> _raycastResultsCache = new();
+        private static object _lock = new();
+
         public static List<RaycastResult> FindUnderPoint(this GraphicRaycaster raycaster, Vector2 point)
         {
             PointerEventData pointerData = new PointerEventData(EventSystem.current);
@@ -333,6 +336,46 @@ namespace Utils
                     foundComponents.Add(component);
             }
             return foundComponents;
+        }
+
+        public static void FindUnderPoint<T>(this GraphicRaycaster raycaster, List<T> result, Vector2 point)
+        {
+            lock (_lock)
+            {
+                _raycastResultsCache.Clear();
+                result.Clear();
+
+                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                pointerData.position = point;
+
+                raycaster.Raycast(pointerData, _raycastResultsCache);
+
+                foreach (RaycastResult raycastResult in _raycastResultsCache)
+                {
+                    if (raycastResult.gameObject.TryGetComponent(out T component))
+                        result.Add(component);
+                }
+            }
+        }
+
+        public static void FindUnderPoint<T>(List<T> result, Vector2 point)
+        {
+            lock (_lock)
+            {
+                _raycastResultsCache.Clear();
+                result.Clear();
+
+                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                pointerData.position = point;
+
+                EventSystem.current.RaycastAll(pointerData, _raycastResultsCache);
+
+                foreach (RaycastResult raycastResult in _raycastResultsCache)
+                {
+                    if (raycastResult.gameObject.TryGetComponent(out T component))
+                        result.Add(component);
+                }
+            }
         }
 
         public static HashSet<T> GridRaycast<T>(this GraphicRaycaster raycaster, Vector2 startPos, Vector2 endPos, float gridSize = 10f)
@@ -888,6 +931,7 @@ namespace Utils
         }
 
         #region Privates
+
         private static string DefaultSerializePath => Path.Combine(Application.persistentDataPath, "SerializeData");
 
         private static string FileNameTrimming(string fileName, DataFormat format)
