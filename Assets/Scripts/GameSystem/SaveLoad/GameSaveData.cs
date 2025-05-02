@@ -2,43 +2,58 @@ using OdinSerializer;
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using System.Linq;
 
 [Serializable]
 public class GameSaveData
 {
-    [OdinSerialize][SerializeField] private Vector3 _playerPosition;
-    [OdinSerialize][SerializeField] private Quaternion _playerRotation;
-    [OdinSerialize][SerializeField] private List<RoomData> _roomDataList;
-    [OdinSerialize][SerializeField] private DateTime _lastSaveTime;
+    [OdinSerialize][SerializeField] private List<string> _stageKeyList; 
+    [OdinSerialize][SerializeField] private List<StageData> _stageDataList;
+    [OdinSerialize][SerializeField] private List<object> _objectDataList;
+    [SerializeField] private Dictionary<string, StageData> _stageDictionary;
 
     #region Properties
-    public Vector3 PlayerPosition
+    public List<string> StageKeyList
     {
-        get { return _playerPosition; }
-        set { _playerPosition = value; }
+        get { return _stageKeyList; }
+        set { _stageKeyList = value; }
     }
-    public Quaternion PlayerRotation
+    public List<StageData> StageDataList
     {
-        get { return _playerRotation; }
-        set { _playerRotation = value; }
+        get { return _stageDataList; }
+        set { _stageDataList = value; }
     }
-    public List<RoomData> RoomDataList
+    public Dictionary<string, StageData> StageDictionary
     {
-        get { return _roomDataList; }
-        set { _roomDataList = value; }
+        get { return _stageDictionary; }
+        set { _stageDictionary = value; }
     }
-    public DateTime LastSaveTime => _lastSaveTime;
     #endregion
 
     public GameSaveData()
     {
-        _playerPosition = Vector3.zero;
-        _playerRotation = Quaternion.identity;
-        _lastSaveTime = DateTime.Now;
-        _roomDataList = new List<RoomData>();
+        _stageKeyList = new List<string>();
+        _stageDataList = new List<StageData>();
+        _stageDictionary = new Dictionary<string, StageData>();
+        _objectDataList = new List<object>();
     }
-    public void UpdateSaveTime()
+
+    public void SerializeDictionary()
     {
-        _lastSaveTime = DateTime.Now;
+        _stageKeyList = _stageDictionary.Keys.ToList();
+        _stageDataList = _stageDictionary.Values.ToList();
+    }
+    public void DeserializeSaveData()
+    {
+        _stageDictionary ??= new Dictionary<string, StageData>();
+        _stageDictionary.Clear();
+
+        for (int i = 0; i < _stageKeyList.Count; i++)
+        {
+            if (_stageDictionary.ContainsKey(_stageKeyList[i]))
+            {
+                _stageDictionary[_stageKeyList[i]] = _stageDataList[i];
+            }
+        }
     }
 }

@@ -8,11 +8,11 @@ public static class GlobalEventManager
     public static Action GameExitEvent;
 
     public static Action StageStartEvent;
-    public static Action StageExitEvent;
+    public static Action<StageData> StageClearEvent;
 
     public static void OnGameStartEvent() => GameStartEvent?.Invoke();
     public static void OnGameExitEvent() => GameExitEvent?.Invoke();
 
     public static void OnStageStartEvent() =>StageStartEvent?.Invoke();
-    public static void OnStageExitEvent() => StageExitEvent?.Invoke();
+    public static void OnStageExitEvent(StageData stageData) => StageClearEvent?.Invoke(stageData);
 }

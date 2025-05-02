@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 
-public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
+public class PuzzleInteraction : MonoBehaviour, IInteractable
 {
     [Header("Puzzle Configuration")]
     [SerializeField] private string puzzleName;
@@ -182,16 +182,4 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         _pumpBackground.Close();
 
     }
-    public ObjectData objectData { get => GetStageData(); set => SetStageData(value); }
-
-    private ObjectData GetStageData()
-    {
-        StageData stageData = new StageData(puzzleName, _clear);
-        return stageData;
-    }
-    private void SetStageData(ObjectData stageData)
-    {
-        _clear = ((StageData)stageData).Clear;
-    }
-
 }

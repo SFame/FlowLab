@@ -3,20 +3,15 @@ using System;
 using UnityEngine;
 
 [Serializable]
-
-public class ObjectData
-{
-
-}
-
-[Serializable]
-public class StageData : ObjectData
+public class StageData
 {
     [OdinSerialize][SerializeField] private string _stageID;
+    [OdinSerialize][SerializeField] private float _clearTime;
     [OdinSerialize][SerializeField] private bool _clear;
-    public StageData(string puzzleName, bool claer)
+    public StageData(string puzzleName, bool claer, float clearTime)
     {
         _stageID = puzzleName;
+        _clearTime = clearTime;
         _clear = claer;
     }
 
