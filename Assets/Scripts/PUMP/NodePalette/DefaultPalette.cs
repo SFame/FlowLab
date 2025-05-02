@@ -20,7 +20,7 @@ public class DefaultPalette : NodePalette
         { typeof(Timer), "Timer" },
         { typeof(EdgeDetector), "Edge Detector" },
         { typeof(Switch), "Switch" },
-        { typeof(SegmentDisplay), "7Segment Display" },
+        { typeof(SegmentDisplay), "7-Segment Display" },
         { typeof(BinaryDisplay), "Binary Display" },
     };
 

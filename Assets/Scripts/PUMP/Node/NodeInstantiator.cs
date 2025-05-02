@@ -20,7 +20,7 @@ public static class NodeInstantiator
             throw new InvalidCastException($"NodeInstantiator: Could not create node of type {nodeType}");
         }
         
-        string prefabPath = newNode.NodePrefebPath;
+        string prefabPath = newNode.NodePrefabPath;
         
         GameObject prefab = GetNodePrefab(prefabPath);
         GameObject go = Object.Instantiate(prefab);

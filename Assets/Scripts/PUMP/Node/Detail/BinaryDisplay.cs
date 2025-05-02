@@ -5,7 +5,7 @@ using UnityEngine;
 public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-    public override string NodePrefebPath => "PUMP/Prefab/Node/BINARYDISPLAY";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/BINARYDISPLAY";
 
     protected override int DefaultInputCount => 4;
     protected override int DefaultOutputCount => 0;
@@ -14,13 +14,15 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override float InEnumeratorXPos => -0.5f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
+    protected override float OutEnumeratorXPos => 0f;
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(40f, 190f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
+
+    protected override Vector2 DefaultNodeSize => new Vector2(50f, 190f);
 
     protected override string NodeDisplayName => "";
 

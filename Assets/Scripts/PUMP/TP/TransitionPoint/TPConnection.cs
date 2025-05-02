@@ -7,6 +7,39 @@ using UnityEngine;
 public class TPConnection : IStateful, IDisposable
 {
     #region Privates
+    private static float _waitTime = 0.5f;
+    private const float MAX_WAIT_TIME = 10f;
+
+    private static UniTask GetStateUpdateTask(CancellationToken token) => AwaitType switch
+    {
+        ConnectionAwait.Frame => UniTask.WaitForEndOfFrame(token),
+        ConnectionAwait.FixedTime => UniTask.WaitForSeconds
+        (
+            duration: WaitTime,
+            ignoreTimeScale: false,
+            delayTiming: PlayerLoopTiming.LastPostLateUpdate,
+            cancellationToken: token
+        ),
+        _ => UniTask.WaitForEndOfFrame(token),
+    };
+    #endregion
+
+    #region Static Interface
+    public static float WaitTime
+    {
+        get => _waitTime;
+        set
+        {
+            float waitTime = Mathf.Clamp(value, Time.deltaTime, MAX_WAIT_TIME);
+            _waitTime = waitTime;
+        }
+    }
+
+    public static ConnectionAwait AwaitType { get; set; } = ConnectionAwait.Frame;
+    #endregion
+
+
+    #region Privates
     private bool _state = false;
     private bool _stateCache = false;
     private ITransitionPoint _sourceState = null;
@@ -194,7 +227,7 @@ public class TPConnection : IStateful, IDisposable
 
         try
         {
-            await UniTask.WaitForEndOfFrame(_cts.Token);
+            await GetStateUpdateTask(_cts.Token);
 
             if (TargetState is not null && !_cts.Token.IsCancellationRequested)
             {
@@ -214,4 +247,10 @@ public class TPConnection : IStateful, IDisposable
         }
     }
     #endregion
+}
+
+public enum ConnectionAwait
+{
+    Frame,
+    FixedTime
 }

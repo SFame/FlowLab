@@ -199,7 +199,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             InputEnumerator.MinHeight = _defaultNodeSize.y;
             OutputEnumerator.MinHeight = _defaultNodeSize.y;
 
-
             if (!sizeFreeze)
             {
                 InputEnumerator.OnSizeUpdatedWhenTPChange += size =>

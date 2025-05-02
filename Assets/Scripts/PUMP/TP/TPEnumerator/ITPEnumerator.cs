@@ -8,10 +8,13 @@ public interface ITPEnumerator : IActivable
     public ITPEnumerator SetTPs(int count);
     public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver);
     public ITPEnumerator SetTPSize(Vector2 value);
-    public ITPEnumerator SetTPsMargin(float value);
+    public ITPEnumerator SetPadding(float value);
+    public ITPEnumerator SetMargin(float margin);
     public ITPEnumerator SetHeight(float value);
+
     public event Action<Vector2> OnSizeUpdatedWhenTPChange;
     public float MinHeight { get; set; }
+
     public TPEnumeratorToken GetToken();
 }
 

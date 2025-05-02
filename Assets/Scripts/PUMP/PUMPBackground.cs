@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Utils;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorable, ICreationAwaitable
@@ -819,9 +821,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         m_SelectionAreaController.OnMouseDown += results =>
         {
-            IEnumerable<IDragSelectable> foundDraggables = results
-                .Select(result => result.gameObject.GetComponent<IDragSelectable>())
-                .Where(result => result != null);
+            HashSet<IDragSelectable> foundDraggables = FindDragSelectableInResults(results);
 
             if (!foundDraggables.HasIntersection(_draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
             {
@@ -833,9 +833,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         m_SelectionAreaController.OnMouseEndDrag += results =>
         {
-            IEnumerable<IDragSelectable> selectables = results
-                .Select(result => result.gameObject.GetComponent<IDragSelectable>())
-                .Where(result => result != null);
+            HashSet<IDragSelectable> selectables = FindDragSelectableInResults(results);
 
             foreach (IDragSelectable selectable in selectables)
             {
@@ -843,6 +841,28 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 AddDraggable(selectable);
             }
         };
+    }
+
+    private HashSet<IDragSelectable> FindDragSelectableInResults(List<RaycastResult> results)
+    {
+        HashSet<IDragSelectable> foundDraggables = new();
+
+        foreach (RaycastResult result in results)
+        {
+            IDragSelectable casted = result.gameObject switch
+            {
+                GameObject obj when obj.TryGetComponent(out IDragSelectable selectable) => selectable,
+                GameObject obj when obj.TryGetComponent(out IDragSelectableForwarder forwarder) => forwarder.GetDragSelectable(),
+                _ => null
+            };
+
+            if (casted != null)
+            {
+                foundDraggables.Add(casted);
+            }
+        }
+
+        return foundDraggables;
     }
 
     public void ClearDraggables()
@@ -948,6 +968,11 @@ public interface IDragSelectable
     /// 관리자에게 선택객체 전체 삭제 요청
     /// </summary>
     public event Action SelectRemoveRequest;
+}
+
+public interface IDragSelectableForwarder
+{
+    IDragSelectable GetDragSelectable();
 }
 
 /// <summary>

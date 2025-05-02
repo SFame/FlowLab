@@ -11,7 +11,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
-    public override string NodePrefebPath => "PUMP/Prefab/Node/TIMER";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/TIMER";
 
     protected override List<string> InputNames { get; } = new List<string> { "S", "R" };
 
@@ -21,9 +21,11 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override float OutEnumeratorXPos => 67.5f;
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
 

@@ -55,7 +55,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override int DefaultOutputCount => 2;
 
-    public override string NodePrefebPath => "PUMP/Prefab/Node/CLASSED";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/CLASSED";
 
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
@@ -63,15 +63,17 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override float TextSize => 24;
 
-    protected override float InEnumeratorXPos => -70f;
+    protected override float InEnumeratorXPos => -72f;
 
-    protected override float OutEnumeratorXPos => 70f;
+    protected override float OutEnumeratorXPos => 72f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(180f, 80f);
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
+
+    protected override float EnumeratorMargin => 5f;
 
     protected override List<ContextElement> ContextElements
     {

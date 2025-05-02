@@ -12,17 +12,17 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => 0f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
+    protected override float OutEnumeratorXPos => 53f;
     
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 10f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(140f, 80f);
 
-    protected override string NodeDisplayName => "Click Switch";
+    protected override string NodeDisplayName => "Click";
 
     protected override float TextSize => 25f;
 

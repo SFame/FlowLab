@@ -9,15 +9,19 @@ public class XNOR : Node
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => -47f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
-    
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float OutEnumeratorXPos => 47f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
+
+    protected override float TextSize => 22f;
+
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override string NodeDisplayName => "XNOR";
 

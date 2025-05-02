@@ -4,15 +4,17 @@ using UnityEngine;
 public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-    public override string NodePrefebPath => "PUMP/Prefab/Node/SPLIT";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override float InEnumeratorXPos => -32f;
 
     protected override float OutEnumeratorXPos => 32f;
     
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 

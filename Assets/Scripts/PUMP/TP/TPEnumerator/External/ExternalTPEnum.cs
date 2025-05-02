@@ -183,9 +183,15 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         gameObject.SetActive(active);
     }
 
-    public ITPEnumerator SetTPsMargin(float value)
+    public ITPEnumerator SetPadding(float value)
     {
-        // 슬라이더 방식은 Set Margin 구현하지 않음
+        // 슬라이더 방식은 SetPadding 구현하지 않음
+        return this;
+    }
+
+    public ITPEnumerator SetMargin(float value)
+    {
+        // 슬라이더 방식은 SetMargin 구현하지 않음
         return this;
     }
 

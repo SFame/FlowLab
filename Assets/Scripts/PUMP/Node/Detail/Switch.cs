@@ -31,23 +31,27 @@ public class Switch : Node, INodeAdditionalArgs<bool>
     }
 
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-    public override string NodePrefebPath => "PUMP/Prefab/Node/SWITCH";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/SWITCH";
 
     protected override List<string> InputNames { get; } = new List<string> { "A", "Ctrl", "B" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => -52.5f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
+    protected override float OutEnumeratorXPos => 52.5f;
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
+
+    protected override Vector2 DefaultNodeSize => new Vector2(140f, 50f);
 
     protected override string NodeDisplayName => "Switch";
+
+    protected override float TextSize => 22f;
 
     protected override void OnAfterInit()
     {

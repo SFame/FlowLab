@@ -16,8 +16,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
     protected bool _hasSet = false;
     private Node _node;
     private RectTransform _rect;
-    private readonly Color _highlightColor = Color.green;
-    private readonly Color _defaultColor = Color.white;
+    private float _margin;
 
     private RectTransform Rect
     {
@@ -147,9 +146,15 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
         return this;
     }
 
-    public ITPEnumerator SetTPsMargin(float value)
+    public ITPEnumerator SetPadding(float value)
     {
         m_Layout.spacing = new Vector2(0f, value);
+        return this;
+    }
+
+    public ITPEnumerator SetMargin(float value)
+    {
+        _margin = value;
         return this;
     }
 
@@ -181,12 +186,13 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
         float height = (m_Layout.cellSize.y * count) + 
                        (m_Layout.spacing.y * (count - 1)) + 
                        m_Layout.padding.top + m_Layout.padding.bottom;
-        
+
         height = Mathf.Max(height, MinHeight);
 
+        float marginValue = count == 0 ? 0f : _margin * 2f;
         float width = m_Layout.cellSize.x;
         
-        Vector2 size = new Vector2(width, height);
+        Vector2 size = new Vector2(width, height + marginValue);
         Rect.sizeDelta = size;
         SetHightZeroWhenNonTP();
         OnSizeUpdatedWhenTPChange?.Invoke(size);

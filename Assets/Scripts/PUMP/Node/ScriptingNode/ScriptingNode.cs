@@ -76,17 +76,19 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
-    public override string NodePrefebPath => "PUMP/Prefab/Node/SCRIPTING";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/SCRIPTING";
 
     protected override float InEnumeratorXPos => -88f;
 
     protected override float OutEnumeratorXPos => 88f;
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorPadding => 10f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(210f, 100f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
+
+    protected override Vector2 DefaultNodeSize => new Vector2(210f, 80f);
 
     protected override string NodeDisplayName => "Scripting";
 

@@ -9,21 +9,23 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
-    public override string NodePrefebPath => "PUMP/Prefab/Node/COMPARATOR";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/COMPARATOR";
 
-    protected override float InEnumeratorXPos => -70f;
+    protected override float InEnumeratorXPos => -50f;
 
-    protected override float OutEnumeratorXPos => 70f;
-    
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float OutEnumeratorXPos => 50f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(180f, 100f);
+    protected override float EnumeratorMargin => 5f;
 
-    protected override string NodeDisplayName => "Comparator";
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
-    protected override float TextSize => 16f;
+    protected override Vector2 DefaultNodeSize => new Vector2(135f, 100f);
+
+    protected override string NodeDisplayName => "Comp";
+
+    protected override float TextSize => 22f;
 
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 1;

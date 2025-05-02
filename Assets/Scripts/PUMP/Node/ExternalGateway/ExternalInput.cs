@@ -49,13 +49,13 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     #endregion
 
     protected override string SpritePath => "PUMP/Sprite/ingame/external_node";
-    public override string NodePrefebPath => "PUMP/Prefab/Node/EXTERNAL_GATE";
-    protected override string TP_EnumOutPrefebPath => "PUMP/Prefab/TP/External/ExternalTPEnumOut";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/EXTERNAL_GATE";
+    protected override string OutputEnumeratorOutPrefabPath => "PUMP/Prefab/TP/External/ExternalTPEnumOut";
     protected override string NodeDisplayName => "";
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 0f;
-    protected override float EnumeratorTPMargin => 0f;
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorPadding => 0f;
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
     protected override Vector2 DefaultNodeSize => new Vector2(25f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 8;

@@ -9,22 +9,24 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
-    public override string NodePrefebPath => "PUMP/Prefab/Node/EDGE";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/EDGE";
     protected override float TextSize { get; } = 22f;
 
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "R", "F" };
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => -61.5f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
+    protected override float OutEnumeratorXPos => 61.5f;
 
-    protected override float EnumeratorTPMargin => 10f;
+    protected override float EnumeratorPadding => 5f;
 
-    protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
+    protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 120f);
+    protected override Vector2 TPSize => new Vector2(35f, 50f);
+
+    protected override Vector2 DefaultNodeSize => new Vector2(160f, 80f);
 
     protected override string NodeDisplayName => "Edge Detector";
 

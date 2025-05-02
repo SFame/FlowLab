@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -342,9 +341,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     }
 
     // Node property -----------------------------
-    public virtual string NodePrefebPath { get; } = "PUMP/Prefab/NODE";
-    protected virtual string TP_EnumInPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
-    protected virtual string TP_EnumOutPrefebPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
+    public virtual string NodePrefabPath { get; } = "PUMP/Prefab/NODE";
+    protected virtual string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
+    protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
     protected abstract string SpritePath { get; }
     protected abstract string NodeDisplayName { get; }
@@ -355,8 +354,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     protected abstract float InEnumeratorXPos { get; }
     protected abstract float OutEnumeratorXPos { get; }
 
-    protected abstract float EnumeratorTPMargin { get; }
-    protected abstract Vector2 EnumeratorTPSize { get; }
+    protected virtual float EnumeratorMargin { get; } = 0f;
+    protected abstract float EnumeratorPadding { get; }
+    protected abstract Vector2 TPSize { get; }
     protected abstract Vector2 DefaultNodeSize { get; }
     protected virtual bool SizeFreeze { get; } = false;
 
@@ -421,8 +421,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
         Support.SetRectDeltaSize(DefaultNodeSize);
         Support.InitializeTPEnumerator
         (
-            inPath: TP_EnumInPrefebPath,
-            outPath: TP_EnumOutPrefebPath,
+            inPath: InputEnumeratorPrefabPath,
+            outPath: OutputEnumeratorOutPrefabPath,
             inEnumXPos: InEnumeratorXPos,
             outEnumXPos: OutEnumeratorXPos,
             defaultNodeSize: DefaultNodeSize,
@@ -453,14 +453,16 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
         }
 
         InputToken = Support.InputEnumerator
-            .SetTPsMargin(EnumeratorTPMargin)
-            .SetTPSize(EnumeratorTPSize)
+            .SetPadding(EnumeratorPadding)
+            .SetMargin(EnumeratorMargin)
+            .SetTPSize(TPSize)
             .SetTPs(InputNames.Count)
             .GetToken();
 
         OutputToken = Support.OutputEnumerator
-            .SetTPsMargin(EnumeratorTPMargin)
-            .SetTPSize(EnumeratorTPSize)
+            .SetPadding(EnumeratorPadding)
+            .SetMargin(EnumeratorMargin)
+            .SetTPSize(TPSize)
             .SetTPs(OutputNames.Count)
             .GetToken();
         
