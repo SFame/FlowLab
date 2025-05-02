@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -13,6 +14,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     [SerializeField] private PUMPSeparator PUMPSeparator;
     private PUMPBackground _pumpBackground;
     private PlayerController playerController;
+    private PlayerPalette palette;
     private bool _clear = false;
     public bool Clear { get => _clear; }
     // 퍼즐 완료 이벤트
@@ -22,6 +24,10 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     private GameObject _pumpUI;
 
     [SerializeField] private float successDelayBeforeClose = 3.0f; // 퍼즐 성공 후 닫기까지의 지연 시간
+
+    // 노드 해금 리스트 + 만약 퍼즐목록을 동적으로 생성한다면 리스트 비우면서 퍼즐에 따라 값 넣어줘야할텐데
+    [SerializeField]
+    private List<string> nodesToUnlockOnSuccess = new List<string>();
     public bool OnSelected
     {
         get => _onSelected;
@@ -50,6 +56,10 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         if (playerController == null)
         {
             playerController = FindFirstObjectByType<PlayerController>();
+        }
+        if (palette == null)
+        {
+            palette = FindFirstObjectByType<PlayerPalette>();
         }
     }
 
@@ -102,6 +112,11 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
             _pumpUI = Instantiate(puzzleUIPrefab);
             RectTransform rect = _pumpUI.GetComponent<RectTransform>();
             _pumpBackground.SetChildZoneAsFull(rect);
+        }
+
+        if (palette != null)
+        {
+            palette.RefreshPalette();
         }
 
         PuzzleBackground puzzleBackground = _pumpBackground.GetComponentInChildZone<PuzzleBackground>();
@@ -157,6 +172,12 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
         if (success)
         {
             _clear = true;
+
+            if (nodesToUnlockOnSuccess.Count > 0)
+            {
+                UnlockNodes();
+            }
+
             DelayedClosePuzzle().Forget();
         }
     }
@@ -191,6 +212,31 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable, ISaveLoad
     private void SetStageData(ObjectData stageData)
     {
         _clear = ((StageData)stageData).Clear;
+    }
+
+    private void UnlockNodes()
+    {
+        foreach (string nodeTypeName in nodesToUnlockOnSuccess)
+        {
+            Type nodeType = Type.GetType(nodeTypeName);
+            if (nodeType != null)
+            {
+                bool newlyUnlocked = PlayerNodeInventory.UnlockNode(nodeType);
+                if (newlyUnlocked)
+                {
+                    Debug.Log($"New node unlocked: {PlayerNodeInventory.GetDisplayName(nodeType)}");
+                    
+                    //퍼즐 클리어 UI 보여주면서 해금된 노드 이름 보여주기
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Could not find node type: {nodeTypeName}");
+            }
+        }
+
+        PlayerPalette palette = FindFirstObjectByType<PlayerPalette>();
+        palette.RefreshPalette(); //해금한거 반영
     }
 
 }
