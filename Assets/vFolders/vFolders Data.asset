@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adb9c12a8c6c949f7af83a3d238359d0, type: 3}
+  m_Name: vFolders Data
+  m_EditorClassIdentifier: 
+  folderDatas_byGuid:
+    keys:
+    - 4515c1bab0c5efc4db5849ebca1645c4
+    - d733707abf4f5094689a557c8c04cc5b
+    - 5815f61a5c1e663438dd560903a0ca9f
+    - 1dccb3a9faa04ef49abc5b2de9563321
+    - 9c53962885c2c4f449125a979d6ad240
+    values:
+    - iconNameOrGuid: cs Script Icon
+      colorIndex: 3
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: Prefab Icon
+      colorIndex: 6
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: cs Script Icon
+      colorIndex: 3
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: Prefab Icon
+      colorIndex: 6
+      isIconRecursive: 0
+      isColorRecursive: 0
+    - iconNameOrGuid: SceneAsset Icon
+      colorIndex: 0
+      isIconRecursive: 0
+      isColorRecursive: 0
+  bookmarks:
+  - guid: 40ca49e2dcef28043b186a475f8ee165
+  - guid: 5815f61a5c1e663438dd560903a0ca9f
+  - guid: d5235febfeb635c41b6b8d4ffff35f7e
+  - guid: 1dccb3a9faa04ef49abc5b2de9563321
+  - guid: 9c53962885c2c4f449125a979d6ad240

@@ -676,7 +676,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -2520,12 +2520,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6084d0734d28ec74c9dc9b32888d4cb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  puzzleName: 1
+  puzzleName: NAND_Puzzle_Test
   highlightIndicator: {fileID: 0}
   puzzleUIPrefab: {fileID: 2719730820727447711, guid: 8da26425d5c54b24bbefc731242bb003, type: 3}
   fileName: puzzle_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess:
+  - NAND
 --- !u!61 &609712281
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2782,66 +2784,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abb202d0eb038ee438857ab2a36f0088, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
-    ReferencedUnityObjects: []
-    SerializedBytesString: 
-    Prefab: {fileID: 0}
-    PrefabModificationsReferencedUnityObjects: []
-    PrefabModifications: []
-    SerializationNodes:
-    - Name: _data
-      Entry: 7
-      Data: 0|GameSaveData, Assembly-CSharp
-    - Name: _playerPosition
-      Entry: 7
-      Data: UnityEngine.Vector3, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: _playerRotation
-      Entry: 7
-      Data: UnityEngine.Quaternion, UnityEngine.CoreModule
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 0
-    - Name: 
-      Entry: 4
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: _roomDataList
-      Entry: 6
-      Data: 
-    - Name: _lastSaveTime
-      Entry: 7
-      Data: System.DateTime, mscorlib
-    - Name: 
-      Entry: 3
-      Data: -8584580057178943175
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
   _data:
     _playerPosition: {x: 0, y: 0, z: 0}
     _playerRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -3851,6 +3793,7 @@ MonoBehaviour:
   fileName: puzzle_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!61 &867205307
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4658,6 +4601,7 @@ MonoBehaviour:
   fileName: node_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!61 &1066508415
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -6571,6 +6515,7 @@ MonoBehaviour:
   fileName: node_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!212 &1633920812
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -6733,6 +6678,7 @@ MonoBehaviour:
   fileName: puzzle_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!61 &1648498909
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -7227,6 +7173,7 @@ MonoBehaviour:
   fileName: puzzle_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!61 &1669627273
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -8146,6 +8093,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8857023425992388975, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}
+      propertyPath: m_PumpSectorPrefab
+      value: 
+      objectReference: {fileID: 8038124657692540083, guid: cc0cb7c4adcaed34abba35b41c17cbaf, type: 3}
+    - target: {fileID: 8857023425992388975, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}
       propertyPath: m_OpenBackgroundOnStart
       value: 1
       objectReference: {fileID: 0}
@@ -8567,6 +8518,7 @@ MonoBehaviour:
   fileName: node_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!212 &1963780163
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -9004,6 +8956,7 @@ MonoBehaviour:
   fileName: node_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!212 &2003172310
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -9158,6 +9111,7 @@ MonoBehaviour:
   fileName: node_data.bin
   PUMPSeparator: {fileID: 1900696571}
   successDelayBeforeClose: 3
+  nodesToUnlockOnSuccess: []
 --- !u!212 &2008072629
 SpriteRenderer:
   m_ObjectHideFlags: 0

@@ -30,11 +30,6 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         classedNodePanel.SetSlider(pairBackground);
     }
 
-    public override string GetImagePath()
-    {
-        return captureTargetBackground.CaptureToFile();
-    }
-
     public override List<SerializeNodeInfo> GetNodeInfos()
     {
         if (HasCurrent())
@@ -279,7 +274,6 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         {
             Name = name,
             NodeInfos = GetNodeInfos(),
-            ImagePath = GetImagePath(),
             Tag = GetTag(),
         };
 

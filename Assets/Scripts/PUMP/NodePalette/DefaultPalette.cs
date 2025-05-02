@@ -20,6 +20,8 @@ public class DefaultPalette : NodePalette
         { typeof(Timer), "Timer" },
         { typeof(EdgeDetector), "Edge Detector" },
         { typeof(Switch), "Switch" },
+        { typeof(SegmentDisplay), "7Segment Display" },
+        { typeof(BinaryDisplay), "Binary Display" },
     };
 
     private void Awake()

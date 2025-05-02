@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public abstract class TransitionPoint : MonoBehaviour, 
                                         ITransitionPoint, IPointerEnterHandler, IMoveable, IGameObject,
-                                        IPointerExitHandler, IPointerClickHandler, IDraggable
+                                        IPointerExitHandler, IPointerClickHandler
 {
     #region Privates
     private RectTransform _imageRect;
@@ -109,21 +109,17 @@ public abstract class TransitionPoint : MonoBehaviour,
     #endregion
 
     #region MouseEvent
-    public abstract void OnBeginDrag(PointerEventData eventData);
-    public abstract void OnDrag(PointerEventData eventData);
-    public abstract void OnEndDrag(PointerEventData eventData);
-
-    public void OnPointerEnter(PointerEventData eventData)
+    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         SetImageColor(_highlightedColor);
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         SetImageColor(State ? _activeColor : _defaultColor);
     }
     
-    public void OnPointerClick(PointerEventData eventData)
+    void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
             Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());

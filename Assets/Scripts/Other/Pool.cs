@@ -4,10 +4,58 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// [Constructor param]
+///     createFunc: Function to create a new instance when the Pool runs out of objects
+///     initSize: Number of instances created when the pool is initialized
+///     maxSize: Maximum number of instances allowed in the Pool
+///     actionOnGet: Action to apply to T instance when invoking the Get() method
+///     actionOnRelease: Action to apply to T instance when invoking the Release() method
+///     actionOnDestroy: Action to apply to T instance when invoking the Remove()|Clear()|Dispose() method
+///     isNullPredicate: Predicate to apply to check if the instance is null. Consider `true` to be null when returned
+///     logger: If a problem occurs, the corresponding Action is used to log it
+///
+/// [Instance method]
+///     T Get(): Get instance from Pool
+///     bool Release(T instance): Return the instance back to the pool
+///     bool Release(Predicate<T> predicate): Returns an instance that meets the condition to the pool
+///     bool ReleaseAll(): Returns all active instances to the pool
+///     bool Remove(T instance): Remove the instance
+///     bool Remove(Predicate<T> predicate): Remove the instance that meets the condition
+///     void Clear(): Remove all instances
+///
+/// <![CDATA[
+/// // example code
+/// 
+/// public class GameObjectPool : MonoBehaviour
+/// {
+///     private Pool<GameObject> _pool;
+///     public GameObject prefab;
+///
+///     private void Awake()
+///     {
+///         _pool = new Pool<GameObject>(
+///             createFunc: () => Instantiate(prefab),
+///             initSize: 10,
+///             maxSize: 100,
+///             actionOnGet: obj => obj.SetActive(true),
+///             actionOnRelease: obj => obj.SetActive(false),
+///             actionOnDestroy: obj => Destroy(obj)
+///         );
+///     }
+///
+///     public GameObject GetObject() => _pool.Get();
+///     public void ReleaseObject(GameObject obj) => _pool.Release(obj);
+///
+///     private void OnDestroy() => _pool.Dispose();
+/// }
+/// ]]>
+/// </summary>
+/// <typeparam name="T">Element Type</typeparam>
 public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 {
     #region Private fields
-    private Queue<T> _pool;
+    private LinkedList<T> _pool;
 
     private HashSet<T> _activeInstances;
 
@@ -25,7 +73,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     private readonly int _maxSize;
 
-    private readonly HashSet<T> _foundCache = new();
+    private readonly HashSet<T> _tempCache = new();
 
     private bool _disposed = false;
     #endregion
@@ -41,18 +89,24 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     public int CountInactive => _pool.Count;
     #endregion
 
-    #region Constructor
+    #region Initialize Interface
     public Pool(Func<T> createFunc, 
                 int initSize = DEFAULT_INIT_SIZE, 
                 int maxSize = DEFAULT_MAX_SIZE, 
                 Action<T> actionOnGet = null,
                 Action<T> actionOnRelease = null, 
                 Action<T> actionOnDestroy = null, 
-                Predicate<T> isNullPredicate = null)
+                Predicate<T> isNullPredicate = null,
+                Action<string> logger = null)
     {
+        if (logger != null)
+        {
+            Logger = logger;
+        }
+
         if (createFunc == null)
         {
-            Debug.LogError("Create func cannot be null");
+            Logger?.Invoke("Create func cannot be null");
             return;
         }
 
@@ -62,10 +116,12 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         _actionOnDestroy = actionOnDestroy;
         _initSize = Mathf.Min(initSize, maxSize);
         _maxSize = maxSize;
-        _isNullPredicate = isNullPredicate ?? (instance => false);
+        _isNullPredicate = isNullPredicate ?? (instance => instance == null);
         
         Init();
     }
+
+    public Action<string> Logger { get; set; } = Debug.LogWarning;
     #endregion
 
     #region Public methods
@@ -76,13 +132,15 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         T pooled = null;
         if (_pool.Count > 0)
         {
-            pooled = _pool.Dequeue();
+            pooled = _pool.First();
+            _pool.RemoveFirst();
             if (IsNull(pooled))
             {
                 RemoveNull();
                 if (_pool.Count > 0)
                 {
-                    pooled = _pool.Dequeue();
+                    pooled = _pool.First();
+                    _pool.RemoveFirst();
                 }
                 else if (_activeInstances.Count > 0)
                 {
@@ -90,10 +148,15 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
                 }
                 else
                 {
-                    Debug.LogError("Reinitializing the entire pool");
+                    Logger?.Invoke("Reinitializing the entire pool");
                     Clear();
                     Instantiate();
-                    pooled = _pool.Count > 0 ? _pool.Dequeue() : null;
+                    pooled = null;
+                    if (_pool.Count > 0)
+                    {
+                        pooled = _pool.First();
+                        _pool.RemoveFirst();
+                    }
                 }
             }
         }
@@ -104,7 +167,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (IsNull(pooled))
         {
-            Debug.LogError("Create func failed to create object");
+            Logger?.Invoke("Create func failed to create object");
             return null;
         }
 
@@ -113,7 +176,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
             _actionOnGet?.Invoke(pooled);
             return pooled;
         }
-        Debug.LogError("Duplicate instance: " + pooled);
+        Logger?.Invoke("Duplicate instance: " + pooled);
         return null;
     }
 
@@ -123,14 +186,14 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (IsNull(instance))
         {
-            Debug.LogWarning("Attempted to release null instance");
+            Logger?.Invoke("Attempted to release null instance");
             RemoveNull();
             return false;
         }
 
         if (!_activeInstances.Remove(instance))
         {
-            Debug.LogWarning("Instance not found in active instance: " + instance.ToString());
+            Logger?.Invoke("Instance not found in active instance: " + instance.ToString());
             return false;
         }
 
@@ -138,7 +201,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (_pool.Count <= _maxSize)
         {
-            _pool.Enqueue(instance);
+            _pool.AddLast(instance);
         }
         else
         {
@@ -151,42 +214,62 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        bool success = Filter(predicate, _activeInstances, _foundCache);
+        bool success = Filter(predicate, _activeInstances, _tempCache);
 
         if (!success)
         {
             return false;
         }
 
-        foreach (T instance in _foundCache)
+        foreach (T instance in _tempCache)
         {
             Release(instance);
         }
 
-        return _foundCache.Count > 0;
+        return _tempCache.Count > 0;
+    }
+
+    public bool ReleaseAll()
+    {
+        CheckDispose();
+
+        if (_activeInstances.Count == 0)
+        {
+            return false;
+        }
+
+        _tempCache.Clear();
+        foreach (T instance in _activeInstances)
+        {
+            _tempCache.Add(instance);
+        }
+
+        bool isAnyRelease = false;
+        foreach (T instance in _tempCache)
+        {
+            if (Release(instance))
+            {
+                isAnyRelease = true;
+            }
+        }
+
+        return isAnyRelease;
     }
 
     public bool Remove(T instance)
     {
         CheckDispose();
 
-        bool success = false;
-        if (!IsNull(instance))
+        if (IsNull(instance))
+            return false;
+
+        bool success = _activeInstances.Remove(instance) || _pool.Remove(instance);
+
+        if (success)
         {
-            success = _activeInstances.Remove(instance);
-            if (!success)
-            {
-                success = _pool.Contains(instance);
-                if (success)
-                {
-                    _pool = new Queue<T>(_pool.Where(item => item != instance));
-                }
-            }
-            if (success)
-            {
-                _actionOnDestroy?.Invoke(instance);
-            }
+            _actionOnDestroy?.Invoke(instance);
         }
+
         return success;
     }
 
@@ -194,26 +277,26 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         CheckDispose();
 
-        bool success = FilterTow(predicate, _activeInstances, _pool, _foundCache);
+        bool success = FilterTwo(predicate, _activeInstances, _pool, _tempCache);
 
         if (!success)
         {
             return false;
         }
 
-        foreach (T instance in _foundCache)
+        foreach (T instance in _tempCache)
         {
             Remove(instance);
         }
 
-        return _foundCache.Count > 0;
+        return _tempCache.Count > 0;
     }
 
     public void Clear()
     {
         CheckDispose();
 
-        DestroyInvoke();
+        DestroyInvokeAll();
         _pool.Clear();
         _activeInstances.Clear();
     }
@@ -238,13 +321,21 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
                 Debug.LogWarning("Create func returns null");
                 break;
             }
-            _pool.Enqueue(instance);
+            _pool.AddLast(instance);
         }
     }
 
-    private void DestroyInvoke()
+    private void DestroyInvokeAll()
     {
-        foreach (T instance in _pool.Concat(_activeInstances))
+        foreach (T instance in _pool)
+        {
+            if (!IsNull(instance))
+            {
+                _actionOnDestroy?.Invoke(instance);
+            }
+        }
+
+        foreach (T instance in _activeInstances)
         {
             if (!IsNull(instance))
             {
@@ -264,7 +355,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (predicate == null)
         {
-            Debug.LogWarning("Predicate cannot be null");
+            Logger?.Invoke("Predicate cannot be null");
             return false;
         }
 
@@ -279,7 +370,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         return true;
     }
 
-    private bool FilterTow(Predicate<T> predicate, IEnumerable<T> instances1, IEnumerable<T> instances2, HashSet<T> result)
+    private bool FilterTwo(Predicate<T> predicate, IEnumerable<T> instances1, IEnumerable<T> instances2, HashSet<T> result)
     {
         if (result == null)
         {
@@ -290,7 +381,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (predicate == null)
         {
-            Debug.LogWarning("Predicate cannot be null");
+            Logger?.Invoke("Predicate cannot be null");
             return false;
         }
 
@@ -315,9 +406,24 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     private void RemoveNull()
     {
-        _pool = new Queue<T>(_pool.Where(instance => !IsNull(instance)));
+        if (_pool.Count > 0)
+        {
+            LinkedListNode<T> current = _pool.First;
+            while (current != null)
+            {
+                LinkedListNode<T> next = current.Next;
+
+                if (IsNull(current.Value))
+                {
+                    _pool.Remove(current);
+                }
+
+                current = next;
+            }
+        }
+        
         _activeInstances.RemoveWhere(IsNull);
-        Debug.LogError("Null instances removed");
+        Logger?.Invoke("Null instances removed");
     }
     
     private bool IsNull(T instance)

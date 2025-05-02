@@ -91,6 +91,8 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     #region Interface
     public Node Node { get; private set; }
+    public ITPEnumerator InputEnumerator { get; private set; }
+    public ITPEnumerator OutputEnumerator { get; private set; }
     public Image Image => m_Image;
     public TextMeshProUGUI NameText => m_NameTmp;
 
@@ -141,21 +143,32 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         Image.sprite = sprite;
     }
 
-    public (ITPEnumerator inEnum, ITPEnumerator outEnum) GetTPEnumerator(
+    public void InitializeTPEnumerator(
         string inPath, string outPath, float inEnumXPos, 
         float outEnumXPos, Vector2 defaultNodeSize, bool sizeFreeze)
     {
         if (_isGetTp)
-            throw new Exception("TPEnumerator를 중복하여 Get하고 있습니다");
+        {
+            throw new Exception("TPEnumerator를 중복하여 생성하고 있습니다");
+        }
 
         GameObject[] objects = Other.GetResources<GameObject>(inPath, outPath);
 
         if (objects.Any(obj => obj == null))
-            throw new NullReferenceException("TPEnumerator 프리펩 Get 실패");
+        {
+            throw new NullReferenceException("경로에 TPEnumerator 프리펩이 없습니다");
+        }
 
+        GameObject inputObject = Instantiate(objects[0]);
+        GameObject outputObject = Instantiate(objects[1]);
 
-        RectTransform inRect = Instantiate(objects[0]).GetComponent<RectTransform>();
-        RectTransform outRect = Instantiate(objects[1]).GetComponent<RectTransform>();
+        RectTransform inRect = inputObject.GetComponent<RectTransform>();
+        RectTransform outRect = outputObject.GetComponent<RectTransform>();
+
+        if (inRect == null || outRect == null)
+        {
+            throw new MissingComponentException("Enumerator 프리펩은 UGUI 오브젝트가 아닙니다");
+        }
 
         RectTransformUtils.SetParent(Rect, inRect, outRect);
 
@@ -168,38 +181,57 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         inRect.SetXPos(inEnumXPos);
         outRect.SetXPos(outEnumXPos);
 
-        ITPEnumerator tpEnumIn = inRect.GetComponent<ITPEnumerator>();
-        ITPEnumerator tpEnumOut = outRect.GetComponent<ITPEnumerator>();
+        ITPEnumerator inputEnumerator = inRect.GetComponent<ITPEnumerator>();
+        ITPEnumerator outputEnumerator = outRect.GetComponent<ITPEnumerator>();
 
-        _defaultNodeSize = defaultNodeSize;
-
-        tpEnumIn.MinHeight = _defaultNodeSize.y;
-        tpEnumOut.MinHeight = _defaultNodeSize.y;
-
-
-        if (!sizeFreeze)
+        if (inputEnumerator == null || outputEnumerator == null)
         {
-            tpEnumIn.OnSizeUpdatedWhenTPChange += size =>
-            {
-                _inEnumHeight = size.y;
-                float maxValue = HeightSynchronizationWithEnum();
-                tpEnumIn.SetHeight(maxValue);
-                tpEnumOut.SetHeight(maxValue);
-            };
-
-            tpEnumOut.OnSizeUpdatedWhenTPChange += size =>
-            {
-                _outEnumHeight = size.y;
-                float maxValue = HeightSynchronizationWithEnum();
-                tpEnumIn.SetHeight(maxValue);
-                tpEnumOut.SetHeight(maxValue);
-            };
+            throw new MissingComponentException($"ITPEnumerator 컴포넌트를 찾을 수 없습니다. Input: {inputEnumerator} / Output: {outputEnumerator}");
         }
 
-        tpEnumIn.Node = Node;
-        tpEnumOut.Node = Node;
+        try
+        {
+            InputEnumerator = inputEnumerator;
+            OutputEnumerator = outputEnumerator;
 
-        return (tpEnumIn, tpEnumOut);
+            _defaultNodeSize = defaultNodeSize;
+
+            InputEnumerator.MinHeight = _defaultNodeSize.y;
+            OutputEnumerator.MinHeight = _defaultNodeSize.y;
+
+
+            if (!sizeFreeze)
+            {
+                InputEnumerator.OnSizeUpdatedWhenTPChange += size =>
+                {
+                    _inEnumHeight = size.y;
+                    float maxValue = HeightSynchronizationWithEnum();
+                    InputEnumerator.SetHeight(maxValue);
+                    OutputEnumerator.SetHeight(maxValue);
+                };
+
+                OutputEnumerator.OnSizeUpdatedWhenTPChange += size =>
+                {
+                    _outEnumHeight = size.y;
+                    float maxValue = HeightSynchronizationWithEnum();
+                    InputEnumerator.SetHeight(maxValue);
+                    OutputEnumerator.SetHeight(maxValue);
+                };
+            }
+
+            InputEnumerator.Node = Node;
+            OutputEnumerator.Node = Node;
+            _isGetTp = true;
+        }
+        catch (Exception e)
+        {
+            InputEnumerator = null;
+            OutputEnumerator = null;
+            Destroy(inputObject);
+            Destroy(outputObject);
+            Debug.LogError($"Enumerator 속성 설정 과정에서 예외 발생\n{e.Message}");
+            throw;
+        }
     }
 
     public float HeightSynchronizationWithEnum()

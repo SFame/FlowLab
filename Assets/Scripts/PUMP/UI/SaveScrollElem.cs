@@ -1,24 +1,34 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 
-public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler
+public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler, IClassedDataTargetUi
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI dateText;
     [SerializeField] private RawImage image;
+    [SerializeField] private SaveDisplayer m_Displayer;
+
+    [Space(10)]
+
+    [SerializeField] private Image m_HighlightImage;
+    [SerializeField] private Color m_HighlightColor;
+    [SerializeField] private Color m_DefaultColor;
     #endregion
-    
+
     #region Privates
     private Action<PUMPSaveDataStructure> _onDoubleClick;
     private Action<PUMPSaveDataStructure, PointerEventData> _onRightClick;
-    private PUMPSaveDataStructure Data { get; set; }
+    private bool _classedDataTarget_IsPointerEnter;
     private float _lastClickTime;
     private Vector2 _lastClickPos;
+    private List<Type> _displayExclusionType = new() { typeof(ExternalInput), typeof(ExternalOutput) };
     private const float DOUBLE_CLICK_TIME = 0.5f;
     private const float DOUBLE_CLICK_MAX_DISTANCE = 10f; // 픽셀 단위
     
@@ -32,22 +42,44 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         _onDoubleClick?.Invoke(Data);
     }
 
-    private void OnDestroy()
+    private bool IsExclusionType(Type nodeType)
     {
-        SetImage(null);
+        return _displayExclusionType.Contains(nodeType);
     }
 
-    private void SetImage(Texture2D texture)
+    private void SetDisplay(List<Vector2> normalizedPosition)
     {
-        Texture beforeTexture = image.texture;
-        if (beforeTexture != null)
-            Destroy(beforeTexture);
-        
-        image.texture = texture;
+        if (normalizedPosition == null)
+        {
+            Debug.LogError($"{name}: SetDisplay() Received null args");
+            return;
+        }
+
+        m_Displayer.SetNodeCells(normalizedPosition);
     }
-    
+
+    private void OnDestroy()
+    {
+        m_Displayer.Dispose();
+    }
+
+    public PUMPSaveDataStructure Data { get; set; }
+
+    void IClassedDataTargetUi.IsPointEnter(bool isEnter)
+    {
+        _classedDataTarget_IsPointerEnter = isEnter;
+
+        if (m_HighlightImage == null)
+            return;
+
+        m_HighlightImage.color = isEnter ? m_HighlightColor : m_DefaultColor;
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (_classedDataTarget_IsPointerEnter)
+            return;
+
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             InvokeOnRightClick(eventData);
@@ -82,12 +114,13 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         if (Data == null)
             return;
 
-        var progress = Loading.GetProgress();
         nameText.text = Data.Name;
         DateTime date = Data.LastUpdate;
         dateText.text = $"<b>{date.Month:D2}</b> / <b>{date.Day:D2}</b> / <b>{date.Year}</b>\n<b>{date.Hour:D2}</b>:<b>{date.Minute:D2}</b>";
-        SetImage(Capture.LoadTextureFromFile(Data.ImagePath));
-        progress.SetComplete();
+        SetDisplay(Data.NodeInfos
+            .Where(info => !IsExclusionType(info.NodeType))
+            .Select(info => info.NodePosition)
+            .ToList());
     }
 
     public void Initialize(PUMPSaveDataStructure data)

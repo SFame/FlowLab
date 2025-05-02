@@ -21,7 +21,6 @@ public abstract class NodePalette : MonoBehaviour
     
     #region Privates
     private ScrollRect _scrollRect;
-    private GridLayoutGroup _gridLayoutGroup;
     private GameObject _elementPrefab;
     private readonly List<PaletteElem> _elements = new();
     private RectTransform _rootRect;
@@ -33,9 +32,7 @@ public abstract class NodePalette : MonoBehaviour
     {
         get
         {
-            if (_elementPrefab is null)
-                _elementPrefab = Resources.Load<GameObject>(ELEMENT_PREFAB_PATH);
-            
+            _elementPrefab ??= Resources.Load<GameObject>(ELEMENT_PREFAB_PATH);
             return _elementPrefab;
         }
     }
@@ -44,9 +41,7 @@ public abstract class NodePalette : MonoBehaviour
     {
         get
         {
-            if (_scrollRect is null)
-                _scrollRect = GetComponentInChildren<ScrollRect>();
-            
+            _scrollRect ??= GetComponentInChildren<ScrollRect>();
             return _scrollRect;
         }
     }
@@ -55,9 +50,7 @@ public abstract class NodePalette : MonoBehaviour
     {
         get
         {
-            if (_rootRect is null)
-                _rootRect = GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
-            
+            _rootRect ??= GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
             return _rootRect;
         }
     }

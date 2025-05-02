@@ -17,9 +17,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     private NodeSupport _support;
     private PUMPBackground _background;
 
-    private ITPEnumerator _inputEnumerator;
-    private ITPEnumerator _outputEnumerator;
-
     private bool _inEnumActive = true;
     private bool _outEnumActive = true;
 
@@ -152,7 +149,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
 
     /// <summary>
     /// 변경사항 발생시 호출
-    /// PUMPBackground.SetInfos() 메서드의 트랜지션에 영향받는 위치에서 "절대" 호출하지 말 것.
+    /// PUMPBackground.SetInfos() 메서드의 콜 스텍에 영향받는 위치에서 "절대" 호출하지 말 것.
     /// </summary>
     public void ReportChanges()
     {
@@ -422,9 +419,15 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
         Support.SetNameFontSize(TextSize);
         Support.SetSpriteForResourcesPath(SpritePath);
         Support.SetRectDeltaSize(DefaultNodeSize);
-        (_inputEnumerator, _outputEnumerator) = Support.GetTPEnumerator(
-            TP_EnumInPrefebPath, TP_EnumOutPrefebPath, InEnumeratorXPos, 
-            OutEnumeratorXPos, DefaultNodeSize, SizeFreeze);
+        Support.InitializeTPEnumerator
+        (
+            inPath: TP_EnumInPrefebPath,
+            outPath: TP_EnumOutPrefebPath,
+            inEnumXPos: InEnumeratorXPos,
+            outEnumXPos: OutEnumeratorXPos,
+            defaultNodeSize: DefaultNodeSize,
+            sizeFreeze: SizeFreeze
+        );
         SetToken();
         Support.HeightSynchronizationWithEnum();
         _initialized = true;
@@ -444,18 +447,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     /// </summary>
     private void SetToken()
     {
-        if (_inputEnumerator == null || _outputEnumerator == null)
+        if (Support.InputEnumerator == null || Support.OutputEnumerator == null)
         {
             throw new NullReferenceException($"{GetType().Name}: Enumerator가 없는 상태로 Token 설정 불가");
         }
 
-        InputToken = _inputEnumerator
+        InputToken = Support.InputEnumerator
             .SetTPsMargin(EnumeratorTPMargin)
             .SetTPSize(EnumeratorTPSize)
             .SetTPs(InputNames.Count)
             .GetToken();
 
-        OutputToken = _outputEnumerator
+        OutputToken = Support.OutputEnumerator
             .SetTPsMargin(EnumeratorTPMargin)
             .SetTPSize(EnumeratorTPSize)
             .SetTPs(OutputNames.Count)
@@ -473,7 +476,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
     }
 
     /// <summary>
-    /// TP In의 변경 시의 이벤트 구독
+    /// StateUpdate 콜백 등록
     /// </summary>
     private void SubscribeTPInStateUpdateEvent()
     {

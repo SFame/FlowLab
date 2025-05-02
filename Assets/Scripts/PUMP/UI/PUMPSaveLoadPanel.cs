@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using PolyAndCode.UI;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 using Utils;
 using Debug = UnityEngine.Debug;
 
-public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
+public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource, IClassedImportTarget
 {
     #region On Inspector
     [SerializeField] private Button saveButton;
@@ -61,6 +62,14 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData);
     }
 
+    async Task IClassedImportTarget.Import(PUMPSaveDataStructure structure)
+    {
+        structure.SubscribeUpdateNotification(RefreshEventAdapter);
+        await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, structure);
+
+        ReloadDataAsync().Forget();
+    }
+
     private async UniTaskVoid AddNewSave(string saveName)
     {
         if (Extract(saveName, out PUMPSaveDataStructure newStructure))
@@ -75,10 +84,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
     private bool Extract(string saveName, out PUMPSaveDataStructure structure)
     {
         List<SerializeNodeInfo> nodeInfos = extractor.GetNodeInfos();
-        string imagePath = extractor.GetImagePath();
         object tag = extractor.GetTag();
 
-        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, imagePath, tag);
+        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, tag);
         if (extractor.ValidateBeforeSerialization(newStructure))
         {
             structure = newStructure;
@@ -99,7 +107,21 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         
         saveButton?.onClick.AddListener(() =>
         {
-            TextGetterManager.Set(RootCanvas, newName => AddNewSave(newName).Forget(), "Save name", defaultSaveName);
+            object blocker = new();
+            PUMPInputManager inputManager = PUMPInputManager.Current;
+            inputManager?.AddBlocker(blocker);
+
+            TextGetterManager.Set
+            (
+                rootCanvas: RootCanvas,
+                callback: newName =>
+                {
+                    AddNewSave(newName).Forget();
+                },
+                titleString: "Save name",
+                inputString: defaultSaveName,
+                onExit: () => inputManager?.SubBlocker(blocker)
+            );
         });
 
         SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).AddEvent(savePath, ReloadData);
@@ -131,7 +153,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private async UniTaskVoid DeleteData(PUMPSaveDataStructure data)
     {
-        Capture.DeleteCaptureFile(data.ImagePath);
         data.Delete();
         await GetDatasFromManager();
         ScrollRect.ReloadData();
@@ -158,8 +179,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
         ISaveScrollElem elem = cell as ISaveScrollElem;
         if (elem == null)
             return;
-        
-        elem.Initialize(_saveDatas[index]);
+
+        PUMPSaveDataStructure currentData = _saveDatas[_saveDatas.Count - 1 - index];
+        elem.Initialize(currentData);
         elem.OnDoubleClick += data =>
         {
             extractor.ApplyData(data);
@@ -183,10 +205,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                         UniTask.Create(async () =>
                         {
                             await UniTask.Yield();
-                            string beforeImagePath = data.ImagePath;
                             if (Extract(data.Name, out PUMPSaveDataStructure newStructure))
                             {
-                                Capture.DeleteCaptureFile(beforeImagePath);
                                 data.Paste(newStructure);
                                 data.NotifyDataChanged();
                                 elem.Refresh();
@@ -202,17 +222,26 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource
                     text: "Rename",
                     clickAction: () =>
                     {
-                        TextGetterManager.Set(RootCanvas, newName =>
-                        {
-                            if (data.Name != newName)
+                        object blocker = new();
+                        PUMPInputManager inputManager = PUMPInputManager.Current;
+                        inputManager?.AddBlocker(blocker);
+
+                        TextGetterManager.Set
+                        (
+                            rootCanvas: RootCanvas,
+                            callback: newName =>
                             {
-                                data.Name = newName;
-                                data.NotifyDataChanged();
-                                elem.Refresh();
-                            }
-                        },
-                        "New name",
-                        data.Name);
+                                if (data.Name != newName)
+                                {
+                                    data.Name = newName;
+                                    data.NotifyDataChanged();
+                                    elem.Refresh();
+                                }
+                            },
+                            titleString: "New name",
+                            inputString: data.Name,
+                            onExit: () => inputManager?.SubBlocker(blocker)
+                        );
                     }
                 )
             };

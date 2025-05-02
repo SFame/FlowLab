@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -14,6 +15,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using ArgumentNullException = System.ArgumentNullException;
 using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 
@@ -21,6 +23,38 @@ namespace Utils
 {
     public static class Other // 짬통
     {
+        public static void ConvertToDigitArray(this int number, in int[] result)
+        {
+            // 0인 경우 특별 처리
+            if (number == 0)
+            {
+                for(int i=0; i < result.Length; i++)
+                {
+                    result[i] = 0;
+                }
+            }
+
+            // 음수인 경우 양수로 변환 (절대값 사용)
+            number = Math.Abs(number);
+
+            // 자릿수 계산
+            int temp = number;
+            int digitCount = 0;
+
+            while (temp > 0)
+            {
+                temp /= 10;
+                digitCount++;
+            }
+
+            for (int i = 0; i < digitCount; i++)
+            {
+                if(i >= result.Length) break;
+                result[i] = number % 10;
+                number /= 10;
+            }
+        }
+
         public static int Clamp(this int value, int min, int max)
         {
             if (value < min) return min;
@@ -173,6 +207,21 @@ namespace Utils
                 finalizer?.Invoke();
             }
         }
+
+        /// <summary>
+        /// 문자열 꺾쇠괄호 제거
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string RemoveRichTextTags(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            string pattern = @"<([a-zA-Z][a-zA-Z0-9]*)(?:[^<>]*)>(.*?)</\1>";
+            string result = Regex.Replace(input, pattern, "$2");
+            return result;
+        }
     }
 
     public static class UtilsDebug
@@ -236,6 +285,9 @@ namespace Utils
 
     public static class RaycasterUtil
     {
+        private static List<RaycastResult> _raycastResultsCache = new();
+        private static object _lock = new();
+
         public static List<RaycastResult> FindUnderPoint(this GraphicRaycaster raycaster, Vector2 point)
         {
             PointerEventData pointerData = new PointerEventData(EventSystem.current);
@@ -284,6 +336,46 @@ namespace Utils
                     foundComponents.Add(component);
             }
             return foundComponents;
+        }
+
+        public static void FindUnderPoint<T>(this GraphicRaycaster raycaster, List<T> result, Vector2 point)
+        {
+            lock (_lock)
+            {
+                _raycastResultsCache.Clear();
+                result.Clear();
+
+                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                pointerData.position = point;
+
+                raycaster.Raycast(pointerData, _raycastResultsCache);
+
+                foreach (RaycastResult raycastResult in _raycastResultsCache)
+                {
+                    if (raycastResult.gameObject.TryGetComponent(out T component))
+                        result.Add(component);
+                }
+            }
+        }
+
+        public static void FindUnderPoint<T>(List<T> result, Vector2 point)
+        {
+            lock (_lock)
+            {
+                _raycastResultsCache.Clear();
+                result.Clear();
+
+                PointerEventData pointerData = new PointerEventData(EventSystem.current);
+                pointerData.position = point;
+
+                EventSystem.current.RaycastAll(pointerData, _raycastResultsCache);
+
+                foreach (RaycastResult raycastResult in _raycastResultsCache)
+                {
+                    if (raycastResult.gameObject.TryGetComponent(out T component))
+                        result.Add(component);
+                }
+            }
         }
 
         public static HashSet<T> GridRaycast<T>(this GraphicRaycaster raycaster, Vector2 startPos, Vector2 endPos, float gridSize = 10f)
@@ -543,7 +635,7 @@ namespace Utils
                 finally
                 {
                     // 5. 임시 텍스처 정리
-                    UnityEngine.Object.Destroy(texture);
+                    Object.Destroy(texture);
                 }
             }
             catch (Exception ex)
@@ -839,6 +931,7 @@ namespace Utils
         }
 
         #region Privates
+
         private static string DefaultSerializePath => Path.Combine(Application.persistentDataPath, "SerializeData");
 
         private static string FileNameTrimming(string fileName, DataFormat format)
@@ -1239,6 +1332,16 @@ namespace Utils
             position.y = value;
             rect.anchoredPosition = position;
         }
+
+        public static Vector2 GetNormalizeFromLocalPosition(Vector2 parentSize, Vector2 childPos)
+        {
+            return childPos / parentSize;
+        }
+
+        public static Vector2 GetLocalPositionFromNormalizeValue(Vector2 parentSize, Vector2 normalizeValue)
+        {
+            return parentSize * normalizeValue;
+        }
     }
 
     public static class TextGetterManager
@@ -1288,7 +1391,7 @@ namespace Utils
         }
         #endregion
 
-        public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "")
+        public static void Set(Canvas rootCanvas, Action<string> callback, string titleString, string inputString = "", Action onExit = null)
         {
             if (_isShow && CurrentIsNull)
                 _isShow = false;
@@ -1300,7 +1403,7 @@ namespace Utils
             }
 
             SetRect(CurrentTextGetter.Rect, rootCanvas);
-            CurrentTextGetter.Set(titleString, inputString, callback);
+            CurrentTextGetter.Set(titleString, inputString, callback, onExit);
             _isShow = true;
         }
     }

@@ -24,7 +24,8 @@ public class LoggingElem : MonoBehaviour, ICell, IPointerClickHandler
 
     private void CopyText()
     {
-        GUIUtility.systemCopyBuffer = Text;
+        string log = Other.RemoveRichTextTags(Text);
+        GUIUtility.systemCopyBuffer = log;
     }
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)

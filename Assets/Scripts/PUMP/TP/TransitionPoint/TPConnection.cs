@@ -33,7 +33,11 @@ public class TPConnection : IStateful, IDisposable
     private List<ContextElement> ContextElements =>
         new()
         {
-            new("Disconnect", Disconnect),
+            new("Disconnect", () =>
+            {
+                Disconnect();
+                OnSelfDisconnect?.Invoke();
+            }),
         };
 
     #endregion
@@ -136,6 +140,9 @@ public class TPConnection : IStateful, IDisposable
         }
     }
 
+    // LineConnector에서 ContextMenu를 통해 Disconnect 되었을 때
+    public event Action OnSelfDisconnect;
+
     public void Disconnect()
     {
         if (SourceState == null || TargetState == null)
@@ -161,6 +168,7 @@ public class TPConnection : IStateful, IDisposable
         
         _cts.Cancel();
         _cts.Dispose();
+        OnSelfDisconnect = null;
         _sourceState = null;
         _targetState = null;
         _disposed = true;

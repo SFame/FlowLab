@@ -16,6 +16,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     #region Privates
     private const KeyCode CONFIRM_KEY = KeyCode.Return;
     private Action<string> _callback;
+    private Action _onExitCallback;
     private bool _initialized = false;
     private CancellationTokenSource _cts;
     private RectTransform _rect;
@@ -32,7 +33,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
 
     public event Action OnExit;
 
-    public void Set(string titleString, string inputString, Action<string> callback)
+    public void Set(string titleString, string inputString, Action<string> callback, Action onExitCallback)
     {
         gameObject.SetActive(true);
         Initialize();
@@ -41,6 +42,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         titleText.text = titleString;
         inputField.text = inputString;
         _callback = callback;
+        _onExitCallback = onExitCallback;
         
         inputField.Select();
         inputField.ActivateInputField();
@@ -58,6 +60,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
 
     private void Exit()
     {
+        _onExitCallback?.Invoke();
         Terminate();
         gameObject.SetActive(false);
         OnExit?.Invoke();
@@ -81,6 +84,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         titleText.text = "";
         inputField.text = "";
         _callback = null;
+        _onExitCallback = null;
     }
 
     private async UniTaskVoid WaitKeyAsync(CancellationToken token)
