@@ -13,7 +13,7 @@ public class SegmentDisplay : Node
 
     protected override List<string> OutputNames { get; } = new List<string> {};
 
-    protected override float InEnumeratorXPos => -67.5f;
+    protected override float InEnumeratorXPos => -0.5f;
 
     protected override float OutEnumeratorXPos => 67.5f;
 
@@ -21,7 +21,7 @@ public class SegmentDisplay : Node
 
     protected override Vector2 EnumeratorTPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(40f, 100f);
 
     protected override string NodeDisplayName => "";
 
