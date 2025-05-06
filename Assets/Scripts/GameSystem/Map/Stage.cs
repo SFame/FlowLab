@@ -33,4 +33,15 @@ public class StageData
     {
         get { return _stageID; }
     }
+    public float ClearTime
+    {
+        get { return _clearTime; }
+        set
+        {
+            if (_clear)
+            {
+                _clearTime = value;
+            }
+        }
+    }
 }

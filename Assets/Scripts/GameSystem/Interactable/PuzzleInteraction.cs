@@ -6,7 +6,7 @@ using UnityEngine;
 public class PuzzleInteraction : MonoBehaviour, IInteractable
 {
     [Header("Puzzle Configuration")]
-    [SerializeField] private string puzzleName;
+    public string puzzleName;
     [SerializeField] private GameObject highlightIndicator;
     [SerializeField] private GameObject puzzleUIPrefab;
     [SerializeField] private string fileName = "puzzle_data.bin";
@@ -14,6 +14,8 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     private PUMPBackground _pumpBackground;
     private PlayerController playerController;
     private bool _clear = false;
+    private float _clearTime = 0.0f; // 퍼즐 클리어 시간
+    [SerializeField] string UnlockNodeName; // 나중에 PuzzleName이랑 해금노드랑 같게 만들것이니 임시용
     public bool Clear { get => _clear; }
     // 퍼즐 완료 이벤트
     public event Action<bool> OnPuzzleValidation;
@@ -75,6 +77,8 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         {
             return;
         }
+
+        GlobalEventManager.OnStageStartEvent();
 
         // 데이터 로드
         var puzzleData = (await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpResources, fileName))
@@ -152,14 +156,16 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
 
     private void HandlePuzzleValidationComplete(bool success)
     {
-        // 로컬 이벤트 발생
-        OnPuzzleValidation?.Invoke(success);
 
         if (success)
         {
             _clear = true;
+            UnlockNodes();
+            StageData stageData = new StageData(puzzleName, _clear, _clearTime);
+            GlobalEventManager.OnStageExitEvent(stageData);
             DelayedClosePuzzle().Forget();
         }
+        OnPuzzleValidation?.Invoke(success);
     }
     private async UniTaskVoid DelayedClosePuzzle()
     {
@@ -181,5 +187,21 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
 
         _pumpBackground.Close();
 
+    }
+    private void UnlockNodes()
+    {
+
+        Type nodeType = Type.GetType(UnlockNodeName);
+        if (nodeType != null)
+        {
+            bool newlyUnlocked = PlayerNodeInventory.UnlockNode(nodeType);
+        }
+        
+
+        PlayerPalette palette = FindFirstObjectByType<PlayerPalette>();
+        if (palette != null)
+        {
+            palette.RefreshPalette();
+        }
     }
 }
