@@ -82,6 +82,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
         }
     }
 
+    public bool IsDeserialized { get; private set; }
+
     public bool IsDestroyed { get; private set; }
 
     public bool IgnoreSelectedDelete { get; set; } = false;
@@ -528,7 +530,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
 
     void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
 
-    void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs() => OnAfterSetAdditionalArgs();
+    void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs()
+    {
+        IsDeserialized = true;
+        OnAfterSetAdditionalArgs();
+    }
 
     void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
 

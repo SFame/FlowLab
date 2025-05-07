@@ -1,31 +1,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Utils;
-
 
 public class SegmentDisplay : Node
 {
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefabPath => "PUMP/Prefab/Node/SEGMENTDISPLAY";
 
-    protected override List<string> InputNames { get; } = new List<string> { "1", "2", "3", "4", "5", "6", "7"};
+    protected override List<string> InputNames { get; } = new() { "A", "B", "C", "D", "E", "F", "G"};
 
-    protected override List<string> OutputNames { get; } = new List<string> {};
+    protected override List<string> OutputNames { get; } = new();
 
-    protected override float InEnumeratorXPos => -0.5f;
+    protected override float InEnumeratorXPos => -3f;
 
-    protected override float OutEnumeratorXPos => 67.5f;
+    protected override float OutEnumeratorXPos => 0f;
 
     protected override float EnumeratorPadding => 5f;
 
-    protected override float EnumeratorMargin => 5f;
+    protected override float EnumeratorMargin => 7f;
 
     protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(40f, 100f);
 
-    protected override string NodeDisplayName => "";
+    protected override string NodeDisplayName => string.Empty;
 
     
     private SegmentSupport _segmentSupport;
@@ -42,6 +40,4 @@ public class SegmentDisplay : Node
     {
         SegmentSupport.UpdateSegmentDisplay(InputToken.Select(tp => tp.State).ToArray());
     }
-
-
 }

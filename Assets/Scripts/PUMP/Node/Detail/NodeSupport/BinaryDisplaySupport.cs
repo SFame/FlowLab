@@ -7,45 +7,65 @@ using Utils;
 
 public class BinaryDisplaySupport : MonoBehaviour
 {
-    [SerializeField] public TMP_Dropdown m_Dropdown;
+    [SerializeField] private Slider m_Slider;
     [SerializeField] private SegmentController[] m_SegmentControllers;
 
+    /// <summary>
+    /// 사용자의 Handle 조작으로 인한 Value Change
+    /// </summary>
     public event Action<int> OnValueChanged;
 
     private bool _isInitialized = false;
-
-    private int sum = 0;
+    private bool _blockEvent = false;
 
     public void Initialize()
     {
-        if (_isInitialized) return;
+        if (_isInitialized) 
+            return;
         
         _isInitialized = true;
-        m_Dropdown.onValueChanged.AddListener(value => OnValueChanged?.Invoke(value));
+
+        m_Slider.onValueChanged.AddListener(InvokeOnValueChange);
+    }
+
+    public void SetSliderValue(int value)
+    {
+        _blockEvent = true;
+        m_Slider.value = value;
+        _blockEvent = false;
     }
 
     public void UpdateBinaryDisplay(bool[] states)
     {
-        InputNumSum(states);
-        UpdateDisplay();
+        UpdateDisplay(ConvertToDecimal(states));
     }
 
-    private void InputNumSum(bool[] states)
+    private void InvokeOnValueChange(float value)
     {
-        sum = 0;
-        for (int i = 0; i < states.Length; i++)
+        if (_blockEvent)
+            return;
+
+        OnValueChanged?.Invoke((int)value);
+    }
+
+    private int ConvertToDecimal(bool[] binaryArray)
+    {
+        int result = 0;
+        for (int i = 0; i < binaryArray.Length; i++)
         {
-            if (states[i])
+            if (binaryArray[i])
             {
-                sum += 1 << i;
+                result += 1 << i;
             }
         }
+
+        return result;
     }
 
-    private void UpdateDisplay()
+    private void UpdateDisplay(int value)
     {
         int[] sums = new int[4];
-        sum.ConvertToDigitArray(in sums);
+        value.ConvertToDigitArray(sums);
 
         m_SegmentControllers[0].SetDisplay(sums[0]);
         m_SegmentControllers[1].SetDisplay(sums[1]);

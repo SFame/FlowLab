@@ -14,7 +14,10 @@ public class DragSelectableForwarder : MonoBehaviour, IDragSelectableForwarder
     {
         get
         {
-            _target ??= m_DragSelectable?.GetComponent<IDragSelectable>();
+            if (m_DragSelectable == null)
+                return null;
+
+            _target ??= m_DragSelectable as IDragSelectable ?? m_DragSelectable.GetComponent<IDragSelectable>();
             return _target;
         }
     }
