@@ -1492,7 +1492,7 @@ namespace Utils
             ExtensionFilter[] filter = extensions.Select(extension => new ExtensionFilter("", extension)).ToArray();
 
             if (string.IsNullOrEmpty(startPath) || !Directory.Exists(startPath))
-                startPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                startPath = "";
 
             string path = StandaloneFileBrowser.SaveFilePanel(title, startPath, defaultName, filter);
 
@@ -1515,7 +1515,7 @@ namespace Utils
             ExtensionFilter[] filter = { new("Text Files", extensions) };
 
             if (string.IsNullOrEmpty(startPath) || !Directory.Exists(startPath))
-                startPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                startPath = "";
 
             string[] paths = StandaloneFileBrowser.OpenFilePanel(title, startPath, filter, false);
 

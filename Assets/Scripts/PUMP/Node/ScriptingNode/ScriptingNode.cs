@@ -13,7 +13,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private ScriptingSupport _scriptingSupport;
     private bool _isDeserialized;
 
-    private string Script { get; set; } = String.Empty;
+    private string Script { get; set; } = string.Empty;
 
     private bool IsScriptReady { get; set; } = false;
 
@@ -261,6 +261,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         OutputNameGetter = null;
     }
 
+    // Scripting Interface ---------------
     public void AddScript(string script)
     {
         if (string.IsNullOrEmpty(script))
@@ -280,6 +281,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         InternalDisposeScript(true);
         ReportChanges();
     }
+    // ---------------------------------
     #endregion
 
     #region Serialization
@@ -298,6 +300,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             Script = value._script;
         }
     }
+
     [Serializable]
     public struct ScriptingNodeSerializeInfo
     {
