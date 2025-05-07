@@ -10,6 +10,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
     protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/EDGE";
+
     protected override float TextSize { get; } = 22f;
 
     protected override List<string> InputNames { get; } = new List<string> { "in" };

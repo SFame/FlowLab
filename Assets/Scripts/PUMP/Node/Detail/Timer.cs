@@ -31,11 +31,9 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override string NodeDisplayName => "Timer";
 
-    protected override void OnAfterSetAdditionalArgs() => _argSet = true;
-
     protected override void OnAfterInit()
     {
-        if (_argSet)
+        if (IsDeserialized)
         {
             _maxTime = _arg._maxTime;
             _currentTime = _arg._currentTime;
@@ -49,7 +47,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         TimerSupport.SliderUpdate(GetProgressValue());
         TimerSupport.OnValueChanged += OnTextChange;
 
-        if (_argSet && _arg._isStarted)
+        if (IsDeserialized && _arg._isStarted)
         {
             _cts?.Cancel();
             OutputToken[0].State = false;
@@ -80,12 +78,8 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override void OnBeforeRemove()
     {
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch { }
-
+        _isRemoved = true;
+        _cts?.Cancel();
         _cts?.Dispose();
     }
 
@@ -94,9 +88,9 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
     private float _maxTime = 5;
     private float _currentTime = 0;
     private UniTask _timerTask = UniTask.CompletedTask;
-    private CancellationTokenSource _cts;
+    private SafetyCancellationTokenSource _cts;
+    private bool _isRemoved;
     private TimerSerializeInfo _arg;
-    private bool _argSet = false;
     private bool IsStarted => _timerTask.Status == UniTaskStatus.Pending;
     private TimerSupport TimerSupport
     {
@@ -130,7 +124,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
         try
         {
-            while (_currentTime > 0f)
+            while (_currentTime > 0f && !token.IsCancellationRequested)
             {
                 await UniTask.Yield(token);
 
@@ -151,7 +145,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         }
         catch (OperationCanceledException)
         {
-            if (!Support.IsAlive())
+            if (_isRemoved || !Support.IsAlive())
                 return;
 
             TimerSupport?.SliderUpdate(1f);
@@ -184,15 +178,10 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     private CancellationToken GetCancellationToken()
     {
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch { }
-
+        _cts?.Cancel();
         _cts?.Dispose();
 
-        _cts = new CancellationTokenSource();
+        _cts = new SafetyCancellationTokenSource();
         return _cts.Token;
     }
     #endregion

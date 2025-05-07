@@ -11,7 +11,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 {
     #region Privates
     private ScriptingSupport _scriptingSupport;
-    private bool _isDeserialized;
 
     private string Script { get; set; } = string.Empty;
 
@@ -114,11 +113,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         return OutputNameGetter(tpNumber);
     }
 
-    protected override void OnAfterSetAdditionalArgs() => _isDeserialized = true;
-
     protected override void OnAfterInit()
     {
-        if (!_isDeserialized)
+        if (!IsDeserialized)
             return;
 
         if (string.IsNullOrEmpty(Script))
@@ -132,7 +129,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override void OnBeforeReplayPending(bool[] pendings)
     {
-        if (!_isDeserialized)
+        if (!IsDeserialized)
             return;
 
         InvokeInit();
