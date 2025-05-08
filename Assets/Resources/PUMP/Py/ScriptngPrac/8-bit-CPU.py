@@ -1,9 +1,9 @@
 # Defines the node's name
 name: str = "8-bit CPU Node"
 # Specifies number of input ports (클럭, 데이터 입력 8개, 리셋, 명령어 모드 2개)
-input_list: list = ['Clock', 'Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6', 'Data 7', 'Data 8', 'Reset', 'Mode 1', 'Mode 2']
+input_list: list = ['Clk', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'Rst', 'M1', 'M2']
 # Specifies number of output ports with names
-output_list: list = ['Data 1', 'Data 2', 'Data 3', 'Data 4', 'Data 5', 'Data 6', 'Data 7', 'Data 8', 'Zero Flag', 'Carry Flag']
+output_list: list = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'Zero', 'Carry']
 # When True, allows this node's methods to be executed asynchronously
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
 is_async: bool = False
@@ -78,7 +78,7 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
     
     # 리셋 신호 처리 (Reset 입력)
     if index == 9 and state and is_changed:
-        init()
+        init(inputs)
         return
     
     # 명령어 모드 변경 감지 (Mode 1 입력)

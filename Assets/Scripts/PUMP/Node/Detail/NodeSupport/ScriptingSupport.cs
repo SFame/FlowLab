@@ -13,6 +13,8 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     [SerializeField] private TextMeshProUGUI m_PrintText;
     [SerializeField] private TextMeshProUGUI m_LogText;
     [SerializeField] private float m_LoggingDuration;
+    [SerializeField] private RectTransform m_PythonLogoRect;
+    [SerializeField] private TextMeshProUGUI m_FileNameText;
     [Space(10)] 
     [SerializeField] private RectTransform m_LogPanel;
     [SerializeField] private RecyclableScrollRect m_RecyclableScrollRect;
@@ -20,6 +22,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 
     #region Privates
     private SafetyCancellationTokenSource _showLogCts;
+    private const string NULL_FILE_NAME = "----------";
     private readonly int _maxLogCapacity = 50;
     private readonly List<string> _logQueue = new();
     private Canvas _rootCanvas;
@@ -194,9 +197,16 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 
     private void OnDestroy()
     {
-        RemoveAll();
+        RemoveAllLog();
     }
     #endregion
+
+    #region Interface
+
+    public void Initialize()
+    {
+        RemoveFileName();
+    }
 
     public void Print(string value)
     {
@@ -231,6 +241,18 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         Debug.LogException(e);
     }
 
+    public void ShowFileName(string fileName)
+    {
+        m_PythonLogoRect.gameObject.SetActive(true);
+        m_FileNameText.text = fileName;
+    }
+
+    public void RemoveFileName()
+    {
+        m_PythonLogoRect.gameObject.SetActive(false);
+        m_FileNameText.text = NULL_FILE_NAME;
+    }
+
     public void OpenLoggingPanel()
     {
         m_LogPanel.gameObject.SetActive(true);
@@ -245,9 +267,10 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         m_LogPanel.SetParent(transform);
     }
 
-    public void RemoveAll()
+    public void RemoveAllLog()
     {
         Print(string.Empty);
         _logQueue.Clear();
     }
+    #endregion
 }

@@ -5,10 +5,10 @@ from System.Threading import Thread
 name: str = "Async Timer"
 
 # Specifies number of input ports
-input_list: list = ['Trigger', 'Reset', 'Increase Time', 'Clear Time']
+input_list: list = ['Trig', 'Rst', 'Inc', 'Clr']
 
 # Specifies number of output ports
-output_list: list = ['Timer Output']
+output_list: list = ['Out']
 
 # When True, allows this Node's methods to be executed asynchronously
 is_async: bool = True

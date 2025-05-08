@@ -1180,91 +1180,73 @@ namespace Utils
 
     public static class RectTransformUtils
     {
-        public static List<Vector2> ConvertWorldToLocalPositions([NotNull]List<Vector2> positions, [NotNull]RectTransform anchoredRect, [NotNull]Canvas rootCanvas)
+        public static List<Vector2> ConvertWorldToLocalPositions([NotNull] List<Vector2> positions, [NotNull] RectTransform anchoredRect)
         {
-            if (positions == null || positions.Count == 0 || anchoredRect == null || rootCanvas == null)
+            if (positions == null || positions.Count == 0 || anchoredRect == null)
             {
                 Debug.LogWarning("RectTransformUtils.ConvertWorldToLocalPositions(): Check param");
                 return positions;
             }
-         
+
             List<Vector2> localPositions = new List<Vector2>(positions.Count);
-   
-            foreach (Vector2 worldPos in positions)
+
+            foreach (Vector2 pos in positions)
             {
-                Vector2 localPoint;
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                    anchoredRect, 
-                    worldPos,
-                    rootCanvas.renderMode == RenderMode.WorldSpace ? rootCanvas.worldCamera : null,
-                    out localPoint
-                );
-                localPositions.Add(localPoint);
+                Vector3 worldPos = new Vector3(pos.x, pos.y, 0);
+
+                Vector3 localPos = anchoredRect.InverseTransformPoint(worldPos);
+                localPositions.Add(new Vector2(localPos.x, localPos.y));
             }
 
             return localPositions;
         }
 
-        public static Vector2 ConvertWorldToLocalPosition(Vector2 position, [NotNull]RectTransform anchoredRect, [NotNull]Canvas rootCanvas)
+        public static Vector2 ConvertWorldToLocalPosition(Vector2 position, [NotNull] RectTransform anchoredRect)
         {
-            if (anchoredRect == null || rootCanvas == null)
+            if (anchoredRect == null)
             {
                 Debug.LogWarning("RectTransformUtils.ConvertWorldToLocalPosition(): Check param.");
                 return position;
             }
 
-            Vector2 localPoint;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                anchoredRect, 
-                position,
-                rootCanvas.renderMode == RenderMode.WorldSpace ? rootCanvas.worldCamera : null,
-                out localPoint
-            );
+            Vector3 worldPos = new Vector3(position.x, position.y, 0);
 
-            return localPoint;
+            Vector3 localPos = anchoredRect.InverseTransformPoint(worldPos);
+            return new Vector2(localPos.x, localPos.y);
         }
 
-        public static List<Vector2> ConvertLocalToWorldPositions([NotNull]List<Vector2> localPositions, [NotNull]RectTransform anchoredRect, [NotNull]Canvas rootCanvas)
+        public static List<Vector2> ConvertLocalToWorldPositions([NotNull] List<Vector2> localPositions, [NotNull] RectTransform anchoredRect)
         {
-            if (localPositions == null || localPositions.Count == 0 || anchoredRect == null || rootCanvas == null)
+            if (localPositions == null || localPositions.Count == 0 || anchoredRect == null)
             {
                 Debug.LogWarning("RectTransformUtils.ConvertLocalToWorldPositions(): Check param.");
                 return localPositions;
             }
-    
+
             List<Vector2> worldPositions = new List<Vector2>(localPositions.Count);
 
             foreach (Vector2 localPos in localPositions)
             {
-                Vector3 worldPosition = anchoredRect.TransformPoint(localPos);
-                
-                if (rootCanvas.renderMode == RenderMode.WorldSpace)
-                    worldPositions.Add(rootCanvas.worldCamera.WorldToScreenPoint(worldPosition));
-                else
-                    worldPositions.Add(worldPosition);
+                Vector3 worldPos = anchoredRect.TransformPoint(new Vector3(localPos.x, localPos.y, 0));
+                worldPositions.Add(new Vector2(worldPos.x, worldPos.y));
             }
 
             return worldPositions;
         }
 
-        public static Vector2 ConvertLocalToWorldPosition(Vector2 localPosition, [NotNull]RectTransform anchoredRect, [NotNull]Canvas rootCanvas)
+        public static Vector2 ConvertLocalToWorldPosition(Vector2 localPosition, [NotNull] RectTransform anchoredRect)
         {
-            if (anchoredRect == null || rootCanvas == null)
+            if (anchoredRect == null)
             {
                 Debug.LogWarning("RectTransformUtils.ConvertLocalToWorldPosition(): Check param.");
                 return localPosition;
             }
-            
-            Vector3 worldPosition = anchoredRect.TransformPoint(localPosition);
-            
-            if (rootCanvas.renderMode == RenderMode.WorldSpace)
-                return rootCanvas.worldCamera.WorldToScreenPoint(worldPosition);
-            
-            return worldPosition;
-            
+
+            Vector3 worldPos = anchoredRect.TransformPoint(new Vector3(localPosition.x, localPosition.y, 0));
+            return new Vector2(worldPos.x, worldPos.y);
         }
 
-        public static void PositionRectTransformByRatio([NotNull]this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
+        public static void PositionRectTransformByRatio([NotNull] this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
         {
             if (rectTransform && parentRect)
             {
@@ -1281,49 +1263,50 @@ namespace Utils
         }
 
         public static Canvas GetRootCanvas([NotNull]this RectTransform rectTransform) => rectTransform.GetComponentInParent<Canvas>().rootCanvas;
-        public static RectTransform GetRootCanvasRect(this RectTransform rectTransform)
+        
+        public static RectTransform GetRootCanvasRect([NotNull] this RectTransform rectTransform)
         {
              return rectTransform.GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();
         }
 
-        public static void SetAnchor([NotNull]this RectTransform rect, Vector2 min, Vector2 max)
+        public static void SetAnchor([NotNull] this RectTransform rect, Vector2 min, Vector2 max)
         {
             rect.anchorMin = min;
             rect.anchorMax = max;
         }
 
-        public static void SetOffset([NotNull]this RectTransform rect, Vector2 min, Vector2 max)
+        public static void SetOffset([NotNull] this RectTransform rect, Vector2 min, Vector2 max)
         {
             rect.offsetMin = min;
             rect.offsetMax = max;
         }
 
-        public static void SetEdges([NotNull]this RectTransform rect, float left, float right, float top, float bottom)
+        public static void SetEdges([NotNull] this RectTransform rect, float left, float right, float top, float bottom)
         {
             rect.offsetMin = new Vector2(left, bottom);
             rect.offsetMax = new Vector2(-right, -top);
         }
 
-        public static void SetRectFull([NotNull]this RectTransform rect)
+        public static void SetRectFull([NotNull] this RectTransform rect)
         {
             rect.SetAnchor(Vector2.zero, Vector2.one);
             rect.SetEdges(0f, 0f, 0f, 0f);
         }
 
-        public static void SetParent([CanBeNull]Transform parent, params Transform[] childs)
+        public static void SetParent([CanBeNull] Transform parent, params Transform[] childs)
         {
             foreach (Transform child in childs)
                 child.SetParent(parent);
         }
 
-        public static void SetXPos([NotNull]this RectTransform rect, float value)
+        public static void SetXPos([NotNull] this RectTransform rect, float value)
         {
             Vector2 position = rect.anchoredPosition;
             position.x = value;
             rect.anchoredPosition = position;
         }
 
-        public static void SetYPos([NotNull]this RectTransform rect, float value)
+        public static void SetYPos([NotNull] this RectTransform rect, float value)
         {
             Vector2 position = rect.anchoredPosition;
             position.y = value;
@@ -1504,7 +1487,7 @@ namespace Utils
             }
         }
 
-        public static string Load(string[] extensions, string title = "Open File", string startPath = null, Action<string> logger = null)
+        public static (string fileName, string value)? Load(string[] extensions, string title = "Open File", string startPath = null, Action<string> logger = null)
         {
             if (extensions == null || extensions.Length == 0)
                 extensions = new[] { "txt", "json", "xml" };
@@ -1519,15 +1502,18 @@ namespace Utils
             if (paths.Length == 0 || string.IsNullOrEmpty(paths[0]))
                 return null;
 
+            string path = paths[0];
+
             try
             {
-                string content = File.ReadAllText(paths[0]);
-                logger?.Invoke($"불러오기 성공: {paths[0]}");
-                return content;
+                string fileName = Path.GetFileName(path);
+                string content = File.ReadAllText(path);
+                logger?.Invoke($"불러오기 성공: {path}");
+                return (fileName, content);
             }
             catch
             {
-                logger?.Invoke($"불러오기 실패: {paths[0]}");
+                logger?.Invoke($"불러오기 실패: {path}");
                 return null;
             }
         }

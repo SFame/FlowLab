@@ -7,8 +7,7 @@ using UnityEngine.EventSystems;
 using Utils;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
-public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
-                            ILocatable, IHighlightable, IDeserializingListenable
+public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHighlightable, IDeserializingListenable
 {
     #region Privates
     private bool _initialized = false;
@@ -55,8 +54,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable,
             _background = value;
         }
     }
-
-    public Vector2 Location => Support.Location;
 
     public bool OnDeserializing
     {

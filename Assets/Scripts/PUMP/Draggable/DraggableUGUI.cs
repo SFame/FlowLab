@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(RectTransform))]
-public class DraggableUGUI : MonoBehaviour, IDraggable
+public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 {
     #region Privates
     private RectTransform _rect;
@@ -21,17 +21,17 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
     #endregion
 
     #region Interface
-    public Vector3 WorldPosition => Rect.position;
-    public Vector2 AnchoredPosition => Rect.anchoredPosition;
+    public Vector2 WorldPosition => Rect.position;
+    public virtual Vector2 LocalPosition => Rect.localPosition;
 
     public bool BlockedMove { get; set; } = false;
 
-    public void SetPosition(Vector2 position)
+    public void SetPosition(Vector2 worldPosition)
     {
         if (BlockedMove)
             return;
 
-        InternalSetPosition(position);
+        InternalSetPosition(worldPosition);
     }
 
     public void MovePosition(Vector2 direction)
@@ -72,7 +72,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
             return;
 
         _offset = (Vector2)Rect.position - eventData.position;
-        OnDragStart?.Invoke(eventData, new PositionInfo(WorldPosition, AnchoredPosition));
+        OnDragStart?.Invoke(eventData, new PositionInfo(WorldPosition, LocalPosition));
     }
 
     void IDragHandler.OnDrag(PointerEventData eventData)
@@ -85,7 +85,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
         SetPosition(newPosition);
         Vector2 actualDelta = (Vector2)Rect.position - beforePosition;
         eventData.delta = actualDelta;
-        OnDragging?.Invoke(eventData, new PositionInfo(WorldPosition, AnchoredPosition));
+        OnDragging?.Invoke(eventData, new PositionInfo(WorldPosition, LocalPosition));
     }
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
@@ -93,14 +93,14 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
         if (BlockedMove)
             return;
 
-        OnDragEnd?.Invoke(eventData, new PositionInfo(WorldPosition, AnchoredPosition));
+        OnDragEnd?.Invoke(eventData, new PositionInfo(WorldPosition, LocalPosition));
     }
 
-    private void InternalSetPosition(Vector2 position)
+    private void InternalSetPosition(Vector2 worldPosition)
     {
-        Vector3 newPosition = ClampPositionInBoundary(position);
+        Vector3 newPosition = ClampPositionInBoundary(worldPosition);
         Rect.position = newPosition;
-        OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, AnchoredPosition));
+        OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, LocalPosition));
     }
 
 
@@ -110,14 +110,14 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
 
         if (BoundaryRect != null)
         {
-            Vector2 sizeDelta = Rect.rect.size;
+            Vector2 rectSize = Rect.rect.size;
 
             Vector3[] corners = new Vector3[4];
             BoundaryRect.GetWorldCorners(corners);
-            float minX = corners[0].x + sizeDelta.x / 2;
-            float maxX = corners[2].x - sizeDelta.x / 2;
-            float minY = corners[0].y + sizeDelta.y / 2;
-            float maxY = corners[2].y - sizeDelta.y / 2;
+            float minX = corners[0].x + rectSize.x / 2;
+            float maxX = corners[2].x - rectSize.x / 2;
+            float minY = corners[0].y + rectSize.y / 2;
+            float maxY = corners[2].y - rectSize.y / 2;
 
             newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
             newPosition.y = Mathf.Clamp(newPosition.y, minY, maxY);
@@ -130,9 +130,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable
 
 public struct PositionInfo
 {
-    public Vector3 WorldPos { get; private set; }
+    public Vector2 WorldPos { get; private set; }
     public Vector2 AnchoredPosition { get; private set; }
-    public PositionInfo(Vector3 world, Vector2 anchored)
+    public PositionInfo(Vector2 world, Vector2 anchored)
     {
         WorldPos = world;
         AnchoredPosition = anchored;

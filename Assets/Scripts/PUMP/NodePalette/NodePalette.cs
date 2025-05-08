@@ -91,7 +91,7 @@ public abstract class NodePalette : MonoBehaviour
             newElem.DisplayName = kvp.Value;
             newElem.NodeType = kvp.Key;
 
-            if (GetSprite(kvp.Key) is Sprite sprite)
+            if (GetSprite(kvp.Key) is { } sprite)
                 newElem.Image.sprite = sprite;
 
             SetElementCallback(newElem);

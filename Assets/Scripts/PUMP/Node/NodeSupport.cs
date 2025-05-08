@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(RectTransform))]
-public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, ILocatable, IPointerClickHandler, IDragSelectable
+public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IDragSelectable
 {
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
@@ -117,8 +117,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         set => m_HighlightedColor = value;
     }
 
-    public Vector2 Location => Rect.position;
-
     public bool BlockClick { get; set; }
 
     public event Action<PointerEventData> OnClick;
@@ -127,7 +125,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     {
         if (!Node.OnDeserializing)
         {
-            _onSounded?.Invoke(this, new SoundEventArgs(index, Location));
+            _onSounded?.Invoke(this, new SoundEventArgs(index, WorldPosition));
         }
     }
 

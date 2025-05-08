@@ -138,7 +138,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             if (nodeTpIndex.nodeIndex != -1 && nodeTpIndex.tpIndex != -1)
             {
                 Vector2 rectSize = Rect.rect.size;
-                List<Vector2> verticesLocalPositions = ConvertWorldToLocalPositions(vertices[i], Rect, RootCanvas);
+                List<Vector2> verticesLocalPositions = ConvertWorldToLocalPositions(vertices[i], Rect);
                 List<Vector2> verticesLocalNormalizePositions = verticesLocalPositions
                     .Select(pos => GetNormalizeFromLocalPosition(rectSize, pos)).ToList();
                 saveTarget[i] = new TPConnectionIndexInfo() { NodeIndex = nodeTpIndex.nodeIndex, TpIndex = nodeTpIndex.tpIndex, Vertices = verticesLocalNormalizePositions };
@@ -536,7 +536,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
             foreach (Node node in Nodes)
             {
-                Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Location, Rect, RootCanvas);
+                Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
                 var statesTuple = node.GetTPStates();
                 SerializeNodeInfo nodeInfo = new()
                 {
@@ -607,7 +607,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 // Set node position ---------
                 Vector2 normalizeValue = info.NodePosition;
                 Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
-                newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect, RootCanvas);
+                newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
 
                 // Set Transition Point states ---------
                 newNode.SetTPStates(info.InTpState, info.OutTpState);
@@ -675,7 +675,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
                     List<Vector2> verticesLocalPosition = inConnectionTargetInfos[j].Vertices
                         .Select(normalized => GetLocalPositionFromNormalizeValue(rectSize, normalized)).ToList();
-                    inVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect, RootCanvas);
+                    inVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect);
                 }
 
                 // Out connection's target (target is TPIn)
@@ -706,7 +706,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
                     List<Vector2> verticesLocalPosition = outConnectionTargetInfos[j].Vertices
                         .Select(normalized => GetLocalPositionFromNormalizeValue(rectSize, normalized)).ToList();
-                    outVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect, RootCanvas);
+                    outVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect);
                 }
 
                 TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);

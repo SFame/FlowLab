@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utils;
+using VFolders.Libs;
 using static ScriptingNode;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
@@ -13,6 +14,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private ScriptingSupport _scriptingSupport;
 
     private string Script { get; set; } = string.Empty;
+    private string FileName { get; set; } = string.Empty;
 
     private bool IsScriptReady { get; set; } = false;
 
@@ -33,12 +35,12 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     private void ImportScript()
     {
-         string script = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
+         var tuple = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
 
-         if (string.IsNullOrEmpty(script))
+         if (tuple == null || string.IsNullOrEmpty(tuple.Value.value))
              return;
 
-         AddScript(script);
+         AddScript(tuple.Value.fileName, tuple.Value.value);
     }
 
     private void ExportScript()
@@ -46,9 +48,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         if (!IsScriptReady || string.IsNullOrEmpty(Script))
             return;
 
-        string nodeName = Communicator == null || string.IsNullOrEmpty(Communicator.ScriptFieldInfo.Name)
-            ? "new_script"
-            : Communicator.ScriptFieldInfo.Name;
+        string nodeName = string.IsNullOrEmpty(FileName) ? "new_script" : FileName;
 
         FileBrowser.Save(Script, nodeName, new [] { "py", "txt" }, "Export Script", null, null);
     }
@@ -87,7 +87,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override Vector2 TPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(210f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(210f, 100f);
 
     protected override string NodeDisplayName => "Scripting";
 
@@ -115,6 +115,8 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override void OnAfterInit()
     {
+        ScriptingSupport.Initialize();
+
         if (!IsDeserialized)
             return;
 
@@ -124,7 +126,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             return;
         }
 
-        InternalAddScript(Script);
+        InternalAddScript(FileName, Script);
     }
 
     protected override void OnBeforeReplayPending(bool[] pendings)
@@ -150,12 +152,13 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     #endregion
 
     #region Scripting
-    private void InternalAddScript(string script)
+    private void InternalAddScript(string fileName, string script)
     {
         try
         {
             InternalDisposeScript();
             Script = script;
+            FileName = fileName;
 
             if (string.IsNullOrEmpty(Script))
             {
@@ -171,6 +174,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
                 Communicator.OnOutputApply += OutputToken.ApplyStatesAll;
                 Communicator.OnPrint += ScriptingSupport.Print;
 
+                ScriptingSupport.ShowFileName(FileName);
                 IsScriptReady = true;
                 return;
             }
@@ -189,6 +193,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         IsScriptReady = false;
 
         Script = string.Empty;
+        FileName = string.Empty;
         Communicator?.Dispose();
         Communicator = null;
 
@@ -199,7 +204,8 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             OutputCount = DefaultOutputCount;
         }
 
-        ScriptingSupport.RemoveAll();
+        ScriptingSupport.RemoveFileName();
+        ScriptingSupport.RemoveAllLog();
         Support.SetName(NodeDisplayName);
     }
 
@@ -259,7 +265,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     }
 
     // Scripting Interface ---------------
-    public void AddScript(string script)
+    public void AddScript(string fileName, string script)
     {
         if (string.IsNullOrEmpty(script))
         {
@@ -268,7 +274,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             return;
         }
 
-        InternalAddScript(script);
+        InternalAddScript(fileName, script);
         InvokeInit();
         ReportChanges();
     }
@@ -288,12 +294,14 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         {
             _inputCount = InputCount,
             _outputCount = OutputCount,
+            _fileName = FileName,
             _script = Script
         };
         set
         {
             InputCount = value._inputCount;
             OutputCount = value._outputCount;
+            FileName = value._fileName;
             Script = value._script;
         }
     }
@@ -303,6 +311,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     {
         [OdinSerialize] public int _inputCount;
         [OdinSerialize] public int _outputCount;
+        [OdinSerialize] public string _fileName;
         [OdinSerialize] public string _script;
 
         public override string ToString()

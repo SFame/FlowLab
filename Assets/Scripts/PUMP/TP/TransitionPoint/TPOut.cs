@@ -26,7 +26,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
     private void OnNodeMove(LineConnector lineConnector)
     {
-        lineConnector.StartSidePoint = Location;
+        lineConnector.StartSidePoint = WorldPosition;
     }
 
     private void SetHide(bool isHide)
@@ -109,7 +109,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
             if (!OnDeserializing)
             {
-                OnSounded?.Invoke(this, new(0, Location));
+                OnSounded?.Invoke(this, new(0, WorldPosition));
             }
             return;
         }
@@ -125,7 +125,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
         if (!OnDeserializing)
         {
-            OnSounded?.Invoke(this, new(1, Location));
+            OnSounded?.Invoke(this, new(1, WorldPosition));
         }
     }
 
@@ -153,7 +153,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             _lineConnector.Remove();
 
         _lineConnector = Node.Background.LineConnectManager.AddLineConnector();
-        _lineConnector.Initialize(Location, Location);
+        _lineConnector.Initialize(WorldPosition, WorldPosition);
         _lineConnector.FreezeLinesAttributes = true;
 
         _hiders.Clear();
@@ -170,7 +170,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
             if (target != null)
             {
-                targetPoint = target.Location;
+                targetPoint = target.WorldPosition;
 
                 if (target is ITPHideable hideable && _hideTargetTpCache == null)
                 {

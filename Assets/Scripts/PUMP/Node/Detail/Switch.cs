@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Cysharp.Threading.Tasks;
+using NUnit.Framework.Internal;
 using UnityEngine;
+using Utils;
 
 public class Switch : Node, INodeAdditionalArgs<bool>
 {
@@ -56,6 +60,7 @@ public class Switch : Node, INodeAdditionalArgs<bool>
     protected override void OnAfterInit()
     {
         SwitchSupport.TransB = TransB;
+        SetArrowYPosAsync().Forget();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -66,6 +71,18 @@ public class Switch : Node, INodeAdditionalArgs<bool>
         }
 
         OutputToken[0].State = TransB ? InputToken[2].State : InputToken[0].State;
+    }
+
+    private async UniTaskVoid SetArrowYPosAsync()
+    {
+        await UniTask.Yield();
+
+        float[] inputTpYPos = InputToken.Select(tp => tp.LocalPosition.y).ToArray();
+
+        if (inputTpYPos.Length != 3)
+            return;
+
+        SwitchSupport.SetYPositions(inputTpYPos[0], inputTpYPos[2]);
     }
 
     public bool AdditionalArgs

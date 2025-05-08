@@ -13,7 +13,8 @@ public interface IStateful
 
 public interface ILocatable
 {
-    Vector2 Location { get; }
+    Vector2 WorldPosition { get; }
+    Vector2 LocalPosition { get; }
 }
 
 public interface IDeserializingListenable

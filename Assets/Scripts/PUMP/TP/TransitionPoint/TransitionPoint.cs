@@ -4,10 +4,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
-public abstract class TransitionPoint : MonoBehaviour, 
-                                        ITransitionPoint, IPointerEnterHandler, IMoveable, IGameObject,
-                                        IPointerExitHandler, IPointerClickHandler
+public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointerEnterHandler, IMoveable, 
+                                        IGameObject, IPointerExitHandler, IPointerClickHandler
 {
     #region Privates
     private RectTransform _imageRect;
@@ -71,7 +71,34 @@ public abstract class TransitionPoint : MonoBehaviour,
     }
     public bool BlockConnect { get; set; }
     public GameObject GameObject => gameObject;
-    public Vector2 Location => (Vector2)ImageRect?.position;
+
+    public Vector2 WorldPosition
+    {
+        get
+        {
+            if (ImageRect == null)
+            {
+                Debug.LogError("TransitionPoint: ImageRect not found");
+                return Vector2.zero;
+            }
+
+            return ImageRect.position;
+        }
+    }
+
+    public Vector2 LocalPosition
+    {
+        get
+        {
+            if (Node == null || Node.Support == null)
+            {
+                Debug.LogError("TransitionPoint: Node not found");
+                return Vector2.zero;
+            }
+
+            return RectTransformUtils.ConvertWorldToLocalPosition(WorldPosition, Node.Support.Rect);
+        }
+    }
 
     public abstract void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
     public abstract void AcceptLink(TPConnection connection);

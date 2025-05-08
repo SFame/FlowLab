@@ -1,7 +1,7 @@
 # Defines the node's name
 name: str = "ALU Node"
 # Specifies number of input ports
-input_list: list = ['in 1', 'in 2', 'mode']
+input_list: list = ['in 1', 'in 2', 'Mode']
 # Specifies number of output ports
 output_list: list = ['out 1', 'out 2']
 # When True, allows this node's methods to be executed asynchronously
@@ -10,7 +10,7 @@ is_async: bool = False
 # Controls whether state_update is automatically called after initialization
 # When True, system will call state_update once after init() with
 # index=-1, state=False, is_changed=False
-auto_state_update_after_init: bool = True
+auto_state_update_after_init: bool = False
 # Object responsible for applying output signals to the node
 output_applier: OutputApplier = None
 
@@ -28,6 +28,9 @@ MODE_SUB = 4
 MODE_MUL = 5
 MODE_DIV = 6
 
+# Mode names for display
+MODE_NAMES = ["AND", "OR", "XOR", "ADD", "SUB", "MUL", "DIV"]
+
 # Current operation mode
 current_mode = MODE_AND
 
@@ -35,6 +38,8 @@ def init(inputs: list) -> None:
     # 초기 상태에서 출력 업데이트 수행
     outputs = [False, False]
     output_applier.apply(outputs)
+    # 초기 모드 표시
+    printer.print(f"Mode: {MODE_NAMES[current_mode]}")
 
 def terminate() -> None:
     return
@@ -45,6 +50,8 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> Non
     # 컨트롤 입력이 True로 변경되면 모드 변경
     if index == 2 and state and is_changed:
         current_mode = (current_mode + 1) % 7  # 7가지 모드를 순환
+        # 모드 변경 시 현재 모드를 printer로 표시
+        printer.print(f"Mode: {MODE_NAMES[current_mode]}")
     
     # 입력이 충분하지 않으면 연산 불가
     if len(inputs) < 2:

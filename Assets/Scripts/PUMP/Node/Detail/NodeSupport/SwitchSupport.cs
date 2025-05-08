@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class SwitchSupport : MonoBehaviour
 {
+    [SerializeField] private RectTransform m_ARect;
+    [SerializeField] private RectTransform m_BRect;
     [SerializeField] private TextMeshProUGUI m_AText;
     [SerializeField] private TextMeshProUGUI m_BText;
 
@@ -17,6 +19,14 @@ public class SwitchSupport : MonoBehaviour
             _transB = value;
             SetTransText(_transB);
         }
+    }
+
+    public void SetYPositions(float aY, float bY)
+    {
+        Vector3 aPos = m_ARect.localPosition;
+        Vector3 bPos = m_BRect.localPosition;
+        m_ARect.localPosition = new Vector3(aPos.x, aY, aPos.z);
+        m_BRect.localPosition = new Vector3(bPos.x, bY, bPos.z);
     }
 
     private void SetTransText(bool isB)
