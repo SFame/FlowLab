@@ -38,6 +38,10 @@
 # - System.Text: String processing, encoding
 # ===============================================================
 
+
+
+# <<Node Configuration>>
+
 # Defines the node's name
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 name: str = "Scripting Node"
@@ -60,13 +64,16 @@ is_async: bool = False
 auto_state_update_after_init: bool = False
 
 
+
+# <<Node Controllers>>
+
 # ====================== WARNING ======================
 # DO NOT MODIFY THE FOLLOWING SYSTEM VARIABLES
 # These are automatically set by the system and will be overwritten
 
 # Object that controls output ports
 # Available API: def apply(self, outputs: list) -> None:
-# You need to provide a bool list as input. The length of this list must match output_counts
+# You need to provide a bool list as input. ※The length of this list must match output_counts
 output_applier: OutputApplier = None
 
 # Printer object
@@ -75,6 +82,9 @@ output_applier: OutputApplier = None
 printer: Printer = None
 # =====================================================
 
+
+
+# <<Node Lifecycle Methods>>
 
 def init(inputs: list) -> None:
     """
