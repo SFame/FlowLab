@@ -186,6 +186,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
                 }
             }
             GlobalEventManager.OnStageExitEvent(stageData);
+            GlobalEventManager.OnStageClearEvent();
             DelayedClosePuzzle().Forget();
         }
         OnPuzzleValidation?.Invoke(success);

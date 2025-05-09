@@ -58,6 +58,10 @@ public static class PlayerNodeInventory
             type => GetDisplayName(type)
         );
     }
+    public static List<Type> GetUnlockedNodeList()
+    {
+        return UnlockedNodes;
+    }
 
     public static bool UnlockNode(Type nodeType)
     {
@@ -65,7 +69,6 @@ public static class PlayerNodeInventory
             return false;
 
         UnlockedNodes.Add(nodeType);
-        SaveUnlockedNodes();
         OnNodeUnlocked?.Invoke(nodeType);
         return true;
     }
@@ -77,17 +80,19 @@ public static class PlayerNodeInventory
         LoadUnlockedNodes();
     }
 
-
-    private static void SaveUnlockedNodes()
-    {
-        // 해금노드 저장
-    }
-
-    private static void LoadUnlockedNodes()
+    public static void LoadUnlockedNodes()
     {
         UnlockedNodes.Clear();
 
         // 저장된 정보에서 불러와서 UnlockedNodes 리스트에 추가
+        foreach (var nodeType in GameSaveManager.Instance.GetUnlockNodeList())
+        {
+            if (nodeType != null && !UnlockedNodes.Contains(nodeType))
+            {
+                UnlockedNodes.Add(nodeType);
+            }
+        }
+
     }
 }
 

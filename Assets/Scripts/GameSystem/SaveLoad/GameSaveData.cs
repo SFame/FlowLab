@@ -12,6 +12,8 @@ public class GameSaveData
     [OdinSerialize][SerializeField] private List<object> _objectDataList;
     [SerializeField] private Dictionary<string, StageData> _stageDictionary;
 
+    [OdinSerialize][SerializeField] private List<Type> _unlockedNodeList;
+
     #region Properties
     public List<string> StageKeyList
     {
@@ -28,6 +30,11 @@ public class GameSaveData
         get { return _stageDictionary; }
         set { _stageDictionary = value; }
     }
+    public List<Type> UnlockedNodeList
+    {
+        get { return _unlockedNodeList; }
+        set { _unlockedNodeList = value; }
+    }
     #endregion
 
     public GameSaveData()
@@ -35,6 +42,7 @@ public class GameSaveData
         _stageKeyList = new List<string>();
         _stageDataList = new List<StageData>();
         _stageDictionary = new Dictionary<string, StageData>();
+        _unlockedNodeList = new List<Type>();
         _objectDataList = new List<object>();
     }
 
