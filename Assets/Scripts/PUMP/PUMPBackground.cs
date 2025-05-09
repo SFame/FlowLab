@@ -10,7 +10,6 @@ using UnityEngine.EventSystems;
 using Utils;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
-using Object = UnityEngine.Object;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorable, ICreationAwaitable
@@ -19,7 +18,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
-    [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.062f, 0.5f);
+    [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.055f, 0.5f);
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion

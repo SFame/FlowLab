@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utils;
-using VFolders.Libs;
 using static ScriptingNode;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]

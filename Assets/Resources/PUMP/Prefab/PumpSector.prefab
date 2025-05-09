@@ -515,6 +515,9 @@ MonoBehaviour:
   dateText: {fileID: 1119889918655988205}
   image: {fileID: 9185416992204861202}
   m_Displayer: {fileID: 1412786084563472262}
+  m_HighlightImage: {fileID: 0}
+  m_HighlightColor: {r: 0, g: 0, b: 0, a: 0}
+  m_DefaultColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &1412786084563472262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2696,7 +2699,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -7443756053782179069, guid: cca79d7b18270c242a91a5720c3e4250, type: 3}
+  m_Sprite: {fileID: 214582040267025251, guid: 44a8a4ec6285d6c479b26cec373f7f95, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2784,11 +2787,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_SizeDelta.x
-      value: -129.7924
+      value: -43.1166
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_SizeDelta.y
-      value: -128.3848
+      value: -43.7416
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2820,11 +2823,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0.5847168
+      value: -5.090515
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -5.956421
+      value: 4.8707886
       objectReference: {fileID: 0}
     - target: {fileID: 8254474786865043936, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2838,38 +2841,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 1656648216250604016, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5001776942726928216}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
---- !u!1 &4397099615863996633 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
-  m_PrefabInstance: {fileID: 1828178347302404684}
-  m_PrefabAsset: {fileID: 0}
---- !u!225 &5001776942726928216
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4397099615863996633}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!114 &4910561010743960146 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6736030158677057566, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
   m_PrefabInstance: {fileID: 1828178347302404684}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4397099615863996633}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56ac076ab66ac2d4b9f33f1358871dd3, type: 3}

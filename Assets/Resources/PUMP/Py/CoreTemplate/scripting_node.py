@@ -15,7 +15,7 @@
 
 # Defines the node's name
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
-name: str = "ScriptingNode"
+name: str = "Scripting Node"
 
 # Set the number and names of input ports with the list below
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect

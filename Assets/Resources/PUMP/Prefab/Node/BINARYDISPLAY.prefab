@@ -3409,7 +3409,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Slider: {fileID: 2123216416265204257}
   m_SegmentControllers:
-  - {fileID: 9086549271287912843}
-  - {fileID: 5101931033953994258}
-  - {fileID: 6781098823102420346}
   - {fileID: 9133150712025781935}
+  - {fileID: 6781098823102420346}
+  - {fileID: 5101931033953994258}
+  - {fileID: 9086549271287912843}
