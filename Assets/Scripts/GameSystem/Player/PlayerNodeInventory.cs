@@ -5,6 +5,8 @@ using System.Linq;
 
 public static class PlayerNodeInventory
 {
+    public static event Action<Type> OnNodeUnlocked;
+
     //기본제공
     private static readonly List<Type> BaseNodes = new List<Type>
     {
@@ -64,6 +66,7 @@ public static class PlayerNodeInventory
 
         UnlockedNodes.Add(nodeType);
         SaveUnlockedNodes();
+        OnNodeUnlocked?.Invoke(nodeType);
         return true;
     }
 

@@ -4,11 +4,14 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PuzzleBackground : MonoBehaviour, ISoundable
 {
     public PUMPBackground pumpBackground;
     public PuzzleTestCasePanel testCasePanel;
+
+    [SerializeField] private TextMeshProUGUI timerText;
 
     [SerializeField] private Button testButton;
     public Button exitButton;
@@ -28,8 +31,9 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
     public event Action<int, bool[], bool> OnTestCaseResultDetailed;
 
     public event SoundEventHandler OnSounded;
-
     
+    public PuzzleInteraction puzzleInteraction;
+
 
     private void Start()
     {
@@ -37,7 +41,22 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         {
             testButton.onClick.AddListener(() => ValidateAllTestCases().Forget());
         }
-        
+
+        UpdateTimerDisplay(0);
+
+    }
+    private void Update()
+    {
+        UpdateTimerDisplay(puzzleInteraction._clearTime);
+    }
+    public void UpdateTimerDisplay(float time)
+    {
+        if (timerText != null)
+        {
+            int minutes = Mathf.FloorToInt(time / 60f);
+            int seconds = Mathf.FloorToInt(time % 60f);
+            timerText.text = $"Time: {minutes:00}:{seconds:00}";
+        }
     }
 
     public void SetPuzzleData(PuzzleData puzzleData)
