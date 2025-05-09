@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class PuzzleStagePrefab : MonoBehaviour
 {
@@ -39,7 +40,8 @@ public class PuzzleStagePrefab : MonoBehaviour
     {
         SetInfo();
 
-        puzzleInteraction.OnPuzzleValidation += PuzzleSolved; // 이게 첫 시도엔 먼저 호출되서 첫퍼즐 풀이에 갱신이 안되나?
+        puzzleInteraction.OnPuzzleValidation += PuzzleSolved;
+        PlayerNodeInventory.OnNodeUnlocked += OnNodeUnlocked;
     }
     public void SetInfo()
     {
@@ -80,15 +82,24 @@ public class PuzzleStagePrefab : MonoBehaviour
         if (hasNeedNode)
         {
             needNodeTextObj.text = needNode;
-            lockPanel.SetActive(true);
+
+            Type needNodeType = Type.GetType(needNode);
+
+            if (needNodeType != null && PlayerNodeInventory.IsNodeAvailable(needNodeType))
+            {
+                // 필요한 노드가 이미 언락되어 있으면 잠금 해제
+                lockPanel.SetActive(false);
+            }
+            else
+            {
+                // 필요한 노드가 없으면 잠금 유지
+                lockPanel.SetActive(true);
+            }
         }
         else
         {
             lockPanel.SetActive(false);
         }
-
-        // 플레이어 노드 인벤토리에서 NeedNode를 가지고 있는지 확인후 lockPanel 조정
-        //TODO
 
         puzzleButton.onClick.AddListener(() =>
         {
@@ -96,12 +107,24 @@ public class PuzzleStagePrefab : MonoBehaviour
         });
     }
 
-    private void PuzzleSolved(bool isSolved) // 왜 처음 퍼즐생성하고 풀면 안되고 2번째부터 갱신되지?
+    private void PuzzleSolved(bool isSolved)
     {
         if (isSolved)
         {
             SetInfo();
             Debug.Log("Puzzle Solved: " + puzzleInteraction.puzzleName);
+        }
+    }
+    private void OnNodeUnlocked(Type unlockedNodeType)
+    {
+        if (hasNeedNode)
+        {
+            Type needNodeType = Type.GetType(needNode);
+
+            if (needNodeType == unlockedNodeType)
+            {
+                SetInfo();
+            }
         }
     }
 }

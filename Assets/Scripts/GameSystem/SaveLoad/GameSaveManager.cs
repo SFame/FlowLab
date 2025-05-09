@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using OdinSerializer;
 using UnityEngine;
@@ -22,6 +23,7 @@ public class GameSaveManager : MonoBehaviour
             GlobalEventManager.GameStartEvent += LoadGame;
             GlobalEventManager.GameExitEvent += SaveGame;
             GlobalEventManager.StageClearEvent += SetPuzzleState;
+            GlobalEventManager.StageClearEventForNode += SetUnlockNodeList;
         }
         else
         {
@@ -40,10 +42,20 @@ public class GameSaveManager : MonoBehaviour
         _data = LoadData<GameSaveData>(FILE_NAME);
         if(_data == default)
             _data = new GameSaveData();
+        else
+            PlayerNodeInventory.LoadUnlockedNodes();
     }
     public void SetPuzzleState(StageData stageData)
     {
         _data.StageDictionary[stageData.StageID] = stageData;
+    }
+    public void SetUnlockNodeList()
+    {
+        _data.UnlockedNodeList = PlayerNodeInventory.GetUnlockedNodeList();
+    }
+    public List<Type> GetUnlockNodeList()
+    {
+        return _data.UnlockedNodeList;
     }
     public StageData FindPuzzleDataState(string puzzleID)
     {

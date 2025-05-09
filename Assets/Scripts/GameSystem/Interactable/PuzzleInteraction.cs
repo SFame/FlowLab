@@ -14,7 +14,9 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     private PUMPBackground _pumpBackground;
     private PlayerController playerController;
     private bool _clear = false;
-    private float _clearTime = 0.0f; // 퍼즐 클리어 시간
+    public float _clearTime = 0.0f; // 퍼즐 클리어 시간
+    private float _startTime = 0.0f; // 퍼즐 시작 시간
+    private bool _timerRunning = false; // 타이머 실행 중 여부
     [SerializeField] string UnlockNodeName; // 나중에 PuzzleName이랑 해금노드랑 같게 만들것이니 임시용
     public bool Clear { get => _clear; }
     // 퍼즐 완료 이벤트
@@ -64,6 +66,14 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     {
         LoadPuzzleAsync().Forget();
     }
+    private void Update()
+    {
+        // 타이머가 실행 중이면 시간 측정
+        if (_timerRunning)
+        {
+            _clearTime = Time.time - _startTime;
+        }
+    }
 
     private async UniTaskVoid LoadPuzzleAsync()
     {
@@ -91,6 +101,11 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
             return;
         }
 
+        // 타이머 시작
+        _startTime = Time.time;
+        _clearTime = 0.0f;
+        _timerRunning = true;
+
         PUMPSeparator.SetVisible(true);
 
         if (playerController != null)
@@ -110,6 +125,7 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         }
 
         PuzzleBackground puzzleBackground = _pumpBackground.GetComponentInChildZone<PuzzleBackground>();
+        puzzleBackground.puzzleInteraction = this;
         puzzleBackground.pumpBackground = _pumpBackground;
         puzzleBackground.testCasePanel = _pumpBackground.GetComponentInChildZone<PuzzleTestCasePanel>();
         puzzleBackground.exitButton.onClick.AddListener(() => ClosePuzzle());
@@ -131,12 +147,9 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         // PuzzleData 설정 (테스트 케이스)
         if (puzzleData.Tag is PuzzleData taggedPuzzleData)
         {
-            // PuzzleTestCasePanel에 테스트 케이스 데이터 설정
-            //var puzzleTestCasePanel = _pumpUI.GetComponentInChildren<PuzzleTestCasePanel>();
             if (puzzleBackground.testCasePanel != null)
             {
                 // 테스트 케이스 패널에 직접 데이터 설정
-                //puzzleTestCasePanel.SetupTestCases(taggedPuzzleData);
                 puzzleBackground.testCasePanel.SetupTestCases(taggedPuzzleData);
             }
 
@@ -156,13 +169,24 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
 
     private void HandlePuzzleValidationComplete(bool success)
     {
-
         if (success)
         {
+            // 타이머 중지
+            _timerRunning = false;
+
             _clear = true;
             UnlockNodes();
             StageData stageData = new StageData(puzzleName, _clear, _clearTime);
+            StageData saveData = GameSaveManager.Instance.FindPuzzleDataState(puzzleName);
+            if (saveData != null)
+            {
+                if (saveData.ClearTime > _clearTime)
+                {
+                    saveData.ClearTime = _clearTime;
+                }
+            }
             GlobalEventManager.OnStageExitEvent(stageData);
+            GlobalEventManager.OnStageClearEvent();
             DelayedClosePuzzle().Forget();
         }
         OnPuzzleValidation?.Invoke(success);
