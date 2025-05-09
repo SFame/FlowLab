@@ -1,5 +1,5 @@
-import System
-from System.Threading import Thread
+add_reference("System.Threading")
+from System.Threading import Thread, ThreadInterruptedException
 
 # Defines the node's name
 name: str = "Async Timer"
@@ -78,7 +78,7 @@ def run_timer():
             if is_timer_running:
                 output_applier.apply([False])
                 printer.print("Ready for next trigger")
-    except System.Threading.ThreadInterruptedException:
+    except ThreadInterruptedException:
         printer.print("Timer interrupted")
     except Exception as e:
         printer.print(f"Error: {str(e)}")

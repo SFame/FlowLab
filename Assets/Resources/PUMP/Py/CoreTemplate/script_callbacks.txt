@@ -1,3 +1,11 @@
+import clr
+
+def add_reference(reference: str) -> None:
+    clr.AddReference(reference)
+
+add_reference("System")
+add_reference("System.Net")
+
 class OutputApplier:
     def __init__(self):
         self.callback = None
