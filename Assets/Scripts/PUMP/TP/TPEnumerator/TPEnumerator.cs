@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using static TPEnumeratorToken;
 
 public class TPEnumerator : MonoBehaviour, ITPEnumerator
 {
@@ -47,7 +48,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
         }
     }
 
-    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
+    public void SetTPConnections(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
     {
         if (!(targetTps.Length == vertices.Length && vertices.Length == TPs.Count))
         {
@@ -100,9 +101,13 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
             return null;
         }
 
-        return new TPEnumeratorToken(TPs, this);
+        return new TPEnumeratorToken(TPs);
     }
 
+    public ITransitionPoint[] GetTPs()
+    {
+        return TPs.ToArray();
+    }
 
     public void SetActive(bool active)
     {
@@ -111,7 +116,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
     #endregion
 
     #region Wrapped interface
-    public ITPEnumerator SetTPs(int count)
+    public ITPEnumerator SetTPCount(int count)
     {
         DestroyTPs();
 
@@ -231,23 +236,22 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
 /// Node에서 참조할 TP객체들을 가져올 수 있는 토큰
 /// </summary>
 /// <typeparam name="TP"></typeparam>
-public class TPEnumeratorToken : IEnumerable<ITransitionPoint>
+public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 {
     #region Privates
-    private readonly ITransitionPoint[] _tpArray;
+    private readonly ITransitionPoint[] _tps;
+    private bool _isNameDuplicated = true;
     #endregion
 
-    public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps, ITPEnumerator enumerator)
+    public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps)
     {
-        _tpArray = tps.ToArray();
-        Enumerator = enumerator;
+        _tps = tps.ToArray();
+        _adapters = tps.Select(tp => new StatefulAdapter(tp)).ToArray();
     }
 
-    public ITPEnumerator Enumerator { get; private set; }
-    public ITransitionPoint this[int index] => _tpArray[index];
-    public ITransitionPoint this[string name] => _tpArray.FirstOrDefault(tp => tp.Name == name);
-    public ITransitionPoint[] TPs => _tpArray;
-    public int Count => _tpArray.Length;
+    public IStateful this[int index] => _adapters[index];
+    public IStateful this[string name] => _adapters.FirstOrDefault(adapter => adapter.Name == name);
+    public int Count => _adapters.Length;
 
     public void ApplyStatesAll(IEnumerable<bool> states)
     {
@@ -270,7 +274,7 @@ public class TPEnumeratorToken : IEnumerable<ITransitionPoint>
             return;
         }
 
-        if (names.Count != _tpArray.Length)
+        if (names.Count != _adapters.Length)
         {
             Debug.LogError($"{GetType().Name}: names length is not match");
             return;
@@ -278,14 +282,70 @@ public class TPEnumeratorToken : IEnumerable<ITransitionPoint>
 
         if (names.Count != names.Distinct().Count())
         {
-            Debug.LogError($"{GetType().Name}: names contain duplicates");
-            return;
+            _isNameDuplicated = true;
+            Debug.LogWarning($"{GetType().Name}: names contain duplicates. This token cannot use the Name indexer");
+        }
+        else
+        {
+            _isNameDuplicated = false;
         }
 
-        for (int i = 0; i < _tpArray.Length; i++)
-            _tpArray[i].Name = names[i];
+        for (int i = 0; i < _adapters.Length; i++)
+            _adapters[i].Name = names[i];
     }
 
-    public IEnumerator<ITransitionPoint> GetEnumerator() => ((IEnumerable<ITransitionPoint>)_tpArray).GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => _tpArray.GetEnumerator();
+    #region Enumerable Interface
+    IEnumerator<IStateful> IEnumerable<IStateful>.GetEnumerator() => ((IEnumerable<IStateful>)_adapters).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => _adapters.GetEnumerator();
+    #endregion
+
+    #region Stateful Adapter
+    private StatefulAdapter[] _adapters;
+
+    private class StatefulAdapter : IStateful, INameable
+    {
+        private readonly ITransitionPoint _tp;
+
+        public StatefulAdapter(ITransitionPoint tp)
+        {
+            _tp = tp;
+        }
+
+        public bool SetState { get; set; }
+
+        public bool State
+        {
+            get => _tp.State;
+            set
+            {
+                if (!SetState)
+                {
+                    Debug.LogWarning("This token cannot be set");
+                    return;
+                }   
+                
+                _tp.State = value;
+            }
+        }
+
+        public string Name
+        {
+            get => _tp.Name;
+            set => _tp.Name = value;
+        }
+    }
+
+    void ISetStateUpdate.SetStateUpdate(bool state)
+    {
+        foreach (StatefulAdapter adapter in _adapters)
+        {
+            adapter.SetState = state;
+        }
+    }
+
+    public interface ISetStateUpdate
+    {
+        void SetStateUpdate(bool state);
+    }
+    #endregion
 }

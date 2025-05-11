@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
-using Utils;
+using static TPEnumeratorToken;
 
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
@@ -26,26 +25,14 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         {
             InputCount = value;
             OutputCount = value;
+            ((ISetStateUpdate)InputToken)?.SetStateUpdate(true);
             OnCountUpdate?.Invoke(value);
         }
     }
 
-    public IEnumerator<IStateful> GetEnumerator() => InputToken.GetEnumerator();
+    public IEnumerator<IStateful> GetEnumerator() => ((IEnumerable<IStateful>)InputToken).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    #endregion
-
-    #region Components
-    private TMP_Dropdown Dropdown
-    {
-        get
-        {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
-        }
-    }
-    private TMP_Dropdown _dropdown;
     #endregion
 
     protected override string SpritePath => "PUMP/Sprite/ingame/external_node";
@@ -58,8 +45,8 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     protected override Vector2 TPSize => new Vector2(35f, 50f);
     protected override Vector2 DefaultNodeSize => new Vector2(25f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
-    protected override int DefaultInputCount => 8;
-    protected override int DefaultOutputCount => 8;
+    protected override int DefaultInputCount => 2;
+    protected override int DefaultOutputCount => 2;
     protected override List<ContextElement> ContextElements
     {
         get => new List<ContextElement>()
@@ -100,27 +87,21 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override void OnAfterInit()
     {
+        ((ISetStateUpdate)InputToken).SetStateUpdate(true);
         Support.BlockedMove = true;
         InEnumActive = false;
 
         if (_handleRatios != null && GateCount == _handleRatios.Count)
         {
-            (OutputToken.Enumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
+            (Support.OutputEnumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
         }
-
-        if (Dropdown == null)
-            return;
-        
-        Dropdown.value = GateCount - 1;
-        Dropdown.onValueChanged.AddListener(value => GateCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
     }
 
     public override void SetHighlight(bool highlighted)
     {
         base.SetHighlight(highlighted);
 
-        if (OutputToken is { Enumerator: IHighlightable highlightable })
+        if (Support is { OutputEnumerator: IHighlightable highlightable })
         {
             highlightable.SetHighlight(highlighted);
         }
@@ -135,7 +116,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             return new()
             {
                 _gateCount = GateCount,
-                _handlePositions = (OutputToken.Enumerator as ExternalTPEnum)?.GetHandlesRatio()
+                _handlePositions = (Support.OutputEnumerator as ExternalTPEnum)?.GetHandlesRatio()
             };
         }
         set

@@ -175,7 +175,12 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             return null;
         }
 
-        return new TPEnumeratorToken(Handles.Select(handle => handle.TP), this);
+        return new TPEnumeratorToken(Handles.Select(handle => handle.TP));
+    }
+
+    public ITransitionPoint[] GetTPs()
+    {
+        return Handles.Select(handle => handle.TP).ToArray();
     }
 
     public void SetActive(bool active)
@@ -207,7 +212,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         return this;
     }
 
-    public ITPEnumerator SetTPs(int count)
+    public ITPEnumerator SetTPCount(int count)
     {
         foreach (ExternalTPHandle handle in Handles)
             handle.Destroy();
@@ -235,7 +240,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         return this;
     }
 
-    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
+    public void SetTPConnections(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver)
     {
         if (!(targetTps.Length == vertices.Length && vertices.Length == Handles.Count))
         {

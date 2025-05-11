@@ -2757,6 +2757,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2592999621388892361}
     m_Modifications:
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: m_DefaultExternalInputCount
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_Name
       value: PUMP_Background

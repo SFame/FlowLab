@@ -123,6 +123,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.PairBackground.SetInfos(structure.NodeInfos, true);
         current.ClassedNode.Id = structure.Tag.ToString();
         current.ClassedNode.Name = structure.Name;
+        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
         structure.NotifyDataChanged();
     }
@@ -146,6 +147,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             current.PairBackground.SetInfos(matchedStructure.NodeInfos, true);
             current.ClassedNode.Name = matchedStructure.Name;
             current.ClassedNode.Id = matchedStructure.Tag.ToString();
+            current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
             current.ClearChangeFlag();
             matchedStructure.NotifyDataChanged();
             return;
@@ -154,6 +156,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.PairBackground.SetInfos(new(), true);
         current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         current.ClassedNode.Id = string.Empty;
+        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
     }
 
@@ -261,7 +264,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         _exOutOnStateUpdateCache = () =>
         {
-            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray()); // 이 부분
+            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray());
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
 

@@ -24,8 +24,8 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
     {
         bool state = InputToken[0].State;
         
-        foreach (ITransitionPoint tp in OutputToken)
-            tp.State = state;
+        foreach (IStateful sf in OutputToken)
+            sf.State = state;
     }
 
     protected override void OnAfterInit()

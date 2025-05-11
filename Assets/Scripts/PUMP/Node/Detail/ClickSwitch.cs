@@ -29,8 +29,8 @@ public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        foreach (ITransitionPoint tp in OutputToken)
-            tp.State = State;
+        foreach (IStateful sf in OutputToken)
+            sf.State = State;
     }
 
     public bool AdditionalArgs

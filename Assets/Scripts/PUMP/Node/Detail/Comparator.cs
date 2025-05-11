@@ -48,7 +48,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         int activeCount = InputToken.Count(tp => tp.State);
         bool result = Operating(activeCount, CompareNumber, Operator);
 
-        foreach (ITransitionPoint tp in OutputToken)
+        foreach (IStateful tp in OutputToken)
             tp.State = result;
     }
     

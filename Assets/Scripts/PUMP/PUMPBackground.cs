@@ -20,6 +20,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     [SerializeField] private RectTransform m_ChildZone;
     [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.055f, 0.5f);
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
+    [Space(10)]
+    [SerializeField] private int m_DefaultExternalInputCount = 2;
+    [SerializeField] private int m_DefaultExternalOutputCount = 2;
+    [field: Space(10)]
+
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
     #endregion
 
@@ -40,8 +45,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private CanvasGroup _canvasGroup;
     private ExternalInputAdapter _externalInputAdapter = new();
     private ExternalOutputAdapter _externalOutputAdapter = new();
-    private int _defaultExternalInputCount = 2;
-    private int _defaultExternalOutputCount = 2;
     private PUMPSeparator _separator;
     private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
     private UniTask _changeInvokeTask = UniTask.CompletedTask;
@@ -77,9 +80,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             return;
 
         if (inputCount >= 0)
-            _defaultExternalInputCount = inputCount;
+            m_DefaultExternalInputCount = inputCount;
         if (outputCount >= 0)
-            _defaultExternalOutputCount = outputCount;
+            m_DefaultExternalOutputCount = outputCount;
 
         OnChanged -= RecordHistory;
         OnChanged += RecordHistory;
@@ -200,7 +203,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 if (newNode is IExternalInput newExternalInput)
                 {
                     _externalInputAdapter.UpdateReference(newExternalInput);
-                    newExternalInput.GateCount = _defaultExternalInputCount;
+                    newExternalInput.GateCount = m_DefaultExternalInputCount;
                     newInputCount = newExternalInput.GateCount;
                 }
                 newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
@@ -227,7 +230,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 if (newNode is IExternalOutput newExternalOutput)
                 {
                     _externalOutputAdapter.UpdateReference(newExternalOutput);
-                    newExternalOutput.GateCount = _defaultExternalOutputCount;
+                    newExternalOutput.GateCount = m_DefaultExternalOutputCount;
                     newOutputCount = newExternalOutput.GateCount;
                 }
                 newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);

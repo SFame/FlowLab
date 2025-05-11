@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using NUnit.Framework.Internal;
 using UnityEngine;
-using Utils;
 
 public class Switch : Node, INodeAdditionalArgs<bool>
 {
@@ -77,7 +74,7 @@ public class Switch : Node, INodeAdditionalArgs<bool>
     {
         await UniTask.Yield();
 
-        float[] inputTpYPos = InputToken.Select(tp => tp.LocalPosition.y).ToArray();
+        float[] inputTpYPos = Support.InputEnumerator.GetTPs().Select(tp => tp.LocalPosition.y).ToArray();
 
         if (inputTpYPos.Length != 3)
             return;

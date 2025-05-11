@@ -104,7 +104,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OnInputUpdate?.Invoke(InputToken.Select(tp => tp.State).ToArray());
+        OnInputUpdate?.Invoke(InputToken.Select(sf => sf.State).ToArray());
     }
 
     #region Classed Node Interface

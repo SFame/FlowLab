@@ -42,7 +42,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(tp => tp.State).ToArray());
+        BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(sf => sf.State).ToArray());
     }
 
     protected override void OnAfterInit()

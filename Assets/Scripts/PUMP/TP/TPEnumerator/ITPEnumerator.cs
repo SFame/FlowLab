@@ -4,21 +4,22 @@ using UnityEngine;
 
 public interface ITPEnumerator : IActivable
 {
-    public Node Node { get; set; }
-    public ITPEnumerator SetTPs(int count);
-    public void SetTPsConnection(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver);
-    public ITPEnumerator SetTPSize(Vector2 value);
-    public ITPEnumerator SetPadding(float value);
-    public ITPEnumerator SetMargin(float margin);
-    public ITPEnumerator SetHeight(float value);
+    Node Node { get; set; }
+    ITransitionPoint[] GetTPs();
+    ITPEnumerator SetTPCount(int count);
+    void SetTPConnections(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver);
+    ITPEnumerator SetTPSize(Vector2 value);
+    ITPEnumerator SetPadding(float value);
+    ITPEnumerator SetMargin(float margin);
+    ITPEnumerator SetHeight(float value);
 
-    public event Action<Vector2> OnSizeUpdatedWhenTPChange;
-    public float MinHeight { get; set; }
+    event Action<Vector2> OnSizeUpdatedWhenTPChange;
+    float MinHeight { get; set; }
 
-    public TPEnumeratorToken GetToken();
+    TPEnumeratorToken GetToken();
 }
 
 public interface IActivable
 {
-    public void SetActive(bool active);
+    void SetActive(bool active);
 }

@@ -141,7 +141,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         if (Communicator == null)
             return;
 
-        Communicator.InvokeStateUpdate(args, InputToken.Select(tp => tp.State).ToList());
+        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => sf.State).ToList());
     }
 
     protected override void OnBeforeRemove()

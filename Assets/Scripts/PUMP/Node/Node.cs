@@ -19,6 +19,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     private bool _outEnumActive = true;
 
     private bool _onDeserializing = false;
+
+    private void CheckSupportEnumeratorNull()
+    {
+        if (Support == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}: NodeSupport is null");
+        }
+
+        if (Support.InputEnumerator == null || Support.OutputEnumerator == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}: Enumerator is null");
+        }
+    }
     #endregion
 
     #region Interface
@@ -61,7 +74,13 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         set
         {
             _onDeserializing = value;
-            foreach (ITransitionPoint tp in InputToken)
+
+            CheckSupportEnumeratorNull();
+
+            ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+            ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+            foreach (ITransitionPoint tp in inputTPs)
             {
                 if (tp is IDeserializingListenable listenable)
                 {
@@ -69,7 +88,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
                 }
             }
 
-            foreach (ITransitionPoint tp in OutputToken)
+            foreach (ITransitionPoint tp in outputTPs)
             {
                 if (tp is IDeserializingListenable listenable)
                 {
@@ -91,20 +110,35 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     public (ITransitionPoint[] inTps, ITransitionPoint[] outTps) GetTPs()
     {
-        return (InputToken.TPs, OutputToken.TPs);
+        if (Support == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}: NodeSupport is null");
+        }
+
+        if (Support.InputEnumerator == null || Support.OutputEnumerator == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}: Enumerator is null");
+        }
+
+        return (Support.InputEnumerator.GetTPs(), Support.OutputEnumerator.GetTPs());
     }
 
     public int GetTPIndex(ITransitionPoint findTp)
     {
-        for (int i = 0; i < InputToken.Count; i++)
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        for (int i = 0; i < inputTPs.Length; i++)
         {
-            if (InputToken[i] == findTp)
+            if (inputTPs[i] == findTp)
                 return i;
         }
-        
-        for (int i = 0; i < OutputToken.Count; i++)
+
+        for (int i = 0; i < outputTPs.Length; i++)
         {
-            if (OutputToken[i] == findTp)
+            if (outputTPs[i] == findTp)
                 return i;
         }
 
@@ -127,19 +161,21 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     {
         Support.SelectedRemoveRequestInvoke();
 
-        if (InputToken != null)
-        {
-            foreach (ITransitionPoint tp in InputToken)
-                tp.Connection?.Disconnect();
-        }
+        CheckSupportEnumeratorNull();
 
-        if (OutputToken != null)
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        foreach (ITransitionPoint tp in inputTPs)
         {
-            foreach (ITransitionPoint tp in OutputToken)
-                tp.Connection?.Disconnect();
+            tp.Connection?.Disconnect();
+        }
+        foreach (ITransitionPoint tp in outputTPs)
+        {
+            tp.Connection?.Disconnect();
         }
     }
-    
+
     public virtual void SetHighlight(bool highlighted)
     {
         Support.SetHighlight(highlighted);
@@ -167,7 +203,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             return null;
         }
 
-        return new TPConnectionInfo(InputToken.TPs, OutputToken.TPs);
+        CheckSupportEnumeratorNull();
+
+        return new TPConnectionInfo(Support.InputEnumerator.GetTPs(), Support.OutputEnumerator.GetTPs());
     }
 
     /// <summary>
@@ -175,8 +213,13 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     /// </summary>
     public (bool[] inputStates, bool[] outputStates) GetTPStates()
     {
-        bool[] inputStates = InputToken.Select(tp => tp.State).ToArray();
-        bool[] outputStates = OutputToken.Select(tp => tp.State).ToArray();
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        bool[] inputStates = inputTPs.Select(tp => tp.State).ToArray();
+        bool[] outputStates = outputTPs.Select(tp => tp.State).ToArray();
         return (inputStates, outputStates);
     }
 
@@ -185,13 +228,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     /// </summary>
     public bool[] GetStatePending()
     {
-        if (OutputToken.TPs.All(tp => tp is ITPOut))
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        if (outputTPs.All(tp => tp is ITPOut))
         {
-            return OutputToken.TPs.Select(tp => ((ITPOut)tp).IsStatePending).ToArray();
+            return outputTPs.Select(tp => ((ITPOut)tp).IsStatePending).ToArray();
         }
 
         Debug.LogError("OutputToken.TPs element is not ITPOut");
-        return Enumerable.Repeat(false, OutputToken.Count).ToArray();
+        return Enumerable.Repeat(false, outputTPs.Length).ToArray();
     }
 
     /// <summary>
@@ -205,8 +252,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             return;
         }
 
-        InputToken.Enumerator.SetTPsConnection(connectionInfo.InConnectionTargets, connectionInfo.InVertices, completeReceiver);
-        OutputToken.Enumerator.SetTPsConnection(connectionInfo.OutConnectionTargets, connectionInfo.OutVertices, completeReceiver);
+        Support.InputEnumerator.SetTPConnections(connectionInfo.InConnectionTargets, connectionInfo.InVertices, completeReceiver);
+        Support.OutputEnumerator.SetTPConnections(connectionInfo.OutConnectionTargets, connectionInfo.OutVertices, completeReceiver);
     }
 
     /// <summary>
@@ -214,13 +261,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     /// </summary>
     public void SetTPStates(bool[] inputStates, bool[] outputStates)
     {
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
         if (inputStates != null)
         {
-            if (inputStates.Length == InputToken.Count)
+
+            if (inputStates.Length == inputTPs.Length)
             {
                 for (int i = 0; i < inputStates.Length; i++)
                 {
-                    InputToken[i].State = inputStates[i];
+                    inputTPs[i].State = inputStates[i];
                 }
             }
             else
@@ -231,7 +284,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         else
         {
             Debug.LogWarning($"{Support.name}: Input States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
-            foreach (ITransitionPoint tp in InputToken)
+            foreach (ITransitionPoint tp in inputTPs)
             {
                 tp.State = false;
             }
@@ -239,11 +292,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         if (outputStates != null)
         {
-            if (outputStates.Length == OutputToken.Count)
+            if (outputStates.Length == outputTPs.Length)
             {
                 for (int i = 0; i < outputStates.Length; i++)
                 {
-                    OutputToken[i].State = outputStates[i];
+                    outputTPs[i].State = outputStates[i];
                 }
             }
             else
@@ -254,7 +307,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         else
         {
             Debug.LogWarning($"{Support.name}: Output States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
-            foreach (ITransitionPoint tp in OutputToken)
+            foreach (ITransitionPoint tp in outputTPs)
             {
                 tp.State = false;
             }
@@ -269,15 +322,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             return;
         }
 
-        if (OutputToken.Count != pending.Length)
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        if (outputTPs.Length != pending.Length)
         {
-            Debug.LogError($"{Support.name}: Count mismatch detected: Expected {pending.Length} pending info data but found {OutputToken.Count} Output.TPs");
+            Debug.LogError($"{Support.name}: Count mismatch detected: Expected {pending.Length} pending info data but found {outputTPs.Length} Output.TPs");
             return;
         }
 
-        for (int i = 0; i < OutputToken.Count; i++)
+        for (int i = 0; i < outputTPs.Length; i++)
         {
-            if (pending[i] && OutputToken[i] is ITPOut tpOut)
+            if (pending[i] && outputTPs[i] is ITPOut tpOut)
             {
                 tpOut.PushToConnection();
             }
@@ -287,8 +344,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     #region Protected
     // IO -----------------------------
-    protected TPEnumeratorToken InputToken { get; set; } // InputToken[n].State를 set 하지 말 것.
-    protected TPEnumeratorToken OutputToken { get; set; }
+    protected TPEnumeratorToken InputToken { get; private set; } // InputToken[n].State를 set 하지 말 것.
+    protected TPEnumeratorToken OutputToken { get; private set; }
 
 
     // Life Cycle (Deserialize)-----------------------------
@@ -365,7 +422,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         get => _inEnumActive;
         set
         {
-            InputToken?.Enumerator?.SetActive(value);
+            Support?.InputEnumerator?.SetActive(value);
             _inEnumActive = value;
         }
     }
@@ -375,16 +432,16 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         get => _outEnumActive;
         set
         {
-            OutputToken?.Enumerator?.SetActive(value);
+            Support?.OutputEnumerator?.SetActive(value);
             _outEnumActive = value;
         }
     }
 
     protected void ResetToken(bool stateUpdate = true)
     {
-        if (InputToken?.Enumerator == null || OutputToken?.Enumerator == null)
+        if (Support?.InputEnumerator == null || Support?.OutputEnumerator == null)
         {
-            Debug.LogError($"{GetType().Name}: Token(or Token's Enumerator) is null");
+            Debug.LogError($"{GetType().Name}: Support(or Enumerator) is null");
             return;
         }
 
@@ -455,21 +512,24 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             .SetPadding(EnumeratorPadding)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
-            .SetTPs(InputNames.Count)
+            .SetTPCount(InputNames.Count)
             .GetToken();
 
         OutputToken = Support.OutputEnumerator
             .SetPadding(EnumeratorPadding)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
-            .SetTPs(OutputNames.Count)
+            .SetTPCount(OutputNames.Count)
             .GetToken();
-        
+
         if (InputToken is null || OutputToken is null)
         {
             throw new Exception("Token casting fail");
         }
-        
+
+        ((TPEnumeratorToken.ISetStateUpdate)InputToken).SetStateUpdate(false);
+        ((TPEnumeratorToken.ISetStateUpdate)OutputToken).SetStateUpdate(true);
+
         InputToken.SetNames(InputNames);
         OutputToken.SetNames(OutputNames);
 
@@ -481,13 +541,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     /// </summary>
     private void SubscribeTPInStateUpdateEvent()
     {
-        if (InputToken is null)
-        {
-            Debug.LogError($"{GetType().Name}: InputToken in null");
-            return;
-        }
+        CheckSupportEnumeratorNull();
 
-        foreach (ITransitionPoint tp in InputToken)
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+
+        foreach (ITransitionPoint tp in inputTPs)
         {
             if (tp is ITPIn tpIn)
             {
@@ -525,28 +583,110 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
     }
 
-    void INodeLifecycleCallable.CallOnAfterInstantiate() => OnAfterInstantiate();
+    void INodeLifecycleCallable.CallOnAfterInstantiate()
+    {
+        try
+        {
+            OnAfterInstantiate();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
     void INodeLifecycleCallable.CallOnAfterSetAdditionalArgs()
     {
         IsDeserialized = true;
-        OnAfterSetAdditionalArgs();
+
+        try
+        {
+            OnAfterSetAdditionalArgs();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
-    void INodeLifecycleCallable.CallOnBeforeInit() => OnBeforeInit();
+    void INodeLifecycleCallable.CallOnBeforeInit()
+    {
+        try
+        {
+            OnBeforeInit();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
-    void INodeLifecycleCallable.CallOnAfterInit() => OnAfterInit();
+    void INodeLifecycleCallable.CallOnAfterInit()
+    {
+        try
+        {
+            OnAfterInit();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
-    void INodeLifecycleCallable.CallOnBeforeAutoConnect() => OnBeforeAutoConnect();
+    void INodeLifecycleCallable.CallOnBeforeAutoConnect()
+    {
+        try
+        {
+            OnBeforeAutoConnect();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
-    void INodeLifecycleCallable.CallOnBeforeReplayPending(bool[] pendings) => OnBeforeReplayPending(pendings);
+    void INodeLifecycleCallable.CallOnBeforeReplayPending(bool[] pendings)
+    {
+        try
+        {
+            OnBeforeReplayPending(pendings);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
-    void INodeLifecycleCallable.CallOnCompletePlacementFromPalette() => InternalCallOnCompletePlacementFromPalette();
+    void INodeLifecycleCallable.CallOnCompletePlacementFromPalette()
+    {
+        try
+        {
+            InternalCallOnCompletePlacementFromPalette();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
 
     void INodeLifecycleCallable.CallSetInitializeState()
     {
-        int outputCount = OutputToken.Count;
-        bool[] outputStates = SetInitializeState(outputCount);
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+        int outputCount = outputTPs.Length;
+        bool[] outputStates;
+
+        try
+        {
+            outputStates = SetInitializeState(outputCount);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            ((INodeLifecycleCallable)this).CallStateUpdate(null);
+            return;
+        }
 
         if (outputStates == null)
         {
@@ -563,11 +703,21 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         for (int i = 0; i < outputCount; i++)
         {
-            OutputToken[i].State = outputStates[i];
+            outputTPs[i].State = outputStates[i];
         }
     }
 
-    void INodeLifecycleCallable.CallOnBeforeRemove() => OnBeforeRemove();
+    void INodeLifecycleCallable.CallOnBeforeRemove()
+    {
+        try
+        {
+            OnBeforeRemove();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
     #endregion
 }
 
