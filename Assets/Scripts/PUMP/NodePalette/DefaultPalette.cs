@@ -22,6 +22,7 @@ public class DefaultPalette : NodePalette
         { typeof(Switch), "Switch" },
         { typeof(SegmentDisplay), "7-Segment Display" },
         { typeof(BinaryDisplay), "Binary Display" },
+        { typeof(Debouncer), "Debouncer" },
     };
 
     private void Awake()
