@@ -20,4 +20,8 @@ public class UIButtonEvent : MonoBehaviour
         GlobalEventManager.OnGameExitEvent();
         SceneManager.LoadSceneAsync("1.MainMenu");
     }
+    public void OnClickHowToPlay()
+    {
+        CutsceneDisplay.ShowCutscene("HowToPlay");
+    }
 }
