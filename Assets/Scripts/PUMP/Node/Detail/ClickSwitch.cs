@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ClickSwitch : Node, IStateful, INodeAdditionalArgs<bool>
+public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
 

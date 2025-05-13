@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using Cysharp.Threading.Tasks;
 using System.Threading;
-using static UnityEngine.RuleTile.TilingRuleOutput;
+using UnityEngine.Serialization;
 
 public static class CutsceneDisplay
 {
@@ -92,7 +91,7 @@ public static class CutsceneDisplay
     {
         if (_isDisplayingCutscene)
         {
-            // ÀÌ¹Ì ÁøÇà ÁßÀÎ ÄÆ½ÅÀÌ ÀÖ´Ù¸é Á¾·á
+            // ì´ë¯¸ ì§„í–‰ ì¤‘ì¸ ì»·ì‹ ì´ ìˆë‹¤ë©´ ì¢…ë£Œ
             _cutsceneCts?.Cancel();
         }
 
@@ -103,26 +102,26 @@ public static class CutsceneDisplay
 
         _cutscenePanelInstance.SetActive(true);
 
-        // ÄÆ¾À ½ÃÀÛ ¾Ë¸²
+        // ì»·ì”¬ ì‹œì‘ ì•Œë¦¼
         OnCutsceneStarted?.Invoke(entry.id);
 
-        // ÄÆ¾À ÀÌ¹ÌÁö Ç¥½Ã
+        // ì»·ì”¬ ì´ë¯¸ì§€ í‘œì‹œ
         await DisplayCutsceneImage(entry);
 
-        // ´ëÈ­ ID°¡ ÀÖ´Ù¸é ´ëÈ­ È£ÃâÇØ¼­ Ç¥½Ã
+        // ëŒ€í™” IDê°€ ìˆë‹¤ë©´ ëŒ€í™” í˜¸ì¶œí•´ì„œ í‘œì‹œ
         if (!string.IsNullOrEmpty(entry.dialogueId))
         {
             TextDisplay.ShowDialogue(entry.dialogueId);
         }
 
-        // ¸¸¾à durationÀÌ 0º¸´Ù Å©´Ù¸é ³¡³¯ ¶§±îÁö ±â´Ù¸² (´ëÈ­°¡ ¾øÀ¸¸é durationÀÌ ³¡³¯ ¶§±îÁö ±â´Ù¸²)
+        // ë§Œì•½ durationì´ 0ë³´ë‹¤ í¬ë‹¤ë©´ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼ (ëŒ€í™”ê°€ ì—†ìœ¼ë©´ durationì´ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼)
         if (entry.duration > 0)
         {
             _cutsceneCts = new CancellationTokenSource();
             try
             {
                 await UniTask.Delay(TimeSpan.FromSeconds(entry.duration), cancellationToken: _cutsceneCts.Token);
-                // ¸¸¾à ´ëÈ­°¡ ÀÖ´Ù¸é ´ëÈ­°¡ ³¡³¯ ¶§±îÁö ±â´Ù¸²,
+                // ë§Œì•½ ëŒ€í™”ê°€ ìˆë‹¤ë©´ ëŒ€í™”ê°€ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼,
                 if (string.IsNullOrEmpty(entry.dialogueId))
                 {
                     AdvanceCutscene();
@@ -135,10 +134,10 @@ public static class CutsceneDisplay
         }
         else if (string.IsNullOrEmpty(entry.dialogueId))
         {
-            // ´ëÈ­, durationÀÌ ¾øÀ¸¸é ¹Ù·Î ´ÙÀ½ ÄÆ½ÅÀ¸·Î ³Ñ¾î°¨
+            // ëŒ€í™”, durationì´ ì—†ìœ¼ë©´ ë°”ë¡œ ë‹¤ìŒ ì»·ì‹ ìœ¼ë¡œ ë„˜ì–´ê°
             AdvanceCutscene();
         }
-        // ±×·¸Áö ¾ÊÀ¸¸é ´ëÈ­°¡ ³¡³¯ ¶§±îÁö ±â´Ù¸² (ÀÌº¥Æ®·Î Ã³¸®µÊ)
+        // ê·¸ë ‡ì§€ ì•Šìœ¼ë©´ ëŒ€í™”ê°€ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦¼ (ì´ë²¤íŠ¸ë¡œ ì²˜ë¦¬ë¨)
     }
 
     private static async UniTask EnsureCutscenePanelExists()
@@ -167,7 +166,7 @@ public static class CutsceneDisplay
             _cutsceneImage = _cutscenePanelInstance.transform.Find("CutsceneImage")?.GetComponent<Image>();
             _overlayImage = _cutscenePanelInstance.transform.Find("TransitionOverlay")?.GetComponent<Image>();
 
-            // ´ë»ç°¡ ¸¹À»¶§, ´ÙÀ½ ÄÆ½ÅÀ¸·Î ½ºÅµ(½ºÅµ¹öÆ° ¹Ì±¸Çö)
+            // ëŒ€ì‚¬ê°€ ë§ì„ë•Œ, ë‹¤ìŒ ì»·ì‹ ìœ¼ë¡œ ìŠ¤í‚µ(ìŠ¤í‚µë²„íŠ¼ ë¯¸êµ¬í˜„)
             //Button skipButton = _cutscenePanelInstance.transform.Find("SkipButton")?.GetComponent<Button>();
             //if (skipButton != null)
             //{
@@ -196,25 +195,25 @@ public static class CutsceneDisplay
         }
 
         // Apply transition effect
-        switch (entry.transition)
+        switch (entry.m_Fade)
         {
-            case TransitionType.None:
+            case FadeType.None:
                 _cutsceneImage.sprite = sprite;
                 break;
 
-            case TransitionType.Fade:
+            case FadeType.Fade:
                 await FadeTransition(sprite, entry.transitionDuration);
                 break;
 
-            case TransitionType.CrossFade:
+            case FadeType.CrossFade:
                 await CrossFadeTransition(sprite, entry.transitionDuration);
                 break;
 
-            case TransitionType.SlideLeft:
+            case FadeType.SlideLeft:
                 await SlideTransition(sprite, entry.transitionDuration, true);
                 break;
 
-            case TransitionType.SlideRight:
+            case FadeType.SlideRight:
                 await SlideTransition(sprite, entry.transitionDuration, false);
                 break;
         }
@@ -323,7 +322,7 @@ public static class CutsceneDisplay
 
     private static void HandleDialogueEnded(string dialogueId)
     {
-        // ÇöÀç ÁøÇà ÁßÀÎ ÄÆ½ÅÀÌ ´ëÈ­¸¦ ¸¶Ä¡¸é ´ÙÀ½ÄÆ½ÅÀ¸·Î ÁøÇà
+        // í˜„ì¬ ì§„í–‰ ì¤‘ì¸ ì»·ì‹ ì´ ëŒ€í™”ë¥¼ ë§ˆì¹˜ë©´ ë‹¤ìŒì»·ì‹ ìœ¼ë¡œ ì§„í–‰
         if (_isDisplayingCutscene && _currentEntry != null && _currentEntry.dialogueId == dialogueId)
         {
             AdvanceCutscene();
@@ -335,10 +334,10 @@ public static class CutsceneDisplay
         if (!_isDisplayingCutscene || _currentEntry == null)
             return;
 
-        // ÄÆ½Å ÁøÇà ¾Ë¸²
+        // ì»·ì‹  ì§„í–‰ ì•Œë¦¼
         OnCutsceneAdvanced?.Invoke(_currentEntry);
 
-        // ´ÙÀ½ ÄÆ½ÅÀÌ ÀÖ´Ù¸é ÁøÇà
+        // ë‹¤ìŒ ì»·ì‹ ì´ ìˆë‹¤ë©´ ì§„í–‰
         if (!string.IsNullOrEmpty(_currentEntry.nextCutsceneId))
         {
             CutsceneEntry nextEntry = null;
@@ -348,7 +347,7 @@ public static class CutsceneDisplay
                 nextEntry = _currentSequence.entries.Find(e => e.id == _currentEntry.nextCutsceneId);
             }
 
-            // ¸¸¾à ÇöÀç ½ÃÄö½º¿¡ ´ÙÀ½ ÄÆ½ÅÀÌ ¾ø´Ù¸é ´Ù¸¥ ½ÃÄö½º¿¡¼­ Ã£À½
+            // ë§Œì•½ í˜„ì¬ ì‹œí€€ìŠ¤ì— ë‹¤ìŒ ì»·ì‹ ì´ ì—†ë‹¤ë©´ ë‹¤ë¥¸ ì‹œí€€ìŠ¤ì—ì„œ ì°¾ìŒ
             if (nextEntry == null)
             {
                 foreach (CutsceneSequence sequence in _cutsceneDatabase.sequences)
@@ -369,7 +368,7 @@ public static class CutsceneDisplay
             }
         }
 
-        // ´ÙÀ½ ÄÆ½ÅÀÌ ¾ø´Ù¸é ÄÆ½Å Á¾·á
+        // ë‹¤ìŒ ì»·ì‹ ì´ ì—†ë‹¤ë©´ ì»·ì‹  ì¢…ë£Œ
         EndCutscene();
     }
 
@@ -416,7 +415,7 @@ public class CutsceneEntry
     public string dialogueId;       // ID of the dialogue to display with this cutscene
     public float duration = 0;      // Duration (0 = wait for dialogue to complete)
     public string nextCutsceneId;   // Next cutscene to show (empty = end sequence)
-    public TransitionType transition = TransitionType.Fade;
+    [FormerlySerializedAs("transition")] public FadeType m_Fade = FadeType.Fade;
     public float transitionDuration = 1.0f;
 }
 
@@ -434,7 +433,7 @@ public class CutsceneDatabase
     public List<CutsceneSequence> sequences = new List<CutsceneSequence>();
 }
 
-public enum TransitionType
+public enum FadeType
 {
     None,
     Fade,

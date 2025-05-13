@@ -20,7 +20,7 @@ public class PUMPTool : MonoBehaviour, IRaycastAlphaControl
     [SerializeField] private float openButtonFadeDuration = 0.2f;
     [SerializeField] private float interactAlphaFadeDuration = 0.2f;
     #endregion
-    
+
     public void SetInteract(bool interact)
     {
         if (CanvasGroup == null)
