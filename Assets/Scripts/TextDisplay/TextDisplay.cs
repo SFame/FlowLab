@@ -11,9 +11,9 @@ using Unity.VisualScripting;
 [Serializable]
 public class DialogueChoice
 {
-    public string choiceText; // ¼±ÅÃÁö ÅØ½ºÆ®
-    public string nextDialogueId; // ¼±ÅÃ ½Ã ÀüÈ¯µÉ ´ëÈ­ ID
-    public string eventId; // ¼±ÅÃ ½Ã ¹ß»ıÇÒ ÀÌº¥Æ® ID
+    public string choiceText; // ì„ íƒì§€ í…ìŠ¤íŠ¸
+    public string nextDialogueId; // ì„ íƒ ì‹œ ì „í™˜ë  ëŒ€í™” ID
+    public string eventId; // ì„ íƒ ì‹œ ë°œìƒí•  ì´ë²¤íŠ¸ ID
 }
 [Serializable]
 public class DialogueEntry
@@ -22,7 +22,7 @@ public class DialogueEntry
     public string messageText;
     public string speakerImagePath;
 
-    public List<DialogueChoice> choices = new List<DialogueChoice>(); // ¼±ÅÃÁö ¸ñ·Ï
+    public List<DialogueChoice> choices = new List<DialogueChoice>(); // ì„ íƒì§€ ëª©ë¡
     public bool hasChoices => choices != null && choices.Count > 0;
 }
 
@@ -35,7 +35,7 @@ public class DialogueSequence
 }
 
 /// <summary>
-/// ¸ğµç ´ëÈ­ ½ÃÄı½º¸¦ ÀúÀåÇÏ´Â DB
+/// ëª¨ë“  ëŒ€í™” ì‹œí€¸ìŠ¤ë¥¼ ì €ì¥í•˜ëŠ” DB
 /// </summary>
 [Serializable]
 public class DialogueDatabase
@@ -53,9 +53,9 @@ public static class TextDisplay
     // Events
     public static event Action<string> OnDialogueStarted;
     public static event Action<string> OnDialogueEnded;
-    public static event Action<int, DialogueEntry> OnDialogueAdvanced; // ÇöÀç ÀÎµ¦½º, ¿£Æ®¸®
+    public static event Action<int, DialogueEntry> OnDialogueAdvanced; // í˜„ì¬ ì¸ë±ìŠ¤, ì—”íŠ¸ë¦¬
 
-    public static event Action<string, string> OnChoiceMade; // ¼±ÅÃÇÑ eventId, nextDialogueId
+    public static event Action<string, string> OnChoiceMade; // ì„ íƒí•œ eventId, nextDialogueId
 
     // Runtime state
     private static GameObject _dialoguePanelInstance;
@@ -130,7 +130,7 @@ public static class TextDisplay
     {
         if (_isDisplayingDialogue)
         {
-            // ÀÌÀü ´ëÈ­ÀÇ »óÅÂ¸¸ ÃÊ±âÈ­ÇÏ°í UI´Â °è¼Ó À¯Áö
+            // ì´ì „ ëŒ€í™”ì˜ ìƒíƒœë§Œ ì´ˆê¸°í™”í•˜ê³  UIëŠ” ê³„ì† ìœ ì§€
             _currentSequence = null;
             _currentEntryIndex = -1;
             ClearChoiceButtons();
@@ -150,7 +150,7 @@ public static class TextDisplay
         AdvanceDialogue();
     }
 
-    /// ÀÌº¥Æ® ½Ã½ºÅÛÀÌ Á¸ÀçÇÏ´ÂÁö È®ÀÎÇÏ°í ¾øÀ¸¸é »ı¼º
+    /// ì´ë²¤íŠ¸ ì‹œìŠ¤í…œì´ ì¡´ì¬í•˜ëŠ”ì§€ í™•ì¸í•˜ê³  ì—†ìœ¼ë©´ ìƒì„±
     private static void EnsureEventSystemExists()
     {
 
@@ -171,7 +171,7 @@ public static class TextDisplay
         }
     }
 
-    /// ´ëÈ­ ÆĞ³Î ÇÁ¸®ÆÕÀÌ ÀÎ½ºÅÏ½ºÈ­µÇ¾î ÀÖ´ÂÁö È®ÀÎ
+    /// ëŒ€í™” íŒ¨ë„ í”„ë¦¬íŒ¹ì´ ì¸ìŠ¤í„´ìŠ¤í™”ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
     private static async UniTask EnsureDialoguePanelExists()
     {
         EnsureEventSystemExists();
@@ -179,14 +179,14 @@ public static class TextDisplay
         _choiceButtonPrefab = Resources.Load<GameObject>(CHOICE_BUTTON_PREFAB_PATH);
         if (_choiceButtonPrefab == null)
         {
-            Debug.LogWarning($"¼±ÅÃÁö ¹öÆ° ÇÁ¸®ÆÕÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {CHOICE_BUTTON_PREFAB_PATH}");
+            Debug.LogWarning($"ì„ íƒì§€ ë²„íŠ¼ í”„ë¦¬íŒ¹ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {CHOICE_BUTTON_PREFAB_PATH}");
         }
         if (_dialoguePanelInstance == null)
         {
             GameObject prefab = Resources.Load<GameObject>(DIALOGUE_PREFAB_PATH);
             if (prefab == null)
             {
-                Debug.LogError($"´ëÈ­ ÆĞ³Î ÇÁ¸®ÆÕÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù: {DIALOGUE_PREFAB_PATH}");
+                Debug.LogError($"ëŒ€í™” íŒ¨ë„ í”„ë¦¬íŒ¹ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤: {DIALOGUE_PREFAB_PATH}");
                 return;
             }
 
@@ -203,14 +203,14 @@ public static class TextDisplay
             if (_backgroundPanel != null)
             {
                 Button backgroundButton = _backgroundPanel.gameObject.GetOrAddComponent<Button>();
-                backgroundButton.onClick.AddListener(() => AdvanceDialogue());
+                backgroundButton.onClick.AddListener(AdvanceDialogue);
 
             }
 
             if (_textPanel != null)
             {
                 Button textPanelButton = _textPanel.gameObject.GetOrAddComponent<Button>();
-                textPanelButton.onClick.AddListener(() => AdvanceDialogue());
+                textPanelButton.onClick.AddListener(AdvanceDialogue);
 
             }
 
@@ -226,16 +226,16 @@ public static class TextDisplay
         if (!_isDisplayingDialogue)
             return;
 
-        // ¼±ÅÃÁö°¡ È°¼ºÈ­µÈ »óÅÂ¸é Å¬¸¯À¸·Î ÁøÇàÇÏÁö ¾ÊÀ½
+        // ì„ íƒì§€ê°€ í™œì„±í™”ëœ ìƒíƒœë©´ í´ë¦­ìœ¼ë¡œ ì§„í–‰í•˜ì§€ ì•ŠìŒ
         if (_activeChoiceButtons.Count > 0)
         {
             return;
         }
-        //ÁøÇàÁßÀÎ Å¸ÀÌÇÎ Ãë¼Ò - Å¸ÀÌÇÎÁß Å¬¸¯À¸·Î ³Ñ¾î°¡·ÁÇÒ¶§
+        //ì§„í–‰ì¤‘ì¸ íƒ€ì´í•‘ ì·¨ì†Œ - íƒ€ì´í•‘ì¤‘ í´ë¦­ìœ¼ë¡œ ë„˜ì–´ê°€ë ¤í• ë•Œ
         _typingCts?.Cancel();
 
-        // ¸¸¾à ÅØ½ºÆ®°¡ ´Ù Ç¥½ÃµÇÁö ¾Ê¾Ò´Ù¸é
-        // ÅØ½ºÆ®¸¦ ¸ğµÎ Ç¥½ÃÇÏ°í ¸®ÅÏ
+        // ë§Œì•½ í…ìŠ¤íŠ¸ê°€ ë‹¤ í‘œì‹œë˜ì§€ ì•Šì•˜ë‹¤ë©´
+        // í…ìŠ¤íŠ¸ë¥¼ ëª¨ë‘ í‘œì‹œí•˜ê³  ë¦¬í„´
         if (_typingCts != null && _messageText.maxVisibleCharacters < _messageText.text.Length)
         {
             _messageText.maxVisibleCharacters = _messageText.text.Length;
@@ -244,38 +244,38 @@ public static class TextDisplay
 
         _currentEntryIndex++;
 
-        // ¸¶Áö¸· ´ë»çÀÎ°¡?
+        // ë§ˆì§€ë§‰ ëŒ€ì‚¬ì¸ê°€?
         if (_currentEntryIndex >= _currentSequence.entries.Count)
         {
             EndDialogue();
             return;
         }
 
-        // ÇöÀç ´ëÈ­ °¡Á®¿À±â
+        // í˜„ì¬ ëŒ€í™” ê°€ì ¸ì˜¤ê¸°
         DialogueEntry entry = _currentSequence.entries[_currentEntryIndex];
 
-        // ÅØ½ºÆ® Ç¥½Ã ¾÷µ¥ÀÌÆ®
+        // í…ìŠ¤íŠ¸ í‘œì‹œ ì—…ë°ì´íŠ¸
         UpdateDialogueUI(entry);
 
-        // ¸®½º³Ê¿¡°Ô ¾Ë¸²
+        // ë¦¬ìŠ¤ë„ˆì—ê²Œ ì•Œë¦¼
         OnDialogueAdvanced?.Invoke(_currentEntryIndex, entry);
     }
 
 
     private static void UpdateDialogueUI(DialogueEntry entry)
     {
-        // ½ºÇÇÄ¿ ÀÌ¸§ ¾÷µ«
+        // ìŠ¤í”¼ì»¤ ì´ë¦„ ì—…ëƒ
         if (_speakerNameText != null)
         {
             _speakerNameText.text = entry.speakerName;
         }
 
-        // ¸Ş¼¼Áö ÅØ½ºÆ® ¾÷µ¥ÀÌÆ®
+        // ë©”ì„¸ì§€ í…ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
         if (_messageText != null)
         {
             _messageText.text = entry.messageText;
 
-            // Å¸ÀÌÇÎ È¿°ú »ç¿ë½Ã
+            // íƒ€ì´í•‘ íš¨ê³¼ ì‚¬ìš©ì‹œ
             if (_useTypewriterEffect)
             {
                 _typingCts = new CancellationTokenSource();
@@ -283,7 +283,7 @@ public static class TextDisplay
             }
         }
 
-        // ½ºÇÇÄ¿ ÀÌ¹ÌÁö ¾÷µ¥ÀÌÆ® (ÀÖÀ»¶§¸¸, ¾øÀ¸¸é LogWarning)
+        // ìŠ¤í”¼ì»¤ ì´ë¯¸ì§€ ì—…ë°ì´íŠ¸ (ìˆì„ë•Œë§Œ, ì—†ìœ¼ë©´ LogWarning)
         if (_speakerImage != null && !string.IsNullOrEmpty(entry.speakerImagePath))
         {
             Sprite sprite = Resources.Load<Sprite>(entry.speakerImagePath);
@@ -303,12 +303,12 @@ public static class TextDisplay
             _speakerImage.enabled = false;
         }
 
-        // ¼±ÅÃÁö Ç¥½Ã(ÀÖ´Â °æ¿ì)
-        ClearChoiceButtons(); // ÀÌÀü ¼±ÅÃÁö Á¦°Å
+        // ì„ íƒì§€ í‘œì‹œ(ìˆëŠ” ê²½ìš°)
+        ClearChoiceButtons(); // ì´ì „ ì„ íƒì§€ ì œê±°
 
         if (entry.hasChoices)
         {
-            // Å¸ÀÌÇÎ È¿°ú°¡ ³¡³­ ÈÄ ¼±ÅÃÁö Ç¥½Ã
+            // íƒ€ì´í•‘ íš¨ê³¼ê°€ ëë‚œ í›„ ì„ íƒì§€ í‘œì‹œ
             if (_useTypewriterEffect)
             {
                 ShowChoicesAfterTyping(entry).Forget();
@@ -320,67 +320,67 @@ public static class TextDisplay
         }
     }
     /// <summary>
-    /// Å¸ÀÌÇÎ È¿°ú°¡ ³¡³­ ÈÄ ¼±ÅÃÁö Ç¥½Ã
+    /// íƒ€ì´í•‘ íš¨ê³¼ê°€ ëë‚œ í›„ ì„ íƒì§€ í‘œì‹œ
     /// </summary>
     private static async UniTaskVoid ShowChoicesAfterTyping(DialogueEntry entry)
     {
-        // Å¸ÀÌÇÎÀÌ ³¡³¯ ¶§±îÁö ´ë±â
+        // íƒ€ì´í•‘ì´ ëë‚  ë•Œê¹Œì§€ ëŒ€ê¸°
         while (_messageText.maxVisibleCharacters < _messageText.text.Length)
         {
             await UniTask.Yield();
 
-            // ´ëÈ­°¡ Áß´ÜµÈ °æ¿ì Á¾·á
+            // ëŒ€í™”ê°€ ì¤‘ë‹¨ëœ ê²½ìš° ì¢…ë£Œ
             if (!_isDisplayingDialogue)
                 return;
         }
 
-        // Å¸ÀÌÇÎÀÌ ³¡³ª¸é ¼±ÅÃÁö Ç¥½Ã
+        // íƒ€ì´í•‘ì´ ëë‚˜ë©´ ì„ íƒì§€ í‘œì‹œ
         ShowChoices(entry.choices);
     }
 
     /// <summary>
-    /// ¼±ÅÃÁö ¹öÆ° Ç¥½Ã
+    /// ì„ íƒì§€ ë²„íŠ¼ í‘œì‹œ
     /// </summary>
     private static void ShowChoices(List<DialogueChoice> choices)
     {
         if (_choiceContainer == null)
         {
-            Debug.LogError("¼±ÅÃÁö ÄÁÅ×ÀÌ³Ê°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù. ¼±ÅÃÁö¸¦ Ç¥½ÃÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("ì„ íƒì§€ ì»¨í…Œì´ë„ˆê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. ì„ íƒì§€ë¥¼ í‘œì‹œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
-        // ¼±ÅÃÁö°¡ ¾øÀ¸¸é ¸®ÅÏ
+        // ì„ íƒì§€ê°€ ì—†ìœ¼ë©´ ë¦¬í„´
         if (choices == null || choices.Count == 0)
             return;
 
        
 
-        // °¢ ¼±ÅÃÁö¸¶´Ù ¹öÆ° »ı¼º
+        // ê° ì„ íƒì§€ë§ˆë‹¤ ë²„íŠ¼ ìƒì„±
         foreach (DialogueChoice choice in choices)
         {
             GameObject buttonObj = GameObject.Instantiate(_choiceButtonPrefab, _choiceContainer);
 
-            // ¹öÆ° ÅØ½ºÆ® ¼³Á¤
+            // ë²„íŠ¼ í…ìŠ¤íŠ¸ ì„¤ì •
             TextMeshProUGUI textComponent = buttonObj.GetComponentInChildren<TextMeshProUGUI>();
             if (textComponent != null)
             {
                 textComponent.text = choice.choiceText;
             }
 
-            // ¹öÆ° µ¿ÀÛ ¼³Á¤
+            // ë²„íŠ¼ ë™ì‘ ì„¤ì •
             Button button = buttonObj.GetComponent<Button>();
             if (button != null)
             {
-                // Å¬·ÎÀú ¹®Á¦¸¦ ÇÇÇÏ±â À§ÇØ ·ÎÄÃ º¯¼ö¿¡ ÀúÀå
+                // í´ë¡œì € ë¬¸ì œë¥¼ í”¼í•˜ê¸° ìœ„í•´ ë¡œì»¬ ë³€ìˆ˜ì— ì €ì¥
                 DialogueChoice capturedChoice = choice;
                 button.onClick.AddListener(() => HandleChoiceSelected(capturedChoice));
             }
 
-            // È°¼º ¹öÆ° ¸ñ·Ï¿¡ Ãß°¡
+            // í™œì„± ë²„íŠ¼ ëª©ë¡ì— ì¶”ê°€
             _activeChoiceButtons.Add(buttonObj);
         }
     }
 
-    // Å¸ÀÌÇÎ È¿°ú
+    // íƒ€ì´í•‘ íš¨ê³¼
     private static async UniTaskVoid TypewriterEffect(TextMeshProUGUI textComponent, CancellationToken cancellationToken)
     {
         if (textComponent == null) return;
@@ -398,35 +398,35 @@ public static class TextDisplay
         }
         catch (OperationCanceledException)
         {
-            // Å¸ÀÌÇÎÀÌ Ãë¼ÒµÊ, ´ëÈ­ ÁøÇà ½Ã Á¤»óÀûÀÎ »óÈ²
+            // íƒ€ì´í•‘ì´ ì·¨ì†Œë¨, ëŒ€í™” ì§„í–‰ ì‹œ ì •ìƒì ì¸ ìƒí™©
         }
     }
-    // ¼±ÅÃÁö ¹öÆ° Å¬¸¯ Ã³¸®
+    // ì„ íƒì§€ ë²„íŠ¼ í´ë¦­ ì²˜ë¦¬
     private static void HandleChoiceSelected(DialogueChoice choice)
     {
-        // ¼±ÅÃÁö ¹öÆ° Á¤¸®
+        // ì„ íƒì§€ ë²„íŠ¼ ì •ë¦¬
         ClearChoiceButtons();
 
-        // ¸®½º³Ê¿¡°Ô ¾Ë¸²
+        // ë¦¬ìŠ¤ë„ˆì—ê²Œ ì•Œë¦¼
         OnChoiceMade?.Invoke(choice.eventId, choice.nextDialogueId);
 
-        // ´ÙÀ½ ´ëÈ­°¡ ÀÖ´Ù¸é Ç¥½Ã
+        // ë‹¤ìŒ ëŒ€í™”ê°€ ìˆë‹¤ë©´ í‘œì‹œ
         if (!string.IsNullOrEmpty(choice.nextDialogueId))
         {
-            // ÇöÀç ´ëÈ­ Á¾·á
+            // í˜„ì¬ ëŒ€í™” ì¢…ë£Œ
             string currentDialogueId = _currentSequence.id;
-            _currentSequence = null;  // ÇöÀç ½ÃÄö½º ÂüÁ¶ Á¦°Å
+            _currentSequence = null;  // í˜„ì¬ ì‹œí€€ìŠ¤ ì°¸ì¡° ì œê±°
 
-            // ´ëÈ­ ÆĞ³ÎÀº ºñÈ°¼ºÈ­ÇÏÁö ¾ÊÀ½ (¿¬¼ÓÀûÀÎ ´ëÈ­ Èå¸§À» À§ÇØ)
+            // ëŒ€í™” íŒ¨ë„ì€ ë¹„í™œì„±í™”í•˜ì§€ ì•ŠìŒ (ì—°ì†ì ì¸ ëŒ€í™” íë¦„ì„ ìœ„í•´)
             _isDisplayingDialogue = true;
 
-            // ´ÙÀ½ ´ëÈ­ ½ÃÀÛ
+            // ë‹¤ìŒ ëŒ€í™” ì‹œì‘
             ShowDialogue(choice.nextDialogueId);
         }
         else
         {
-            // ´ÙÀ½ ´ëÈ­°¡ ¾øÀ¸¸é ÇöÀç ´ëÈ­ÀÇ ´ÙÀ½ ´ë»ç·Î ÁøÇà
-            // ÇöÀç ´ëÈ­°¡ ÀÌ¹Ì ³¡³µ´ÂÁö È®ÀÎ
+            // ë‹¤ìŒ ëŒ€í™”ê°€ ì—†ìœ¼ë©´ í˜„ì¬ ëŒ€í™”ì˜ ë‹¤ìŒ ëŒ€ì‚¬ë¡œ ì§„í–‰
+            // í˜„ì¬ ëŒ€í™”ê°€ ì´ë¯¸ ëë‚¬ëŠ”ì§€ í™•ì¸
             if (_currentEntryIndex >= _currentSequence.entries.Count - 1)
             {
                 EndDialogue();
@@ -437,7 +437,7 @@ public static class TextDisplay
             }
         }
     }
-    // ¸ğµç ¼±ÅÃÁö ¹öÆ° Á¤¸®
+    // ëª¨ë“  ì„ íƒì§€ ë²„íŠ¼ ì •ë¦¬
     private static void ClearChoiceButtons()
     {
         foreach (GameObject button in _activeChoiceButtons)
@@ -473,14 +473,14 @@ public static class TextDisplay
         _currentSequence = null;
         _currentEntryIndex = -1;
 
-        // ÇöÀç Á¾·áµÈ ´ëÈ­ ID Àü´Ş
+        // í˜„ì¬ ì¢…ë£Œëœ ëŒ€í™” ID ì „ë‹¬
         if (!string.IsNullOrEmpty(dialogueId))
         {
             OnDialogueEnded?.Invoke(dialogueId);
         }
     }
 
-    // ÀÓ½Ã ¸Ş¼¼Áö Ç¥½Ã, ÀüÃ¼ ´ëÈ­ ½ÃÄö½º ¾øÀÌ °£´ÜÇÑ ¸Ş½ÃÁö Ç¥½Ã
+    // ì„ì‹œ ë©”ì„¸ì§€ í‘œì‹œ, ì „ì²´ ëŒ€í™” ì‹œí€€ìŠ¤ ì—†ì´ ê°„ë‹¨í•œ ë©”ì‹œì§€ í‘œì‹œ
     public static void ShowMessage(string message, string speakerName = "", string speakerImagePath = "")
     {
         DialogueSequence sequence = new DialogueSequence
@@ -501,14 +501,14 @@ public static class TextDisplay
         ShowDialogueSequence(sequence).Forget();
     }
 
-    // ÅØ½ºÆ® Ç¥½ÃÁßÀÎÁö È®ÀÎ
+    // í…ìŠ¤íŠ¸ í‘œì‹œì¤‘ì¸ì§€ í™•ì¸
     public static bool IsDialogueActive()
     {
         return _isDisplayingDialogue;
     }
 
 
-    // ÅØ½ºÆ® Å¸ÀÌÇÎ °ü·Ã ¼³Á¤
+    // í…ìŠ¤íŠ¸ íƒ€ì´í•‘ ê´€ë ¨ ì„¤ì •
     public static void SetTypingSpeed(float secondsPerCharacter)
     {
         _typingSpeed = Mathf.Max(0.01f, secondsPerCharacter);
@@ -518,6 +518,4 @@ public static class TextDisplay
     {
         _useTypewriterEffect = enabled;
     }
-
-
 }

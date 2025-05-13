@@ -336,7 +336,7 @@ public static class Loading
 
     private abstract class ProgressTaskBase : IProgressManagable
     {
-        protected CancellationTokenSource _cts;
+        protected SafetyCancellationTokenSource _cts;
         protected int _progress = 0;
         public event Action ProgressUpdated;
 
@@ -370,18 +370,14 @@ public static class Loading
         {
             if (tag is Task task)
             {
-                try
-                {
-                    _cts?.Cancel();
-                }
-                catch { }
+                _cts?.Cancel();
                 _cts?.Dispose();
                 _cts = new();
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
                     _progress = 100;
-                    UniTask.Post(() => InvokeProgressUpdated());
+                    UniTask.Post(InvokeProgressUpdated);
                 },
                 _cts.Token);
 
@@ -457,18 +453,14 @@ public static class Loading
         {
             if (tag is Task<T> task)
             {
-                try
-                {
-                    _cts?.Cancel();
-                }
-                catch { }
+                _cts?.Cancel();
                 _cts?.Dispose();
                 _cts = new();
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
                     _progress = 100;
-                    UniTask.Post(() => InvokeProgressUpdated());
+                    UniTask.Post(InvokeProgressUpdated);
                 },
                 _cts.Token);
 
