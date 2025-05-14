@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 public class Debouncer : Node
@@ -7,46 +9,98 @@ public class Debouncer : Node
     public override string NodePrefabPath => "PUMP/Prefab/Node/DEBOUNCER";
 
     protected override List<string> InputNames { get; } = new() { "A" };
-
     protected override List<string> OutputNames { get; } = new() { "out" };
-    protected override List<TransitionType> InputTypes { get; } = new() { TransitionType.Bool };
-    protected override List<TransitionType> OutputTypes { get; } = new() { TransitionType.Bool };
-
     protected override float InEnumeratorXPos => -47f;
-
     protected override float OutEnumeratorXPos => 47f;
-
     protected override float EnumeratorPadding => 5f;
-
     protected override float EnumeratorMargin => 5f;
-
     protected override Vector2 TPSize => new Vector2(35f, 50f);
-
-    protected override Vector2 DefaultNodeSize => new Vector2(140f, 90f);
-
+    protected override Vector2 DefaultNodeSize => new Vector2(140f, 150f);
     protected override string NodeDisplayName => "Debouncer";
 
-
-    private DebouncerSuppport _debouncerSuppport;
-    private DebouncerSuppport DebouncerSuppport
+    private DebouncerSupport _debouncerSupport;
+    private DebouncerSupport DebouncerSupport
     {
         get
         {
-            _debouncerSuppport ??= Support.GetComponent<DebouncerSuppport>();
-            return _debouncerSuppport;
+            _debouncerSupport ??= Support.GetComponent<DebouncerSupport>();
+            return _debouncerSupport;
         }
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    private int _debounceTime = 200; // ms, 기본값
+    private CancellationTokenSource _cts;
+    private bool _isInputActive = false;
+
+    protected override void OnAfterInit()
     {
-        return new[] { (Transition)false };
+        DebouncerSupport.Initialize();
+        DebouncerSupport.SetText(_debounceTime);
+        DebouncerSupport.OnValueChanged += OnDebounceTimeChanged;
+    }
+
+    private void OnDebounceTimeChanged(int value)
+    {
+        _debounceTime = value;
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        // 파라미터 args를 사용해야됨
+        if (args != null && args.Index == 0)
+        {
+            if (args.State && args.IsStateChange)
+            {
+                // 인풋 신호가 들어옴
+                if (!_isInputActive)
+                {
+                    _isInputActive = true;
+                    StartDebounce();
+                }
+            }
+            else if (!args.State && args.IsStateChange)
+            {
+                // 인풋 신호가 끊김
+                _isInputActive = false;
+                CancelDebounce();
+                OutputToken[0].State = false;
+            }
+        }
     }
 
-    //생명주기는 OnBeforeRemove, OnAfterInit 메서드를 사용
-    //Timer노드랑 제일 비슷해서 이거 참고해서 만들면 될듯
+    private void StartDebounce()
+    {
+        CancelDebounce();
+        _cts = new CancellationTokenSource();
+        DebounceRoutine(_cts.Token).Forget();
+    }
+
+    private void CancelDebounce()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+    }
+
+    private async UniTaskVoid DebounceRoutine(CancellationToken token)
+    {
+        float elapsed = 0f;
+        float duration = _debounceTime / 1000f; // ms -> s
+
+        while (elapsed < duration)
+        {
+            if (token.IsCancellationRequested || !_isInputActive)
+            {
+                return;
+            }
+            elapsed += Time.deltaTime;
+            await UniTask.Yield(token);
+        }
+
+        OutputToken[0].State = true;
+    }
+
+    protected override void OnBeforeRemove()
+    {
+        CancelDebounce();
+    }
 }
