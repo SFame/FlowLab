@@ -10,11 +10,23 @@ public abstract class DynamicIONode : Node
 
     protected sealed override List<string> InputNames => GetNames(DefineInputName, InputCount).ToList();
     protected sealed override List<string> OutputNames => GetNames(DefineOutputName, OutputCount).ToList();
+    protected sealed override List<TransitionType> InputTypes => GetTypes(DefineInputType, InputCount).ToList();
+    protected sealed override List<TransitionType> OutputTypes => GetTypes(DefineOutputType, OutputCount).ToList();
 
     private IEnumerable<string> GetNames(Func<int, string> builder, int count)
     {
         for (int i = 0; i < count; i++)
+        {
             yield return builder?.Invoke(i) ?? string.Empty;
+        }
+    }
+
+    private IEnumerable<TransitionType> GetTypes(Func<int, TransitionType> builder, int count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            yield return builder?.Invoke(i) ?? TransitionType.Bool;
+        }
     }
 
     private int CompareDefaultValue(int value, int defaultValue)
@@ -29,6 +41,8 @@ public abstract class DynamicIONode : Node
     protected abstract int DefaultOutputCount { get; }
     protected abstract string DefineInputName(int tpNumber);
     protected abstract string DefineOutputName(int tpNumber);
+    protected abstract TransitionType DefineInputType(int tpNumber);
+    protected abstract TransitionType DefineOutputType(int tpNumber);
     #endregion
 
     #region Set count on child

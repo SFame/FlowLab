@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class AND : Node
@@ -8,6 +10,10 @@ public class AND : Node
     protected override List<string> InputNames { get; } = new List<string> { "A1", "A2" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
+
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
     protected override float InEnumeratorXPos => -47f;
 
@@ -23,6 +29,11 @@ public class AND : Node
 
     protected override string NodeDisplayName => "AND";
 
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { (Transition)false };
+    }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {

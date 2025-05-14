@@ -10,8 +10,10 @@ public struct SerializeNodeInfo
     [OdinSerialize] public Type NodeType { get; set; }
     [OdinSerialize] public Vector2 NodePosition { get; set; }
     [OdinSerialize][field: SerializeReference] public object NodeAdditionalArgs { get; set; }
-    [OdinSerialize] public bool[] InTpState { get; set; }
-    [OdinSerialize] public bool[] OutTpState { get; set; }
+    [OdinSerialize] public Transition[] InTpState { get; set; }
+    [OdinSerialize] public Transition[] OutTpState { get; set; }
+    [OdinSerialize] public TransitionType[] InTpType { get; set; }
+    [OdinSerialize] public TransitionType[] OutTpType { get; set; }
     [OdinSerialize] public bool[] StatePending { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] InConnectionTargets { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] OutConnectionTargets { get; set; }

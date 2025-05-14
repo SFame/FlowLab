@@ -38,6 +38,10 @@ public class Switch : Node, INodeAdditionalArgs<bool>
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
 
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool, TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+
     protected override float InEnumeratorXPos => -52.5f;
 
     protected override float OutEnumeratorXPos => 52.5f;
@@ -53,6 +57,11 @@ public class Switch : Node, INodeAdditionalArgs<bool>
     protected override string NodeDisplayName => "Switch";
 
     protected override float TextSize => 22f;
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { Transition.False };
+    }
 
     protected override void OnAfterInit()
     {

@@ -9,6 +9,10 @@ public class NOR : Node
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
 
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+
     protected override float InEnumeratorXPos => -47f;
 
     protected override float OutEnumeratorXPos => 47f;
@@ -22,6 +26,11 @@ public class NOR : Node
     protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override string NodeDisplayName => "NOR";
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { Transition.True };
+    }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {

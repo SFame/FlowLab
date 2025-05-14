@@ -112,6 +112,10 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         return OutputNameGetter(tpNumber);
     }
 
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+
     protected override void OnAfterInit()
     {
         ScriptingSupport.Initialize();
@@ -136,12 +140,18 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         InvokeInit();
     }
 
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Array.Empty<Transition>();
+    }
+
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (Communicator == null)
             return;
 
-        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => sf.State).ToList());
+        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => (bool)sf.State).ToList());
     }
 
     protected override void OnBeforeRemove()
@@ -215,7 +225,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         try
         {
-            Communicator.InvokeInit(InputToken.Select(tp => tp.State).ToList());
+            Communicator.InvokeInit(InputToken.Select(tp => (bool)tp.State).ToList());
             if (Communicator.ScriptFieldInfo.AutoStateUpdateAfterInit)
             {
                 StateUpdate(null);

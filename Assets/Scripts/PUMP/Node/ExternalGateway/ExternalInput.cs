@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static TPEnumeratorToken;
 
@@ -80,9 +81,18 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         return $"in {tpNumber}";
     }
 
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+
     protected override void OnAfterInstantiate()
     {
         IgnoreSelectedDelete = true;
+    }
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
     }
 
     protected override void OnAfterInit()

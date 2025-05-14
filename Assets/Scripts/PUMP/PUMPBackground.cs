@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -460,12 +462,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     public Node AddNewNode(Type nodeType)
     {
         Node newNode = JoinNode(NodeInstantiator.GetNode(nodeType));
-
-        if (newNode is INodeLifecycleCallable callable)
-        {
-            callable.CallSetInitializeState();
-        }
-
         return newNode;
     }
 
@@ -539,13 +535,16 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             foreach (Node node in Nodes)
             {
                 Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
-                var statesTuple = node.GetTPStates();
+                var typeTuple = node.GetTPElement(tp => tp.Type);
+                var statesTuple = node.GetTPElement(tp => tp.State);
                 SerializeNodeInfo nodeInfo = new()
                 {
                     NodeType = node.GetType(), // 노드 타입
                     NodePosition = GetNormalizeFromLocalPosition(Rect.rect.size, nodeLocalPosition), // 위치
-                    InTpState = statesTuple.inputStates, // TP 상태정보
-                    OutTpState = statesTuple.outputStates,
+                    InTpState = statesTuple.inputElems, // TP 상태정보
+                    OutTpState = statesTuple.outputElems,
+                    InTpType = typeTuple.inputElems,
+                    OutTpType = typeTuple.outputElems,
                     StatePending = node.GetStatePending(),
                     NodeAdditionalArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
@@ -611,8 +610,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
                 newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
 
+                // Set Transition Point types --------
+                newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.Type = type);
+
                 // Set Transition Point states ---------
-                newNode.SetTPStates(info.InTpState, info.OutTpState);
+                newNode.SetTPElems(info.InTpState, info.OutTpState, (tp, state) => tp.State = state);
             }
 
             if (Nodes.Count != infos.Count)
@@ -1157,8 +1159,11 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
         if (_reference != null)
         {
+            // ---- OnStateUpdate ----
             _reference.OnStateUpdate -= PullAll;
             _reference.OnStateUpdate -= InvokeOnStateUpdate;
+
+            // ---- OnCountUpdate ----
             _reference.OnCountUpdate -= SyncToReferenceWrapper;
             _reference.OnCountUpdate -= InvokeOnCountUpdate;
         }
@@ -1166,8 +1171,11 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         _reference = externalGateway as IExternalOutput;
         CheckNullAndThrowNullException();
 
+        // ---- OnStateUpdate ----
         _reference.OnStateUpdate += PullAll;
         _reference.OnStateUpdate += InvokeOnStateUpdate;
+
+        // ---- OnCountUpdate ----
         _reference.OnCountUpdate += SyncToReferenceWrapper; // Sync 먼저
         _reference.OnCountUpdate += InvokeOnCountUpdate;  // 이벤트 호출 이후
 
@@ -1225,6 +1233,7 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
     public ExternalInputStatesAdapter(IStateful stateful, Func<UniTask> waitTaskGetter, CancellationToken token)
     {
         Stateful = stateful;
+        Type = Stateful.Type;
         _state = Stateful.State;
         _waitTaskGetter = waitTaskGetter ?? (() => UniTask.CompletedTask);
         _token = token;
@@ -1232,7 +1241,7 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
 
     public IStateful Stateful { get; private set; }
 
-    public bool State
+    public Transition State
     {
         get => _state;
         set
@@ -1240,11 +1249,30 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
             if (_disposed)
                 return;
 
+            value.ThrowIfTypeMismatch(Type);
+
             _stateCache = value;
             if (Stateful is not null && !IsFlushing)
             {
                 StateUpdateAsync().Forget();
             }
+        }
+    }
+
+    public TransitionType Type
+    {
+        get => _type;
+        set
+        {
+            if (_typeSet)
+            {
+                Debug.LogError("ExternalInputStatesAdapter: Type 중복 설정 시도");
+                return;
+            }
+
+            _typeSet = true;
+            _type = value;
+            _state = Transition.Null(_type);
         }
     }
 
@@ -1260,8 +1288,10 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
     }
 
     private bool _disposed;
-    private bool _state;
-    private bool _stateCache;
+    private Transition _state;
+    private Transition _stateCache;
+    private TransitionType _type = TransitionType.None;
+    private bool _typeSet = false;
     private Func<UniTask> _waitTaskGetter;
     private CancellationToken _token;
 
@@ -1277,7 +1307,7 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
             {
                 _state = _stateCache;
                 IsFlushing = false;
-                Stateful.State = _stateCache;
+                Stateful.State = _state;
             }
         }
         catch (OperationCanceledException)
@@ -1296,12 +1326,30 @@ public class ExternalOutputStatesAdapter : IStateful, IDisposable
     public ExternalOutputStatesAdapter(IStateful stateful)
     {
         Stateful = stateful;
+        Type = Stateful.Type;
         Pull();
     }
 
     public IStateful Stateful { get; private set; }
 
-    public bool State { get; set; }
+    public Transition State { get; set; }
+
+    public TransitionType Type
+    {
+        get => _type;
+        set
+        {
+            if (_typeSet)
+            {
+                Debug.LogError("ExternalInputStatesAdapter: Type 중복 설정 시도");
+                return;
+            }
+
+            _typeSet = true;
+            _type = value;
+            State = Transition.Null(_type);
+        }
+    }
 
     public void Pull()
     {
@@ -1320,6 +1368,8 @@ public class ExternalOutputStatesAdapter : IStateful, IDisposable
         _disposed = true;
     }
 
+    private TransitionType _type = TransitionType.None;
+    private bool _typeSet = false;
     private bool _disposed;
 }
 

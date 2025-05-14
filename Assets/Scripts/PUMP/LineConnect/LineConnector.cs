@@ -233,7 +233,6 @@ public class LineConnector : MonoBehaviour
 
         Destroy(StartSidePointRect.gameObject);
         Destroy(EndSidePointRect.gameObject);
-
         Destroy(_edgeParent.gameObject);
         Destroy(_lineParent.gameObject);
         

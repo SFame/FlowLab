@@ -102,9 +102,18 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         return "out" + tpNumber;
     }
 
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Enumerable.Repeat((Transition)false, outputCount).ToArray();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OnInputUpdate?.Invoke(InputToken.Select(sf => sf.State).ToArray());
+        OnInputUpdate?.Invoke(InputToken.Select(sf => (bool)sf.State).ToArray());
     }
 
     #region Classed Node Interface
@@ -150,7 +159,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
         }
 
-        if (!InputToken.Select(tp => tp.State).SequenceEqual(exInStates))
+        if (!InputToken.Select(tp => (bool)tp.State).SequenceEqual(exInStates))
         {
             StateUpdate(null);
         }

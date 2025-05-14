@@ -6,7 +6,7 @@ public interface ITPEnumerator : IActivable
 {
     Node Node { get; set; }
     ITransitionPoint[] GetTPs();
-    ITPEnumerator SetTPCount(int count);
+    ITPEnumerator SetTPs(TransitionType[] types);
     void SetTPConnections(ITransitionPoint[] targetTps, List<Vector2>[] vertices, DeserializationCompleteReceiver completeReceiver);
     ITPEnumerator SetTPSize(Vector2 value);
     ITPEnumerator SetPadding(float value);

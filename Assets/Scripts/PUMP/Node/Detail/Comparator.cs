@@ -32,6 +32,8 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
     protected override void StateUpdate(TransitionEventArgs args) => PushResult();
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => "out";
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
     private bool Operating(int a, int b, string @operator) => @operator switch
     {
@@ -51,7 +53,12 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         foreach (IStateful tp in OutputToken)
             tp.State = result;
     }
-    
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { (Transition)false };
+    }
+
     protected override void OnAfterInit()
     {
         // Input count

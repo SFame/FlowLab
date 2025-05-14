@@ -9,6 +9,8 @@ public class Debouncer : Node
     protected override List<string> InputNames { get; } = new() { "A" };
 
     protected override List<string> OutputNames { get; } = new() { "out" };
+    protected override List<TransitionType> InputTypes { get; } = new() { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes { get; } = new() { TransitionType.Bool };
 
     protected override float InEnumeratorXPos => -47f;
 
@@ -33,6 +35,11 @@ public class Debouncer : Node
             _debouncerSuppport ??= Support.GetComponent<DebouncerSuppport>();
             return _debouncerSuppport;
         }
+    }
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { (Transition)false };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

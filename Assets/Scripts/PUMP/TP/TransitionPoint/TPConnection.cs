@@ -40,15 +40,18 @@ public class TPConnection : IStateful, IDisposable
 
 
     #region Privates
-    private bool _state = false;
-    private bool _stateCache = false;
+    private Transition _state;
+    private Transition _stateCache;
+    private TransitionType _type;
     private ITransitionPoint _sourceState = null;
     private ITransitionPoint _targetState = null;
     private LineConnector _lineConnector = null;
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
     private CancellationTokenSource _cts = new CancellationTokenSource();
+    private bool _typeSet = false;
     private bool _disposed = false;
+    private bool _disconnected = false;
     
     private void InitializeCheck()
     {
@@ -57,6 +60,7 @@ public class TPConnection : IStateful, IDisposable
             if (SourceState != null && TargetState != null)
             {
                 State = SourceState.State;
+
                 DrawLine();
                 _initialized = true;
             }
@@ -76,11 +80,16 @@ public class TPConnection : IStateful, IDisposable
     #endregion
 
     #region Interface
-    public bool State
+    public Transition State
     {
         get => _state;
         set
         {
+            if (value.Type != Type)
+            {
+                throw new TransitionTypeMismatchException(value.Type, Type);
+            }
+
             if (DisableFlush)
             {
                 _state = value;
@@ -95,6 +104,22 @@ public class TPConnection : IStateful, IDisposable
         }
     }
 
+    public TransitionType Type
+    {
+        get => _type;
+        set
+        {
+            if (_typeSet)
+            {
+                Debug.LogError("Connection Type 중복 설정 시도");
+                return;
+            }
+            _typeSet = true;
+            _type = value;
+            _state = Transition.Null(_type);
+        }
+    }
+
     public bool DisableFlush { get; set; }
 
     public bool IsFlushing { get; private set; }
@@ -106,6 +131,7 @@ public class TPConnection : IStateful, IDisposable
         {
             if (_sourceState is null)
             {
+                ThrowIfMismatch(value.Type);
                 _sourceState = value;
                 InitializeCheck();
             }
@@ -119,6 +145,7 @@ public class TPConnection : IStateful, IDisposable
         {
             if (_targetState is null)
             {
+                ThrowIfMismatch(value.Type);
                 _targetState = value;
                 InitializeCheck();
             }
@@ -184,14 +211,18 @@ public class TPConnection : IStateful, IDisposable
             return;
         }
 
+        if (_disconnected)
+            return;
+
         SourceState.ClearConnection();
         TargetState.ClearConnection();
 
-        TargetState.State = false;
+        TargetState.State = Transition.Null(Type);
 
         LineConnector?.Remove();
         _sourceState = null;
         _targetState = null;
+        _disconnected = true;
     }
     
     public void Dispose()
@@ -244,6 +275,25 @@ public class TPConnection : IStateful, IDisposable
         {
             IsFlushing = false;
             throw;
+        }
+    }
+
+    private void ThrowIfMismatch(TransitionType checkType)
+    {
+        if (checkType != Type)
+        {
+            SourceState.ClearConnection();
+            TargetState.ClearConnection();
+
+            TargetState.State = Transition.Null(Type);
+
+            LineConnector?.Remove();
+            _sourceState = null;
+            _targetState = null;
+            _disconnected = true;
+            Dispose();
+
+            throw new TransitionTypeMismatchException(checkType, Type);
         }
     }
     #endregion

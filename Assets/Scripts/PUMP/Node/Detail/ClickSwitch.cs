@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,6 +12,10 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
     protected override List<string> InputNames { get; } = new List<string>();
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
+
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType>();
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
     protected override float InEnumeratorXPos => 0f;
 
@@ -26,12 +31,12 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override float TextSize => 25f;
 
-
-    protected override void StateUpdate(TransitionEventArgs args)
+    protected override Transition[] SetInitializeState(int outputCount)
     {
-        foreach (IStateful sf in OutputToken)
-            sf.State = State;
+        return new[] { (Transition)false };
     }
+
+    protected override void StateUpdate(TransitionEventArgs args) { }
 
     public bool AdditionalArgs
     {
@@ -63,7 +68,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
         {
             Support.SelectedRemoveRequestInvoke();
             State = !State;
-            ((INodeLifecycleCallable)this).CallStateUpdate(null);
+            OutputToken[0].State = State;
             ReportChanges();
         }
     }

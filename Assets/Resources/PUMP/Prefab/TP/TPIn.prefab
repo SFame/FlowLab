@@ -94,7 +94,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _nameText: {fileID: 7427993255485754858}
   _image: {fileID: 5124051238304459591}
-  _state: 0
 --- !u!114 &5967309010575889051
 MonoBehaviour:
   m_ObjectHideFlags: 0

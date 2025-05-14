@@ -17,6 +17,10 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+
     protected override float InEnumeratorXPos => -67.5f;
 
     protected override float OutEnumeratorXPos => 67.5f;
@@ -30,6 +34,11 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
     protected override Vector2 DefaultNodeSize => new Vector2(170f, 100f);
 
     protected override string NodeDisplayName => "Timer";
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return new[] { Transition.False };
+    }
 
     protected override void OnAfterInit()
     {

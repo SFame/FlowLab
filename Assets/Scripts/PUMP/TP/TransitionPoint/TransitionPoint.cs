@@ -15,7 +15,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private Node _node;
     private Canvas _rootCanvas;
     protected readonly Color _highlightedColor = Color.green;
-    protected readonly Color _activeColor = Color.red;
+    protected readonly Color _stateActiveColor = Color.red;
     protected readonly Color _defaultColor = Color.black;
 
     private void OnDestroy()
@@ -52,7 +52,8 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     #endregion
 
     #region Interface
-    public abstract bool State { get; set; }
+    public abstract Transition State { get; set; }
+    public abstract TransitionType Type { get; set; }
     public int Index { get; set; }
     public TPConnection Connection { get; set; }
     public string Name
@@ -122,16 +123,18 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     {
         get => new List<ContextElement>()
         {
-            new ContextElement(clickAction: () => Connection?.Disconnect(), text: "Disconnect")
+            new ContextElement(clickAction: () => Connection?.Disconnect(), text: "Disconnect"),
         };
     }
 
     protected void SetImageColor(Color color)
     {
-        if (Image is null)
-            return;
-
         Image.color = color;
+    }
+
+    protected void SetTextColor(Color color)
+    {
+        _nameText.color = color;
     }
     #endregion
 
@@ -143,7 +146,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        SetImageColor(State ? _activeColor : _defaultColor);
+        SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
     }
     
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)

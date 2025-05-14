@@ -1,3 +1,4 @@
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -20,6 +21,11 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override string NodeDisplayName => "S";
 
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         bool state = InputToken[0].State;
@@ -39,6 +45,8 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
     protected override int DefaultOutputCount => 2;
     protected override string DefineInputName(int tpNumber) => "in";
     protected override string DefineOutputName(int tpNumber) => $"out {tpNumber}";
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
     private TMP_Dropdown Dropdown
     {

@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 using static TPEnumeratorToken;
 
 public class TPEnumerator : MonoBehaviour, ITPEnumerator
@@ -116,22 +118,28 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
     #endregion
 
     #region Wrapped interface
-    public ITPEnumerator SetTPCount(int count)
+    public ITPEnumerator SetTPs(TransitionType[] types)
     {
         DestroyTPs();
 
         if (Node is null)
         {
-            throw new Exception("Must set TPEnumerator's Node info first");
+            throw new InvalidOperationException("Must set TPEnumerator's Node info first");
         }
 
-        for (int i = 0; i < count; i++)
+        if (types is null)
+        {
+            throw new ArgumentNullException("'types' Cannot be null");
+        }
+
+        for (int i = 0; i < types.Length; i++)
         {
             GameObject TPObj = InstantiateTP();
             if (TPObj is null)
                 break;
 
             ITransitionPoint tp = TPObj.GetComponent<ITransitionPoint>();
+            tp.Type = types[i];
             tp.Node = Node;
             tp.Index = i;
 
@@ -239,18 +247,29 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
 public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 {
     #region Privates
-    private readonly ITransitionPoint[] _tps;
+    private StatefulAdapter[] _adapters;
     private bool _isNameDuplicated = true;
     #endregion
 
     public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps)
     {
-        _tps = tps.ToArray();
         _adapters = tps.Select(tp => new StatefulAdapter(tp)).ToArray();
     }
 
     public IStateful this[int index] => _adapters[index];
-    public IStateful this[string name] => _adapters.FirstOrDefault(adapter => adapter.Name == name);
+    public IStateful this[string name]
+    {
+        get
+        {
+            if (_isNameDuplicated)
+            {
+                throw new Exception("중복된 Name이 존재");
+            }
+            
+            return _adapters.FirstOrDefault(adapter => adapter.Name == name);
+        }
+    }
+
     public int Count => _adapters.Length;
 
     public void ApplyStatesAll(IEnumerable<bool> states)
@@ -276,7 +295,7 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 
         if (names.Count != _adapters.Length)
         {
-            Debug.LogError($"{GetType().Name}: names length is not match");
+            Debug.LogError($"{GetType().Name}: names length is not match: names {names.Count} / adapters: {_adapters.Length}");
             return;
         }
 
@@ -300,8 +319,6 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
     #endregion
 
     #region Stateful Adapter
-    private StatefulAdapter[] _adapters;
-
     private class StatefulAdapter : IStateful, INameable
     {
         private readonly ITransitionPoint _tp;
@@ -313,7 +330,7 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 
         public bool SetState { get; set; }
 
-        public bool State
+        public Transition State
         {
             get => _tp.State;
             set
@@ -322,10 +339,16 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
                 {
                     Debug.LogWarning("This token cannot be set");
                     return;
-                }   
-                
+                }
+
                 _tp.State = value;
             }
+        }
+
+        public TransitionType Type
+        {
+            get => _tp.Type;
+            set => _tp.Type = value;
         }
 
         public string Name
@@ -343,6 +366,7 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
         }
     }
 
+    // 이 토큰은 설정이 가능한 토큰인지
     public interface ISetStateUpdate
     {
         void SetStateUpdate(bool state);

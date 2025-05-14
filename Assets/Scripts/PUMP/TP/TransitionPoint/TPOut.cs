@@ -7,7 +7,8 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 {
     #region Privates
     [SerializeField]
-    private bool _state;
+    private Transition _state;
+    private TransitionType _type;
     private LineConnector _lineConnector;
     private ITPHideable _hideTargetTpCache;
     private HashSet<object> _hiders = new();
@@ -17,7 +18,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     {
         LineConnector lineConnector = Node.Background.LineConnectManager.AddLineConnector();
 
-        OnMove = uguiPos => OnNodeMove(lineConnector);
+        OnMove = _ => OnNodeMove(lineConnector);
         Node.Support.OnPositionUpdate += OnMove;
 
         tpConnection.LineConnector = lineConnector;
@@ -57,14 +58,27 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     #region Interface
     public event SoundEventHandler OnSounded;
 
-    public override bool State
+    public override Transition State
     {
         get => _state;
         set
         {
+            value.ThrowIfTypeMismatch(Type);
             _state = value;
             PushToConnection();
-            SetImageColor(_state ? _activeColor : _defaultColor);
+            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
+        }
+    }
+
+    public override TransitionType Type
+    {
+        get => _type;
+        set
+        {
+            Connection?.Disconnect();
+            _type = value;
+            _state = Transition.Null(_type);
+            SetTextColor(_type.GetColor());
         }
     }
 
@@ -82,10 +96,13 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
     {
+        if (targetTp.Type != Type)
+            return;
+
         Connection?.Disconnect();
 
-        if (connection is null)
-            connection = new();
+        connection ??= new();
+        connection.Type = Type;
 
         connection = SetTPConnectionLineConnector(connection);
         connection.SourceState = this;
@@ -98,23 +115,32 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     {
         Connection?.Disconnect();
 
-        connection.SourceState = this;
-        if (!BlockConnect)
+        try
         {
-            Connection = connection;
-
-            OnMove = uguiPos => OnNodeMove(Connection.LineConnector);
-            Connection.OnSelfDisconnect += Node.ReportChanges;
-            Node.Support.OnPositionUpdate += OnMove;
-
-            if (!OnDeserializing)
-            {
-                OnSounded?.Invoke(this, new(0, WorldPosition));
-            }
+            connection.SourceState = this;
+        }
+        catch (TransitionTypeMismatchException mismatchException)
+        {
+            Debug.LogWarning(mismatchException.Message);
             return;
         }
 
-        connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
+        if (BlockConnect)
+        {
+            connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
+            return;
+        }
+
+        Connection = connection;
+
+        OnMove = _ => OnNodeMove(Connection.LineConnector);
+        Connection.OnSelfDisconnect += Node.ReportChanges;
+        Node.Support.OnPositionUpdate += OnMove;
+
+        if (!OnDeserializing)
+        {
+            OnSounded?.Invoke(this, new SoundEventArgs(0, WorldPosition));
+        }
     }
 
     public override void ClearConnection()
@@ -168,7 +194,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             Vector2 targetPoint;
             ITPIn target = eventData.FindUnderPoint<ITPIn>();
 
-            if (target != null)
+            if (target != null && target.Type == Type)
             {
                 targetPoint = target.WorldPosition;
 
@@ -206,7 +232,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         _hideTargetTpCache = null;
 
         ITPIn find = eventData.FindUnderPoint<ITPIn>();
-        if (find is not null)
+        if (find != null && find.Type == Type)
         {
             Node.ReportChanges();
             LinkTo(find);

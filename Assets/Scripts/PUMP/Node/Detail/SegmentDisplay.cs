@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,6 +11,19 @@ public class SegmentDisplay : Node
     protected override List<string> InputNames { get; } = new() { "A", "B", "C", "D", "E", "F", "G"};
 
     protected override List<string> OutputNames { get; } = new();
+
+    protected override List<TransitionType> InputTypes { get; } = new()
+    {
+        TransitionType.Bool,
+        TransitionType.Bool,
+        TransitionType.Bool,
+        TransitionType.Bool,
+        TransitionType.Bool,
+        TransitionType.Bool,
+        TransitionType.Bool,
+    };
+
+    protected override List<TransitionType> OutputTypes { get; } = new();
 
     protected override float InEnumeratorXPos => -3f;
 
@@ -36,8 +50,13 @@ public class SegmentDisplay : Node
         }
     }
 
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Array.Empty<Transition>();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        SegmentSupport.UpdateSegmentDisplay(InputToken.Select(tp => tp.State).ToArray());
+        SegmentSupport.UpdateSegmentDisplay(InputToken.Select(tp => (bool)tp.State).ToArray());
     }
 }

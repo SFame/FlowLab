@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
@@ -61,7 +62,12 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
                 text: "Disconnect"),
         };
     }
-    
+
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (InputToken.Count != OutputToken.Count)
@@ -82,6 +88,10 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     {
         return $"out {tpNumber}";
     }
+
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
     protected override void OnAfterInstantiate()
     {

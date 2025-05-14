@@ -212,12 +212,21 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         return this;
     }
 
-    public ITPEnumerator SetTPCount(int count)
+    public ITPEnumerator SetTPs(TransitionType[] types)
     {
+        if (types is null)
+        {
+            throw new ArgumentNullException("'types' Cannot be null");
+        }
+
         foreach (ExternalTPHandle handle in Handles)
+        {
             handle.Destroy();
+        }
+
         Handles.Clear();
 
+        int count = types.Length;
         float interval = 1f / (count + 1);
 
         for (int i = 0; i < count; i++)
@@ -231,7 +240,10 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             SetPositionToRatio(handle, ratio);
 
             if (handle.TP != null)
+            {
+                handle.TP.Type = types[i];
                 handle.TP.Node = Node;
+            }
 
             Handles.Add(handle);
         }

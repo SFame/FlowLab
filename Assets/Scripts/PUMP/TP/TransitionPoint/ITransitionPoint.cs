@@ -6,11 +6,6 @@ public interface INameable
     string Name { get; set; }
 }
 
-public interface IStateful
-{
-    bool State { get; set; }
-}
-
 public interface ILocatable
 {
     Vector2 WorldPosition { get; }
@@ -36,6 +31,28 @@ public interface ITPHideable
 {
     void AddHider(object hider);
     void SubHider(object hider);
+}
+
+public interface IStateful
+{
+    // 우선 설정, State 백킹필드에 동일 타입 Null값 삽입
+    TransitionType Type { get; set; }
+    Transition State { get; set; }
+
+    bool IsActivateState()
+    {
+        if (Type == TransitionType.Bool)
+        {
+            if (State.Type == TransitionType.Bool)
+            {
+                return State;
+            }
+
+            return false;
+        }
+
+        return !State.IsNull;
+    }
 }
 
 /// <summary>

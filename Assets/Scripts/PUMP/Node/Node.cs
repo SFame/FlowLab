@@ -14,7 +14,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     private bool _isSupportSet = false;
     private NodeSupport _support;
     private PUMPBackground _background;
-
+    
     private bool _inEnumActive = true;
     private bool _outEnumActive = true;
 
@@ -209,18 +209,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     }
 
     /// <summary>
-    /// 직렬화 시 TP의 State 정보 Get
+    /// 직렬화 시 TP의 속성 정보 Get
     /// </summary>
-    public (bool[] inputStates, bool[] outputStates) GetTPStates()
+    public (T[] inputElems, T[] outputElems) GetTPElement<T>(Func<ITransitionPoint, T> selector)
     {
         CheckSupportEnumeratorNull();
 
         ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
 
-        bool[] inputStates = inputTPs.Select(tp => tp.State).ToArray();
-        bool[] outputStates = outputTPs.Select(tp => tp.State).ToArray();
-        return (inputStates, outputStates);
+        T[] inputElems = inputTPs.Select(selector).ToArray();
+        T[] outputElems = outputTPs.Select(selector).ToArray();
+        return (inputElems, outputElems);
     }
 
     /// <summary>
@@ -257,59 +257,47 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     }
 
     /// <summary>
-    /// 역 직렬화 시 TP State 정보 Set
+    /// 역 직렬화 시 TP 속성 정보 Set
     /// </summary>
-    public void SetTPStates(bool[] inputStates, bool[] outputStates)
+    public void SetTPElems<T>(T[] inputElems, T[] outputElems, Action<ITransitionPoint, T> applier)
     {
         CheckSupportEnumeratorNull();
+        if (inputElems == null || outputElems == null)
+        {
+            throw new ArgumentNullException("SetTPElems: Null Args 수신");
+        }
 
         ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
 
-        if (inputStates != null)
+        if (inputElems != null)
         {
 
-            if (inputStates.Length == inputTPs.Length)
+            if (inputElems.Length == inputTPs.Length)
             {
-                for (int i = 0; i < inputStates.Length; i++)
+                for (int i = 0; i < inputElems.Length; i++)
                 {
-                    inputTPs[i].State = inputStates[i];
+                    applier?.Invoke(inputTPs[i], inputElems[i]);
                 }
             }
             else
             {
-                Debug.LogError($"{Support.name}: 데이터와 Input의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{Support.name}: Input States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
-            foreach (ITransitionPoint tp in inputTPs)
-            {
-                tp.State = false;
+                Debug.LogError($"{Support.name}: 데이터와 Input의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
             }
         }
 
-        if (outputStates != null)
+        if (outputElems != null)
         {
-            if (outputStates.Length == outputTPs.Length)
+            if (outputElems.Length == outputTPs.Length)
             {
-                for (int i = 0; i < outputStates.Length; i++)
+                for (int i = 0; i < outputElems.Length; i++)
                 {
-                    outputTPs[i].State = outputStates[i];
+                    applier?.Invoke(outputTPs[i], outputElems[i]);
                 }
             }
             else
             {
-                Debug.LogError($"{Support.name}: 데이터와 Output의 State개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"{Support.name}: Output States 데이터에 State 정보가 없습니다. 모든 State를 false로 설정합니다.");
-            foreach (ITransitionPoint tp in outputTPs)
-            {
-                tp.State = false;
+                Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
             }
         }
     }
@@ -366,7 +354,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
 
     // Output TP states when place for the first time from palette (Not Deserialize) -----------------------------
-    protected virtual bool[] SetInitializeState(int outputCount) => null;
+    protected abstract Transition[] SetInitializeState(int outputCount);
 
 
     // Input TP states update callback (Overriding required) -----------------------------
@@ -404,8 +392,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     protected abstract string SpritePath { get; }
     protected abstract string NodeDisplayName { get; }
     protected virtual float TextSize { get; } = 30f;
+
     protected abstract List<string> InputNames { get; }
     protected abstract List<string> OutputNames { get; }
+    protected abstract List<TransitionType> InputTypes { get; }
+    protected abstract List<TransitionType> OutputTypes { get; }
 
     protected abstract float InEnumeratorXPos { get; }
     protected abstract float OutEnumeratorXPos { get; }
@@ -437,7 +428,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
     }
 
-    protected void ResetToken(bool stateUpdate = true)
+    protected void ResetToken()
     {
         if (Support?.InputEnumerator == null || Support?.OutputEnumerator == null)
         {
@@ -446,11 +437,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
 
         SetToken();
-
-        if (stateUpdate)
-        {
-            ((INodeLifecycleCallable)this).CallStateUpdate(null);
-        }
     }
 
     protected virtual void OnNodeUiClick(PointerEventData eventData)
@@ -508,24 +494,31 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             throw new NullReferenceException($"{GetType().Name}: Enumerator가 없는 상태로 Token 설정 불가");
         }
 
+        if (InputNames.Count != InputTypes.Count || OutputNames.Count != OutputTypes.Count)
+        {
+            throw new InvalidOperationException($"{GetType().Name}: Names와 Types 개수 불일치");
+        }
+
         InputToken = Support.InputEnumerator
             .SetPadding(EnumeratorPadding)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
-            .SetTPCount(InputNames.Count)
+            .SetTPs(InputTypes.ToArray())
             .GetToken();
 
         OutputToken = Support.OutputEnumerator
             .SetPadding(EnumeratorPadding)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
-            .SetTPCount(OutputNames.Count)
+            .SetTPs(OutputTypes.ToArray())
             .GetToken();
 
         if (InputToken is null || OutputToken is null)
         {
             throw new Exception("Token casting fail");
         }
+
+        ((INodeLifecycleCallable)this).CallSetInitializeState();
 
         ((TPEnumeratorToken.ISetStateUpdate)InputToken).SetStateUpdate(false);
         ((TPEnumeratorToken.ISetStateUpdate)OutputToken).SetStateUpdate(true);
@@ -675,30 +668,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
         int outputCount = outputTPs.Length;
-        bool[] outputStates;
-
-        try
-        {
-            outputStates = SetInitializeState(outputCount);
-        }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-            ((INodeLifecycleCallable)this).CallStateUpdate(null);
-            return;
-        }
+        Transition[] outputStates = SetInitializeState(outputCount);
 
         if (outputStates == null)
         {
-            ((INodeLifecycleCallable)this).CallStateUpdate(null);
-            return;
+            throw new NullReferenceException($"{Support.name}: SetInitializeState()의 반환은 null일 수 없습니다.");
         }
 
         if (outputStates.Length != outputCount)
         {
-            Debug.LogError($"{Support.name}: Init states({outputStates.Length}) and the output token count({outputCount}) do not match ");
-            ((INodeLifecycleCallable)this).CallStateUpdate(null);
-            return;
+            throw new IndexOutOfRangeException(
+                $"{Support.name}: 초기화 State 개수({outputStates.Length})와 출력 TP 개수({outputCount})가 일치하지 않습니다. ");
         }
 
         for (int i = 0; i < outputCount; i++)

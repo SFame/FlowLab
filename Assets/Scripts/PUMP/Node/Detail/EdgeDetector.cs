@@ -17,6 +17,10 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 
     protected override List<string> OutputNames { get; } = new List<string> { "R", "F" };
 
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+
     protected override float InEnumeratorXPos => -61.5f;
 
     protected override float OutEnumeratorXPos => 61.5f;
@@ -63,9 +67,9 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
         }
     }
 
-    protected override bool[] SetInitializeState(int outputCount)
+    protected override Transition[] SetInitializeState(int outputCount)
     {
-        return new bool[outputCount];
+        return new[] { Transition.False, Transition.False };
     }
 
     protected override void OnBeforeRemove()

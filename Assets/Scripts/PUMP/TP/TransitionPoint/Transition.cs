@@ -1,26 +1,32 @@
 using OdinSerializer;
 using System;
 using System.Linq;
+using UnityEngine;
 
 public enum TransitionType
 {
-    Null = 1,
-    Bool = 2,
-    Int = 4,
-    Float = 8,
+    None,
+    Bool,
+    Int,
+    Float,
 }
 
 [Serializable]
 public struct Transition : IEquatable<Transition>
 {
-    public Transition(TransitionType type, TransitionValue value)
-    {
-        Type = type;
-        Value = value;
-    }
-
+    #region Static Interface
+    public static Transition Null(TransitionType type) => new Transition(type, new TransitionValue(), true);
+    public static Transition Epsilon => float.Epsilon;
+    public static Transition Zero => 0;
+    public static Transition One => 1;
+    public static Transition True => true;
+    public static Transition False => false;
+    #endregion
+    #region Interface
     [OdinSerialize] public TransitionType Type { get; }
     [OdinSerialize] public TransitionValue Value { get; }
+    [OdinSerialize] public bool IsNull { get; }
+    #endregion
 
     #region Overriding
     public override bool Equals(object obj) => obj is Transition other && Equals(other);
@@ -32,7 +38,6 @@ public struct Transition : IEquatable<Transition>
 
         return Type switch
         {
-            TransitionType.Null => true,
             TransitionType.Bool => Value.BoolValue == other.Value.BoolValue,
             TransitionType.Int => Value.IntValue == other.Value.IntValue,
             TransitionType.Float => Value.FloatValue.Equals(other.Value.FloatValue),
@@ -44,7 +49,6 @@ public struct Transition : IEquatable<Transition>
     {
         return Type switch
         {
-            TransitionType.Null => Type.GetHashCode(),
             TransitionType.Bool => HashCode.Combine(Type, Value.BoolValue),
             TransitionType.Int => HashCode.Combine(Type, Value.IntValue),
             TransitionType.Float => HashCode.Combine(Type, Value.FloatValue),
@@ -54,9 +58,13 @@ public struct Transition : IEquatable<Transition>
 
     public override string ToString()
     {
+        if (IsNull)
+        {
+            return $"Type: {Type}\nValue: Null";
+        }
+
         string value = Type switch
         {
-            TransitionType.Null => "Null",
             TransitionType.Bool => Value.BoolValue.ToString(),
             TransitionType.Int => Value.IntValue.ToString(),
             TransitionType.Float => Value.FloatValue.ToString(),
@@ -68,6 +76,15 @@ public struct Transition : IEquatable<Transition>
 
     #endregion
 
+    #region Non Interface
+    public Transition(TransitionType type, TransitionValue value, bool isNull = false)
+    {
+        Type = type;
+        Value = value;
+        IsNull = isNull;
+    }
+    #endregion
+
     #region Casting
     // ---------- Bool ----------
     public static implicit operator Transition(bool b)
@@ -75,11 +92,11 @@ public struct Transition : IEquatable<Transition>
         return new Transition(TransitionType.Bool, new TransitionValue(boolValue: b));
     }
 
-    public static explicit operator bool(Transition t)
+    public static implicit operator bool(Transition t)
     {
         if (t.Type != TransitionType.Bool)
         {
-            throw new TransitionTypeCastException(TransitionType.Bool, typeof(bool));
+            throw new TransitionTypeCastException(t.Type, typeof(bool));
         }
 
         return t.Value.BoolValue;
@@ -91,11 +108,11 @@ public struct Transition : IEquatable<Transition>
         return new Transition(TransitionType.Int, new TransitionValue(intValue: i));
     }
 
-    public static explicit operator int(Transition t)
+    public static implicit operator int(Transition t)
     {
         if (t.Type != TransitionType.Int)
         {
-            throw new TransitionTypeCastException(TransitionType.Int, typeof(int));
+            throw new TransitionTypeCastException(t.Type, typeof(int));
         }
 
         return t.Value.IntValue;
@@ -107,11 +124,11 @@ public struct Transition : IEquatable<Transition>
         return new Transition(TransitionType.Float, new TransitionValue(floatValue: f));
     }
 
-    public static explicit operator float(Transition t)
+    public static implicit operator float(Transition t)
     {
         if (t.Type != TransitionType.Float)
         {
-            throw new TransitionTypeCastException(TransitionType.Float, typeof(float));
+            throw new TransitionTypeCastException(t.Type, typeof(float));
         }
 
         return t.Value.FloatValue;
@@ -238,14 +255,38 @@ public static class TransitionUtil
 {
     public static Type AsType(this TransitionType transitionType) => transitionType switch
     {
-        TransitionType.Null => null,
         TransitionType.Bool => typeof(bool),
         TransitionType.Int => typeof(int),
         TransitionType.Float => typeof(float),
         _ => throw new ArgumentOutOfRangeException()
     };
+
+    public static void ThrowIfTypeMismatch(this Transition transition, TransitionType type)
+    {
+        if (transition.Type != type)
+        {
+            throw new TransitionTypeMismatchException(transition.Type, type);
+        }
+    }
+
+    public static void ThrowIfTypeMismatch(this TransitionType type1, TransitionType type2)
+    {
+        if (type1 != type2)
+        {
+            throw new TransitionTypeMismatchException(type1, type2);
+        }
+    }
+
+    public static Color GetColor(this TransitionType transitionType) => transitionType switch
+    {
+        TransitionType.Bool => Color.black,
+        TransitionType.Int => new Color(0f, 0.94f, 0.47f),
+        TransitionType.Float => new Color(0.94f, 0.69f, 0f),
+        _ => Color.black,
+    };
 }
 
+#region Exceptions
 public class TransitionTypeCastException : InvalidCastException
 {
     public TransitionType From { get; }
@@ -271,3 +312,4 @@ public class TransitionTypeMismatchException : Exception
         T2 = t2;
     }
 }
+#endregion

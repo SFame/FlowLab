@@ -11,7 +11,7 @@ public class TransitionEventArgs : EventArgs
     /// <summary>
     /// 현재 TP의 State
     /// </summary>
-    public bool State { get; private set; }
+    public Transition State { get; private set; }
 
     /// <summary>
     /// 이전 값과 비교해서 변경되었는지
@@ -40,7 +40,7 @@ public class TransitionEventArgs : EventArgs
     #endregion
 
     #region Static Instantiator
-    public static TransitionEventArgs Get(int index, bool state, bool isStateChange)
+    public static TransitionEventArgs Get(int index, Transition state, bool isStateChange)
     {
         TransitionEventArgs args = _pool.Get();
         args.Index = index;

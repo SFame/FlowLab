@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
     protected override int DefaultOutputCount => 0;
     protected override string DefineInputName(int tpNumber) => $"2<sup><size=18>{tpNumber}</size></sup>";
     protected override string DefineOutputName(int tpNumber) => tpNumber.ToString();
+    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
     protected override float InEnumeratorXPos => -3f;
 
@@ -40,9 +43,14 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
         }
     }
 
+    protected override Transition[] SetInitializeState(int outputCount)
+    {
+        return Array.Empty<Transition>();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(sf => sf.State).ToArray());
+        BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(sf => (bool)sf.State).ToArray());
     }
 
     protected override void OnAfterInit()
