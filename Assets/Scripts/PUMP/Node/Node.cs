@@ -535,13 +535,13 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             throw new Exception("Token casting fail");
         }
 
-        ((INodeLifecycleCallable)this).CallSetInitializeState();
-
         ((TPEnumeratorToken.ISetStateUpdate)InputToken).SetStateUpdate(false);
         ((TPEnumeratorToken.ISetStateUpdate)OutputToken).SetStateUpdate(true);
 
         InputToken.SetNames(InputNames);
         OutputToken.SetNames(OutputNames);
+
+        ((INodeLifecycleCallable)this).CallSetInitializeState();
 
         SubscribeTPInStateUpdateEvent();
     }

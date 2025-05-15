@@ -271,6 +271,7 @@ public static class TransitionUtil
 {
     public static Type AsType(this TransitionType transitionType) => transitionType switch
     {
+        TransitionType.None => null,
         TransitionType.Bool => typeof(bool),
         TransitionType.Int => typeof(int),
         TransitionType.Float => typeof(float),
