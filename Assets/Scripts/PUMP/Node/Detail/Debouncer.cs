@@ -44,6 +44,16 @@ public class Debouncer : Node
         _debounceTime = value;
     }
 
+    // 변경사항 ---
+    protected override Transition[] SetOutputInitStates(int outputCount)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    protected override List<TransitionType> InputTypes { get; }
+    protected override List<TransitionType> OutputTypes { get; }
+    // -----------
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (args != null && args.Index == 0)

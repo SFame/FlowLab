@@ -8,7 +8,7 @@ using static TPEnumeratorToken;
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
-    public IStateful this[int index] => InputToken[index];
+    public ITypeListenStateful this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
     public bool ObjectIsNull => Support.gameObject == null;
     public int GateCount
@@ -27,11 +27,12 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             InputCount = value;
             OutputCount = value;
             ((ISetStateUpdate)InputToken)?.SetStateUpdate(true);
+            LinkOutputTypeToInput();
             OnCountUpdate?.Invoke(value);
         }
     }
 
-    public IEnumerator<IStateful> GetEnumerator() => ((IEnumerable<IStateful>)InputToken).GetEnumerator();
+    public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)InputToken).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
@@ -90,9 +91,14 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         IgnoreSelectedDelete = true;
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+        if (outputCount != InputToken.Count)
+        {
+            return Enumerable.Repeat(Transition.Null(TransitionType.Bool), outputCount).ToArray();
+        }
+
+        return InputToken.Select(token => token.State).ToArray();
     }
 
     protected override void OnAfterInit()
@@ -106,7 +112,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             (Support.OutputEnumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
         }
     }
-
+    
     public override void SetHighlight(bool highlighted)
     {
         base.SetHighlight(highlighted);
@@ -114,6 +120,23 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         if (Support is { OutputEnumerator: IHighlightable highlightable })
         {
             highlightable.SetHighlight(highlighted);
+        }
+    }
+
+    private void LinkOutputTypeToInput()
+    {
+        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTps = Support.OutputEnumerator.GetTPs();
+
+        if (inputTps.Length != outputTps.Length)
+        {
+            throw new IndexOutOfRangeException($"{GetType().Name}: Input & Output count mismatch");
+        }
+
+        for (int i = 0; i < inputTps.Length; i++)
+        {
+            int cache = i;
+            outputTps[cache].OnTypeChanged += type => inputTps[cache].SetType(type);
         }
     }
 

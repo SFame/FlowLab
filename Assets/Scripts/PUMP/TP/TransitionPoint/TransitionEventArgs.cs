@@ -14,9 +14,24 @@ public class TransitionEventArgs : EventArgs
     public Transition State { get; private set; }
 
     /// <summary>
+    /// 변경 이전 TP의 State
+    /// </summary>
+    public Transition BeforeState { get; private set; }
+
+    /// <summary>
     /// 이전 값과 비교해서 변경되었는지
     /// </summary>
     public bool IsStateChange { get; private set; }
+
+    /// <summary>
+    /// 현재 State의 Type (편의성)
+    /// </summary>
+    public TransitionType Type => State.Type;
+
+    /// <summary>
+    /// 현재 State가 Null Value 인지 (편의성)
+    /// </summary>
+    public bool IsNull => State.IsNull;
     #endregion
 
     #region Privates
@@ -40,11 +55,12 @@ public class TransitionEventArgs : EventArgs
     #endregion
 
     #region Static Instantiator
-    public static TransitionEventArgs Get(int index, Transition state, bool isStateChange)
+    public static TransitionEventArgs Get(int index, Transition state, Transition beforeState, bool isStateChange)
     {
         TransitionEventArgs args = _pool.Get();
         args.Index = index;
         args.State = state;
+        args.BeforeState = beforeState;
         args.IsStateChange = isStateChange;
         return args;
     }

@@ -9,6 +9,11 @@ using Utils;
 public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointerEnterHandler, IMoveable, 
                                         IGameObject, IPointerExitHandler, IPointerClickHandler
 {
+    #region On Inspacetor
+
+    [SerializeField] private bool m_MultiType = false;
+    #endregion
+
     #region Privates
     private RectTransform _imageRect;
     private string _name;
@@ -53,7 +58,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     #region Interface
     public abstract Transition State { get; set; }
-    public abstract TransitionType Type { get; set; }
+    public abstract TransitionType Type { get; protected set; }
     public int Index { get; set; }
     public TPConnection Connection { get; set; }
     public string Name
@@ -101,6 +106,14 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
         }
     }
 
+    public event Action<TransitionType> OnTypeChanged;
+
+    public void SetType(TransitionType type)
+    {
+        Type = type;
+        OnTypeChanged?.Invoke(Type);
+    }
+
     public abstract void LinkTo(ITransitionPoint targetTp, TPConnection connection = null);
     public abstract void AcceptLink(TPConnection connection);
     public abstract void ClearConnection();
@@ -121,10 +134,19 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     protected virtual List<ContextElement> ContextElements
     {
-        get => new List<ContextElement>()
+        get
         {
-            new ContextElement(clickAction: () => Connection?.Disconnect(), text: "Disconnect"),
-        };
+            List<ContextElement> context = new() { new ContextElement(clickAction: () => Connection?.Disconnect(), text: "Disconnect") };
+
+            if (m_MultiType)
+            {
+                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Bool), text: "Type: Bool"));
+                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Int), text: "Type: Int"));
+                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Float), text: "Type: Float"));
+            }
+
+            return context;
+        }
     }
 
     protected void SetImageColor(Color color)

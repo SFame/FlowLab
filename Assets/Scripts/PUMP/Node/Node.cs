@@ -331,8 +331,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     #endregion
 
     #region Protected
-    // IO -----------------------------
-    protected TPEnumeratorToken InputToken { get; private set; } // InputToken[n].State를 set 하지 말 것.
+    // Token -----------------------------
+    protected TPEnumeratorToken InputToken { get; private set; } // InputToken[n].State를 set 하지 말 것. (어차피 안 됨)
     protected TPEnumeratorToken OutputToken { get; private set; }
 
 
@@ -353,15 +353,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     protected virtual void OnBeforeRemove() { }
 
 
-    // Output TP states when place for the first time from palette (Not Deserialize) -----------------------------
-    protected abstract Transition[] SetInitializeState(int outputCount);
+    /*
+     *  It is called in the following cases, and you should output the applicable Output TP States at that time:
+     *      1. When placed for the first time from the palette
+     *      2. When the number of TPs changes (i.e., when tokens are reinitialized)
+     */
+    protected abstract Transition[] SetOutputInitStates(int outputCount);
 
 
-    // Input TP states update callback (Overriding required) -----------------------------
+    // Important Life Cycle: Triggered upon every Input State update (Overriding required) ------------------
     protected abstract void StateUpdate(TransitionEventArgs args);  // args가 null이 입력되면 생성시 호출을 의미
 
 
-    // Overriding required -----------------------------
+    // Context Element: Right click menu -----------------------------
     protected virtual List<ContextElement> ContextElements
     {
         get => new List<ContextElement>()
@@ -484,6 +488,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         _isSupportSet = true;
     }
 
+
     /// <summary>
     /// 최초 토큰 설정
     /// </summary>
@@ -497,6 +502,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         if (InputNames.Count != InputTypes.Count || OutputNames.Count != OutputTypes.Count)
         {
             throw new InvalidOperationException($"{GetType().Name}: Names와 Types 개수 불일치");
+        }
+
+        if (InputToken is IDisposable disposable1)
+        {
+            disposable1.Dispose();
+            InputToken = null;
+        }
+
+        if (OutputToken is IDisposable disposable2)
+        {
+            disposable2.Dispose();
+            OutputToken = null;
         }
 
         InputToken = Support.InputEnumerator
@@ -668,11 +685,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
         int outputCount = outputTPs.Length;
-        Transition[] outputStates = SetInitializeState(outputCount);
+        Transition[] outputStates = SetOutputInitStates(outputCount);
 
         if (outputStates == null)
         {
-            throw new NullReferenceException($"{Support.name}: SetInitializeState()의 반환은 null일 수 없습니다.");
+            throw new NullReferenceException($"{Support.name}: SetOutputInitStates()의 반환은 null일 수 없습니다.");
         }
 
         if (outputStates.Length != outputCount)

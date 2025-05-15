@@ -107,11 +107,10 @@ public class TPConnection : IStateful, IDisposable
     public TransitionType Type
     {
         get => _type;
-        set
+        private set
         {
             if (_typeSet)
             {
-                Debug.LogError("Connection Type 중복 설정 시도");
                 return;
             }
             _typeSet = true;
@@ -131,6 +130,7 @@ public class TPConnection : IStateful, IDisposable
         {
             if (_sourceState is null)
             {
+                Type = value.Type;
                 ThrowIfMismatch(value.Type);
                 _sourceState = value;
                 InitializeCheck();
@@ -145,6 +145,7 @@ public class TPConnection : IStateful, IDisposable
         {
             if (_targetState is null)
             {
+                Type = value.Type;
                 ThrowIfMismatch(value.Type);
                 _targetState = value;
                 InitializeCheck();

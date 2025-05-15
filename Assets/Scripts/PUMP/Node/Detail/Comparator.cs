@@ -54,7 +54,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
             tp.State = result;
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { (Transition)false };
     }

@@ -35,7 +35,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override string NodeDisplayName => "Timer";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { Transition.False };
     }

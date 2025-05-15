@@ -106,7 +106,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return Enumerable.Repeat((Transition)false, outputCount).ToArray();
     }

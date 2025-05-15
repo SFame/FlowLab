@@ -32,4 +32,10 @@ public class SafetyCancellationTokenSource : IDisposable
         Cancel();
         Dispose();
     }
+
+    public SafetyCancellationTokenSource CancelAndDisposeAndGetNew()
+    {
+        CancelAndDispose();
+        return new SafetyCancellationTokenSource();
+    }
 }

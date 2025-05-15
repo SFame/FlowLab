@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -521,6 +519,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #endregion
 
     #region Serialization
+
     public List<SerializeNodeInfo> GetInfos()
     {
         object blocker = new();
@@ -611,7 +610,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
 
                 // Set Transition Point types --------
-                newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.Type = type);
+                newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
 
                 // Set Transition Point states ---------
                 newNode.SetTPElems(info.InTpState, info.OutTpState, (tp, state) => tp.State = state);
@@ -996,7 +995,7 @@ public abstract class ExternalAdapter : IDisposable
 
 public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 {
-    public IStateful this[int index]
+    public ITypeListenStateful this[int index]
     {
         get
         {
@@ -1034,7 +1033,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
         _cts?.Dispose();
     }
 
-    public IEnumerator<IStateful> GetEnumerator()
+    public IEnumerator<ITypeListenStateful> GetEnumerator()
     {
         CheckNullAndThrowNullException();
         return _statesAdapters.GetEnumerator();
@@ -1087,7 +1086,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
         _statesAdapters.Clear();
         _cts = new();
 
-        foreach (IStateful stateful in _reference)
+        foreach (ITypeListenStateful stateful in _reference)
         {
             _statesAdapters.Add(new ExternalInputStatesAdapter(stateful, () => UniTask.WaitForEndOfFrame(_cts.Token), _cts.Token));
         }
@@ -1105,7 +1104,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
 public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 {
-    public IStateful this[int index]
+    public ITypeListenStateful this[int index]
     {
         get
         {
@@ -1144,7 +1143,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         OnStateUpdate?.Invoke();
     }
 
-    public IEnumerator<IStateful> GetEnumerator()
+    public IEnumerator<ITypeListenStateful> GetEnumerator()
     {
         CheckNullAndThrowNullException();
         return _statesAdapters.GetEnumerator();
@@ -1172,8 +1171,8 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         CheckNullAndThrowNullException();
 
         // ---- OnStateUpdate ----
-        _reference.OnStateUpdate += PullAll;
-        _reference.OnStateUpdate += InvokeOnStateUpdate;
+        _reference.OnStateUpdate += PullAll; // Pull 먼저
+        _reference.OnStateUpdate += InvokeOnStateUpdate;  // 이벤트 호출 이후
 
         // ---- OnCountUpdate ----
         _reference.OnCountUpdate += SyncToReferenceWrapper; // Sync 먼저
@@ -1212,7 +1211,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
         _statesAdapters.Clear();
 
-        foreach (IStateful stateful in _reference)
+        foreach (ITypeListenStateful stateful in _reference)
         {
             _statesAdapters.Add(new ExternalOutputStatesAdapter(stateful));
         }
@@ -1228,18 +1227,19 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     #endregion
 }
 
-public class ExternalInputStatesAdapter : IStateful, IDisposable
+public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
 {
-    public ExternalInputStatesAdapter(IStateful stateful, Func<UniTask> waitTaskGetter, CancellationToken token)
+    public ExternalInputStatesAdapter(ITypeListenStateful stateful, Func<UniTask> waitTaskGetter, CancellationToken token)
     {
         Stateful = stateful;
         Type = Stateful.Type;
-        _state = Stateful.State;
+        Stateful.OnTypeChanged += ApplyType;
+
         _waitTaskGetter = waitTaskGetter ?? (() => UniTask.CompletedTask);
         _token = token;
     }
 
-    public IStateful Stateful { get; private set; }
+    public ITypeListenStateful Stateful { get; private set; }
 
     public Transition State
     {
@@ -1254,7 +1254,7 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
             _stateCache = value;
             if (Stateful is not null && !IsFlushing)
             {
-                StateUpdateAsync().Forget();
+                StateUpdateAsync(_typeChangeCts.Token).Forget();
             }
         }
     }
@@ -1262,19 +1262,16 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
     public TransitionType Type
     {
         get => _type;
-        set
+        private set
         {
-            if (_typeSet)
-            {
-                Debug.LogError("ExternalInputStatesAdapter: Type 중복 설정 시도");
-                return;
-            }
-
-            _typeSet = true;
+            _typeChangeCts = _typeChangeCts.CancelAndDisposeAndGetNew();
             _type = value;
-            _state = Transition.Null(_type);
+            _state = Stateful.State;
+            _state.ThrowIfTypeMismatch(_type);
         }
     }
+
+    public event Action<TransitionType> OnTypeChanged;
 
     public bool IsFlushing { get; private set; }
 
@@ -1283,37 +1280,47 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
         if (_disposed)
             return;
 
+        _typeChangeCts.CancelAndDispose();
+        _waitTaskGetter = null;
+        Stateful.OnTypeChanged -= ApplyType;
         Stateful = null;
+        OnTypeChanged = null;
         _disposed = true;
     }
 
     private bool _disposed;
+    private SafetyCancellationTokenSource _typeChangeCts = new();
     private Transition _state;
     private Transition _stateCache;
     private TransitionType _type = TransitionType.None;
-    private bool _typeSet = false;
     private Func<UniTask> _waitTaskGetter;
     private CancellationToken _token;
 
-    private async UniTaskVoid StateUpdateAsync()
+    private void ApplyType(TransitionType type)
+    {
+        if (_disposed)
+            return;
+
+        Type = type;
+    }
+    
+    private async UniTaskVoid StateUpdateAsync(CancellationToken token)
     {
         IsFlushing = true;
 
         try
         {
             await _waitTaskGetter();
+            token.ThrowIfCancellationRequested();
 
-            if (Stateful is not null && !_token.IsCancellationRequested)
+            if (Stateful is not null && !_token.IsCancellationRequested && !token.IsCancellationRequested)
             {
                 _state = _stateCache;
                 IsFlushing = false;
                 Stateful.State = _state;
             }
         }
-        catch (OperationCanceledException)
-        {
-            IsFlushing = false;
-        }
+        catch (OperationCanceledException) { }
         finally
         {
             IsFlushing = false;
@@ -1321,40 +1328,39 @@ public class ExternalInputStatesAdapter : IStateful, IDisposable
     }
 }
 
-public class ExternalOutputStatesAdapter : IStateful, IDisposable
+public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
 {
-    public ExternalOutputStatesAdapter(IStateful stateful)
+    public ExternalOutputStatesAdapter(ITypeListenStateful stateful)
     {
         Stateful = stateful;
         Type = Stateful.Type;
-        Pull();
+        Stateful.OnTypeChanged += ApplyType;
     }
 
-    public IStateful Stateful { get; private set; }
+    public ITypeListenStateful Stateful { get; private set; }
 
     public Transition State { get; set; }
 
     public TransitionType Type
     {
         get => _type;
-        set
+        private set
         {
-            if (_typeSet)
-            {
-                Debug.LogError("ExternalInputStatesAdapter: Type 중복 설정 시도");
-                return;
-            }
-
-            _typeSet = true;
             _type = value;
-            State = Transition.Null(_type);
+            Pull();
+            OnTypeChanged?.Invoke(_type);
         }
     }
 
+    public event Action<TransitionType> OnTypeChanged;
+
+    // 외부에서 통합 실행
     public void Pull()
     {
         if (_disposed)
             return;
+        Debug.Log(Stateful.State);
+        Stateful.State.ThrowIfTypeMismatch(Type);
 
         State = Stateful.State;
     }
@@ -1364,12 +1370,20 @@ public class ExternalOutputStatesAdapter : IStateful, IDisposable
         if (_disposed)
             return;
 
+        Stateful.OnTypeChanged -= ApplyType;
         Stateful = null;
         _disposed = true;
     }
 
+    private void ApplyType(TransitionType type)
+    {
+        if (_disposed)
+            return;
+
+        Type = type;
+    }
+
     private TransitionType _type = TransitionType.None;
-    private bool _typeSet = false;
     private bool _disposed;
 }
 

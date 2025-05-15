@@ -27,7 +27,7 @@ public class NOT : Node
 
     protected override string NodeDisplayName => "NOT";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { Transition.True };
     }

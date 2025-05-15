@@ -73,7 +73,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     public override TransitionType Type
     {
         get => _type;
-        set
+        protected set
         {
             Connection?.Disconnect();
             _type = value;
@@ -102,7 +102,6 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         Connection?.Disconnect();
 
         connection ??= new();
-        connection.Type = Type;
 
         connection = SetTPConnectionLineConnector(connection);
         connection.SourceState = this;

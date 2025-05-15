@@ -36,7 +36,7 @@ public interface ITPHideable
 public interface IStateful
 {
     // 우선 설정, State 백킹필드에 동일 타입 Null값 삽입
-    TransitionType Type { get; set; }
+    TransitionType Type { get; }
     Transition State { get; set; }
 
     bool IsActivateState()
@@ -55,6 +55,16 @@ public interface IStateful
     }
 }
 
+public interface ITypeListenStateful : IStateful
+{
+    event Action<TransitionType> OnTypeChanged;
+}
+
+public interface IPolymorphicStateful : IStateful
+{
+    void SetType(TransitionType type);
+}
+
 /// <summary>
 /// 노드를 잇는 말단 객체
 /// Connection.Disconnect()는 양쪽 모두의 커넥션을 해제를 의미
@@ -62,7 +72,7 @@ public interface IStateful
 /// Connection.Disconnect()에서 양쪽의 ITransitionPoint.Disconnect()를 호출하도록
 /// LinkTo() 메서드로 상대 TP와 연결
 /// </summary>
-public interface ITransitionPoint : INameable, IStateful, ILocatable
+public interface ITransitionPoint : IPolymorphicStateful, ITypeListenStateful, INameable, ILocatable
 {
     int Index { get; set; }
     TPConnection Connection { get; set; }

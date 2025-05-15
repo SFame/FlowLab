@@ -36,6 +36,15 @@ public struct Transition : IEquatable<Transition>
         if (Type != other.Type)
             return false;
 
+        if (Type == TransitionType.None)
+            return true;
+
+        if (IsNull && other.IsNull)
+            return true;
+
+        if (IsNull != other.IsNull)
+            return false;
+
         return Type switch
         {
             TransitionType.Bool => Value.BoolValue == other.Value.BoolValue,
@@ -47,6 +56,12 @@ public struct Transition : IEquatable<Transition>
 
     public override int GetHashCode()
     {
+        if (Type == TransitionType.None)
+            return Type.GetHashCode();
+
+        if (IsNull)
+            return HashCode.Combine(Type, "Null");
+
         return Type switch
         {
             TransitionType.Bool => HashCode.Combine(Type, Value.BoolValue),
@@ -65,9 +80,10 @@ public struct Transition : IEquatable<Transition>
 
         string value = Type switch
         {
-            TransitionType.Bool => Value.BoolValue.ToString(),
-            TransitionType.Int => Value.IntValue.ToString(),
-            TransitionType.Float => Value.FloatValue.ToString(),
+            TransitionType.None => "None",
+            TransitionType.Bool => IsNull ? "Null" : Value.BoolValue.ToString(),
+            TransitionType.Int => IsNull ? "Null" : Value.IntValue.ToString(),
+            TransitionType.Float => IsNull ? "Null" : Value.FloatValue.ToString(),
             _ => "Unknown Type"
         };
 

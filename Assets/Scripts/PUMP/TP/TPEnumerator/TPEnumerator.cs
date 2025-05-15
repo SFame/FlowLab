@@ -139,7 +139,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
                 break;
 
             ITransitionPoint tp = TPObj.GetComponent<ITransitionPoint>();
-            tp.Type = types[i];
+            tp.SetType(types[i]);
             tp.Node = Node;
             tp.Index = i;
 
@@ -244,11 +244,12 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
 /// Node에서 참조할 TP객체들을 가져올 수 있는 토큰
 /// </summary>
 /// <typeparam name="TP"></typeparam>
-public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
+public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, ISetStateUpdate, IDisposable
 {
     #region Privates
     private StatefulAdapter[] _adapters;
     private bool _isNameDuplicated = true;
+    private bool _disposed = false;
     #endregion
 
     public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps)
@@ -256,8 +257,8 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
         _adapters = tps.Select(tp => new StatefulAdapter(tp)).ToArray();
     }
 
-    public IStateful this[int index] => _adapters[index];
-    public IStateful this[string name]
+    public ITypeListenStateful this[int index] => _adapters[index];
+    public ITypeListenStateful this[string name]
     {
         get
         {
@@ -272,13 +273,13 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 
     public int Count => _adapters.Length;
 
-    public void ApplyStatesAll(IEnumerable<bool> states)
+    public void ApplyStatesAll(IEnumerable<Transition> states)
     {
         if (states.Count() != Count)
             throw new ArgumentException("ApplyStatesAll: Token Count와 입력 States Count 불일치");
 
         int i = 0;
-        foreach (bool state in states)
+        foreach (Transition state in states)
         {
             this[i].State = state;
             i++;
@@ -287,6 +288,7 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
 
     public void SetNames(List<string> names)
     {
+
         if (names is null)
         {
             Debug.LogError($"{GetType().Name}: names is null");
@@ -313,19 +315,36 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
             _adapters[i].Name = names[i];
     }
 
-    #region Enumerable Interface
-    IEnumerator<IStateful> IEnumerable<IStateful>.GetEnumerator() => ((IEnumerable<IStateful>)_adapters).GetEnumerator();
+    #region Other Interface
+    IEnumerator<ITypeListenStateful> IEnumerable<ITypeListenStateful>.GetEnumerator() => ((IEnumerable<ITypeListenStateful>)_adapters).GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => _adapters.GetEnumerator();
+
+    void IDisposable.Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
+        foreach (StatefulAdapter adapter in _adapters)
+        {
+            adapter.Dispose();
+        }
+
+        _adapters = null;
+    }
     #endregion
 
     #region Stateful Adapter
-    private class StatefulAdapter : IStateful, INameable
+    private class StatefulAdapter : ITypeListenStateful, INameable, IDisposable
     {
         private readonly ITransitionPoint _tp;
+        public Action<TransitionType> _onTypeChanged;
 
         public StatefulAdapter(ITransitionPoint tp)
         {
             _tp = tp;
+            _tp.OnTypeChanged += InvokeOnTypeChanged;
         }
 
         public bool SetState { get; set; }
@@ -345,16 +364,31 @@ public class TPEnumeratorToken : IEnumerable<IStateful>, ISetStateUpdate
             }
         }
 
-        public TransitionType Type
+        public TransitionType Type => _tp.Type;
+
+        public event Action<TransitionType> OnTypeChanged
         {
-            get => _tp.Type;
-            set => _tp.Type = value;
+            add => _onTypeChanged += value;
+            remove => _onTypeChanged -= value;
         }
 
         public string Name
         {
             get => _tp.Name;
             set => _tp.Name = value;
+        }
+
+        public void Dispose()
+        {
+            if (_tp == null)
+                return;
+
+            _tp.OnTypeChanged -= InvokeOnTypeChanged;
+        }
+
+        private void InvokeOnTypeChanged(TransitionType type)
+        {
+            _onTypeChanged?.Invoke(type);
         }
     }
 

@@ -43,7 +43,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
         }
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return Array.Empty<Transition>();
     }

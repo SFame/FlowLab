@@ -27,7 +27,7 @@ public class NOR : Node
 
     protected override string NodeDisplayName => "NOR";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { Transition.True };
     }

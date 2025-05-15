@@ -8,7 +8,6 @@ using Utils;
 public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable, IDraggable, ITPHideable
 {
     #region Privates
-    [SerializeField]
     private Transition _state;
     private TransitionType _type;
     private LineConnector _lineConnector;
@@ -64,12 +63,13 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         set
         {
             value.ThrowIfTypeMismatch(Type);
-            bool isStateChange = _state != value;
+            Transition beforeState = _state;
+            bool isStateChange = !beforeState.Equals(value);
             _state = value;
             SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
             if (!OnDeserializing)
             {
-                TransitionEventArgs args = TransitionEventArgs.Get(Index, value, isStateChange);
+                TransitionEventArgs args = TransitionEventArgs.Get(Index, value, beforeState, isStateChange);
                 OnStateChange?.Invoke(args);
                 TransitionEventArgs.Release(args);
             }
@@ -79,7 +79,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
     public override TransitionType Type
     {
         get => _type;
-        set
+        protected set
         {
             Connection?.Disconnect();
             _type = value;
@@ -134,7 +134,6 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         Connection?.Disconnect();
 
         connection ??= new();
-        connection.Type = Type;
 
         connection = SetTPConnectionLineConnector(connection);
         connection.TargetState = this;

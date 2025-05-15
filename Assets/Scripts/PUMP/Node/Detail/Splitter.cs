@@ -21,7 +21,7 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override string NodeDisplayName => "S";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return Enumerable.Repeat(Transition.False, outputCount).ToArray();
     }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class OR : Node
@@ -28,7 +27,7 @@ public class OR : Node
 
     protected override string NodeDisplayName => "OR";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { Transition.False };
     }

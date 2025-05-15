@@ -7,7 +7,7 @@ using UnityEngine;
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
-    public IStateful this[int index] => OutputToken[index];
+    public ITypeListenStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
     public event Action OnStateUpdate;
 
@@ -28,11 +28,12 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         {
             InputCount = value;
             OutputCount = value;
+            LinkInputTypeToOutput();
             OnCountUpdate?.Invoke(value);
         }
     }
 
-    public IEnumerator<IStateful> GetEnumerator() => ((IEnumerable<IStateful>)OutputToken).GetEnumerator();
+    public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)OutputToken).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
@@ -63,9 +64,14 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         };
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+        if (outputCount != InputToken.Count)
+        {
+            return Enumerable.Repeat(Transition.Null(TransitionType.Bool), outputCount).ToArray();
+        }
+
+        return InputToken.Select(token => token.State).ToArray();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -75,7 +81,6 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
         for (int i = 0; i < InputToken.Count; i++)
             OutputToken[i].State = InputToken[i].State;
-
         OnStateUpdate?.Invoke();
     }
 
@@ -119,6 +124,22 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         }
     }
 
+    private void LinkInputTypeToOutput()
+    {
+        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTps = Support.OutputEnumerator.GetTPs();
+
+        if (inputTps.Length != outputTps.Length)
+        {
+            throw new IndexOutOfRangeException($"{GetType().Name}: Input & Output count mismatch");
+        }
+
+        for (int i = 0; i < inputTps.Length; i++)
+        {
+            int cache = i;
+            inputTps[cache].OnTypeChanged += type => outputTps[cache].SetType(type);
+        }
+    }
     #region Serialize
     public List<float> _handleRatios;
     public ExternalNodeSerializeInfo AdditionalArgs

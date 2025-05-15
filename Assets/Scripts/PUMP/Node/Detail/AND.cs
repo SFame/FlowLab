@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class AND : Node
@@ -30,7 +28,7 @@ public class AND : Node
     protected override string NodeDisplayName => "AND";
 
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { (Transition)false };
     }

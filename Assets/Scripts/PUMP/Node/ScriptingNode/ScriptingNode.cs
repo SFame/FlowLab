@@ -140,9 +140,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         InvokeInit();
     }
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return Array.Empty<Transition>();
+        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
     }
 
 
@@ -180,7 +180,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             {
                 Support.SetName(Communicator.ScriptFieldInfo.Name);
                 SetTpWithList(Communicator.ScriptFieldInfo.InputList, Communicator.ScriptFieldInfo.OutputList);
-                Communicator.OnOutputApply += OutputToken.ApplyStatesAll;
+                Communicator.OnOutputApply += bools => OutputToken.ApplyStatesAll(bools.Select(b => (Transition)b));
                 Communicator.OnPrint += ScriptingSupport.Print;
 
                 ScriptingSupport.ShowFileName(FileName);

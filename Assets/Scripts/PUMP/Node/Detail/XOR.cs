@@ -27,7 +27,7 @@ public class XOR : Node
 
     protected override string NodeDisplayName => "XOR";
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { Transition.False };
     }

@@ -31,7 +31,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override float TextSize => 25f;
 
-    protected override Transition[] SetInitializeState(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return new[] { (Transition)false };
     }
