@@ -5,7 +5,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using Utils;
 
 public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler, IClassedDataTargetUi
 {

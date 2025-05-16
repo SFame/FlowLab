@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,11 +21,11 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
     private bool isValidating = false;
 
 
-    // Å×½ºÆ® °á°ú ÀÌº¥Æ®
+    // í…ŒìŠ¤íŠ¸ ê²°ê³¼ ì´ë²¤íŠ¸
     public event Action<bool> OnValidationComplete;
-    public event Action<int, bool> OnTestCaseComplete; // Å×½ºÆ®ÄÉÀÌ½º ÀÎµ¦½º, ¼º°ø ¿©ºÎ
+    public event Action<int, bool> OnTestCaseComplete; // í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ì¸ë±ìŠ¤, ì„±ê³µ ì—¬ë¶€
 
-    // Å×½ºÆ®ÄÉÀÌ½º ÆÇ³Ú ¼Ó OutputÀ» À§ÇÑ ÀÌº¥Æ®
+    // í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ íŒë„¬ ì† Outputì„ ìœ„í•œ ì´ë²¤íŠ¸
     public event Action<int, bool[], bool> OnTestCaseResultDetailed;
 
     public event SoundEventHandler OnSounded;
@@ -65,7 +63,7 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         Debug.Log($"Loaded PuzzleData with {currentPuzzleData.testCases?.Count ?? 0} test cases");
     }
 
-    // PUMPSaveDataStructure¿¡¼­ PuzzleData ¼³Á¤
+    // PUMPSaveDataStructureì—ì„œ PuzzleData ì„¤ì •
     public void SetPuzzleDataFromSaveData(PUMPSaveDataStructure saveData)
     {
         if (saveData.Tag is PuzzleData puzzleData)
@@ -79,10 +77,10 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         }
     }
 
-    // ¸ğµç Å×½ºÆ®ÄÉÀÌ½º °ËÁõ
+    // ëª¨ë“  í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ê²€ì¦
     public async UniTaskVoid ValidateAllTestCases()
     {
-        //OnSounded?.Invoke(this, new (0, gameObject.transform.position)); // °ËÁõ »ç¿îµå 0.... ±×³É ¹öÆ° Onclick¿¡ »ç¿îµå ºÙÀÌ´Â°Ô ³´³ª?
+        //OnSounded?.Invoke(this, new (0, gameObject.transform.position)); // ê²€ì¦ ì‚¬ìš´ë“œ 0.... ê·¸ëƒ¥ ë²„íŠ¼ Onclickì— ì‚¬ìš´ë“œ ë¶™ì´ëŠ”ê²Œ ë‚«ë‚˜?
 
         if (isValidating || currentPuzzleData.testCases == null || currentPuzzleData.testCases.Count == 0)
         {
@@ -118,7 +116,7 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         pumpBackground.CanInteractive = true;
         isValidating = false;
     }
-    // ´ÜÀÏ Å×½ºÆ®ÄÉÀÌ½º °ËÁõ
+    // ë‹¨ì¼ í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤ ê²€ì¦
     private async UniTask<bool> ValidateTestCase(TestCase testCase, int index)
     {
         if (pumpBackground == null || pumpBackground.ExternalInput == null || pumpBackground.ExternalOutput == null)
@@ -129,7 +127,7 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
 
         Debug.Log($"Validating test case {index}...");
 
-        // ÀÔ·Â°ª ¼³Á¤
+        // ì…ë ¥ê°’ ì„¤ì •
         if (testCase.ExternalInputStates != null)
         {
             for (int i = 0; i < testCase.ExternalInputStates.Count && i < pumpBackground.ExternalInput.GateCount; i++)
@@ -138,20 +136,20 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
             }
         }
 
-        // ·ÎÁ÷ÀÌ ½ÇÇàµÉ ½Ã°£À» ÁÖ±â À§ÇØ ´ë±â
+        // ë¡œì§ì´ ì‹¤í–‰ë  ì‹œê°„ì„ ì£¼ê¸° ìœ„í•´ ëŒ€ê¸°
         await UniTask.Delay(TimeSpan.FromSeconds(testCaseDelay));
 
-        // Ãâ·Â°ª °ËÁõ
+        // ì¶œë ¥ê°’ ê²€ì¦
         bool testPassed = true;
-        bool[] actualOutputStates = new bool[pumpBackground.ExternalOutput.GateCount]; // ½ÇÁ¦ Ãâ·Â »óÅÂ¸¦ ÀúÀåÇÒ ¹è¿­
+        bool[] actualOutputStates = new bool[pumpBackground.ExternalOutput.GateCount]; // ì‹¤ì œ ì¶œë ¥ ìƒíƒœë¥¼ ì €ì¥í•  ë°°ì—´
         if (testCase.ExternalOutputStates != null)
         {
             for (int i = 0; i < testCase.ExternalOutputStates.Count; i++)
             {
-                bool expected = testCase.ExternalOutputStates[i]; // ¿¹»ó Ãâ·Â »óÅÂ - À¯Àú°¡ ¸¸µé¾î¾ß ÇÏ´Â »óÅÂ
-                bool actual = pumpBackground.ExternalOutput[i].State; // ½ÇÁ¦ Ãâ·Â »óÅÂ - ÇöÀç ÆÛÁñÀÇ »óÅÂ
+                bool expected = testCase.ExternalOutputStates[i]; // ì˜ˆìƒ ì¶œë ¥ ìƒíƒœ - ìœ ì €ê°€ ë§Œë“¤ì–´ì•¼ í•˜ëŠ” ìƒíƒœ
+                bool actual = pumpBackground.ExternalOutput[i].State; // ì‹¤ì œ ì¶œë ¥ ìƒíƒœ - í˜„ì¬ í¼ì¦ì˜ ìƒíƒœ
 
-                actualOutputStates[i] = actual; // ½ÇÁ¦ Ãâ·ÂÀ» ÀúÀå -> Å×½ºÆ®ÄÉÀÌ½ºItem ¼Ó ToggleµéÀ» ÄÑ±â À§ÇÔ
+                actualOutputStates[i] = actual; // ì‹¤ì œ ì¶œë ¥ì„ ì €ì¥ -> í…ŒìŠ¤íŠ¸ì¼€ì´ìŠ¤Item ì† Toggleë“¤ì„ ì¼œê¸° ìœ„í•¨
 
                 if (expected != actual)
                 {

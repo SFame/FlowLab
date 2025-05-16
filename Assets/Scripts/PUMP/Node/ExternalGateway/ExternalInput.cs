@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Utils;
 using static TPEnumeratorToken;
 
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
@@ -99,14 +98,14 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
         }
 
-        ((ISetStateUpdate)InputToken)?.SetStateUpdate(true);
+        ((IReadonlyToken)InputToken).IsReadonly = false;
         LinkOutputTypeToInput();
         OnCountUpdate?.Invoke(GateCount);
         InvokeOnTypeUpdate();
     }
     protected override void OnAfterInit()
     {
-        ((ISetStateUpdate)InputToken).SetStateUpdate(true);
+        ((IReadonlyToken)InputToken).IsReadonly = false;
         Support.BlockedMove = true;
         InEnumActive = false;
 

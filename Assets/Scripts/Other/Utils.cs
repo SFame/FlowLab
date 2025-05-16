@@ -15,7 +15,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using ArgumentNullException = System.ArgumentNullException;
 using Object = UnityEngine.Object;
 using SerializationUtility = OdinSerializer.SerializationUtility;
 

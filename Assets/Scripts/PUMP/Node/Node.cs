@@ -531,13 +531,13 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             .SetTPs(OutputTypes.ToArray())
             .GetToken();
 
-        if (InputToken is null || OutputToken is null)
+        if (InputToken == null || OutputToken == null)
         {
             throw new Exception("Token casting fail");
         }
 
-        ((TPEnumeratorToken.ISetStateUpdate)InputToken).SetStateUpdate(false);
-        ((TPEnumeratorToken.ISetStateUpdate)OutputToken).SetStateUpdate(true);
+        ((TPEnumeratorToken.IReadonlyToken)InputToken).IsReadonly = true;
+        ((TPEnumeratorToken.IReadonlyToken)OutputToken).IsReadonly = false;
 
         InputToken.SetNames(InputNames);
         OutputToken.SetNames(OutputNames);

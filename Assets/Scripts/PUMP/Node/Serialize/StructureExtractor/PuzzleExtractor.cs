@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Utils;
-
 public class PuzzleExtractor : SaveLoadStructureExtractor
 {
     [SerializeField] private PUMPBackground background;

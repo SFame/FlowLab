@@ -1,11 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using Utils;
 using static TPEnumeratorToken;
 
 public class TPEnumerator : MonoBehaviour, ITPEnumerator
@@ -244,10 +242,11 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
 /// Node에서 참조할 TP객체들을 가져올 수 있는 토큰
 /// </summary>
 /// <typeparam name="TP"></typeparam>
-public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, ISetStateUpdate, IDisposable
+public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToken, IDisposable
 {
     #region Privates
     private StatefulAdapter[] _adapters;
+    private bool _isReadonly = false;
     private bool _isNameDuplicated = true;
     private bool _disposed = false;
     #endregion
@@ -339,7 +338,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, ISetStateUpda
     private class StatefulAdapter : ITypeListenStateful, INameable, IDisposable
     {
         private readonly ITransitionPoint _tp;
-        public Action<TransitionType> _onTypeChanged;
+        private Action<TransitionType> _onTypeChanged;
 
         public StatefulAdapter(ITransitionPoint tp)
         {
@@ -347,14 +346,14 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, ISetStateUpda
             _tp.OnTypeChanged += InvokeOnTypeChanged;
         }
 
-        public bool SetState { get; set; }
+        public bool IsReadonly { get; set; }
 
         public Transition State
         {
             get => _tp.State;
             set
             {
-                if (!SetState)
+                if (IsReadonly)
                 {
                     Debug.LogWarning("This token cannot be set");
                     return;
@@ -392,18 +391,24 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, ISetStateUpda
         }
     }
 
-    void ISetStateUpdate.SetStateUpdate(bool state)
+    bool IReadonlyToken.IsReadonly
     {
-        foreach (StatefulAdapter adapter in _adapters)
+        get => _isReadonly;
+        set
         {
-            adapter.SetState = state;
+            _isReadonly = value;
+
+            foreach (StatefulAdapter adapter in _adapters)
+            {
+                adapter.IsReadonly = _isReadonly;
+            }
         }
     }
 
-    // 이 토큰은 설정이 가능한 토큰인지
-    public interface ISetStateUpdate
+    // 이 토큰은 읽기 전용인지 설정 가능
+    public interface IReadonlyToken
     {
-        void SetStateUpdate(bool state);
+        bool IsReadonly { get; set; }
     }
     #endregion
 }
