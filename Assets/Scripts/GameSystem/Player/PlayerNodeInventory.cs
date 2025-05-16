@@ -13,7 +13,7 @@ public static class PlayerNodeInventory
         typeof(AND),
         typeof(OR),
         typeof(NOT),
-        typeof(Splitter)
+        typeof(Splitter),
     };
     //해금된 노드
     private static List<Type> UnlockedNodes = new List<Type>();
@@ -30,9 +30,6 @@ public static class PlayerNodeInventory
         { typeof(NOR), "NOR" },
         { typeof(XNOR), "XNOR" },
         { typeof(XOR), "XOR" },
-        { typeof(Splitter), "Split" },
-        { typeof(Comparator), "Comparator" },
-        { typeof(Switch), "Switch" },
         // Add all possible nodes here
     };
 

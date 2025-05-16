@@ -173,10 +173,8 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
         {
             // 타이머 중지
             _timerRunning = false;
-
-            _clear = true;
             UnlockNodes();
-            StageData stageData = new StageData(puzzleName, _clear, _clearTime);
+            StageData stageData = new StageData(puzzleName, success, _clearTime);
             StageData saveData = GameSaveManager.Instance.FindPuzzleDataState(puzzleName);
             if (saveData != null)
             {
@@ -201,7 +199,12 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
     // 캔버스를 닫는 메서드, 퍼즐캔버스 속 Exit버튼이 있지만 퍼즐완료했을때를 위해 추가
     public void ClosePuzzle()
     {
-        
+        PuzzleBackground puzzleBackground = _pumpBackground.GetComponentInChildZone<PuzzleBackground>();
+        if (puzzleBackground != null)
+        {
+            puzzleBackground.OnValidationComplete -= HandlePuzzleValidationComplete;
+        }
+
         PUMPSeparator.SetVisible(false);
 
         if (playerController != null)

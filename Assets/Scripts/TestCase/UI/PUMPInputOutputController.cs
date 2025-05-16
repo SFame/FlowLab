@@ -52,6 +52,7 @@ public class PUMPInputOutputController : MonoBehaviour
         _isInitializing = false;
     }
 
+
     private void OnInputCountChanged(string value)
     {
         // 초기화 중에는 처리하지 않음
@@ -138,7 +139,7 @@ public class PUMPInputOutputController : MonoBehaviour
         //_pumpBackground.Initialize(_currentInputCount, _currentOutputCount);
         _pumpBackground.ExternalOutput.GateCount = _currentOutputCount;
         _pumpBackground.ExternalInput.GateCount = _currentInputCount;
-
+        
         // 변경 후 실제 적용된 값 확인 및 동기화
         if (_pumpBackground.ExternalInput != null)
         {
@@ -151,7 +152,7 @@ public class PUMPInputOutputController : MonoBehaviour
             _currentOutputCount = _pumpBackground.ExternalOutput.GateCount;
             outputCountField.text = _currentOutputCount.ToString();
         }
-        //_pumpBackground.Reset();
+        //_pumpBackground.ResetBackground();
 
 
         _isInitializing = false;

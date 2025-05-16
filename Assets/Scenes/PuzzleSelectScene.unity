@@ -264,6 +264,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: XOR
       objectReference: {fileID: 0}
@@ -465,6 +469,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: Half Subtractor
@@ -892,6 +900,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: Half Adder
       objectReference: {fileID: 0}
@@ -1243,6 +1255,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: XNOR
       objectReference: {fileID: 0}
@@ -1360,6 +1376,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: 1-2DEMUX
@@ -1599,6 +1619,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: 2-1MUX
@@ -1970,6 +1994,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: Full Subtractor
       objectReference: {fileID: 0}
@@ -2264,6 +2292,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: NAND
       objectReference: {fileID: 0}
@@ -2385,6 +2417,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: puzzleName
       value: Full Adder
@@ -2999,6 +3035,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: fileName
+      value: puzzle_data.bin
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: PUMPSeparator
       value: 
