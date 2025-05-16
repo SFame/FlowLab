@@ -8,6 +8,8 @@ public interface IExternalGateway : IEnumerable<ITypeListenStateful>
     public ITypeListenStateful this[int index] { get; }
 
     public event Action<int> OnCountUpdate;
+
+    public event Action<TransitionType[]> OnTypeUpdate;
 }
 
 public interface IExternalInput : IExternalGateway { }

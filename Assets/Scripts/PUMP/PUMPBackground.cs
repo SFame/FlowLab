@@ -161,11 +161,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         try
         {
-            var inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
-            var outputNodes = Nodes.Where(node => node is IExternalOutput).ToList();
+            List<Node> inputNodes = Nodes.Where(node => node is IExternalInput).ToList();
+            List<Node> outputNodes = Nodes.Where(node => node is IExternalOutput).ToList();
 
-            var currentInput = inputNodes.FirstOrDefault() as IExternalInput;
-            var currentOutput = outputNodes.FirstOrDefault() as IExternalOutput;
+            IExternalInput currentInput = inputNodes.FirstOrDefault() as IExternalInput;
+            IExternalOutput currentOutput = outputNodes.FirstOrDefault() as IExternalOutput;
 
             bool inputValid = inputNodes.Count == 1 && currentInput is { ObjectIsNull: false };
             bool outputValid = outputNodes.Count == 1 && currentOutput is { ObjectIsNull: false };
@@ -181,6 +181,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
             int newInputCount = -1;
             int newOutputCount = -1;
+            bool isInputRefUpdated = false;
+            bool isOutputRefUpdated = false;
 
             if (inputNodes.Count > 1)
             {
@@ -202,9 +204,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Node newNode = AddNewNode(typeof(ExternalInput));
                 if (newNode is IExternalInput newExternalInput)
                 {
-                    _externalInputAdapter.UpdateReference(newExternalInput);
                     newExternalInput.GateCount = m_DefaultExternalInputCount;
                     newInputCount = newExternalInput.GateCount;
+                    _externalInputAdapter.UpdateReference(newExternalInput);
+                    isInputRefUpdated = true;
                 }
                 newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
             }
@@ -229,18 +232,23 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Node newNode = AddNewNode(typeof(ExternalOutput));
                 if (newNode is IExternalOutput newExternalOutput)
                 {
-                    _externalOutputAdapter.UpdateReference(newExternalOutput);
                     newExternalOutput.GateCount = m_DefaultExternalOutputCount;
                     newOutputCount = newExternalOutput.GateCount;
+                    _externalOutputAdapter.UpdateReference(newExternalOutput);
+                    isOutputRefUpdated = true;
                 }
                 newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
             }
 
-            if (newInputCount != -1)
+            if (newInputCount != -1 && !isInputRefUpdated)
                 _externalInputAdapter.InvokeOnCountUpdate(newInputCount);
 
-            if (newOutputCount != -1)
+            if (newOutputCount != -1 && !isOutputRefUpdated)
                 _externalOutputAdapter.InvokeOnCountUpdate(newOutputCount);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
         }
         finally
         {
@@ -1022,6 +1030,8 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public event Action<int> OnCountUpdate;
 
+    public event Action<TransitionType[]> OnTypeUpdate;
+
     public override void InvokeOnCountUpdate(int count)
     {
         OnCountUpdate?.Invoke(count);
@@ -1132,6 +1142,8 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     public event Action OnStateUpdate;
 
     public event Action<int> OnCountUpdate;
+
+    public event Action<TransitionType[]> OnTypeUpdate;
 
     public override void InvokeOnCountUpdate(int count)
     {
@@ -1252,7 +1264,7 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
             value.ThrowIfTypeMismatch(Type);
 
             _stateCache = value;
-            if (Stateful is not null && !IsFlushing)
+            if (Stateful != null && !IsFlushing)
             {
                 StateUpdateAsync(_typeChangeCts.Token).Forget();
             }
@@ -1313,7 +1325,7 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
             await _waitTaskGetter();
             token.ThrowIfCancellationRequested();
 
-            if (Stateful is not null && !_token.IsCancellationRequested && !token.IsCancellationRequested)
+            if (Stateful != null && !_token.IsCancellationRequested && !token.IsCancellationRequested)
             {
                 _state = _stateCache;
                 IsFlushing = false;
@@ -1359,9 +1371,8 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     {
         if (_disposed)
             return;
-        Debug.Log(Stateful.State);
-        Stateful.State.ThrowIfTypeMismatch(Type);
 
+        Stateful.State.ThrowIfTypeMismatch(Type);
         State = Stateful.State;
     }
 

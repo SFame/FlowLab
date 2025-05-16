@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Utils;
 using static TPEnumeratorToken;
 
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
@@ -10,6 +11,8 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     #region External Interface
     public ITypeListenStateful this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
+    public event Action<TransitionType[]> OnTypeUpdate;
+
     public bool ObjectIsNull => Support.gameObject == null;
     public int GateCount
     {
@@ -93,9 +96,10 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        if (outputCount != InputToken.Count)
+        foreach (ITypeListenStateful stateful in InputToken)
         {
-            return Enumerable.Repeat(Transition.Null(TransitionType.Bool), outputCount).ToArray();
+            Debug.Log(stateful.State);
+            stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
         }
 
         return InputToken.Select(token => token.State).ToArray();
@@ -121,6 +125,11 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         {
             highlightable.SetHighlight(highlighted);
         }
+    }
+
+    private void InvokeOnTypeUpdate()
+    {
+        OnTypeUpdate?.Invoke(InputToken.Select(stateful => stateful.Type).ToArray());
     }
 
     private void LinkOutputTypeToInput()

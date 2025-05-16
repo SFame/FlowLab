@@ -10,6 +10,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     public ITypeListenStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
     public event Action OnStateUpdate;
+    public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
 
@@ -66,9 +67,9 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        if (outputCount != InputToken.Count)
+        foreach (ITypeListenStateful stateful in OutputToken)
         {
-            return Enumerable.Repeat(Transition.Null(TransitionType.Bool), outputCount).ToArray();
+            stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
         }
 
         return InputToken.Select(token => token.State).ToArray();
@@ -122,6 +123,11 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         {
             highlightable.SetHighlight(highlighted);
         }
+    }
+
+    private void InvokeOnTypeUpdate()
+    {
+        OnTypeUpdate?.Invoke(OutputToken.Select(stateful => stateful.Type).ToArray());
     }
 
     private void LinkInputTypeToOutput()
