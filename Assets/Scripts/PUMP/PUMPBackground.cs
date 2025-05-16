@@ -241,10 +241,14 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             }
 
             if (newInputCount != -1 && !isInputRefUpdated)
-                _externalInputAdapter.InvokeOnCountUpdate(newInputCount);
+            {
+                _externalInputAdapter.InvokeOnCountUpdate();
+            }
 
             if (newOutputCount != -1 && !isOutputRefUpdated)
-                _externalOutputAdapter.InvokeOnCountUpdate(newOutputCount);
+            {
+                _externalOutputAdapter.InvokeOnCountUpdate();
+            }
         }
         catch (Exception e)
         {
@@ -997,7 +1001,8 @@ public delegate void OnSelectedMoveHandler(IDragSelectable invokerToExclude, Vec
 public abstract class ExternalAdapter : IDisposable
 {
     public abstract void UpdateReference(IExternalGateway externalGateway);
-    public abstract void InvokeOnCountUpdate(int count);
+    public abstract void InvokeOnCountUpdate();
+    public abstract void InvokeOnTypeUpdate();
     public abstract void Dispose();
 }
 
@@ -1032,9 +1037,14 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public event Action<TransitionType[]> OnTypeUpdate;
 
-    public override void InvokeOnCountUpdate(int count)
+    public override void InvokeOnCountUpdate()
     {
-        OnCountUpdate?.Invoke(count);
+        OnCountUpdate?.Invoke(GateCount);
+    }
+
+    public override void InvokeOnTypeUpdate()
+    {
+        OnTypeUpdate?.Invoke(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
     public void StopTransition()
@@ -1059,16 +1069,21 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
         if (_reference != null)
         {
             _reference.OnCountUpdate -= SyncToReferenceWrapper; 
-            _reference.OnCountUpdate -= InvokeOnCountUpdate;
+            _reference.OnCountUpdate -= InternalInvokeOnCountUpdate;
+            _reference.OnTypeUpdate -= InternalInvokeOnTypeUpdate;
         }
 
         _reference = externalGateway as IExternalInput;
         CheckNullAndThrowNullException();
+
         _reference.OnCountUpdate += SyncToReferenceWrapper;  // Sync 먼저
-        _reference.OnCountUpdate += InvokeOnCountUpdate;  // 이벤트 호출 이후
+        _reference.OnCountUpdate += InternalInvokeOnCountUpdate;  // 이벤트 호출 이후
+        _reference.OnTypeUpdate += InternalInvokeOnTypeUpdate;
 
         SyncToReference();
-        InvokeOnCountUpdate(_reference.GateCount);
+
+        InternalInvokeOnCountUpdate(GateCount);
+        InternalInvokeOnTypeUpdate(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
     public override void Dispose()
@@ -1084,6 +1099,16 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
     private IExternalInput _reference;
     private readonly List<ExternalInputStatesAdapter> _statesAdapters = new();
     private SafetyCancellationTokenSource _cts;
+
+    private void InternalInvokeOnCountUpdate(int count)
+    {
+        OnCountUpdate?.Invoke(count);
+    }
+
+    private void InternalInvokeOnTypeUpdate(TransitionType[] types)
+    {
+        OnTypeUpdate?.Invoke(types);
+    }
 
     private void SyncToReference()
     {
@@ -1145,9 +1170,14 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     public event Action<TransitionType[]> OnTypeUpdate;
 
-    public override void InvokeOnCountUpdate(int count)
+    public override void InvokeOnCountUpdate()
     {
-        OnCountUpdate?.Invoke(count);
+        OnCountUpdate?.Invoke(GateCount);
+    }
+
+    public override void InvokeOnTypeUpdate()
+    {
+        OnTypeUpdate?.Invoke(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
     public void InvokeOnStateUpdate()
@@ -1176,7 +1206,10 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
             // ---- OnCountUpdate ----
             _reference.OnCountUpdate -= SyncToReferenceWrapper;
-            _reference.OnCountUpdate -= InvokeOnCountUpdate;
+            _reference.OnCountUpdate -= InternalInvokeOnCountUpdate;
+
+            // ---- OnTypeUpdate ----
+            _reference.OnTypeUpdate -= InternalInvokeOnTypeUpdate;
         }
 
         _reference = externalGateway as IExternalOutput;
@@ -1188,10 +1221,15 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
         // ---- OnCountUpdate ----
         _reference.OnCountUpdate += SyncToReferenceWrapper; // Sync 먼저
-        _reference.OnCountUpdate += InvokeOnCountUpdate;  // 이벤트 호출 이후
+        _reference.OnCountUpdate += InternalInvokeOnCountUpdate;  // 이벤트 호출 이후
+
+        // ---- OnTypeUpdate ----
+        _reference.OnTypeUpdate += InternalInvokeOnTypeUpdate;
 
         SyncToReference();
-        InvokeOnCountUpdate(_reference.GateCount);
+
+        InternalInvokeOnCountUpdate(_reference.GateCount);
+        InternalInvokeOnTypeUpdate(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
     public override void Dispose()
@@ -1212,6 +1250,16 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         {
             adapter.Pull();
         }
+    }
+
+    private void InternalInvokeOnCountUpdate(int count)
+    {
+        OnCountUpdate?.Invoke(count);
+    }
+
+    private void InternalInvokeOnTypeUpdate(TransitionType[] types)
+    {
+        OnTypeUpdate?.Invoke(types);
     }
 
     private void SyncToReference()

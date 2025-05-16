@@ -22,13 +22,15 @@ public struct Transition : IEquatable<Transition>
     public static Transition True => true;
     public static Transition False => false;
     #endregion
+
     #region Interface
-    [OdinSerialize] public TransitionType Type { get; }
-    [OdinSerialize] public TransitionValue Value { get; }
-    [OdinSerialize] public bool IsNull { get; }
+
+    public TransitionType Type => _type;
+    public TransitionValue Value => _value;
+    public bool IsNull => _isNull;
     #endregion
 
-    #region Overriding
+    #region Overrided
     public override bool Equals(object obj) => obj is Transition other && Equals(other);
 
     public bool Equals(Transition other)
@@ -92,12 +94,18 @@ public struct Transition : IEquatable<Transition>
 
     #endregion
 
+    #region Backing fields
+    [OdinSerialize] public TransitionType _type;
+    [OdinSerialize] public TransitionValue _value;
+    [OdinSerialize] public bool _isNull;
+    #endregion
+
     #region Non Interface
     public Transition(TransitionType type, TransitionValue value, bool isNull = false)
     {
-        Type = type;
-        Value = value;
-        IsNull = isNull;
+        _type = type;
+        _value = value;
+        _isNull = isNull;
     }
     #endregion
 

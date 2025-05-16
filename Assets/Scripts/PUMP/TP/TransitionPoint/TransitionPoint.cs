@@ -140,9 +140,23 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
             if (m_MultiType)
             {
-                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Bool), text: "Type: Bool"));
-                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Int), text: "Type: Int"));
-                context.Add(new ContextElement(clickAction: () => SetType(TransitionType.Float), text: "Type: Float"));
+                context.Add(new ContextElement(clickAction: () =>
+                {
+                    SetType(TransitionType.Bool);
+                    Node.ReportChanges();
+                }, text: "Type: Bool"));
+
+                context.Add(new ContextElement(clickAction: () =>
+                {
+                    SetType(TransitionType.Int);
+                    Node.ReportChanges();
+                }, text: "Type: Int"));
+
+                context.Add(new ContextElement(clickAction: () =>
+                {
+                    SetType(TransitionType.Float);
+                    Node.ReportChanges();
+                }, text: "Type: Float"));
             }
 
             return context;

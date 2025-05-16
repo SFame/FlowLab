@@ -25,14 +25,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             }
             return InputToken.Count;
         }
-        set
-        {
-            InputCount = value;
-            OutputCount = value;
-            ((ISetStateUpdate)InputToken)?.SetStateUpdate(true);
-            LinkOutputTypeToInput();
-            OnCountUpdate?.Invoke(value);
-        }
+        set => FuseIOCounts(value, value);
     }
 
     public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)InputToken).GetEnumerator();
@@ -96,15 +89,21 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        foreach (ITypeListenStateful stateful in InputToken)
-        {
-            Debug.Log(stateful.State);
-            stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
-        }
-
         return InputToken.Select(token => token.State).ToArray();
     }
 
+    protected override void OnAfterRefreshToken()
+    {
+        foreach (ITypeListenStateful stateful in InputToken)
+        {
+            stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
+        }
+
+        ((ISetStateUpdate)InputToken)?.SetStateUpdate(true);
+        LinkOutputTypeToInput();
+        OnCountUpdate?.Invoke(GateCount);
+        InvokeOnTypeUpdate();
+    }
     protected override void OnAfterInit()
     {
         ((ISetStateUpdate)InputToken).SetStateUpdate(true);

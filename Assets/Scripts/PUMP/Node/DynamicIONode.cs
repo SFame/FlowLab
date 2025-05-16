@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static UnityEngine.Rendering.DebugUI;
 
 public abstract class DynamicIONode : Node
 {
@@ -51,7 +52,7 @@ public abstract class DynamicIONode : Node
         get => CompareDefaultValue(_inputCount, DefaultInputCount);
         set
         {
-            _inputCount = value;
+            _inputCount = CompareDefaultValue(value, DefaultInputCount);
             if (InputToken != null)
                 ResetToken();
         }
@@ -62,9 +63,23 @@ public abstract class DynamicIONode : Node
         get => CompareDefaultValue(_outputCount, DefaultOutputCount);
         set
         {
-            _outputCount = value;
+            _outputCount = CompareDefaultValue(value, DefaultOutputCount);
             if (OutputToken != null)
                 ResetToken();
+        }
+    }
+
+    /// <summary>
+    /// 한꺼번에 설정
+    /// </summary>
+    protected void FuseIOCounts(int inputCount, int outputCount)
+    {
+        _inputCount = CompareDefaultValue(inputCount, DefaultInputCount);
+        _outputCount = CompareDefaultValue(outputCount, DefaultOutputCount);
+
+        if (InputToken != null && OutputToken != null)
+        {
+            ResetToken();
         }
     }
     #endregion

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
@@ -25,13 +26,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
             }
             return OutputToken.Count;
         }
-        set
-        {
-            InputCount = value;
-            OutputCount = value;
-            LinkInputTypeToOutput();
-            OnCountUpdate?.Invoke(value);
-        }
+        set => FuseIOCounts(value, value);
     }
 
     public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)OutputToken).GetEnumerator();
@@ -67,12 +62,19 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
+        return InputToken.Select(token => token.State).ToArray();
+    }
+
+    protected override void OnAfterRefreshToken()
+    {
         foreach (ITypeListenStateful stateful in OutputToken)
         {
             stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
         }
 
-        return InputToken.Select(token => token.State).ToArray();
+        LinkInputTypeToOutput();
+        OnCountUpdate?.Invoke(GateCount);
+        InvokeOnTypeUpdate();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

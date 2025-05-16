@@ -350,6 +350,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     protected virtual void OnAfterInstantiate() { }
     protected virtual void OnBeforeInit() { }
     protected virtual void OnAfterInit() { }
+    protected virtual void OnAfterRefreshToken() { }
     protected virtual void OnBeforeRemove() { }
 
 
@@ -544,6 +545,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         ((INodeLifecycleCallable)this).CallSetInitializeState();
 
         SubscribeTPInStateUpdateEvent();
+
+        ((INodeLifecycleCallable)this).CallOnAfterRefreshToken();
     }
 
     /// <summary>
@@ -704,6 +707,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
     }
 
+    void INodeLifecycleCallable.CallOnAfterRefreshToken()
+    {
+        try
+        {
+            OnAfterRefreshToken();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
     void INodeLifecycleCallable.CallOnBeforeRemove()
     {
         try
@@ -833,6 +848,7 @@ public interface INodeLifecycleCallable
     void CallOnBeforeReplayPending(bool[] pendings);
     void CallOnCompletePlacementFromPalette();
     void CallSetInitializeState();
+    void CallOnAfterRefreshToken();
     void CallOnBeforeRemove();
 }
 

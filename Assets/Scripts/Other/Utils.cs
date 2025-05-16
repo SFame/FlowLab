@@ -223,9 +223,12 @@ namespace Utils
 
     public static class UtilsDebug
     {
-        public static T Log<T>(this T logObject, LogType logType = LogType.Log)
+        public static T Log<T>(this T logObject, bool highlightInHierarchy = false, LogType logType = LogType.Log)
         {
-            Debug.unityLogger.Log(logType, logObject);
+            string message = logObject?.ToString() ?? "Null";
+            Object context = highlightInHierarchy && logObject is Object obj ? obj : null;
+            Debug.LogFormat(logType, LogOption.None, context, "{0}", message);
+
             return logObject;
         }
 
@@ -240,17 +243,18 @@ namespace Utils
         {
             if (logEnumerable == null)
             {
-                Debug.unityLogger.Log(logType, "Null");
-                return logEnumerable;
+                Debug.LogFormat(logType, LogOption.None, null, "{0}", "Null");
+                return null;
             }
 
+            T[] materialized = logEnumerable.ToArray();
             StringBuilder sb = new();
-            foreach (T obj in logEnumerable)
+            foreach (T obj in materialized)
             {
                 sb.AppendLine($"[{obj.ToString()}]");
             }
-            Debug.unityLogger.Log(logType, sb);
-            return logEnumerable;
+            Debug.LogFormat(logType, LogOption.None, null, "{0}", sb.ToString());
+            return materialized;
         }
 
         /// <summary>
@@ -262,21 +266,23 @@ namespace Utils
         /// <returns></returns>
         public static IEnumerable<T> LogE<T>(this IEnumerable<T> logEnumerable, Func<T, object> logMap, LogType logType = LogType.Log)
         {
-            logMap ??= (t => t);
+            logMap ??= t => t;
 
             if (logEnumerable == null)
             {
-                Debug.unityLogger.Log(logType, "Null");
-                return logEnumerable;
+                Debug.LogFormat(logType, LogOption.None, null, "{0}", "Null");
+                return null;
             }
 
+            T[] materialized = logEnumerable.ToArray();
+
             StringBuilder sb = new();
-            foreach (T obj in logEnumerable)
+            foreach (T obj in materialized)
             {
-                sb.AppendLine($"[{logMap(obj).ToString()}]");
+                sb.AppendLine($"[{logMap(obj)}]");
             }
-            Debug.unityLogger.Log(logType, sb);
-            return logEnumerable;
+            Debug.LogFormat(logType, LogOption.None, null, "{0}", sb.ToString());
+            return materialized;
         }
     }
 
