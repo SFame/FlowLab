@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ClickSwitch : Node, INodeAdditionalArgs<bool>
+public class FloatSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
 
@@ -14,7 +14,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType>();
 
-    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Float };
 
     protected override float InEnumeratorXPos => 0f;
 
@@ -32,7 +32,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return new[] { Transition.False };
+        return new[] { new Transition(0f) };
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
@@ -67,7 +67,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
         {
             Support.SelectedRemoveRequestInvoke();
             State = !State;
-            OutputToken[0].State = State;
+            OutputToken[0].State = State ? 10f : 0f;
             ReportChanges();
         }
     }

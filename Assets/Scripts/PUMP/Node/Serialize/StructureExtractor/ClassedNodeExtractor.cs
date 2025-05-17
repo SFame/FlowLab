@@ -123,7 +123,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.PairBackground.SetInfos(structure.NodeInfos, true);
         current.ClassedNode.Id = structure.Tag.ToString();
         current.ClassedNode.Name = structure.Name;
-        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => (bool)tp.State).ToArray());
+        SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+        AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
         structure.NotifyDataChanged();
     }
@@ -145,18 +147,22 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         if (matchedStructure != null)
         {
             current.PairBackground.SetInfos(matchedStructure.NodeInfos, true);
-            current.ClassedNode.Name = matchedStructure.Name;
             current.ClassedNode.Id = matchedStructure.Tag.ToString();
-            current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => (bool)tp.State).ToArray());
+            current.ClassedNode.Name = matchedStructure.Name;
+            SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+            AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+            current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
             current.ClearChangeFlag();
             matchedStructure.NotifyDataChanged();
             return;
         }
 
         current.PairBackground.SetInfos(new(), true);
-        current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         current.ClassedNode.Id = string.Empty;
-        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => (bool)tp.State).ToArray());
+        current.ClassedNode.Name = classedNodePanel.defaultSaveName;
+        SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+        AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
+        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
     }
 
@@ -195,7 +201,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     private Dictionary<IClassedNode, PUMPBackground> ClassedDict { get; set; } = new();
     private CurrentClassedPairManager CurrentPair { get; set; } = new();
 
-    private Action<bool[]> _classedOnInputUpdateCache;
+    private Action<Transition[]> _classedOnInputUpdateCache;
     private Action _exOutOnStateUpdateCache;
 
     private async UniTask AddNewAsync(IClassedNode classedNode)
@@ -240,6 +246,64 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     }
 
     /// <summary>
+    /// Gateway의 각각의 Adapter의 Type Update 이벤트에 ClassedNode 의 TP의 타입 업데이트 액션 등록
+    /// </summary>
+    private void SubscribeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
+    {
+        if (applier.Count != gateway.Count())
+        {
+            Debug.LogError($"Adapter({gateway.Count()})와 ClassedNode의 TP({applier.Count}) 개수 불일치");
+            return;
+        }
+
+        for (int i = 0; i < applier.Count; i++)
+        {
+            gateway[i].OnTypeChanged += applier[i];
+        }
+    }
+
+    /// <summary>
+    /// Classed와 Background 타입 이벤트 동기화
+    /// </summary>
+    private void AttachTypeApplier(IClassedNode classed, IExternalInput exIn, IExternalOutput exOut)
+    {
+        List<Action<TransitionType>> inputTypeApplier = classed.GetInputTypeApplier();
+        List<Action<TransitionType>> outputTypeApplier = classed.GetOutputTypeApplier();
+        SubscribeTypeUpdate(inputTypeApplier, exIn);
+        SubscribeTypeUpdate(outputTypeApplier, exOut);
+    }
+
+    /// <summary>
+    /// Classed와 Background 타입 동기화
+    /// </summary>
+    private void SyncType(IClassedNode classed, IExternalInput exIn, IExternalOutput exOut)
+    {
+        List<Action<TransitionType>> inputTypeApplier = classed.GetInputTypeApplier();
+        List<Action<TransitionType>> outputTypeApplier = classed.GetOutputTypeApplier();
+
+        if (inputTypeApplier.Count != exIn.Count())
+        {
+            Debug.Log($"입력 개수 불일치: inputTypeApplier: ({inputTypeApplier.Count})가 exIn: ({exIn.Count()})");
+            return;
+        }
+        if (outputTypeApplier.Count != exOut.Count())
+        {
+            Debug.Log($"출력 개수 불일치: outputTypeApplier: ({outputTypeApplier.Count})가 exOut: ({exOut.Count()})");
+            return;
+        }
+
+        for (int i = 0; i < inputTypeApplier.Count; i++)
+        {
+            inputTypeApplier[i]?.Invoke(exIn[i].Type);
+        }
+
+        for (int i = 0; i < outputTypeApplier.Count; i++)
+        {
+            outputTypeApplier[i]?.Invoke(exOut[i].Type);
+        }
+    }
+
+    /// <summary>
     /// Classed와 External 연결
     /// </summary>
     private void LinkClassedToExternal(IClassedNode classed, IExternalInput exIn, IExternalOutput exOut)
@@ -250,11 +314,16 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             classed.OutputCount = exOut.GateCount;
         }
 
+        // Type sync & applier attach
+        SyncType(classed, exIn, exOut);
+        AttachTypeApplier(classed, exIn, exOut);
+
+        // On Classed Node Input Update
         _classedOnInputUpdateCache = classedInputStates =>
         {
             for (int i = 0; i < classedInputStates.Length; i++)
             {
-                if (exIn[i].State != classedInputStates[i])  // 다를 때만 업데이트 (까먹지마)
+                if (exIn[i].Type == classedInputStates[i].Type && exIn[i].State != classedInputStates[i])  // 다를 때만 업데이트 (까먹지마)
                 {
                     exIn[i].State = classedInputStates[i];
                 }
@@ -262,13 +331,14 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         };
         classed.OnInputUpdate += _classedOnInputUpdateCache;
 
+        // On External Output Updated
         _exOutOnStateUpdateCache = () =>
         {
-            classed.OutputStateUpdate(exOut.Select(tp => (bool)tp.State).ToArray());
+            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray());
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
 
-        classed.InputStateValidate(exIn.Select(tp => (bool)tp.State).ToArray());
+        classed.InputStateValidate(exIn.Select(tp => tp.State).ToArray());
     }
 
     private async UniTask PushAsync(string name)

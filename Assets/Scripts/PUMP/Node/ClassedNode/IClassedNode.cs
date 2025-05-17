@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public interface IClassedNode
 {
@@ -7,10 +8,12 @@ public interface IClassedNode
     int InputCount { get; set; }
     int OutputCount { get; set; }
 
-    event Action<bool[]> OnInputUpdate;
+    event Action<Transition[]> OnInputUpdate;
     event Action<IClassedNode> OpenPanel;
     event Action<IClassedNode> OnDestroy;
-    void OutputStateUpdate(bool[] outputs);
-    void InputStateValidate(bool[] exInStates);
+    void OutputStateUpdate(Transition[] outputs);
+    void InputStateValidate(Transition[] exInStates);
+    List<Action<TransitionType>> GetInputTypeApplier();
+    List<Action<TransitionType>> GetOutputTypeApplier();
     Node GetNode();
 }

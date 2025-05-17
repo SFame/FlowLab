@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using Cysharp.Threading.Tasks;
 using IronPython.Hosting;
+using IronPython.Runtime.Types;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using UnityEngine;
@@ -16,6 +19,7 @@ printer = Printer()";
     private static CompiledCode _callbackCompiled;
     private static readonly object _callbackCompileLock = new object();
     private static ScriptEngine _engine;
+    private static readonly Type[] _availableType = new[] { typeof(bool), typeof(int), typeof(float), typeof(BigInteger), typeof(double) };
 
     private static string CallbacksScript
     {
@@ -64,9 +68,9 @@ printer = Printer()";
     private ScriptScope Scope { get; set; }
     private Action<string> _logger;
     private Action<Exception> _exLogger;
-    private Action<List<bool>> _initAction;
+    private Action<List<dynamic>> _initAction;
     private Action _terminateAction;
-    private Action<List<bool>, int, bool, bool> _stateUpdateAction;
+    private Action<List<dynamic>, int, dynamic, bool, bool> _stateUpdateAction;
     private SafetyCancellationTokenSource _asyncModeCts;
     private bool _isAsync = false;
     private bool _isSetAsync = false;
@@ -77,6 +81,8 @@ printer = Printer()";
         { "name", null },
         { "input_list", null },
         { "output_list", null },
+        { "input_types", null },
+        { "output_types", null },
         { "is_async", null },
         { "auto_state_update_after_init", null },
         { "output_applier", null },
@@ -135,7 +141,7 @@ printer = Printer()";
     }
 
     public ScriptFieldInfo ScriptFieldInfo { get; private set; }
-    public event Action<IList<bool>> OnOutputApply;
+    public event Action<IList<Transition>> OnOutputApply;
     public event Action<string> OnPrint;
 
     /// <summary>
@@ -210,15 +216,17 @@ printer = Printer()";
     /// <summary>
     /// Python 스크립트 init 호출
     /// </summary>
-    public void InvokeInit(List<bool> inputTokenState)
+    public void InvokeInit(List<Transition> inputTokenState)
     {
+        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic() ?? false).ToList();
+
         if (IsAsync)
         {
             UniTask.RunOnThreadPool(() =>
             {
                 try
                 {
-                    _initAction?.Invoke(inputTokenState);
+                    _initAction?.Invoke(dynamicStateList);
                 }
                 catch (Exception e)
                 {
@@ -236,7 +244,7 @@ printer = Printer()";
 
         try
         {
-            _initAction?.Invoke(inputTokenState);
+            _initAction?.Invoke(dynamicStateList);
         }
         catch (Exception e)
         {
@@ -263,12 +271,13 @@ printer = Printer()";
     /// </summary>
     /// <param name="args"></param>
     /// <param name="inputTokenState"></param>
-    public void InvokeStateUpdate(TransitionEventArgs args, List<bool> inputTokenState)
+    public void InvokeStateUpdate(TransitionEventArgs args, List<Transition> inputTokenState)
     {
-        bool argsIsNull = args == null;
-        int Index = argsIsNull ? -1 : args.Index;
-        bool State = !argsIsNull && args.State;
-        bool IsStateChange = !argsIsNull && args.IsStateChange;
+        bool argsIsNull = args == null || args.IsNull;
+        int Index = args?.Index ?? -1;
+        dynamic State = args?.State.GetValueAsDynamic() ?? false; 
+        bool IsStateChange = args is { IsStateChange: true };
+        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic() ?? false).ToList();
 
         if (IsAsync)
         {
@@ -276,7 +285,7 @@ printer = Printer()";
                 {
                     try
                     {
-                        _stateUpdateAction?.Invoke(inputTokenState, Index, State, IsStateChange);
+                        _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, argsIsNull);
                     }
                     catch (Exception e)
                     {
@@ -294,7 +303,7 @@ printer = Printer()";
 
         try
         {
-            _stateUpdateAction?.Invoke(inputTokenState, Index, State, IsStateChange);
+            _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, argsIsNull);
         }
         catch (Exception e)
         {
@@ -345,7 +354,7 @@ printer = Printer()";
         try
         {
             OutputApplier = _essentialMembers["output_applier"];
-            OutputApplier.set_callback(new Action<IList<bool>>(InvokeApplyOutput));
+            OutputApplier.set_callback(new Action<IList<dynamic>>(InvokeApplyOutput));
 
             Printer = _essentialMembers["printer"];
             Printer.set_callback(new Action<object>(InvokePrint));
@@ -357,18 +366,31 @@ printer = Printer()";
             _terminateAction = () => terminateFunc();
 
             dynamic stateUpdateFunc = _essentialMembers["state_update"];
-            _stateUpdateAction = (inputs, index, state, isChanged) =>
-                stateUpdateFunc(inputs, index, state, isChanged);
+            _stateUpdateAction = (inputs, index, state, isChanged, isDisconnected) =>
+                stateUpdateFunc(inputs, index, state, isChanged, isDisconnected);
+
+            var typeTuple = TypeCheck(_essentialMembers["input_list"], _essentialMembers["output_list"],
+                _essentialMembers["input_types"], _essentialMembers["output_types"]);
+
+
 
             ScriptFieldInfo = new ScriptFieldInfo
             (
                 _essentialMembers["name"],
                 _essentialMembers["input_list"],
                 _essentialMembers["output_list"],
+                typeTuple.Item1,
+                typeTuple.Item2,
                 _essentialMembers["is_async"],
                 _essentialMembers["auto_state_update_after_init"]
             );
             return true;
+        }
+        catch (ArgumentException argumentEx)
+        {
+            _logger?.Invoke(argumentEx.Message);
+            _exLogger?.Invoke(argumentEx);
+            return false;
         }
         catch (Exception e)
         {
@@ -378,7 +400,62 @@ printer = Printer()";
         }
     }
 
-    private void InvokeApplyOutput(IList<bool> outputs)
+    private (IList<Type>, IList<Type>) TypeCheck(IList<object> inputList, IList<object> outputList, IList<object> inputTypes, IList<object> outputTypes)
+    {
+        if (inputList.Count != inputTypes.Count)
+        {
+            throw new ArgumentException("input_list와 input_types의 길이가 일치하지 않습니다");
+        }
+
+        if (outputList.Count != outputTypes.Count)
+        {
+            throw new ArgumentException("output_list와 output_types의 길이가 일치하지 않습니다");
+        }
+
+
+        List<Type> inTypes = new();
+        foreach (object obj in inputTypes)
+        {
+            if (obj is PythonType pyType)
+            {
+                Type type = pyType.__clrtype__();
+
+                if (!_availableType.Contains(type))
+                {
+                    throw new ArgumentException($"input_types 내부에 혀용되지 않는 Type이 존재합니다: {type.Name}");
+                }
+
+                inTypes.Add(type);
+                continue;
+            }
+
+            throw new ArgumentException("input_types 내부에 Type 이외의 객체가 존재합니다");
+
+        }
+
+        List<Type> outTypes = new();
+        foreach (object obj in outputTypes)
+        {
+            if (obj is PythonType pyType)
+            {
+                Type type = pyType.__clrtype__();
+
+                if (!_availableType.Contains(type))
+                {
+                    throw new ArgumentException($"output_types 내부에 혀용되지 않는 Type이 존재합니다: {type.Name}");
+                }
+
+                outTypes.Add(type);
+                continue;
+            }
+
+            throw new ArgumentException("output_types 내부에 Type 이외의 객체가 존재합니다");
+        }
+
+        return (inTypes, outTypes);
+    }
+
+    private void InvokeApplyOutput(IList<dynamic> outputs)
     {
         if (IsAsync)
         {
@@ -386,7 +463,13 @@ printer = Printer()";
             {
                 try
                 {
-                    OnOutputApply?.Invoke(outputs);
+                    List<Transition> transitions = outputs.Select(value => new Transition(value)).ToList();
+                    OnOutputApply?.Invoke(transitions);
+                }
+                catch (TransitionException tEx)
+                {
+                    _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다");
+                    _exLogger?.Invoke(tEx);
                 }
                 catch (Exception e)
                 {
@@ -400,7 +483,13 @@ printer = Printer()";
 
         try
         {
-            OnOutputApply?.Invoke(outputs);
+            List<Transition> transitions = outputs.Select(value => new Transition(value)).ToList();
+            OnOutputApply?.Invoke(transitions);
+        }
+        catch (TransitionException tEx)
+        {
+            _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다");
+            _exLogger?.Invoke(tEx);
         }
         catch (Exception e)
         {
@@ -453,6 +542,8 @@ printer = Printer()";
 
                 case "input_list":
                 case "output_list":
+                case "input_types":
+                case "output_types":
                     correctType = "IList<object>";
                     currentType = value?.GetType().Name ?? "null";
                     return value is IList<object>;
@@ -518,11 +609,49 @@ printer = Printer()";
 
 public struct ScriptFieldInfo
 {
-    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, bool isAsync, bool autoStateUpdateAfterInit)
+    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, IList<Type> inputTypes, IList<Type> outputTypes, bool isAsync, bool autoStateUpdateAfterInit)
     {
         Name = name;
         InputList = inputList;
         OutputList = outputList;
+        InputTypes = inputTypes.Select(type =>
+        {
+            TransitionType transitionType;
+            try
+            {
+                if (type == typeof(BigInteger))
+                    type = typeof(int);
+                else if (type == typeof(double))
+                    type = typeof(float);
+
+                transitionType = type.AsTransitionType();
+            }
+            catch
+            {
+                return TransitionType.Bool;
+            }
+
+            return transitionType;
+        }).ToList();
+        OutputTypes = outputTypes.Select(type =>
+        {
+            TransitionType transitionType;
+            try
+            {
+                if (type == typeof(BigInteger))
+                    type = typeof(int);
+                else if (type == typeof(double))
+                    type = typeof(float);
+
+                transitionType = type.AsTransitionType();
+            }
+            catch
+            {
+                return TransitionType.Bool;
+            }
+
+            return transitionType;
+        }).ToList();
         IsAsync = isAsync;
         AutoStateUpdateAfterInit = autoStateUpdateAfterInit;
     }
@@ -530,6 +659,8 @@ public struct ScriptFieldInfo
     public string Name;
     public IList<object> InputList;
     public IList<object> OutputList;
+    public IList<TransitionType> InputTypes;
+    public IList<TransitionType> OutputTypes;
     public bool IsAsync;
     public bool AutoStateUpdateAfterInit;
 }

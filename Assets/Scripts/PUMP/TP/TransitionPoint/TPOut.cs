@@ -79,6 +79,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             _type = value;
             _state = Transition.Null(_type);
             SetTextColor(_type.GetColor());
+            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
         }
     }
 

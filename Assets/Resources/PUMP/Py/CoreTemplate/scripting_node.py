@@ -54,6 +54,16 @@ input_list: list = ['in 1', 'in 2']
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 output_list: list = ['out 1']
 
+# Set the types of ports with the list below. Must match the length of input_list
+# Available types: bool, int, float
+# ※This value is only reflected in the node when initially set; changes within the function have no effect
+input_types: list = [bool, bool]
+
+# Set the types of ports with the list below. Must match the length of output_list
+# Available types: bool, int, float
+# ※This value is only reflected in the node when initially set; changes within the function have no effect
+output_types: list = [bool]
+
 # When True, allows this Node's methods to be executed asynchronously (but terminate() is always executed synchronously)
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 is_async: bool = False
@@ -73,7 +83,7 @@ auto_state_update_after_init: bool = False
 
 # Object that controls output ports
 # Available API: def apply(self, outputs: list) -> None:
-# You need to provide a bool list as input. ※The length of this list must match output_counts
+# You need to provide a list with values matching the types in output_types. ※The length of this list must match the number of output ports
 output_applier: OutputApplier = None
 
 # Printer object
@@ -93,7 +103,8 @@ def init(inputs: list) -> None:
     Keep it clean, keep it lean
 
     Parameters:
-        inputs (list): Boolean list representing the state of each input port. Read only; do not modify element values
+        inputs (list): List representing the state of each input port with values matching the types in input_types. 
+        Read only: do not modify element values
     """
     pass
 
@@ -104,16 +115,17 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
+def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_disconnected: bool) -> None:
     """
-    The nerve center - triggered whenever any signal is detected on input ports
+    The nerve center: triggered whenever any signal is detected on input ports
     Not all parameters need to be used. In most cases, only inputs is necessary
     However, if you want to know the type of "port that received a signal", its state, and the difference from its previous state, use the remaining parameters
     
     Parameters:
-        inputs (list): Boolean list representing the state of each input port
-        index (int): Index of the input port that just changed. -1 when state_update is triggered by system
-        state (bool): The new state value (True/False) of the modified port
+        inputs (list): List representing the state of each input port with values matching the types in input_types
+        index (int): Index of the input port that just changed.
+        state (input_type): New state value of the modified port. Input is according to the configured input_types
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
+        is_disconnected (bool): True if triggered by disconnection
     """
     pass

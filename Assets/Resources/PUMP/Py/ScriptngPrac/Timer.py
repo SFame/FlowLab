@@ -10,6 +10,10 @@ input_list: list = ['Trig', 'Rst', 'Inc', 'Clr']
 # Specifies number of output ports
 output_list: list = ['Out']
 
+input_types: list = [bool, bool, bool, bool]
+
+output_types: list = [bool]
+
 # When True, allows this Node's methods to be executed asynchronously
 is_async: bool = True
 
@@ -100,7 +104,7 @@ def terminate() -> None:
     global is_timer_running
     is_timer_running = False  # 실행 중인 타이머 중지
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
+def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
     """입력 신호 처리 함수"""
     global is_timer_running, target_time
     

@@ -44,25 +44,25 @@
 
 # 노드의 이름 정의
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-name: str = "Scripting Node"
+name: str = "Debug"
 
 # 아래의 리스트를 설정하여 입력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_list: list = ['in 1', 'in 2']
+input_list: list = ['in 1', 'in 2', 'in 3']
 
 # 아래의 리스트를 설정하여 출력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_list: list = ['out 1']
+output_list: list = ['out 1', 'out 2', 'out 3']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_types: list = [bool, bool]
+input_types: list = [bool, int, float]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_types: list = [bool]
+output_types: list = [bool, int, float]
 
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
@@ -97,15 +97,7 @@ printer: Printer = None
 # <<노드 생명주기 메서드>>
 
 def init(inputs: list) -> None:
-    """
-    노드가 새로 생성되거나 실행취소/다시실행 작업 중에 호출되는 초기화 함수입니다
-    처음 출력 포트들의 상태를 설정하는 용도로 적합합니다
-    간결하고 효율적으로 작성하세요
-
-    매개변수:
-        inputs (list): 각 입력 포트의 상태를 나타내는 리스트. 요소의 값을 변경하지 말고 읽기만 하십시오
-        input_type 순서와 일치하는 타입의 값이 입력됩니다
-    """
+    output_applier.apply([not inputs[0], 10, 10.0])
     pass
 
 def terminate() -> None:
@@ -116,16 +108,9 @@ def terminate() -> None:
     pass
 
 def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
-    """
-    입력 포트에서 신호가 감지될 때마다 호출됩니다.
-    모든 매개변수를 사용할 필요는 없습니다. 대부분의 경우 inputs만 사용하면 됩니다
-    하지만 "신호가 들어온 포트"의 종류, 해당 포트의 상태, 이전 상태와의 차이를 알고 싶다면 나머지 매개변수도 사용하세요
-    
-    매개변수:
-        inputs (list): 각 입력 포트의 상태를 나타내는 리스트. input_type 순서와 일치하는 타입의 값이 입력됩니다
-        index (int): 방금 변경된 입력 포트의 인덱스.
-        state (input_type): 수정된 포트의 새 상태 값. 설정된 input_types에 따라 입력됩니다
-        is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
-        is_disconnected (bool): 연결 해제에 의한 호출히면 True
-    """
+    printer.print(f"index: {index}, state: {state}, is_changed: {is_changed}, is_disconnected: {is_disconnected}")
+    # 입력 포트의 상태를 출력 포트에 전달
+    # 0번은 반전, 1, 2번은 * 10
+    output_applier.apply([not inputs[0], inputs[1] * 10, inputs[2] * 10])
+    #output_applier.apply([not inputs[0], state * 10, inputs[2] * 10])
     pass

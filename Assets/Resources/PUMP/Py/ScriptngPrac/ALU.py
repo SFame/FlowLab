@@ -4,6 +4,8 @@ name: str = "ALU Node"
 input_list: list = ['in 1', 'in 2', 'Mode']
 # Specifies number of output ports
 output_list: list = ['out 1', 'out 2']
+input_types: list = [bool, bool, bool]
+output_types: list = [bool, bool]
 # When True, allows this node's methods to be executed asynchronously
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
 is_async: bool = False
@@ -44,7 +46,7 @@ def init(inputs: list) -> None:
 def terminate() -> None:
     return
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
+def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
     global current_mode
     
     # 컨트롤 입력이 True로 변경되면 모드 변경

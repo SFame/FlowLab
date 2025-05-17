@@ -85,6 +85,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             _type = value;
             _state = Transition.Null(_type);
             SetTextColor(_type.GetColor());
+            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
         }
     }
 

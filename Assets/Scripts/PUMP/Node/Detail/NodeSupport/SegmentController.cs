@@ -43,6 +43,4 @@ public class SegmentController : MonoBehaviour
             m_Segments[i].color = inputs[i] ? m_OnColor : m_OffColor;
         }
     }
-
-
 }

@@ -548,6 +548,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
                 var typeTuple = node.GetTPElement(tp => tp.Type);
                 var statesTuple = node.GetTPElement(tp => tp.State);
+
                 SerializeNodeInfo nodeInfo = new()
                 {
                     NodeType = node.GetType(), // 노드 타입
@@ -1328,6 +1329,7 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
             _type = value;
             _state = Stateful.State;
             _state.ThrowIfTypeMismatch(_type);
+            OnTypeChanged?.Invoke(_type);
         }
     }
 

@@ -12,7 +12,7 @@ public class TPConnection : IStateful, IDisposable
 
     private static UniTask GetStateUpdateTask(CancellationToken token) => AwaitType switch
     {
-        ConnectionAwait.Frame => UniTask.WaitForEndOfFrame(token),
+        ConnectionAwait.Frame => UniTask.Yield(PlayerLoopTiming.Update, token),
         ConnectionAwait.FixedTime => UniTask.WaitForSeconds
         (
             duration: WaitTime,

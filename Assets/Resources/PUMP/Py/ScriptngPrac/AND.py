@@ -4,6 +4,8 @@ name: str = "AND Gate"
 input_list: list = ['A', 'B']
 # Specifies number of output ports
 output_list: list = ['Y']
+input_types: list = [bool, bool]
+output_types: list = [bool]
 # When True, allows this node's methods to be executed asynchronously
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
 is_async: bool = False
@@ -27,7 +29,7 @@ def init(inputs: list) -> None:
 def terminate() -> None:
     return
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
+def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
     # AND 게이트 로직 구현
     # 두 입력이 모두 True인 경우에만 출력도 True
     result = all(inputs)

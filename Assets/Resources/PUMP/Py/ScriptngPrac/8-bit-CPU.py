@@ -4,6 +4,8 @@ name: str = "8-bit CPU Node"
 input_list: list = ['Clk', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'Rst', 'M1', 'M2']
 # Specifies number of output ports with names
 output_list: list = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'Zero', 'Carry']
+input_types: list = [bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]
+output_types: list = [bool, bool, bool, bool, bool, bool, bool, bool, bool, bool]
 # When True, allows this node's methods to be executed asynchronously
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
 is_async: bool = False
@@ -69,7 +71,7 @@ def init(inputs: list) -> None:
 def terminate() -> None:
     return
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool) -> None:
+def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
     global last_clock, current_op, is_executing, cycle_count
     
     # 입력이 부족하면 작업 중단

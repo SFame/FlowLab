@@ -29,7 +29,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             action?.Invoke(this);
     }
 
-    private async UniTaskVoid UpdateOutputStateNextFrame(bool[] outputs)
+    private async UniTaskVoid UpdateOutputStateNextFrame(Transition[] outputs)
     {
         try
         {
@@ -113,7 +113,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OnInputUpdate?.Invoke(InputToken.Select(sf => (bool)sf.State).ToArray());
+        OnInputUpdate?.Invoke(InputToken.Select(sf => sf.State).ToArray());
     }
 
     #region Classed Node Interface
@@ -131,7 +131,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     int IClassedNode.InputCount { get => InputCount; set => InputCount = value; }
     int IClassedNode.OutputCount { get => OutputCount; set => OutputCount = value; }
 
-    public event Action<bool[]> OnInputUpdate;
+    public event Action<Transition[]> OnInputUpdate;
     public event Action<IClassedNode> OpenPanel;
 
     event Action<IClassedNode> IClassedNode.OnDestroy
@@ -140,7 +140,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         remove => _onDeleteActions.Remove(value);
     }
 
-    public void OutputStateUpdate(bool[] outputs)
+    public void OutputStateUpdate(Transition[] outputs)
     {
         if (outputs.Length != OutputToken.Count)
         {
@@ -152,17 +152,29 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             OutputToken[i].State = outputs[i];
     }
 
-    public void InputStateValidate(bool[] exInStates)
+    public void InputStateValidate(Transition[] exInStates)
     {
         if (exInStates.Length != InputToken.Count)
         {
             throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
         }
 
-        if (!InputToken.Select(tp => (bool)tp.State).SequenceEqual(exInStates))
+        if (!InputToken.Select(sf => sf.State).SequenceEqual(exInStates))
         {
             StateUpdate(null);
         }
+    }
+
+    public List<Action<TransitionType>> GetInputTypeApplier()
+    {
+        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
+        return inputTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
+    }
+
+    public List<Action<TransitionType>> GetOutputTypeApplier()
+    {
+        ITransitionPoint[] outTps = Support.OutputEnumerator.GetTPs();
+        return outTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
     }
 
     public Node GetNode() => this;
