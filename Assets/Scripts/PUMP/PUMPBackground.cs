@@ -621,7 +621,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Vector2 normalizeValue = info.NodePosition;
                 Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
                 newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
-                Other.InvokeActionDelay(() => newNode.Support.PositionUpdateForceInvoke()).Forget(Debug.LogException);
+                Other.InvokeActionDelay(() => newNode.Support?.PositionUpdateForceInvoke()).Forget(Debug.LogException);
 
                 // Set Transition Point types --------
                 newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
