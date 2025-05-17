@@ -66,7 +66,7 @@
         },
         {
           "speakerName": "Tutorial",
-          "messageText": "양옆의 인풋 아웃풋 있고 어쩌구 저쩌구",
+          "messageText": "니가 쓸수있는 노드들이 있다.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -103,13 +103,19 @@
       ]
     },
     {
-      "id": "opening_dialogue_2",
-      "title": "Blue Screen",
+      "id": "HTP6",
+      "title": "PuzzleExplain3",
       "entries": [
         {
-          "speakerName": "",
-          "messageText": "beeeeeeeeeee",
-          "speakerImagePath": "",
+          "speakerName": "Tutorial",
+          "messageText": "이것이 퍼즐 내부 화면입니다.",
+          "speakerImagePath": "None",
+          "choices": []
+        },
+        {
+          "speakerName": "Tutorial",
+          "messageText": "소년이여 신화가 되라",
+          "speakerImagePath": "None",
           "choices": []
         }
       ]
