@@ -40,7 +40,6 @@ public class DN : Node
         }
     }
 
-
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
         return Array.Empty<Transition>();
