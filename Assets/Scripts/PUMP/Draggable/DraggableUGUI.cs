@@ -52,6 +52,11 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
     }
 
+    public void PositionUpdateForceInvoke()
+    {
+        OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, LocalPosition));
+    }
+
     /// <summary>
     /// 바운더리 RectTransform
     /// </summary>
@@ -102,7 +107,6 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         Rect.position = newPosition;
         OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, LocalPosition));
     }
-
 
     private Vector3 ClampPositionInBoundary(Vector2 position)
     {
