@@ -8,7 +8,7 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
 {
     public PUMPBackground pumpBackground;
     public PuzzleTestCasePanel testCasePanel;
-
+    public GameObject ErrorUIPrefab;
     [SerializeField] private TextMeshProUGUI timerText;
 
     [SerializeField] private Button testButton;
@@ -132,6 +132,15 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         {
             for (int i = 0; i < testCase.ExternalInputStates.Count && i < pumpBackground.ExternalInput.GateCount; i++)
             {
+                if (!(pumpBackground.ExternalInput[i].Type == TransitionType.Bool))
+                {
+                    pumpBackground.CanInteractive = true;
+                    isValidating = false;
+                    // error ui, 리턴
+                    Debug.LogError($"Input {i} is not of type Bool.");
+                    ErrorUIPrefab.SetActive(true); // 에러 UI 활성화
+                    return false;
+                }
                 pumpBackground.ExternalInput[i].State = testCase.ExternalInputStates[i];
             }
         }
@@ -141,6 +150,19 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
 
         // 출력값 검증
         bool testPassed = true;
+        for (int i = 0; i < pumpBackground.ExternalOutput.GateCount; i++)
+        {
+            if (!(pumpBackground.ExternalOutput[i].Type == TransitionType.Bool))
+            {
+                pumpBackground.CanInteractive = true;
+                isValidating = false;
+                testPassed = false;
+                // error ui, 리턴
+                Debug.LogError($"Output {i} is not of type Bool.");
+                ErrorUIPrefab.SetActive(true); // 에러 UI 활성화
+                return false;
+            }
+        }
         bool[] actualOutputStates = new bool[pumpBackground.ExternalOutput.GateCount]; // 실제 출력 상태를 저장할 배열
         if (testCase.ExternalOutputStates != null)
         {
@@ -164,6 +186,10 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
         return testPassed;
     }
 
-    
+    void UI_Interactive(bool puzzleFinish)
+    {
+        pumpBackground.CanInteractive = puzzleFinish;
+        isValidating = !puzzleFinish;
+    }
  
 }
