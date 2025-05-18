@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class IntSwitch : Node, INodeAdditionalArgs<bool>
+public class StringSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
 
@@ -14,7 +14,7 @@ public class IntSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType>();
 
-    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.String };
 
     protected override float InEnumeratorXPos => 0f;
 
@@ -32,7 +32,7 @@ public class IntSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return new[] { new Transition(0) };
+        return new[] { new Transition("OFF") };
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
@@ -67,7 +67,7 @@ public class IntSwitch : Node, INodeAdditionalArgs<bool>
         {
             Support.SelectedRemoveRequestInvoke();
             State = !State;
-            OutputToken[0].State = State ? 10 : 0;
+            OutputToken[0].State = State ? "ON" : "OFF";
             ReportChanges();
         }
     }

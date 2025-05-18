@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,6 +28,8 @@ public class DN : Node
 
     protected override string NodeDisplayName => "DN";
 
+    private SafetyCancellationTokenSource _cts = new();
+
     protected override List<ContextElement> ContextElements
     {
         get
@@ -36,6 +39,7 @@ public class DN : Node
             contexts.Add(new ContextElement("Type: Bool", () => stateful.SetType(TransitionType.Bool)));
             contexts.Add(new ContextElement("Type: Int", () => stateful.SetType(TransitionType.Int)));
             contexts.Add(new ContextElement("Type: Float", () => stateful.SetType(TransitionType.Float)));
+            contexts.Add(new ContextElement("Type: String", () => stateful.SetType(TransitionType.String)));
             return contexts;
         }
     }
@@ -47,6 +51,17 @@ public class DN : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        Debug.Log(args?.State);
+        LogAsync(args.State.ToString()).Forget();
+    }
+
+    protected override void OnBeforeRemove()
+    {
+        _cts?.CancelAndDispose();
+    }
+
+    private async UniTaskVoid LogAsync(string message)
+    {
+        await UniTask.Yield(_cts.Token);
+        Debug.Log(message);
     }
 }

@@ -40,6 +40,9 @@
 
 
 
+# Scripting Node는 아래의 멤버를 반드시 포함해야 합니다
+# ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
 # <<노드 속성>>
 
 # 노드의 이름 정의
@@ -82,12 +85,18 @@ auto_state_update_after_init: bool = False
 # 이 변수들은 시스템에 의해 자동으로 초기화 됩니다
 
 # 출력 포트를 제어하는 객체
-# 사용 가능한 API: def apply(self, outputs: list) -> None:
-# 입력으로 output_types 배열과 일치하는 순서로 해당 타입 값의 리스트를 제공해야 합니다. ※이 리스트의 길이는 출력 포트 수와 일치해야 합니다
+# <사용 가능한 API>
+#   output_applier.apply(values: list) -> None:
+#   output_applier.apply_at(index: int, value) -> None:
+#   output_applier.apply_to(name: str, value) -> None:
+# apply: 전체 출력 일괄 업데이트. 입력으로 output_types 배열과 일치하는 순서로 해당 타입 값의 리스트를 제공해야 합니다. ※이 리스트의 길이는 출력 포트 수와 일치해야 합니다
+# apply_at: index 위치의 출력 포트에 값을 할당합니다
+# apply_to: name 의 이름을 가진 출력 포트에 값을 할당합니다. ※출력 포트의 이름에 중복이 있는 경우 사용할 수 없습니다
 output_applier: OutputApplier = None
 
 # 프린터 객체
-# 사용 가능한 API: def print(self, value: str) -> None:
+# <사용 가능한 API> 
+#   printer.print(value: str) -> None:
 # 노드의 디스플레이에 문자열 정보를 표시하는 데 사용됩니다
 printer: Printer = None
 # =====================================================

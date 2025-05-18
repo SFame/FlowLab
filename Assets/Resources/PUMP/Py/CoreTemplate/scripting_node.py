@@ -40,6 +40,9 @@
 
 
 
+# Scripting Node must include the following members
+# ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+
 # <<Node Configuration>>
 
 # Defines the node's name
@@ -82,12 +85,18 @@ auto_state_update_after_init: bool = False
 # These are automatically set by the system and will be overwritten
 
 # Object that controls output ports
-# Available API: def apply(self, outputs: list) -> None:
-# You need to provide a list with values matching the types in output_types. ※The length of this list must match the number of output ports
+# <Available API>
+#   output_applier.apply(values: list) -> None:
+#   output_applier.apply_at(index: int, value) -> None:
+#   output_applier.apply_to(name: str, value) -> None:
+# apply: Bulk update of all outputs. As input, you must provide a list of values with types matching the output_types array in the correct order. ※The length of this list must match the number of output ports
+# apply_at: Assigns a value to the output port at the specified index
+# apply_to: Assigns a value to the output port with the specified name. ※Cannot be used if there are duplicate names among output ports
 output_applier: OutputApplier = None
 
 # Printer object
-# Available API: def print(self, value: str) -> None:
+# <Available API>
+#   def print(self, value: str) -> None:
 # Used to display string information on the node's display.
 printer: Printer = None
 # =====================================================

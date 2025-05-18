@@ -9,7 +9,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     #region External Interface
     public ITypeListenStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
-    public event Action OnStateUpdate;
+    public event Action<TransitionEventArgs> OnStateUpdate;
     public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
@@ -79,11 +79,17 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (InputToken.Count != OutputToken.Count)
+        {
+            Debug.LogError("ExternalOutput.StateUpdate: Input & Output count mismatch");
             return;
+        }
 
         for (int i = 0; i < InputToken.Count; i++)
+        {
             OutputToken[i].State = InputToken[i].State;
-        OnStateUpdate?.Invoke();
+        }
+
+        OnStateUpdate?.Invoke(args);
     }
 
     protected override string DefineInputName(int tpNumber)

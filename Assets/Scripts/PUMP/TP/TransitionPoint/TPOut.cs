@@ -119,9 +119,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         {
             connection.SourceState = this;
         }
-        catch (TransitionTypeMismatchException mismatchException)
+        catch (TransitionException te)
         {
-            Debug.LogWarning(mismatchException.Message);
+            Debug.LogWarning(te.Message);
             return;
         }
 

@@ -16,5 +16,5 @@ public interface IExternalInput : IExternalGateway { }
 
 public interface IExternalOutput : IExternalGateway
 {
-    public event Action OnStateUpdate;
+    public event Action<TransitionEventArgs> OnStateUpdate;
 }

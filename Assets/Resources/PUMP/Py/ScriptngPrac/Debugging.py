@@ -48,21 +48,21 @@ name: str = "Debug"
 
 # 아래의 리스트를 설정하여 입력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_list: list = ['in 1', 'in 2', 'in 3']
+input_list: list = ['in 1', 'in 2', 'in 3', 'in 4']
 
 # 아래의 리스트를 설정하여 출력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_list: list = ['out 1', 'out 2', 'out 3']
+output_list: list = ['out 1', 'out 2', 'out 3', 'in 4']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_types: list = [bool, int, float]
+input_types: list = [bool, int, float, str]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_types: list = [bool, int, float]
+output_types: list = [bool, int, float, str]
 
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
@@ -97,8 +97,8 @@ printer: Printer = None
 # <<노드 생명주기 메서드>>
 
 def init(inputs: list) -> None:
-    output_applier.apply([not inputs[0], 10, 10.0])
-    pass
+    output_applier.apply([not inputs[0], 10, 10.0, "각"])
+
 
 def terminate() -> None:
     """
@@ -111,6 +111,12 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
     printer.print(f"index: {index}, state: {state}, is_changed: {is_changed}, is_disconnected: {is_disconnected}")
     # 입력 포트의 상태를 출력 포트에 전달
     # 0번은 반전, 1, 2번은 * 10
-    output_applier.apply([not inputs[0], inputs[1] * 10, inputs[2] * 10])
-    #output_applier.apply([not inputs[0], state * 10, inputs[2] * 10])
-    pass
+    # output_applier.apply([not inputs[0], inputs[1] * 10, inputs[2] * 10])
+    if index == 0:
+        output_applier.apply_at(0, not state)
+    elif index == 1:
+        output_applier.apply_to('out 2', state * 10)
+    elif index == 2:
+        output_applier.apply_at(2, state * 10)
+    elif index == 3:
+        output_applier.apply_at(3, state + " 입니다.")

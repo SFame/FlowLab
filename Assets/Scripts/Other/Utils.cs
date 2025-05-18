@@ -112,6 +112,11 @@ namespace Utils
             action?.Invoke();
         }
 
+        public static async UniTask InvokeActionDelay(Action action, UniTask awaitTask)
+        {
+            await awaitTask;
+            action?.Invoke();
+        }
 
         public static async UniTask InvokeActionWaitTime(Action action, float delay, CancellationToken token = default)
         {

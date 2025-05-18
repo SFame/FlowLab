@@ -8,10 +8,11 @@ public interface IClassedNode
     int InputCount { get; set; }
     int OutputCount { get; set; }
 
-    event Action<Transition[]> OnInputUpdate;
+    event Action<TransitionEventArgs> OnInputUpdate;
     event Action<IClassedNode> OpenPanel;
     event Action<IClassedNode> OnDestroy;
-    void OutputStateUpdate(Transition[] outputs);
+    void OutputsApplyAll(Transition[] outputs);
+    void OutputApply(TransitionEventArgs args);
     void InputStateValidate(Transition[] exInStates);
     List<Action<TransitionType>> GetInputTypeApplier();
     List<Action<TransitionType>> GetOutputTypeApplier();

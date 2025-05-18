@@ -61,10 +61,18 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (InputToken.Count != OutputToken.Count)
+        {
+            Debug.LogError("ExternalInput.StateUpdate: Input & Output count mismatch");
             return;
-        
-        for (int i = 0; i < InputToken.Count; i++)
-            OutputToken[i].State = InputToken[i].State;
+        }
+
+        if (args.Index < 0 || args.Index >= OutputToken.Count)
+        {
+            Debug.LogError($"ExternalInput.StateUpdate: Index out of range: {args.Index}");
+            return;
+        }
+
+        OutputToken[args.Index].State = args.State;
     }
     
     protected override string DefineInputName(int tpNumber)

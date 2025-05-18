@@ -159,11 +159,7 @@ public class TPConnection : IStateful, IDisposable
     public LineConnector LineConnector
     {
         get => _lineConnector;
-        set
-        {
-            if (_lineConnector is null)
-                _lineConnector = value;
-        }
+        set => _lineConnector ??= value;
     }
     
     public List<Vector2> LineEdges

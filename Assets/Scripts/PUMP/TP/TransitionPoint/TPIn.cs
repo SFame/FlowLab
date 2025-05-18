@@ -102,9 +102,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         {
             connection.TargetState = this;
         }
-        catch (TransitionTypeMismatchException mismatchException)
+        catch (TransitionException te)
         {
-            Debug.LogWarning(mismatchException.Message);
+            Debug.LogWarning(te.Message);
             return;
         }
 

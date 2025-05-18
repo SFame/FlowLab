@@ -67,7 +67,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         {
             if (m_LogText != null)
             {
-                await UniTask.Yield(cancellationToken);
+                await UniTask.WaitForEndOfFrame(cancellationToken);
                 m_LogText.text = message;
                 m_LogText.gameObject.SetActive(true);
             }
@@ -238,7 +238,9 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
             return;
         }
 
+        Debug.LogWarning("<---- Python Error ---->");
         Debug.LogException(e);
+        Debug.LogWarning("<---------------------->");
     }
 
     public void ShowFileName(string fileName)

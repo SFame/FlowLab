@@ -204,9 +204,17 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             if (Communicator.SetScript(Script))
             {
                 Support.SetName(Communicator.ScriptFieldInfo.Name);
-                SetTpWithList(Communicator.ScriptFieldInfo.InputList, Communicator.ScriptFieldInfo.OutputList,
-                    Communicator.ScriptFieldInfo.InputTypes, Communicator.ScriptFieldInfo.OutputTypes);
-                Communicator.OnOutputApply += bools => OutputToken.ApplyStatesAll(bools.Select(b => (Transition)b));
+                SetTpWithList
+                (
+                    Communicator.ScriptFieldInfo.InputList,
+                    Communicator.ScriptFieldInfo.OutputList,
+                    Communicator.ScriptFieldInfo.InputTypes,
+                    Communicator.ScriptFieldInfo.OutputTypes
+                );
+
+                Communicator.OnOutputApply += Apply;
+                Communicator.OnOutputApplyAt += ApplyAt;
+                Communicator.OnOutputApplyTo += ApplyTo;
                 Communicator.OnPrint += ScriptingSupport.Print;
 
                 ScriptingSupport.ShowFileName(FileName);
@@ -324,6 +332,25 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     {
         InputTypeGetter = null;
         OutputTypeGetter = null;
+    }
+
+    private void Apply(IList<Transition> values)
+    {
+        OutputToken.ApplyStatesAll(values);
+    }
+
+    private void ApplyAt(int index, Transition state)
+    {
+        IStateful adapter = OutputToken[index];
+        state.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state;
+    }
+
+    private void ApplyTo(string name, Transition state)
+    {
+        IStateful adapter = OutputToken[name];
+        state.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state;
     }
 
     // Scripting Interface ---------------

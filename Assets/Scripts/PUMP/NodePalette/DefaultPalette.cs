@@ -8,6 +8,7 @@ public class DefaultPalette : NodePalette
         { typeof(DN), "Debug" },
         { typeof(IntSwitch), "IntSw"},
         { typeof(FloatSwitch), "FloatSw"},
+        { typeof(StringSwitch), "StringSw"},
         { typeof(ClassedNode), "Classed" },
         { typeof(ScriptingNode), "Scripting" },
         { typeof(AND), "AND" },

@@ -621,14 +621,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Vector2 normalizeValue = info.NodePosition;
                 Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
                 newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
-                Other.InvokeActionDelay(() =>
-                {
-                    try
-                    {
-                        newNode?.Support?.PositionUpdateForceInvoke();
-                    }
-                    catch (NullReferenceException e) { }
-                }).Forget(Debug.LogException);
 
                 // Set Transition Point types --------
                 newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
@@ -1173,7 +1165,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         }
     }
 
-    public event Action OnStateUpdate;
+    public event Action<TransitionEventArgs> OnStateUpdate;
 
     public event Action<int> OnCountUpdate;
 
@@ -1187,11 +1179,6 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     public override void InvokeOnTypeUpdate()
     {
         OnTypeUpdate?.Invoke(_reference.Select(stateful => stateful.Type).ToArray());
-    }
-
-    public void InvokeOnStateUpdate()
-    {
-        OnStateUpdate?.Invoke();
     }
 
     public IEnumerator<ITypeListenStateful> GetEnumerator()
@@ -1210,8 +1197,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         if (_reference != null)
         {
             // ---- OnStateUpdate ----
-            _reference.OnStateUpdate -= PullAll;
-            _reference.OnStateUpdate -= InvokeOnStateUpdate;
+            _reference.OnStateUpdate -= InvokeOnStateUpdateWithPullAll;
 
             // ---- OnCountUpdate ----
             _reference.OnCountUpdate -= SyncToReferenceWrapper;
@@ -1225,8 +1211,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         CheckNullAndThrowNullException();
 
         // ---- OnStateUpdate ----
-        _reference.OnStateUpdate += PullAll; // Pull 먼저
-        _reference.OnStateUpdate += InvokeOnStateUpdate;  // 이벤트 호출 이후
+        _reference.OnStateUpdate += InvokeOnStateUpdateWithPullAll; // Pull 먼저
 
         // ---- OnCountUpdate ----
         _reference.OnCountUpdate += SyncToReferenceWrapper; // Sync 먼저
@@ -1253,12 +1238,14 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     private IExternalOutput _reference;
     private readonly List<ExternalOutputStatesAdapter> _statesAdapters = new();
 
-    private void PullAll()
+    private void InvokeOnStateUpdateWithPullAll(TransitionEventArgs args)
     {
         foreach (ExternalOutputStatesAdapter adapter in _statesAdapters)
         {
             adapter.Pull();
         }
+
+        OnStateUpdate?.Invoke(args);
     }
 
     private void InternalInvokeOnCountUpdate(int count)

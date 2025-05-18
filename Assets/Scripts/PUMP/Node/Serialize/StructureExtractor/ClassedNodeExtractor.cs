@@ -125,7 +125,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.ClassedNode.Name = structure.Name;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+        current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
         structure.NotifyDataChanged();
     }
@@ -151,7 +151,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             current.ClassedNode.Name = matchedStructure.Name;
             SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
             AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-            current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+            current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
             current.ClearChangeFlag();
             matchedStructure.NotifyDataChanged();
             return;
@@ -162,7 +162,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-        current.ClassedNode.OutputStateUpdate(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+        current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
     }
 
@@ -201,8 +201,8 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     private Dictionary<IClassedNode, PUMPBackground> ClassedDict { get; set; } = new();
     private CurrentClassedPairManager CurrentPair { get; set; } = new();
 
-    private Action<Transition[]> _classedOnInputUpdateCache;
-    private Action _exOutOnStateUpdateCache;
+    private Action<TransitionEventArgs> _classedOnInputUpdateCache;
+    private Action<TransitionEventArgs> _exOutOnStateUpdateCache;
 
     private async UniTask AddNewAsync(IClassedNode classedNode)
     {
@@ -319,22 +319,22 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         AttachTypeApplier(classed, exIn, exOut);
 
         // On Classed Node Input Update
-        _classedOnInputUpdateCache = classedInputStates =>
+        _classedOnInputUpdateCache = args =>
         {
-            for (int i = 0; i < classedInputStates.Length; i++)
+            if (args.Index < 0 || args.Index >= exIn.GateCount)
             {
-                if (exIn[i].Type == classedInputStates[i].Type && exIn[i].State != classedInputStates[i])  // 다를 때만 업데이트 (까먹지마)
-                {
-                    exIn[i].State = classedInputStates[i];
-                }
+                Debug.LogError($"ClassedNodeExtractor.LinkClassedToExternal: args.Index out of range: {args.Index}");
+                return;
             }
+
+            exIn[args.Index].State = args.State;
         };
         classed.OnInputUpdate += _classedOnInputUpdateCache;
 
         // On External Output Updated
-        _exOutOnStateUpdateCache = () =>
+        _exOutOnStateUpdateCache = args =>
         {
-            classed.OutputStateUpdate(exOut.Select(tp => tp.State).ToArray());
+            classed.OutputApply(args);
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
 
