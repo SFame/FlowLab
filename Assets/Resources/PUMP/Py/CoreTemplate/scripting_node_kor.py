@@ -58,7 +58,7 @@ input_list: list = ['in 1', 'in 2']
 output_list: list = ['out 1']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
-# 사용 가능한 타입: bool, int, float
+# 사용 가능한 타입: bool, int, float, str
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 input_types: list = [bool, bool]
 

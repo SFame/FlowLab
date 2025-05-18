@@ -58,7 +58,7 @@ input_list: list = ['in 1', 'in 2']
 output_list: list = ['out 1']
 
 # Set the types of ports with the list below. Must match the length of input_list
-# Available types: bool, int, float
+# Available types: bool, int, float, str
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 input_types: list = [bool, bool]
 
