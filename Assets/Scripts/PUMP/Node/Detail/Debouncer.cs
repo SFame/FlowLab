@@ -51,7 +51,7 @@ public class Debouncer : Node
     }
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
-    protected override List<TransitionType> OutputTypes { get; }
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
     // -----------
 
     protected override void StateUpdate(TransitionEventArgs args)
