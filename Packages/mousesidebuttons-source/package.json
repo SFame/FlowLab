@@ -1,0 +1,16 @@
+{
+  "name": "com.tactifail.mousesidebuttons",
+  "version": "1.0.0",
+  "displayName": "Mouse Side Buttons",
+  "description": "Adds mouse side button navigation for project folders",
+  "unity": "2022.2",
+ "keywords": [
+    "mouse",
+    "navigation",
+    "side buttons"
+  ],
+  "author": {
+    "name": "TactiFail",
+    "url": "https://twitter.com/TactiFail"
+  }
+}

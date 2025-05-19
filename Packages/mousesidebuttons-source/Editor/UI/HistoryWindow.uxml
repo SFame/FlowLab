@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Button text="Clear History" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnClearHistory" style="padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px;" />
+    <ui:Label tabindex="-1" text="History (most recent on top)" parse-escape-sequences="true" display-tooltip-when-elided="true" name="lblHistory" style="-unity-text-align: middle-center; color: rgb(255, 255, 255);" />
+    <ui:ScrollView name="scrollHistory" style="flex-grow: 1; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-left-color: rgb(128, 128, 128); border-right-color: rgb(128, 128, 128); border-top-color: rgb(128, 128, 128); border-bottom-color: rgb(128, 128, 128);" />
+</ui:UXML>

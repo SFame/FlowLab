@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:VisualElement name="HistorySize" style="flex-grow: 0; flex-direction: row;">
+        <ui:IntegerField label="History Size" value="42" name="IntegerField" style="color: rgb(255, 255, 255); -unity-background-image-tint-color: rgb(42, 42, 42);" />
+        <ui:Button text="Set" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnSetHistorySize" />
+    </ui:VisualElement>
+    <ui:VisualElement name="HighlightColor" style="flex-grow: 0; flex-direction: row;">
+        <uie:ColorField label="Highlight Color" value="#4DB3FFFF" name="colorHighlightColor" show-eye-dropper="true" style="color: rgb(255, 255, 255); flex-shrink: 1;" />
+        <ui:Button text="Set" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnSetColor" />
+    </ui:VisualElement>
+    <ui:Button text="Restore Defaults" parse-escape-sequences="true" display-tooltip-when-elided="true" name="btnRestoreDefaults" style="padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px;" />
+</ui:UXML>

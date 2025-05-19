@@ -691,7 +691,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
         int outputCount = outputTPs.Length;
-        Transition[] outputStates = SetOutputInitStates(outputCount);
+
+        Transition[] outputStates = null;
+        try
+        {
+            outputStates = SetOutputInitStates(outputCount);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            return;
+        }
 
         if (outputStates == null)
         {
