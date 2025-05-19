@@ -6,21 +6,21 @@ public class DebouncerSupport : MonoBehaviour
 {
     [SerializeField] private TMP_InputField m_InputField;
 
-    public event Action<int> OnValueChanged;
+    public event Action<float> OnValueChanged;
 
     public void Initialize()
     {
         m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
     }
 
-    public void SetText(int value)
+    public void SetText(float value)
     {
         m_InputField.text = value.ToString();
     }
 
     private void InvokeValueChangeEvent(string value)
     {
-        if (int.TryParse(value, out int result))
+        if (float.TryParse(value, out float result))
         {
             OnValueChanged?.Invoke(result);
             return;
