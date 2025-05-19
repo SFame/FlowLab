@@ -932,7 +932,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_InputField: {fileID: 3342322199071306539}
-  m_Slider: {fileID: 6976322361809518891}
 --- !u!224 &4918234574973761664 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5483115683594355173, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
