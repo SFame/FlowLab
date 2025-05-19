@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/Animation/UI_Puzzle
-  - Assets
-  - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/Node/Detail
-  currentDirIndex: 3
+  - Assets/Resources/PUMP/Py/CoreTemplate
+  - Assets/Resources/PUMP/Py
+  currentDirIndex: 0
