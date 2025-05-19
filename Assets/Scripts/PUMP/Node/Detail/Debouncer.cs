@@ -47,11 +47,11 @@ public class Debouncer : Node
     // 변경사항 ---
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        throw new System.NotImplementedException();
+        return new[] { (Transition)false };
     }
 
-    protected override List<TransitionType> InputTypes { get; }
-    protected override List<TransitionType> OutputTypes { get; }
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
     // -----------
 
     protected override void StateUpdate(TransitionEventArgs args)

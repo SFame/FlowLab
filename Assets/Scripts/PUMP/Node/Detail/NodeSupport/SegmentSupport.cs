@@ -12,6 +12,8 @@ public class SegmentSupport : MonoBehaviour
     [SerializeField] private Color m_OnColor = new Color(0, 1, 0);
     [SerializeField] private Color m_OffColor = new Color(0.5f, 0.5f, 0.5f);
 
+
+
     public void UpdateSegmentDisplay(bool[] inputs)
     {
         for (int i = 0; i < 7; i++)
