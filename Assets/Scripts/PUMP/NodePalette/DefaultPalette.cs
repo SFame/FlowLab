@@ -20,6 +20,7 @@ public class DefaultPalette : NodePalette
         { typeof(XOR), "XOR" },
         { typeof(ClickSwitch), "ClickSwitch" },
         { typeof(Splitter), "Split" },
+        { typeof(Merger), "Merger" },
         { typeof(Comparator), "Comparator" },
         { typeof(Timer), "Timer" },
         { typeof(EdgeDetector), "Edge Detector" },
@@ -27,6 +28,7 @@ public class DefaultPalette : NodePalette
         { typeof(SegmentDisplay), "7-Segment Display" },
         { typeof(BinaryDisplay), "Binary Display" },
         { typeof(Debouncer), "Debouncer" },
+        { typeof(FourbitALU), "FourbitALU" },
     };
 
     private void Awake()

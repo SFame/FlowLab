@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class FourbitALU : Node
@@ -27,19 +28,25 @@ public class FourbitALU : Node
 
     protected override string NodeDisplayName => "4bit ALU";
 
+
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        throw new System.NotImplementedException();
+        return new[] { (Transition)0, (Transition)false, (Transition)false };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
         // input port : x o o o
         // 이때 inputtoken[0].isnull?
-        if(InputToken[0].State.IsNull)
-        { InputToken[0].State = 0; }
-        if(InputToken[1].State.IsNull)
-        { InputToken[0].State = 0; }
+
+        if (InputToken[0].State.IsNull || InputToken[1].State.IsNull)
+        {
+            OutputToken[0].State = 0;
+            OutputToken[1].State = 0;
+            OutputToken[2].State = 0;
+
+            return;
+        }
 
         int selectBinary = ( (InputToken[3].State ? 1 : 0) << 1) | (InputToken[2].State ? 1 : 0);
         int result = 0;
