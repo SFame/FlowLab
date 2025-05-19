@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
@@ -29,7 +30,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             action?.Invoke(this);
     }
 
-    private async UniTaskVoid UpdateOutputStateNextFrame(bool[] outputs)
+    private async UniTaskVoid UpdateOutputStateNextFrame(Transition[] outputs)
     {
         try
         {
@@ -113,7 +114,10 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OnInputUpdate?.Invoke(InputToken.Select(sf => (bool)sf.State).ToArray());
+        if (args == null)
+            return;
+
+        OnInputUpdate?.Invoke(args);
     }
 
     #region Classed Node Interface
@@ -131,7 +135,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     int IClassedNode.InputCount { get => InputCount; set => InputCount = value; }
     int IClassedNode.OutputCount { get => OutputCount; set => OutputCount = value; }
 
-    public event Action<bool[]> OnInputUpdate;
+    public event Action<TransitionEventArgs> OnInputUpdate;
     public event Action<IClassedNode> OpenPanel;
 
     event Action<IClassedNode> IClassedNode.OnDestroy
@@ -140,7 +144,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         remove => _onDeleteActions.Remove(value);
     }
 
-    public void OutputStateUpdate(bool[] outputs)
+    public void OutputsApplyAll(Transition[] outputs)
     {
         if (outputs.Length != OutputToken.Count)
         {
@@ -152,17 +156,45 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             OutputToken[i].State = outputs[i];
     }
 
-    public void InputStateValidate(bool[] exInStates)
+    public void OutputApply(TransitionEventArgs args)
+    {
+        if (args.Index < 0 || args.Index >= OutputToken.Count)
+        {
+            Debug.LogError($"ClassedNode.OutputApply: Index out of range: {args.Index}");
+            return;
+        }
+
+        OutputToken[args.Index].State = args.State;
+    }
+
+    public void InputStateValidate(Transition[] exInStates)
     {
         if (exInStates.Length != InputToken.Count)
         {
             throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
         }
 
-        if (!InputToken.Select(tp => (bool)tp.State).SequenceEqual(exInStates))
+        if (!InputToken.Select(sf => sf.State).SequenceEqual(exInStates))
         {
-            StateUpdate(null);
+            ((IReadonlyToken)InputToken).IsReadonly = false;
+            foreach (ITypeListenStateful stateful in InputToken)
+            {
+                stateful.State = stateful.State;
+            }
+            ((IReadonlyToken)InputToken).IsReadonly = true;
         }
+    }
+
+    public List<Action<TransitionType>> GetInputTypeApplier()
+    {
+        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
+        return inputTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
+    }
+
+    public List<Action<TransitionType>> GetOutputTypeApplier()
+    {
+        ITransitionPoint[] outTps = Support.OutputEnumerator.GetTPs();
+        return outTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
     }
 
     public Node GetNode() => this;

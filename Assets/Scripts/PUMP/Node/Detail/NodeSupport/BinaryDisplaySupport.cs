@@ -70,8 +70,4 @@ public class BinaryDisplaySupport : MonoBehaviour
         m_SegmentControllers[2].SetDisplay(sums[2]);
         m_SegmentControllers[3].SetDisplay(sums[3]);
     }
-
-    
-
 }
-

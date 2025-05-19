@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using OdinSerializer;
-using TMPro;
 using UnityEngine;
+using Utils;
 
 public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.ComparatorSerializeInfo>
 {
@@ -28,12 +27,23 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
     protected override float TextSize => 22f;
 
     protected override int DefaultInputCount => 2;
+
     protected override int DefaultOutputCount => 1;
+
     protected override void StateUpdate(TransitionEventArgs args) => PushResult();
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
     protected override string DefineOutputName(int tpNumber) => "out";
     protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
     protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+
+    private ComparatorSupport ComparatorSupport
+    {
+        get
+        {
+            _comparatorSupport ??= Support.GetComponent<ComparatorSupport>();
+            return _comparatorSupport;
+        }
+    }
 
     private bool Operating(int a, int b, string @operator) => @operator switch
     {
@@ -50,92 +60,43 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         int activeCount = InputToken.Count(tp => tp.State);
         bool result = Operating(activeCount, CompareNumber, Operator);
 
-        foreach (IStateful tp in OutputToken)
-            tp.State = result;
+        foreach (IStateful sf in OutputToken)
+            sf.State = result;
     }
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return new[] { (Transition)false };
+        return new[] { Transition.False };
     }
 
     protected override void OnAfterInit()
     {
-        // Input count
-        InputCountInputCountDropdown.value = InputCount - 1;
-        InputCountInputCountDropdown.onValueChanged.AddListener(value => InputCount = value + 1);
-        InputCountInputCountDropdown.onValueChanged.AddListener(_ => ReportChanges());
-        
-        // Compare number
-        CompareNumberInputField.text = CompareNumber.ToString();
-        CompareNumberInputField.onEndEdit.AddListener(countString =>
+        ComparatorSupport.Initialize(InputCount, CompareNumber, Operator);
+
+        ComparatorSupport.OnCompareNumberUpdated += compareNumber =>
         {
-            if (int.TryParse(countString, out int count))
-                CompareNumber = count;
-            else
-            {
-                CompareNumber = 0;
-                CompareNumberInputField.text = CompareNumber.ToString();
-            }
+            CompareNumber = compareNumber;
             PushResult();
-        });
-        CompareNumberInputField.onEndEdit.AddListener(countString => ReportChanges());
-        
-        // Operator
-        OperatorDropdown.ClearOptions();
-        OperatorDropdown.AddOptions(_operatorElement);
-        int index = OperatorDropdown.options.FindIndex(option => option.text == Operator);
-        OperatorDropdown.value = index >= 0 ? index : 0;
-        OperatorDropdown.onValueChanged.AddListener(select =>
+            ReportChanges();
+        };
+
+        ComparatorSupport.OnInputCountUpdated += inputCount =>
         {
-            Operator = OperatorDropdown.options[select].text;
+            InputCount = inputCount;
+            ReportChanges();
+        };
+
+        ComparatorSupport.OnOperatorUpdated += @operator =>
+        {
+            Operator = @operator;
             PushResult();
-        });
-        OperatorDropdown.onValueChanged.AddListener(_ => ReportChanges());
+            ReportChanges();
+        };
     }
 
-    #region Node Setting
-    // Input Count
-    private const string INPUT_COUNT_OBJECT_NAME = "CountDropdown";
-    private TMP_Dropdown InputCountInputCountDropdown
-    {
-        get
-        {
-            if (_inputCountDropdown is null)
-                _inputCountDropdown = Support.transform.Find(INPUT_COUNT_OBJECT_NAME).GetComponent<TMP_Dropdown>();
-                
-            return _inputCountDropdown;
-        }
-    }
-    private TMP_Dropdown _inputCountDropdown;
-    
-    // Operator
-    private const string OPERATOR_OBJECT_NAME = "Operator";
-    private TMP_Dropdown OperatorDropdown
-    {
-        get
-        {
-            if (_operatorDropdown is null)
-                _operatorDropdown = Support.transform.Find(OPERATOR_OBJECT_NAME).GetComponent<TMP_Dropdown>();
-            
-            return _operatorDropdown;
-        }
-    }
-    private TMP_Dropdown _operatorDropdown;
-    private readonly List<string> _operatorElement = new() { "<", ">", "<=", ">=", "==" };
-    
-    // Compare number
-    private const string COMPARE_NUMBER_OBJECT_NAME = "CompareNumber";
-    private TMP_InputField CompareNumberInputField
-    {
-        get
-        {
-            if (_compareNumberInputField is null)
-                _compareNumberInputField = Support.transform.Find(COMPARE_NUMBER_OBJECT_NAME).GetComponent<TMP_InputField>();
-            return _compareNumberInputField;
-        }
-    }
-    private TMP_InputField _compareNumberInputField;
+    #region Privates
+
+    private ComparatorSupport _comparatorSupport;
     #endregion
 
     #region Serialize target

@@ -8,26 +8,18 @@ using static TPEnumeratorToken;
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
     #region External Interface
-    public ITypeListenStateful this[int index] => InputToken[index];
+    public ITypeListenStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
     public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
     public int GateCount
     {
-        get
-        {
-            if (InputToken.Count != OutputToken.Count)
-            {
-                Debug.LogWarning($"{GetType().Name}: Input & Output count mismatch");
-                return -1;
-            }
-            return InputToken.Count;
-        }
-        set => FuseIOCounts(value, value);
+        get => OutputToken.Count;
+        set => OutputCount = value;
     }
 
-    public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)InputToken).GetEnumerator();
+    public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)OutputToken).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
@@ -40,9 +32,9 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorPadding => 0f;
     protected override Vector2 TPSize => new Vector2(35f, 50f);
-    protected override Vector2 DefaultNodeSize => new Vector2(20f, Background.Rect.rect.height);
+    protected override Vector2 DefaultNodeSize => new Vector2(18f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
-    protected override int DefaultInputCount => 2;
+    protected override int DefaultInputCount => 0;
     protected override int DefaultOutputCount => 2;
     protected override List<ContextElement> ContextElements
     {
@@ -58,14 +50,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         };
     }
     
-    protected override void StateUpdate(TransitionEventArgs args)
-    {
-        if (InputToken.Count != OutputToken.Count)
-            return;
-        
-        for (int i = 0; i < InputToken.Count; i++)
-            OutputToken[i].State = InputToken[i].State;
-    }
+    protected override void StateUpdate(TransitionEventArgs args) { }
     
     protected override string DefineInputName(int tpNumber)
     {
@@ -88,24 +73,21 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return InputToken.Select(token => token.State).ToArray();
+        return OutputToken.Select(token => token.State).ToArray();
     }
 
     protected override void OnAfterRefreshToken()
     {
-        foreach (ITypeListenStateful stateful in InputToken)
+        foreach (ITypeListenStateful stateful in OutputToken)
         {
             stateful.OnTypeChanged += _ => InvokeOnTypeUpdate();
         }
 
-        ((IReadonlyToken)InputToken).IsReadonly = false;
-        LinkOutputTypeToInput();
         OnCountUpdate?.Invoke(GateCount);
         InvokeOnTypeUpdate();
     }
     protected override void OnAfterInit()
     {
-        ((IReadonlyToken)InputToken).IsReadonly = false;
         Support.BlockedMove = true;
         InEnumActive = false;
 
@@ -127,24 +109,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     private void InvokeOnTypeUpdate()
     {
-        OnTypeUpdate?.Invoke(InputToken.Select(stateful => stateful.Type).ToArray());
-    }
-
-    private void LinkOutputTypeToInput()
-    {
-        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
-        ITransitionPoint[] outputTps = Support.OutputEnumerator.GetTPs();
-
-        if (inputTps.Length != outputTps.Length)
-        {
-            throw new IndexOutOfRangeException($"{GetType().Name}: Input & Output count mismatch");
-        }
-
-        for (int i = 0; i < inputTps.Length; i++)
-        {
-            int cache = i;
-            outputTps[cache].OnTypeChanged += type => inputTps[cache].SetType(type);
-        }
+        OnTypeUpdate?.Invoke(OutputToken.Select(stateful => stateful.Type).ToArray());
     }
 
     #region Serialize

@@ -243,6 +243,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             {
                 handle.TP.SetType(types[i]);
                 handle.TP.Node = Node;
+                handle.TP.Index = i;
             }
 
             Handles.Add(handle);

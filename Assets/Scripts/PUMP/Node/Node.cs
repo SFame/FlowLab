@@ -505,17 +505,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             throw new InvalidOperationException($"{GetType().Name}: Names와 Types 개수 불일치");
         }
 
-        if (InputToken is IDisposable disposable1)
-        {
-            disposable1.Dispose();
-            InputToken = null;
-        }
-
-        if (OutputToken is IDisposable disposable2)
-        {
-            disposable2.Dispose();
-            OutputToken = null;
-        }
+        // 이전 토큰 캐싱 (Token이 null인 간극 제거)
+        TPEnumeratorToken inputTokenCache = InputToken;
+        TPEnumeratorToken outputTokenCache = OutputToken;
 
         InputToken = Support.InputEnumerator
             .SetPadding(EnumeratorPadding)
@@ -534,6 +526,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         if (InputToken == null || OutputToken == null)
         {
             throw new Exception("Token casting fail");
+        }
+
+        // 캐싱 토큰 Dispose
+        if (inputTokenCache is IDisposable InputDisposable)
+        {
+            InputDisposable.Dispose();
+        }
+
+        if (outputTokenCache is IDisposable outputDisposable)
+        {
+            outputDisposable.Dispose();
         }
 
         ((TPEnumeratorToken.IReadonlyToken)InputToken).IsReadonly = true;
@@ -688,7 +691,17 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
         int outputCount = outputTPs.Length;
-        Transition[] outputStates = SetOutputInitStates(outputCount);
+
+        Transition[] outputStates = null;
+        try
+        {
+            outputStates = SetOutputInitStates(outputCount);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            return;
+        }
 
         if (outputStates == null)
         {

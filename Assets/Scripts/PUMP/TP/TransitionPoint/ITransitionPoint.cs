@@ -57,16 +57,18 @@ public interface IStateful
 
 public interface ITypeListenStateful : IStateful
 {
+    event Action<TransitionType> OnBeforeTypeChange;
     event Action<TransitionType> OnTypeChanged;
 }
 
 public interface IPolymorphicStateful : IStateful
 {
+    // 현재 Type과 입력된 type이 같다면 설정하지 않고 return 하도록 설계
     void SetType(TransitionType type);
 }
 
 /// <summary>
-/// 노드를 잇는 말단 객체
+/// 노드의 연결 포인트
 /// Connection.Disconnect()는 양쪽 모두의 커넥션을 해제를 의미
 /// ITransitionPoint.Disconnect()는 Connection객체의 참조를 지우도록 설계
 /// Connection.Disconnect()에서 양쪽의 ITransitionPoint.Disconnect()를 호출하도록

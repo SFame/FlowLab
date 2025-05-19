@@ -85,6 +85,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             _type = value;
             _state = Transition.Null(_type);
             SetTextColor(_type.GetColor());
+            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
         }
     }
 
@@ -101,9 +102,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         {
             connection.TargetState = this;
         }
-        catch (TransitionTypeMismatchException mismatchException)
+        catch (TransitionException te)
         {
-            Debug.LogWarning(mismatchException.Message);
+            Debug.LogWarning(te.Message);
             return;
         }
 

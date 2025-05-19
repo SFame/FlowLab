@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utils;
+using VFolders.Libs;
 using static ScriptingNode;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
@@ -22,6 +23,10 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private Func<int, string> InputNameGetter { get; set; } = null;
 
     private Func<int, string> OutputNameGetter { get; set; } = null;
+
+    private Func<int, TransitionType> InputTypeGetter { get; set; } = null;
+
+    private Func<int, TransitionType> OutputTypeGetter { get; set; } = null;
 
     private ScriptingSupport ScriptingSupport
     {
@@ -112,9 +117,21 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         return OutputNameGetter(tpNumber);
     }
 
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineInputType(int tpNumber)
+    {
+        if (InputTypeGetter == null)
+            return TransitionType.Bool;
 
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+        return InputTypeGetter(tpNumber);
+    }
+
+    protected override TransitionType DefineOutputType(int tpNumber)
+    {
+        if (OutputTypeGetter == null)
+            return TransitionType.Bool;
+
+        return OutputTypeGetter(tpNumber);
+    }
 
     protected override void OnAfterInit()
     {
@@ -142,7 +159,15 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+        Func<int, TransitionType> outputTypeGetter = OutputTypeGetter ?? (_ => TransitionType.Bool);
+        List<Transition> stateList = new();
+
+        for (int i = 0; i < outputCount; i++)
+        {
+            stateList.Add(Transition.Null(outputTypeGetter(i)));
+        }
+
+        return stateList.ToArray();
     }
 
 
@@ -151,7 +176,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         if (Communicator == null)
             return;
 
-        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => (bool)sf.State).ToList());
+        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => sf.State).ToList());
     }
 
     protected override void OnBeforeRemove()
@@ -179,8 +204,17 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             if (Communicator.SetScript(Script))
             {
                 Support.SetName(Communicator.ScriptFieldInfo.Name);
-                SetTpWithList(Communicator.ScriptFieldInfo.InputList, Communicator.ScriptFieldInfo.OutputList);
-                Communicator.OnOutputApply += bools => OutputToken.ApplyStatesAll(bools.Select(b => (Transition)b));
+                SetTpWithList
+                (
+                    Communicator.ScriptFieldInfo.InputList,
+                    Communicator.ScriptFieldInfo.OutputList,
+                    Communicator.ScriptFieldInfo.InputTypes,
+                    Communicator.ScriptFieldInfo.OutputTypes
+                );
+
+                Communicator.OnOutputApply += Apply;
+                Communicator.OnOutputApplyAt += ApplyAt;
+                Communicator.OnOutputApplyTo += ApplyTo;
                 Communicator.OnPrint += ScriptingSupport.Print;
 
                 ScriptingSupport.ShowFileName(FileName);
@@ -208,6 +242,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         if (countReset)
         {
+            SetTypeGetterDefault();
             SetNameGetterDefault();
             InputCount = DefaultInputCount;
             OutputCount = DefaultOutputCount;
@@ -225,7 +260,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         try
         {
-            Communicator.InvokeInit(InputToken.Select(tp => (bool)tp.State).ToList());
+            Communicator.InvokeInit(InputToken.Select(tp => tp.State).ToList());
             if (Communicator.ScriptFieldInfo.AutoStateUpdateAfterInit)
             {
                 StateUpdate(null);
@@ -237,11 +272,12 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         }
     }
 
-    private void SetTpWithList(IList<object> inputList, IList<object> outputList)
+    private void SetTpWithList(IList<object> inputList, IList<object> outputList, IList<TransitionType> inputTypes, IList<TransitionType> outpTypes)
     {
         int inputCount = inputList.Count;
         int outputCount = outputList.Count;
 
+        SetTypeGetter(inputTypes, outpTypes);
         SetNameGetter(inputList, outputList);
 
         InputCount = inputCount;
@@ -267,10 +303,54 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         };
     }
 
+    private void SetTypeGetter(IList<TransitionType> inputTypes, IList<TransitionType> outpTypes)
+    {
+        InputTypeGetter = index =>
+        {
+            if (index >= inputTypes.Count)
+                return TransitionType.Bool;
+
+            return inputTypes[index];
+        };
+
+        OutputTypeGetter = index =>
+        {
+            if (index >= outpTypes.Count)
+                return TransitionType.Bool;
+
+            return outpTypes[index];
+        };
+    }
+
     private void SetNameGetterDefault()
     {
         InputNameGetter = null;
         OutputNameGetter = null;
+    }
+
+    private void SetTypeGetterDefault()
+    {
+        InputTypeGetter = null;
+        OutputTypeGetter = null;
+    }
+
+    private void Apply(IList<Transition> values)
+    {
+        OutputToken.ApplyStatesAll(values);
+    }
+
+    private void ApplyAt(int index, Transition state)
+    {
+        IStateful adapter = OutputToken[index];
+        state.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state;
+    }
+
+    private void ApplyTo(string name, Transition state)
+    {
+        IStateful adapter = OutputToken[name];
+        state.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state;
     }
 
     // Scripting Interface ---------------

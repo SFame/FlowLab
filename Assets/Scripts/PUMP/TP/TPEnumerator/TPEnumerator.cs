@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 using static TPEnumeratorToken;
@@ -256,30 +257,49 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         _adapters = tps.Select(tp => new StatefulAdapter(tp)).ToArray();
     }
 
-    public ITypeListenStateful this[int index] => _adapters[index];
+    public ITypeListenStateful this[int index]
+    {
+        get
+        {
+            if (index < 0 || index >= Count)
+            {
+                throw new IndexOutOfRangeException($"Index {index} is out of range. Count: {Count}");
+            }
+
+            return _adapters[index];
+        }
+    }
     public ITypeListenStateful this[string name]
     {
         get
         {
             if (_isNameDuplicated)
             {
-                throw new Exception("중복된 Name이 존재");
+                throw new AmbiguousMatchException($"Token has duplicate name: {name}");
             }
-            
-            return _adapters.FirstOrDefault(adapter => adapter.Name == name);
+
+            StatefulAdapter matchedAdapter = _adapters.FirstOrDefault(adapter => adapter.Name == name);
+
+            if (matchedAdapter == null)
+            {
+                throw new KeyNotFoundException($"Token with name '{name}' not found");
+            }
+
+            return matchedAdapter;
         }
     }
 
     public int Count => _adapters.Length;
 
-    public void ApplyStatesAll(IEnumerable<Transition> states)
+    public void ApplyStatesAll(ICollection<Transition> states)
     {
-        if (states.Count() != Count)
+        if (states.Count != Count)
             throw new ArgumentException("ApplyStatesAll: Token Count와 입력 States Count 불일치");
 
         int i = 0;
         foreach (Transition state in states)
         {
+            state.ThrowIfTypeMismatch(this[i].Type);
             this[i].State = state;
             i++;
         }
@@ -338,12 +358,12 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     private class StatefulAdapter : ITypeListenStateful, INameable, IDisposable
     {
         private readonly ITransitionPoint _tp;
-        private Action<TransitionType> _onTypeChanged;
 
         public StatefulAdapter(ITransitionPoint tp)
         {
             _tp = tp;
             _tp.OnTypeChanged += InvokeOnTypeChanged;
+            _tp.OnBeforeTypeChange += InvokeOnBeforeTypeChange;
         }
 
         public bool IsReadonly { get; set; }
@@ -365,11 +385,8 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
         public TransitionType Type => _tp.Type;
 
-        public event Action<TransitionType> OnTypeChanged
-        {
-            add => _onTypeChanged += value;
-            remove => _onTypeChanged -= value;
-        }
+        public event Action<TransitionType> OnTypeChanged;
+        public event Action<TransitionType> OnBeforeTypeChange;
 
         public string Name
         {
@@ -383,11 +400,17 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
                 return;
 
             _tp.OnTypeChanged -= InvokeOnTypeChanged;
+            _tp.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;
         }
 
         private void InvokeOnTypeChanged(TransitionType type)
         {
-            _onTypeChanged?.Invoke(type);
+            OnTypeChanged?.Invoke(type);
+        }
+
+        private void InvokeOnBeforeTypeChange(TransitionType type)
+        {
+            OnBeforeTypeChange?.Invoke(type);
         }
     }
 

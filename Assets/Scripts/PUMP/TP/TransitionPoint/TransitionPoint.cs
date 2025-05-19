@@ -107,9 +107,14 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     }
 
     public event Action<TransitionType> OnTypeChanged;
+    public event Action<TransitionType> OnBeforeTypeChange;
 
     public void SetType(TransitionType type)
     {
+        if (type == Type)
+            return;
+
+        OnBeforeTypeChange?.Invoke(type);
         Type = type;
         OnTypeChanged?.Invoke(Type);
     }
@@ -123,11 +128,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     public Node Node
     {
         get => _node;
-        set
-        {
-            if (_node is null)
-                _node = value;
-        }
+        set => _node ??= value;
     }
 
     public Action<PositionInfo> OnMove { get; set; }
@@ -157,6 +158,11 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                     SetType(TransitionType.Float);
                     Node.ReportChanges();
                 }, text: "Type: Float"));
+                context.Add(new ContextElement(clickAction: () =>
+                {
+                    SetType(TransitionType.String);
+                    Node.ReportChanges();
+                }, text: "Type: String"));
             }
 
             return context;

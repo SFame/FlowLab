@@ -5,7 +5,7 @@
       "title": "howtoplayNodesimulation",
       "entries": [
         {
-          "id": "htp1",
+          "id": "HowToPlay",
           "imagePath": "Cutscenes/Images/htp1",
           "dialogueId": "HTP_1",
           "duration": 0,
@@ -45,14 +45,14 @@
           "imagePath": "Cutscenes/Images/htp5",
           "dialogueId": "HTP_5",
           "duration": 0,
-          "nextCutsceneId": "",
+          "nextCutsceneId": "htp_6",
           "transition": 1,
           "transitionDuration": 1.0
         },
         {
-          "id": "opening_6",
-          "imagePath": "Cutscenes/Images/6",
-          "dialogueId": "opening_dialogue_6",
+          "id": "htp_6",
+          "imagePath": "Cutscenes/Images/htp6",
+          "dialogueId": "HTP6",
           "duration": 0,
           "nextCutsceneId": "",
           "transition": 1,

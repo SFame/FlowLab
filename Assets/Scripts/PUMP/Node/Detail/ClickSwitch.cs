@@ -32,7 +32,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return new[] { (Transition)false };
+        return new[] { Transition.False };
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
