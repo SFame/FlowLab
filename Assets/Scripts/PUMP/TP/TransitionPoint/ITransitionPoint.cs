@@ -57,6 +57,7 @@ public interface IStateful
 
 public interface ITypeListenStateful : IStateful
 {
+    event Action<TransitionType> OnBeforeTypeChange;
     event Action<TransitionType> OnTypeChanged;
 }
 

@@ -358,12 +358,12 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     private class StatefulAdapter : ITypeListenStateful, INameable, IDisposable
     {
         private readonly ITransitionPoint _tp;
-        private Action<TransitionType> _onTypeChanged;
 
         public StatefulAdapter(ITransitionPoint tp)
         {
             _tp = tp;
             _tp.OnTypeChanged += InvokeOnTypeChanged;
+            _tp.OnBeforeTypeChange += InvokeOnBeforeTypeChange;
         }
 
         public bool IsReadonly { get; set; }
@@ -385,11 +385,8 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
         public TransitionType Type => _tp.Type;
 
-        public event Action<TransitionType> OnTypeChanged
-        {
-            add => _onTypeChanged += value;
-            remove => _onTypeChanged -= value;
-        }
+        public event Action<TransitionType> OnTypeChanged;
+        public event Action<TransitionType> OnBeforeTypeChange;
 
         public string Name
         {
@@ -403,11 +400,17 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
                 return;
 
             _tp.OnTypeChanged -= InvokeOnTypeChanged;
+            _tp.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;
         }
 
         private void InvokeOnTypeChanged(TransitionType type)
         {
-            _onTypeChanged?.Invoke(type);
+            OnTypeChanged?.Invoke(type);
+        }
+
+        private void InvokeOnBeforeTypeChange(TransitionType type)
+        {
+            OnBeforeTypeChange?.Invoke(type);
         }
     }
 

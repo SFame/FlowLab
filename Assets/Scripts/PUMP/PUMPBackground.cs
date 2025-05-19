@@ -1211,7 +1211,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         CheckNullAndThrowNullException();
 
         // ---- OnStateUpdate ----
-        _reference.OnStateUpdate += InvokeOnStateUpdateWithPullAll; // Pull 먼저
+        _reference.OnStateUpdate += InvokeOnStateUpdateWithPullAll;
 
         // ---- OnCountUpdate ----
         _reference.OnCountUpdate += SyncToReferenceWrapper; // Sync 먼저
@@ -1240,11 +1240,6 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     private void InvokeOnStateUpdateWithPullAll(TransitionEventArgs args)
     {
-        foreach (ExternalOutputStatesAdapter adapter in _statesAdapters)
-        {
-            adapter.Pull();
-        }
-
         OnStateUpdate?.Invoke(args);
     }
 
@@ -1288,8 +1283,8 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     public ExternalInputStatesAdapter(ITypeListenStateful stateful, Func<UniTask> waitTaskGetter, CancellationToken token)
     {
         Stateful = stateful;
-        Type = Stateful.Type;
-        Stateful.OnTypeChanged += ApplyType;
+        Stateful.OnTypeChanged += InvokeOnTypeChanged;
+        Stateful.OnBeforeTypeChange += InvokeOnBeforeTypeChange;
 
         _waitTaskGetter = waitTaskGetter ?? (() => UniTask.CompletedTask);
         _token = token;
@@ -1315,20 +1310,10 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
         }
     }
 
-    public TransitionType Type
-    {
-        get => _type;
-        private set
-        {
-            _typeChangeCts = _typeChangeCts.CancelAndDisposeAndGetNew();
-            _type = value;
-            _state = Stateful.State;
-            _state.ThrowIfTypeMismatch(_type);
-            OnTypeChanged?.Invoke(_type);
-        }
-    }
+    public TransitionType Type => Stateful.Type;
 
     public event Action<TransitionType> OnTypeChanged;
+    public event Action<TransitionType> OnBeforeTypeChange;
 
     public bool IsFlushing { get; private set; }
 
@@ -1339,7 +1324,8 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
 
         _typeChangeCts.CancelAndDispose();
         _waitTaskGetter = null;
-        Stateful.OnTypeChanged -= ApplyType;
+        Stateful.OnTypeChanged -= InvokeOnTypeChanged;
+        Stateful.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;
         Stateful = null;
         OnTypeChanged = null;
         _disposed = true;
@@ -1353,14 +1339,26 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     private Func<UniTask> _waitTaskGetter;
     private CancellationToken _token;
 
-    private void ApplyType(TransitionType type)
+    private void InvokeOnTypeChanged(TransitionType type)
     {
         if (_disposed)
             return;
 
-        Type = type;
+        _typeChangeCts = _typeChangeCts.CancelAndDisposeAndGetNew();
+        _state = Stateful.State;
+        _state.ThrowIfTypeMismatch(type); // 굳이 필요없긴 한데 그래도 한번 검증해주자
+
+        OnTypeChanged?.Invoke(type);
     }
-    
+
+    private void InvokeOnBeforeTypeChange(TransitionType type)
+    {
+        if (_disposed)
+            return;
+
+        OnBeforeTypeChange?.Invoke(type);
+    }
+
     private async UniTaskVoid StateUpdateAsync(CancellationToken token)
     {
         IsFlushing = true;
@@ -1390,56 +1388,56 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     public ExternalOutputStatesAdapter(ITypeListenStateful stateful)
     {
         Stateful = stateful;
-        Type = Stateful.Type;
-        Stateful.OnTypeChanged += ApplyType;
+        Stateful.OnTypeChanged += InvokeOnTypeChanged;
+        Stateful.OnBeforeTypeChange += InvokeOnBeforeTypeChange;
     }
 
     public ITypeListenStateful Stateful { get; private set; }
 
-    public Transition State { get; set; }
-
-    public TransitionType Type
+    public Transition State
     {
-        get => _type;
-        private set
+        get => Stateful.State;
+        set
         {
-            _type = value;
-            Pull();
-            OnTypeChanged?.Invoke(_type);
+            Debug.LogWarning("ExternalOutput is readonly");
         }
     }
 
-    public event Action<TransitionType> OnTypeChanged;
-
-    // 외부에서 통합 실행
-    public void Pull()
+    public TransitionType Type
     {
-        if (_disposed)
-            return;
-
-        Stateful.State.ThrowIfTypeMismatch(Type);
-        State = Stateful.State;
+        get => Stateful.Type;
     }
+
+    public event Action<TransitionType> OnTypeChanged;
+    public event Action<TransitionType> OnBeforeTypeChange;
 
     public void Dispose()
     {
         if (_disposed)
             return;
 
-        Stateful.OnTypeChanged -= ApplyType;
+        Stateful.OnTypeChanged -= InvokeOnTypeChanged;
+        Stateful.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;
         Stateful = null;
         _disposed = true;
     }
 
-    private void ApplyType(TransitionType type)
+    private void InvokeOnTypeChanged(TransitionType type)
     {
         if (_disposed)
             return;
 
-        Type = type;
+        OnTypeChanged?.Invoke(type);
     }
 
-    private TransitionType _type = TransitionType.None;
+    private void InvokeOnBeforeTypeChange(TransitionType type)
+    {
+        if (_disposed)
+            return;
+
+        OnBeforeTypeChange?.Invoke(type);
+    }
+
     private bool _disposed;
 }
 

@@ -107,12 +107,14 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     }
 
     public event Action<TransitionType> OnTypeChanged;
+    public event Action<TransitionType> OnBeforeTypeChange;
 
     public void SetType(TransitionType type)
     {
         if (type == Type)
             return;
 
+        OnBeforeTypeChange?.Invoke(type);
         Type = type;
         OnTypeChanged?.Invoke(Type);
     }

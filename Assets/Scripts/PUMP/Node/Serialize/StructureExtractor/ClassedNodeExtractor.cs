@@ -258,7 +258,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         for (int i = 0; i < applier.Count; i++)
         {
-            gateway[i].OnTypeChanged += applier[i];
+            gateway[i].OnBeforeTypeChange += applier[i];
         }
     }
 
