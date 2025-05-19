@@ -10,13 +10,14 @@ public class Debouncer : Node
 
     protected override List<string> InputNames { get; } = new() { "A" };
     protected override List<string> OutputNames { get; } = new() { "out" };
-    protected override float InEnumeratorXPos => -47f;
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float InEnumeratorXPos => -46f;
+    protected override float OutEnumeratorXPos => 42f;
     protected override float EnumeratorPadding => 5f;
     protected override float EnumeratorMargin => 5f;
     protected override Vector2 TPSize => new Vector2(35f, 50f);
-    protected override Vector2 DefaultNodeSize => new Vector2(140f, 150f);
-    protected override string NodeDisplayName => "Debouncer";
+    protected override Vector2 DefaultNodeSize => new Vector2(125f, 80f);
+    protected override string NodeDisplayName => "Debc";
+    protected override float TextSize { get; } = 22f;
 
     private DebouncerSupport _debouncerSupport;
     private DebouncerSupport DebouncerSupport
@@ -28,7 +29,7 @@ public class Debouncer : Node
         }
     }
 
-    private int _debounceTime = 200; // ms, 기본값
+    private float _debounceTime = 0.1f; // 기본값
     private CancellationTokenSource _cts;
     private bool _isInputActive = false;
 
@@ -39,7 +40,7 @@ public class Debouncer : Node
         DebouncerSupport.OnValueChanged += OnDebounceTimeChanged;
     }
 
-    private void OnDebounceTimeChanged(int value)
+    private void OnDebounceTimeChanged(float value)
     {
         _debounceTime = value;
     }
@@ -94,7 +95,7 @@ public class Debouncer : Node
     private async UniTaskVoid DebounceRoutine(CancellationToken token)
     {
         float elapsed = 0f;
-        float duration = _debounceTime / 1000f; // ms -> s
+        float duration = _debounceTime; // s
 
         while (elapsed < duration)
         {
