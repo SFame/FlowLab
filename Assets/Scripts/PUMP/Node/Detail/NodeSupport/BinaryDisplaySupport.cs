@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
@@ -16,6 +17,7 @@ public class BinaryDisplaySupport : MonoBehaviour
     private bool _isInitialized = false;
     private bool _blockEvent = false;
 
+
     public void Initialize()
     {
         if (_isInitialized) 
@@ -24,6 +26,7 @@ public class BinaryDisplaySupport : MonoBehaviour
         _isInitialized = true;
 
         m_Slider.onValueChanged.AddListener(InvokeOnValueChange);
+        UpdateDisplay(0);
     }
 
     public void SetSliderValue(int value)
@@ -62,6 +65,7 @@ public class BinaryDisplaySupport : MonoBehaviour
 
     private void UpdateDisplay(int value)
     {
+        Debug.Log($"UpdateDisplay: {value}");
         int[] sums = new int[4];
         value.ConvertToDigitArray(sums);
 
