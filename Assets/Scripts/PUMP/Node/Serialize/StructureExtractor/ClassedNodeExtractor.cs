@@ -248,7 +248,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     /// <summary>
     /// Gateway의 각각의 Adapter의 Type Update 이벤트에 ClassedNode 의 TP의 타입 업데이트 액션 등록
     /// </summary>
-    private void SubscribeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
+    private void SubscribeBeforeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
     {
         if (applier.Count != gateway.Count())
         {
@@ -262,6 +262,20 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         }
     }
 
+    private void SubscribeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
+    {
+        if (applier.Count != gateway.Count())
+        {
+            Debug.LogError($"Adapter({gateway.Count()})와 ClassedNode의 TP({applier.Count}) 개수 불일치");
+            return;
+        }
+
+        for (int i = 0; i < applier.Count; i++)
+        {
+            gateway[i].OnTypeChanged += applier[i];
+        }
+    }
+
     /// <summary>
     /// Classed와 Background 타입 이벤트 동기화
     /// </summary>
@@ -269,7 +283,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     {
         List<Action<TransitionType>> inputTypeApplier = classed.GetInputTypeApplier();
         List<Action<TransitionType>> outputTypeApplier = classed.GetOutputTypeApplier();
-        SubscribeTypeUpdate(inputTypeApplier, exIn);
+        SubscribeBeforeTypeUpdate(inputTypeApplier, exIn);
         SubscribeTypeUpdate(outputTypeApplier, exOut);
     }
 

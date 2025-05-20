@@ -9,9 +9,9 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/MERGER";
 
-    protected override float InEnumeratorXPos => -60f;
+    protected override float InEnumeratorXPos => -32f;
 
-    protected override float OutEnumeratorXPos => 60f;
+    protected override float OutEnumeratorXPos => 32f;
 
     protected override float EnumeratorPadding => 5f;
 
@@ -19,11 +19,9 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 TPSize => new Vector2(35f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(150f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "Merger";
-
-    protected override float TextSize => 22f;
+    protected override string NodeDisplayName => "M";
 
     protected override int DefaultInputCount => 4;
 
@@ -49,11 +47,11 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
-        return new[] { (Transition)0 };
+        return new[] { Transition.Zero };
     }
 
-    protected override string DefineInputName(int tpNumber) => $"2 ^ {tpNumber}";
-    protected override string DefineOutputName(int tpNumber) => "4bit out";
+    protected override string DefineInputName(int tpNumber) => $"2<sup><size=18>{tpNumber}</size></sup>";
+    protected override string DefineOutputName(int tpNumber) => "out";
 
     protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
     protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Int;
