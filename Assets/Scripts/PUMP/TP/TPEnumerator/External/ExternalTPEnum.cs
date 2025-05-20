@@ -165,6 +165,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         }
     }
 
+    // External은 TP Count 변경에 의한 Size 변동이 없으므로 호출하지 않음
     public event Action<Vector2> OnSizeUpdatedWhenTPChange;
 
     public TPEnumeratorToken GetToken()

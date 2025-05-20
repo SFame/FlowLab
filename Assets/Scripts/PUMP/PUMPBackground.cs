@@ -1335,7 +1335,6 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     private SafetyCancellationTokenSource _typeChangeCts = new();
     private Transition _state;
     private Transition _stateCache;
-    private TransitionType _type = TransitionType.None;
     private Func<UniTask> _waitTaskGetter;
     private CancellationToken _token;
 
