@@ -335,7 +335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 21}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 900, y: 800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5285909263610140343
@@ -542,7 +542,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.12941177, g: 0.34509805, b: 0.5058824, a: 1}
+  m_Color: {r: 0.24866493, g: 0.5638132, b: 0.7987421, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -573,10 +573,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Text: {fileID: 8481817765467951486}
   m_BackgroundImage: {fileID: 2586441729250665458}
-  m_ActiveColor: {r: 0.12941177, g: 0.34509805, b: 0.5058824, a: 1}
+  m_ActiveColor: {r: 0.24705882, g: 0.5647059, b: 0.8, a: 1}
   m_InactiveColor: {r: 0.056247737, g: 0.15373942, b: 0.2264151, a: 1}
   m_ActiveTextColor: {r: 0.49411765, g: 0.7882353, b: 1, a: 1}
-  m_InactiveTextColor: {r: 0.19215687, g: 0.38039216, b: 0.5176471, a: 1}
+  m_InactiveTextColor: {r: 0.24170314, g: 0.46927914, b: 0.63522005, a: 1}
 --- !u!1 &6401109212993582664
 GameObject:
   m_ObjectHideFlags: 0

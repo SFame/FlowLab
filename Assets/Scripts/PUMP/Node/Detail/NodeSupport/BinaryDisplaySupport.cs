@@ -65,7 +65,6 @@ public class BinaryDisplaySupport : MonoBehaviour
 
     private void UpdateDisplay(int value)
     {
-        Debug.Log($"UpdateDisplay: {value}");
         int[] sums = new int[4];
         value.ConvertToDigitArray(sums);
 

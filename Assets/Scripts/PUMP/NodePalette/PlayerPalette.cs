@@ -6,18 +6,22 @@ public class PlayerPalette : NodePalette
 {
     private Dictionary<Type, string> _cachedNodeTypes;
 
-    public override Dictionary<Type, string> NodeTypes
+    public override Dictionary<string, Dictionary<Type, string>> NodeTypes
     {
         get
         {
-            if (_cachedNodeTypes == null)
-            {
-                PlayerNodeInventory.Initialize();
-                _cachedNodeTypes = PlayerNodeInventory.GetAvailableNodeTypes();
-            }
-            return _cachedNodeTypes;
+            //if (_cachedNodeTypes == null)
+            //{
+            //    PlayerNodeInventory.Initialize();
+            //    _cachedNodeTypes = PlayerNodeInventory.GetAvailableNodeTypes();
+            //}
+            //return _cachedNodeTypes;
+            return null;
         }
-        set { _cachedNodeTypes = value; }
+        set
+        {
+            //_cachedNodeTypes = value;
+        }
     }
 
     private void Awake()

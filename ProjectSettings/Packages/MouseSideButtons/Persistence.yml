@@ -13,6 +13,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Py/CoreTemplate
-  - Assets/Resources/PUMP/Py
-  currentDirIndex: 0
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
+    I Round 20px
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/CorePro/Flat Pack/Icons/App
+  - Assets/Resources
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/NodePalette
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  currentDirIndex: 19

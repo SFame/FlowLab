@@ -20,6 +20,9 @@ public class PrismView : MonoBehaviour
     /// </summary>
     public void Initialize(Dictionary<string, List<RectTransform>> prism, int startActive = 0)
     {
+        m_PrismGridTemplate.SetActive(false);
+        m_PrismTriggerTemplate.SetActive(false);
+
         Clear();
 
         foreach (KeyValuePair<string, List<RectTransform>> kvp in prism)
