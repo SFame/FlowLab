@@ -78,43 +78,38 @@ public class InputSwitch : Node
         switch (type)
         {
             case TransitionType.Int:
-                stateful.State = new Transition(999);
                 _value = 99;
+                //test
+                InputSwitchSupport.SetInputText("99");
                 break;
             case TransitionType.Float:
-                stateful.State = new Transition(99.9f);
                 _value = 9.9f;
+                //test
+                InputSwitchSupport.SetInputText("9.9");
                 break;
             case TransitionType.String:
-                stateful.State = new Transition("Test0");
                 _value = "Test1";
+                //test
+                InputSwitchSupport.SetInputText("Test1");
                 break;
         }
-        ReinitializeOutputs();
     }
 
-    private void ReinitializeOutputs()
-    {
-        // 출력 TP들을 재생성하는 로직이 필요하면 여기에서 수행합니다.
-        // 예: 신규 Transition 배열을 생성하여 연결된 TP에 적용한다.
-        // 실제 구현은 기존 시스템의 노드 갱신 메커니즘에 맞춰 추가하세요.
-        var newStates = SetOutputInitStates(OutputNames.Count);
-        // 예: Support.UpdateOutputStates(newStates);
-    }
 
     protected override Transition[] SetOutputInitStates(int outputCount)
     {
         switch (_currentType)
         {
             case TransitionType.Int:
-                return new Transition[] { (Transition)9 };
+                return new Transition[] { (Transition)0 };
             case TransitionType.Float:
-                return new Transition[] { (Transition)(0.9f) };
+                return new Transition[] { (Transition)0f };
             case TransitionType.String:
-                return new Transition[] { (Transition)("Test") };
+                return new Transition[] { (Transition)"" };
             default:
                 return Array.Empty<Transition>();
         }
+        
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -166,10 +161,35 @@ public class InputSwitch : Node
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             Support.SelectedRemoveRequestInvoke();
+            State = !State;
             SetInputValue(InputSwitchSupport.GetInputText());
-            OutputToken[0].State = (Transition)_value;
+
+            OutputToken[0].State = _currentType switch
+            {
+                TransitionType.Int =>  (Transition)((int)_value),
+                TransitionType.Float =>  (Transition)((float)_value),
+                TransitionType.String =>  (Transition)((string)_value),
+                _ => new Transition(0)
+            };
             ReportChanges();
         }
+    }
+
+
+    private bool _state = false;
+    public bool State
+    {
+        get => _state;
+        set
+        {
+            _state = value;
+            SetImageColor(value);
+        }
+    }
+    private void SetImageColor(bool isActive)
+    {
+        Support.DefaultColor = isActive ? new Color(0.7f, 0.7f, 0.7f, 1f) : Color.white;
+        Support.Image.color = Support.DefaultColor;
     }
 
 }
