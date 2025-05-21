@@ -74,9 +74,19 @@ public class Switch : Node, INodeAdditionalArgs<bool>
         if (args is { Index: 1, IsStateChange: true })
         {
             TransB = args.State;
+            return;
         }
 
-        OutputToken[0].State = TransB ? InputToken[2].State : InputToken[0].State;
+        if (TransB && args.Index == 2)
+        {
+            OutputToken[0].State = args.State;
+            return;
+        }
+
+        if (!TransB && args.Index == 0)
+        {
+            OutputToken[0].State = args.State;
+        }
     }
 
     private async UniTaskVoid SetArrowYPosAsync()
