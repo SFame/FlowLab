@@ -6,7 +6,6 @@ using Utils;
 public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenable, IDraggable, ITPHideable
 {
     #region Privates
-    [SerializeField]
     private Transition _state;
     private TransitionType _type;
     private LineConnector _lineConnector;

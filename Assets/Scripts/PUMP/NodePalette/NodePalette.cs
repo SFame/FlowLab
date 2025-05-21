@@ -1,15 +1,20 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using Utils;
 
-public abstract class NodePalette : MonoBehaviour
+public abstract class NodePalette : MonoBehaviour, IPointerDownHandler
 {
+    #region On Inspector
+    [SerializeField] private PrismView m_PrismView;
+    [SerializeField] private CanvasGroup m_CanvasGroup;
+    [SerializeField] private float m_FadeDuration = 0.05f;
+    #endregion
+
     #region Interface
-    public abstract Dictionary<Type, string> NodeTypes { get; set; }
+    public abstract Dictionary<string, Dictionary<Type, string>> NodeTypes { get; set; }
     
     public event Action<Node> OnNodeAdded;
     
@@ -17,14 +22,43 @@ public abstract class NodePalette : MonoBehaviour
     {
         SetContentAsync().Forget();
     }
+
+    public void Open()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Close()
+    {
+        gameObject.SetActive(false);
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            _cts = _cts.CancelAndDisposeAndGetNew();
+            Other.LerpAction
+            (
+                m_FadeDuration,
+                lerp =>
+                {
+                    float calc = value ? lerp : 1f - lerp;
+                    m_CanvasGroup.alpha = calc;
+                },
+                null,
+                _cts!.Token
+            ).Forget();
+        }
+    }
     #endregion
-    
+
     #region Privates
-    private ScrollRect _scrollRect;
     private GameObject _elementPrefab;
-    private readonly List<PaletteElem> _elements = new();
-    private RectTransform _rootRect;
-    private IRaycastAlphaControl _parentAplhaControl;
+    private bool _isVisible = false;
+    private SafetyCancellationTokenSource _cts = new();
 
     private const string ELEMENT_PREFAB_PATH = "PUMP/Prefab/NodePalette/PaletteElem";
 
@@ -36,121 +70,51 @@ public abstract class NodePalette : MonoBehaviour
             return _elementPrefab;
         }
     }
-    
-    private ScrollRect ScrollRect
-    {
-        get
-        {
-            _scrollRect ??= GetComponentInChildren<ScrollRect>();
-            return _scrollRect;
-        }
-    }
-
-    private RectTransform RootRect
-    {
-        get
-        {
-            _rootRect ??= GetComponentInParent<Canvas>().rootCanvas.GetComponent<RectTransform>();;
-            return _rootRect;
-        }
-    }
-
-    private IRaycastAlphaControl ParentAlphaControl
-    {
-        get
-        {
-            _parentAplhaControl ??= GetComponentInParent<IRaycastAlphaControl>();
-            return _parentAplhaControl;
-        }
-    }
-    
-    private RectTransform Content => ScrollRect.content;
-    
-    private float ContentWidth => Content.rect.width;
-
-    private float ContentHeight
-    {
-        get => Content.sizeDelta.y;
-        set => Content.sizeDelta = new Vector2(Content.sizeDelta.x, value);
-    }
-
-    private float ElementHeight => 100f;
 
     private async UniTaskVoid SetContentAsync()
     {
-        await UniTask.WaitUntil(() => ContentWidth > float.Epsilon);
-        
-        SetContentRectSize();
-        _elements.WhereForeach(elem => !elem.IsUnityNull(), elem => Destroy(elem.gameObject));
-        _elements.Clear();
+        m_PrismView.Clear();
 
-        foreach (KeyValuePair<Type, string> kvp in NodeTypes)
+        await UniTask.Yield();
+
+        Dictionary<string, List<RectTransform>> prism = new();
+
+        foreach (KeyValuePair<string, Dictionary<Type, string>> kvp in NodeTypes)
         {
-            RectTransform newElemRect = GetNewElemWithScaled();
-            PaletteElem newElem = newElemRect.GetComponent<PaletteElem>();
-            newElem.DisplayName = kvp.Value;
-            newElem.NodeType = kvp.Key;
+            List<RectTransform> categoryRectList = new();
 
-            if (GetSprite(kvp.Key) is { } sprite)
-                newElem.Image.sprite = sprite;
+            foreach (KeyValuePair<Type, string> innerKvp in kvp.Value)
+            {
+                RectTransform newElemRect = GetNewElement();
+                PaletteElem newElem = newElemRect.GetComponent<PaletteElem>();
+                newElem.DisplayName = innerKvp.Value;
+                newElem.NodeType = innerKvp.Key;
 
-            SetElementCallback(newElem);
-            _elements.Add(newElem);
+                if (GetSprite(innerKvp.Key) is { } sprite)
+                    newElem.Image.sprite = sprite;
+
+                SetElementCallback(newElem);
+                categoryRectList.Add(newElemRect);
+            }
+
+            prism[kvp.Key] = categoryRectList;
         }
-        
-        SortContent();
+
+        m_PrismView.Initialize(prism);
     }
 
-    private void SortContent()
+    private RectTransform GetNewElement()
     {
-        Vector2 defaultPos = new Vector2(ContentWidth / 2, -(ElementHeight / 2));
-
-        for (int i = 0; i < _elements.Count; i++)
-            _elements[i].Rect.anchoredPosition = new Vector2(defaultPos.x, defaultPos.y + -i * ElementHeight);
-    }
-
-    private void SetContentRectSize()
-    {
-        ContentHeight = NodeTypes.Count * ElementHeight;
-    }
-
-    private RectTransform GetNewElemWithScaled()
-    {
-        GameObject newElement = Instantiate(ElementPrefab, Content.transform);
+        GameObject newElement = Instantiate(ElementPrefab);
         RectTransform elemRect = newElement.GetComponent<RectTransform>();
-        elemRect.anchorMin = new Vector2(0f, 1f);
-        elemRect.anchorMax = new Vector2(0f, 1f);
-        elemRect.sizeDelta = new Vector2(ContentWidth, ElementHeight);
         return elemRect;
     }
 
     private void SetElementCallback(PaletteElem elem)
     {
-        elem.OnDragStart += () =>
-        {
-            elem.ContentFixPosition = elem.Rect.anchoredPosition;
-            elem.Rect.SetParent(RootRect, true);
-        };
-        
-        elem.OnPaletteExit += () =>
-        {
-            elem.Rect.SetParent(Content, true);
-            elem.Rect.anchoredPosition = elem.ContentFixPosition;
-            ParentAlphaControl.SetInteract(false);
-        };
-        
-        elem.OnInstantiate += () =>
-        {
-            OnNodeAdded?.Invoke(elem.NewNode);
-        };
-        
-        elem.OnDragEnd += () =>
-        {
-            elem.Rect.SetParent(Content, true);
-            elem.Rect.anchoredPosition = elem.ContentFixPosition;
-            ParentAlphaControl.SetInteract(true);
-        };
-        
+        elem.OnDragStart += () => IsVisible = false;
+        elem.OnInstantiate += () => OnNodeAdded?.Invoke(elem.NewNode);
+        elem.OnDragEnd += () => IsVisible = true;
     }
 
     private Sprite GetSprite(Type nodeType)
@@ -159,4 +123,16 @@ public abstract class NodePalette : MonoBehaviour
         return string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath);
     }
     #endregion
+
+    void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+    {
+        List<RaycastResult> result = new();
+        EventSystem.current.RaycastAll(eventData, result);
+
+        if (result.Count <= 0)
+            return;
+
+        if (result[0].gameObject == gameObject)
+            Close();
+    }
 }

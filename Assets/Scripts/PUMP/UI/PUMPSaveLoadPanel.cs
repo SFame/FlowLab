@@ -185,7 +185,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         elem.OnDoubleClick += data =>
         {
             extractor.ApplyData(data);
-            UiController.SetActive(false, 0.2f).Forget();
+            UiController.SetActive(false).Forget();
         };
         elem.OnRightClick += (data, eventData) =>
         {

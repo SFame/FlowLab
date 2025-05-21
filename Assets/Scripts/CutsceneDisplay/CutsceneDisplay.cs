@@ -190,7 +190,7 @@ public static class CutsceneDisplay
         {
             Debug.LogWarning($"Cutscene image not found: {entry.imagePath}");
             _cutsceneImage.sprite = null;
-            _cutsceneImage.color = new Color(0, 0, 0, 0); // Transparent
+            _cutsceneImage.color = new Color(0, 0, 0, 0); // Visible
             return;
         }
 

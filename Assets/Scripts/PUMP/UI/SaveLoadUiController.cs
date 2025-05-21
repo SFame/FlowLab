@@ -16,7 +16,7 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
 
     private CanvasGroup _canvasGroup;
 
-    public async UniTaskVoid SetActive(bool active, float fadeDuration = 0.4f)
+    public async UniTaskVoid SetActive(bool active, float fadeDuration = 0.2f)
     {
         if (active)
         {
@@ -33,7 +33,7 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
             gameObject.SetActive(false);
     }
 
-    public async UniTask Fade(float targetAlpha, float duration)
+    private async UniTask Fade(float targetAlpha, float duration)
     {
         float startAlpha = CanvasGroup.alpha;
         float elapsed = 0f;
@@ -52,7 +52,7 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
         CanvasGroup.alpha = targetAlpha;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         List<RaycastResult> result = new();
         EventSystem.current.RaycastAll(eventData, result);

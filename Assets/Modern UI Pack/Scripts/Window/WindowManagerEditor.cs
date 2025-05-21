@@ -102,7 +102,7 @@ namespace Michsky.MUIP
 
                 case 1:
                     MUIPEditorHandler.DrawHeader(customSkin, "Options Header", 6);
-                    cullWindows.boolValue = MUIPEditorHandler.DrawToggle(cullWindows.boolValue, customSkin, "Cull Transparent Windows");
+                    cullWindows.boolValue = MUIPEditorHandler.DrawToggle(cullWindows.boolValue, customSkin, "Cull Visible Windows");
                     initializeButtons.boolValue = MUIPEditorHandler.DrawToggle(initializeButtons.boolValue, customSkin, "Initialize Buttons");
 
                     MUIPEditorHandler.DrawHeader(customSkin, "UIM Header", 10);
