@@ -1,10 +1,10 @@
 using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
+public class SaveLoadUiController : MonoBehaviour
 {
+    [SerializeField] private ClosablePanel m_ClosablePanel;
+
     private CanvasGroup CanvasGroup
     {
         get
@@ -15,9 +15,12 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
     }
 
     private CanvasGroup _canvasGroup;
+    private bool _initialized = false;
 
     public async UniTaskVoid SetActive(bool active, float fadeDuration = 0.2f)
     {
+        Initialize();
+
         if (active)
         {
             CanvasGroup.alpha = 0f;
@@ -31,6 +34,23 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
 
         if (!active)
             gameObject.SetActive(false);
+    }
+
+    private void Initialize()
+    {
+        if (_initialized)
+            return;
+
+        _initialized = true;
+
+        if (m_ClosablePanel == null)
+        {
+            Debug.LogError("SaveLoadUiController: ClosablePanel is null");
+            return;
+        }
+
+        m_ClosablePanel.ControlActive = false;
+        m_ClosablePanel.OnClose += () => SetActive(false, 0.2f).Forget();
     }
 
     private async UniTask Fade(float targetAlpha, float duration)
@@ -50,17 +70,5 @@ public class SaveLoadUiController : MonoBehaviour, IPointerClickHandler
         }
 
         CanvasGroup.alpha = targetAlpha;
-    }
-
-    void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
-    {
-        List<RaycastResult> result = new();
-        EventSystem.current.RaycastAll(eventData, result);
-
-        if (result.Count <= 0)
-            return;
-
-        if (result[0].gameObject == gameObject)
-            SetActive(false, 0.2f).Forget();
     }
 }

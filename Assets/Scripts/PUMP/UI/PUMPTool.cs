@@ -10,7 +10,8 @@ public class PUMPTool : MonoBehaviour
     #region On Inspector
     [SerializeField] private float m_PollingRate = 0.1f;
     [SerializeField] private float m_SlideDuration = 0.5f;
-    [SerializeField] private float m_DetectionAreaWidth = 100f;
+    [SerializeField] private float m_DetectionAreaWidth = 250f;
+    [SerializeField] private float m_DetectionAreaHeightOffset = 100f;
 
     [SerializeField] private SaveLoadUiController m_SaveLoadUiController;
     [SerializeField] private Button m_SaveLoadButton;
@@ -69,8 +70,9 @@ public class PUMPTool : MonoBehaviour
 
         Vector3[] corners = new Vector3[4];
         _rectTransform.GetWorldCorners(corners);
-        _minY = corners[0].y;
-        _maxY = corners[1].y;
+        float halfHeightOffset = m_DetectionAreaHeightOffset * 0.5f;
+        _minY = corners[0].y - halfHeightOffset;
+        _maxY = corners[1].y + halfHeightOffset;
     }
 
     private void StartPollingTask()
