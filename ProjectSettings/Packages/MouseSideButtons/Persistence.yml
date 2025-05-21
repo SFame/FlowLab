@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryHistory:
   - Assets/Resources/PUMP/Py/CoreTemplate
-  - Assets/Resources/PUMP/Py
-  currentDirIndex: 0
+  - Assets/Scripts/PUMP
+  - Assets/Scripts/PUMP/Node
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
+  - Assets/Scripts/PUMP/Node/Detail
+  currentDirIndex: 5
