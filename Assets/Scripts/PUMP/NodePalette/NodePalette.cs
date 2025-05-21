@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using Utils;
 
-public abstract class NodePalette : MonoBehaviour, IPointerDownHandler
+public abstract class NodePalette : MonoBehaviour
 {
     #region On Inspector
     [SerializeField] private PrismView m_PrismView;
@@ -73,7 +72,7 @@ public abstract class NodePalette : MonoBehaviour, IPointerDownHandler
 
     private async UniTaskVoid SetContentAsync()
     {
-        m_PrismView.Clear();
+        m_PrismView.Release();
 
         await UniTask.Yield();
 
@@ -100,7 +99,7 @@ public abstract class NodePalette : MonoBehaviour, IPointerDownHandler
             prism[kvp.Key] = categoryRectList;
         }
 
-        m_PrismView.Initialize(prism);
+        m_PrismView.Allocate(prism);
     }
 
     private RectTransform GetNewElement()
@@ -123,16 +122,4 @@ public abstract class NodePalette : MonoBehaviour, IPointerDownHandler
         return string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath);
     }
     #endregion
-
-    void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
-    {
-        List<RaycastResult> result = new();
-        EventSystem.current.RaycastAll(eventData, result);
-
-        if (result.Count <= 0)
-            return;
-
-        if (result[0].gameObject == gameObject)
-            Close();
-    }
 }

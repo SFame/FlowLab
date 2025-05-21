@@ -18,12 +18,12 @@ public class PrismView : MonoBehaviour
     /// Key: 카테고리
     /// Value: 내부 요소
     /// </summary>
-    public void Initialize(Dictionary<string, List<RectTransform>> prism, int startActive = 0)
+    public void Allocate(Dictionary<string, List<RectTransform>> prism, int startActive = 0)
     {
         m_PrismGridTemplate.SetActive(false);
         m_PrismTriggerTemplate.SetActive(false);
 
-        Clear();
+        Release();
 
         foreach (KeyValuePair<string, List<RectTransform>> kvp in prism)
         {
@@ -54,17 +54,7 @@ public class PrismView : MonoBehaviour
         _pairs[startActive].Activate();
     }
 
-    public (PrismGrid grid, PrismTrigger trigger) GetNewTuple()
-    {
-        GameObject gridObj = Instantiate(m_PrismGridTemplate, m_GridParent);
-        GameObject triggerObj = Instantiate(m_PrismTriggerTemplate, m_TriggerParent);
-        gridObj.SetActive(true);
-        triggerObj.SetActive(true);
-
-        return (gridObj.GetComponent<PrismGrid>(), triggerObj.GetComponent<PrismTrigger>());
-    }
-
-    public void Clear()
+    public void Release()
     {
         foreach (PrismPair pair in _pairs)
         {
@@ -72,6 +62,16 @@ public class PrismView : MonoBehaviour
         }
 
         _pairs.Clear();
+    }
+
+    private (PrismGrid grid, PrismTrigger trigger) GetNewTuple()
+    {
+        GameObject gridObj = Instantiate(m_PrismGridTemplate, m_GridParent);
+        GameObject triggerObj = Instantiate(m_PrismTriggerTemplate, m_TriggerParent);
+        gridObj.SetActive(true);
+        triggerObj.SetActive(true);
+
+        return (gridObj.GetComponent<PrismGrid>(), triggerObj.GetComponent<PrismTrigger>());
     }
 }
 

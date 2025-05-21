@@ -52,7 +52,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_BaseSector: {fileID: 2523212980000112720}
   m_OverSector: {fileID: 7224458180368314344}
-  m_PumpSectorPrefab: {fileID: 1510068913751018988, guid: 797446f57f91684419cb08e8b86dd0be, type: 3}
+  m_PumpSectorPrefab: {fileID: 0}
   m_OpenBackgroundOnStart: 1
   m_ShowWhenStart: 1
   m_ShowWhenGet: 1

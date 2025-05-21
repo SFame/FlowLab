@@ -1,17 +1,16 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class TextGetter : MonoBehaviour, IPointerClickHandler
+public class TextGetter : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private TMP_InputField inputField;
-    [SerializeField] private Button confirmButton;
+    [SerializeField] private TextMeshProUGUI m_TitleText;
+    [SerializeField] private TMP_InputField m_InputField;
+    [SerializeField] private Button m_ConfirmButton;
+    [SerializeField] private ClosablePanel m_ClosablePanel;
 
     #region Privates
     private const KeyCode CONFIRM_KEY = KeyCode.Return;
@@ -39,13 +38,13 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         Initialize();
         Terminate();
 
-        titleText.text = titleString;
-        inputField.text = inputString;
+        m_TitleText.text = titleString;
+        m_InputField.text = inputString;
         _callback = callback;
         _onExitCallback = onExitCallback;
         
-        inputField.Select();
-        inputField.ActivateInputField();
+        m_InputField.Select();
+        m_InputField.ActivateInputField();
         
         _cts = new CancellationTokenSource();
         WaitKeyAsync(_cts.Token).Forget();
@@ -54,7 +53,7 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
     #region Privates
     private void SendWithExit()
     {
-        _callback?.Invoke(inputField.text);
+        _callback?.Invoke(m_InputField.text);
         Exit();
     }
 
@@ -71,9 +70,10 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         if (_initialized)
             return;
 
-        confirmButton.onClick.AddListener(SendWithExit);
-        
         _initialized = true;
+
+        m_ClosablePanel.OnClose += Exit;
+        m_ConfirmButton.onClick.AddListener(SendWithExit);
     }
     
     private void Terminate()
@@ -81,8 +81,8 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
-        titleText.text = "";
-        inputField.text = "";
+        m_TitleText.text = "";
+        m_InputField.text = "";
         _callback = null;
         _onExitCallback = null;
     }
@@ -95,18 +95,6 @@ public class TextGetter : MonoBehaviour, IPointerClickHandler
             SendWithExit();
         }
         catch (OperationCanceledException) { }
-    }
-    
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        List<RaycastResult> result = new();
-        EventSystem.current.RaycastAll(eventData, result);
-        
-        if (result.Count <= 0)
-            return;
-
-        if (result[0].gameObject == gameObject)
-            Exit();
     }
     #endregion
 }
