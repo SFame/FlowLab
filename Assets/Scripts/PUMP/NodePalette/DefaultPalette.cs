@@ -21,6 +21,7 @@ public class DefaultPalette : NodePalette
             "I/O", new Dictionary<Type, string>
             {
                 { typeof(ClickSwitch), "ClickSwitch" },
+                { typeof(InputSwitch), "InputSwitch" },
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
             }
