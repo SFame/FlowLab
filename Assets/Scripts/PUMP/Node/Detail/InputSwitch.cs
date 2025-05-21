@@ -54,9 +54,6 @@ public class InputSwitch : Node
         }
     }
 
-
-    private SafetyCancellationTokenSource _cts = new();
-
     protected override List<ContextElement> ContextElements
     {
         get
@@ -112,23 +109,7 @@ public class InputSwitch : Node
         
     }
 
-    protected override void StateUpdate(TransitionEventArgs args)
-    {
-        LogAsync(args.State.ToString()).Forget();
-    }
-
-    //
-    protected override void OnBeforeRemove()
-    {
-        _cts?.CancelAndDispose();
-    }
-
-    private async UniTaskVoid LogAsync(string message)
-    {
-        await UniTask.Yield(_cts.Token);
-        Debug.Log(message);
-    }
-    //
+    protected override void StateUpdate(TransitionEventArgs args){}
 
     private object _value = 0;
     public void SetInputValue(string input)
