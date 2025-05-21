@@ -13,25 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/Prefab
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/Prefab/UI/TestCase
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/Prefab/UI/Puzzle
   - Assets
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
-    I Round 20px
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/CorePro/Flat Pack/Icons/App
+  - Assets/Scenes
+  - Assets
+  - Assets/CorePro
+  - Assets/CorePro/Flat Pack
+  - Assets/CorePro/Flat Pack/Icons
+  - Assets/CorePro/Flat Pack/Icons/Tools
+  - Assets/CorePro/Flat Pack
+  - Assets/CorePro/Flat Pack/Icons
+  - Assets
   - Assets/Resources
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/NodePalette
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/Prefab
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/Prefab/UI/Puzzle
+  - Assets/CorePro/Flat Pack/Icons/App/Signs
   currentDirIndex: 19

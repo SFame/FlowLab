@@ -263,6 +263,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -301,7 +305,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -309,11 +313,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -349,11 +353,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -610
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -436,14 +440,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.6666667}
+  m_Color: {r: 0.07450981, g: 0.2, b: 0.2901961, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5618123237d1d3f49a5a6025287065f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: dafa8cda17e8ab94ea3924d7409210f9, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -452,7 +456,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 12
+  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &333670876
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -469,6 +473,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -519,7 +527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -527,11 +535,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -567,11 +575,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -1835
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -755,14 +763,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.60784316}
+  m_Color: {r: 0.25490198, g: 0.25490198, b: 0.25490198, a: 0.74509805}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -866,14 +874,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.2971698, g: 0.7220148, b: 1, a: 0.34117648}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5618123237d1d3f49a5a6025287065f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a403bfc8841b11245b49cf1250bff393, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -882,7 +890,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 12
+  m_PixelsPerUnitMultiplier: 4
 --- !u!222 &746560536
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -899,6 +907,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -949,7 +961,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -957,11 +969,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -997,11 +1009,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -1590
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1221,14 +1233,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.31764707}
+  m_Color: {r: 0.07450981, g: 0.2, b: 0.2901961, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5618123237d1d3f49a5a6025287065f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0074214afbc561b48a11e5d5528dd7e2, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1237,7 +1249,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 12
+  m_PixelsPerUnitMultiplier: 4
 --- !u!222 &818570802
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1254,6 +1266,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -1284,7 +1300,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1292,11 +1308,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -1332,11 +1348,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -855
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1376,6 +1392,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -1418,7 +1438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1426,11 +1446,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -1466,11 +1486,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -1345
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1586,14 +1606,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.015686275}
+  m_Color: {r: 0.07450981, g: 0.2, b: 0.2901961, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 5618123237d1d3f49a5a6025287065f7, type: 3}
+  m_Sprite: {fileID: 21300000, guid: dafa8cda17e8ab94ea3924d7409210f9, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1602,7 +1622,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 12
+  m_PixelsPerUnitMultiplier: 1
 --- !u!222 &1146417462
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1619,6 +1639,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -1653,7 +1677,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1661,11 +1685,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -1701,11 +1725,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -1100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -1963,7 +1987,7 @@ PrefabInstance:
     - target: {fileID: 8857023425992388975, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}
       propertyPath: m_PumpSectorPrefab
       value: 
-      objectReference: {fileID: 8038124657692540083, guid: cc0cb7c4adcaed34abba35b41c17cbaf, type: 3}
+      objectReference: {fileID: 6069001486218761964, guid: 8215ae8db2b09664b834b70cde9c53c0, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1993,6 +2017,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -2047,7 +2075,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -2055,11 +2083,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -2095,11 +2123,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -2325
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2291,6 +2319,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -2325,7 +2357,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -2333,11 +2365,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -2373,11 +2405,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -365
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2417,6 +2449,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
+    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: fileName
       value: puzzle_data.bin
@@ -2467,7 +2503,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -2475,11 +2511,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -2515,11 +2551,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -2080
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -2610,15 +2646,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Puzzle List
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
+  m_sharedMaterial: {fileID: -670870047127894775, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294953599
+  m_fontColor: {r: 0.49803922, g: 0.7921569, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3035,14 +3071,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 795375038}
     m_Modifications:
-    - target: {fileID: 3053507938288564, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 5618123237d1d3f49a5a6025287065f7, type: 3}
-    - target: {fileID: 659308442445001678, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
-      propertyPath: PUMPSeparator
-      value: 
-      objectReference: {fileID: 1333731508}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -3057,7 +3085,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.x
@@ -3065,11 +3093,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 800
+      value: 850
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_SizeDelta.y
@@ -3105,11 +3133,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 441.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -120
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4511689106012927007, guid: 2e2e45cf002a62d4592afe4004f0a9f8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

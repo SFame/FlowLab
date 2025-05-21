@@ -125,14 +125,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.3529412}
+  m_Color: {r: 0.07450981, g: 0.2, b: 0.2901961, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d25e2ce15dd1c67438e4b70f404fb197, type: 3}
+  m_Sprite: {fileID: 21300000, guid: dafa8cda17e8ab94ea3924d7409210f9, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 10
+  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &3136975040993349481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,9 +160,9 @@ MonoBehaviour:
   inputTogglePrefab: {fileID: 3090411128191353144, guid: 5db4083304e15224e98dd304bb262dc0, type: 3}
   outputTogglePrefab: {fileID: 8617909490162319402, guid: ea96219087bb6744aa0b2b096c741a96, type: 3}
   resultImageObject: {fileID: 3645505536455238654}
-  passedSprite: {fileID: 21300000, guid: 99fcdda2309329e479ffceb22b90a181, type: 3}
-  failedSprite: {fileID: 21300000, guid: 125d4dba4fbae024d8884fa7c7289bc6, type: 3}
-  passedColor: {r: 1, g: 1, b: 1, a: 1}
+  passedSprite: {fileID: 21300000, guid: efa477735f93f194387b03d1abcedcdb, type: 3}
+  failedSprite: {fileID: 21300000, guid: 89c59f8f15949b640a5779b97d1d6fdf, type: 3}
+  passedColor: {r: 0.54999995, g: 1, b: 0, a: 1}
   failedColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &3645505536455238654
 GameObject:
@@ -229,7 +229,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 99fcdda2309329e479ffceb22b90a181, type: 3}
+  m_Sprite: {fileID: 21300000, guid: efa477735f93f194387b03d1abcedcdb, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -369,7 +369,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 3
-  m_Spacing: 5
+  m_Spacing: 25
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0
@@ -444,15 +444,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: Case #1
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
+  m_sharedMaterial: {fileID: -670870047127894775, guid: 0985072e47a41d749aa0a9a48e69e82f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294953599
+  m_fontColor: {r: 0.49803922, g: 0.7921569, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

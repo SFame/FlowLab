@@ -4,36 +4,43 @@ using System;
 
 public class PlayerPalette : NodePalette
 {
-    private Dictionary<Type, string> _cachedNodeTypes;
+    private Dictionary<string, Dictionary<Type, string>> _cachedNodeTypes;
 
     public override Dictionary<string, Dictionary<Type, string>> NodeTypes
     {
         get
         {
-            //if (_cachedNodeTypes == null)
-            //{
-            //    PlayerNodeInventory.Initialize();
-            //    _cachedNodeTypes = PlayerNodeInventory.GetAvailableNodeTypes();
-            //}
-            //return _cachedNodeTypes;
-            return null;
+            if (_cachedNodeTypes == null)
+            {
+                RefreshPalette();
+            }
+            return _cachedNodeTypes;
         }
         set
         {
-            //_cachedNodeTypes = value;
+            _cachedNodeTypes = value;
         }
     }
 
     private void Awake()
     {
         PlayerNodeInventory.Initialize();
+        PlayerNodeInventory.OnNodeUnlocked += HandleNodeUnlocked;
         SetContent();
+    }
+    private void OnDestroy()
+    {
+        PlayerNodeInventory.OnNodeUnlocked -= HandleNodeUnlocked;
     }
 
     // Method to refresh the palette after unlocking new nodes
     public void RefreshPalette()
     {
-        _cachedNodeTypes = PlayerNodeInventory.GetAvailableNodeTypes();
+        _cachedNodeTypes = PlayerNodeInventory.GetAvailableNodesByCategory();
         SetContent();
+    }
+    private void HandleNodeUnlocked(Type nodeType)
+    {
+        RefreshPalette();
     }
 }
