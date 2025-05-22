@@ -18,16 +18,18 @@
 
 # To add additional references:
 # add_reference('required_assembly')
-# from required_namespace import required_class
+# from required_assembly.required_namespace import required_class
 
 # Example:
 # add_reference('System')
-# add_reference('System.Threading')
-# add_reference('System.Net')
 #
 # import System
 # from System.Net import WebClient
 # from System.Threading import Thread, ThreadStart
+
+# ※Warning:
+# Forms like add_reference('System.Threading') may cause exceptions
+# Therefore, it is recommended to use top-level assembly names as arguments for add_reference()
 
 # Key useful .NET namespaces:
 # - System: Basic classes, data types, utilities
@@ -70,11 +72,6 @@ output_types: list = [bool]
 # When True, allows this Node's methods to be executed asynchronously (but terminate() is always executed synchronously)
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 is_async: bool = False
-
-# Controls whether state_update is automatically called after initialization
-# When True, system will call state_update once after init() with (index=-1, state=False, is_changed=False)
-# ※This value is only reflected in the node when initially set; changes within the function have no effect
-auto_state_update_after_init: bool = False
 
 
 
@@ -133,7 +130,7 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_dis
     Parameters:
         inputs (list): List representing the state of each input port with values matching the types in input_types
         index (int): Index of the input port that just changed.
-        state (input_type): New state value of the modified port. Input is according to the configured input_types
+        state (input_type): New state value of the changed port. Input is according to the configured input_types
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
         is_disconnected (bool): True if triggered by disconnection
     """

@@ -55,8 +55,19 @@ public struct Transition : IEquatable<Transition>
     #endregion
 
     #region Interface
+    /// <summary>
+    /// Transition Type
+    /// </summary>
     public TransitionType Type => _type;
+
+    /// <summary>
+    /// Transition Value
+    /// </summary>
     public TransitionValue Value => _value;
+
+    /// <summary>
+    /// IsNull == true: When the connection is disconnected
+    /// </summary>
     public bool IsNull => _isNull;
 
     public dynamic GetValueAsDynamic()
@@ -76,6 +87,24 @@ public struct Transition : IEquatable<Transition>
         };
 
         return value;
+    }
+
+    public string GetValueString()
+    {
+        if (IsNull)
+        {
+            return "Null";
+        }
+
+        return Type switch
+        {
+            TransitionType.None => "None",
+            TransitionType.Bool => IsNull ? "Null" : Value.BoolValue.ToString(),
+            TransitionType.Int => IsNull ? "Null" : Value.IntValue.ToString(),
+            TransitionType.Float => IsNull ? "Null" : Value.FloatValue.ToString(),
+            TransitionType.String => IsNull ? "Null" : Value.StringValue ?? string.Empty,
+            _ => "Unknown Type"
+        };
     }
     #endregion
 
@@ -143,7 +172,6 @@ public struct Transition : IEquatable<Transition>
 
         return $"Type: {Type}\nValue: {value}";
     }
-
     #endregion
 
     #region Backing fields
@@ -518,6 +546,11 @@ public static class TransitionUtil
         _ => throw new ArgumentException($"Unsupported type: {type?.FullName ?? "null"}")
     };
 
+    public static Transition Null(this TransitionType transitionType)
+    {
+        return Transition.Null(transitionType);
+    }
+
     public static void ThrowIfTypeMismatch(this Transition transition, TransitionType type)
     {
         if (type == TransitionType.None || transition.Type == TransitionType.None)
@@ -553,6 +586,13 @@ public static class TransitionUtil
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => Color.black,
     };
+
+    public static string GetColorHexCodeString(this TransitionType transitionType, bool containSharp = false)
+    {
+        Color color = GetColor(transitionType);
+        string colorString = ColorUtility.ToHtmlStringRGB(color);
+        return containSharp ? "#" + colorString : colorString;
+    }
 }
 
 #region Exceptions

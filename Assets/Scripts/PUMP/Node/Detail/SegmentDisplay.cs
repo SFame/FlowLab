@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class SegmentDisplay : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefabPath => "PUMP/Prefab/Node/SEGMENTDISPLAY";
 
     protected override List<string> InputNames { get; } = new() { "A", "B", "C", "D", "E", "F", "G"};
@@ -33,8 +32,6 @@ public class SegmentDisplay : Node
 
     protected override float EnumeratorMargin => 7f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override Vector2 DefaultNodeSize => new Vector2(40f, 100f);
 
     protected override string NodeDisplayName => string.Empty;
@@ -50,7 +47,7 @@ public class SegmentDisplay : Node
         }
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return Array.Empty<Transition>();
     }

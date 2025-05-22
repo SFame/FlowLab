@@ -115,7 +115,7 @@ public class TPConnection : IStateful, IDisposable
             }
             _typeSet = true;
             _type = value;
-            _state = Transition.Null(_type);
+            _state = _type.Null();
         }
     }
 
@@ -214,7 +214,7 @@ public class TPConnection : IStateful, IDisposable
         SourceState.ClearConnection();
         TargetState.ClearConnection();
 
-        TargetState.State = Transition.Null(Type);
+        TargetState.State = Type.Null();
 
         LineConnector?.Remove();
         _sourceState = null;
@@ -282,7 +282,7 @@ public class TPConnection : IStateful, IDisposable
             SourceState.ClearConnection();
             TargetState.ClearConnection();
 
-            TargetState.State = Transition.Null(Type);
+            TargetState.State = Type.Null();
 
             LineConnector?.Remove();
             _sourceState = null;

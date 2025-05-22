@@ -168,8 +168,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MultiType: 1
-  _nameText: {fileID: 5404864105308337560}
-  _image: {fileID: 2196282153981526028}
+  m_HighlightedColor: {r: 0, g: 1, b: 0, a: 1}
+  m_StateActiveColor: {r: 1, g: 0.19607843, b: 0.12156863, a: 1}
+  m_DefaultColor: {r: 0, g: 0, b: 0, a: 1}
+  m_NameText: {fileID: 5404864105308337560}
+  m_Image: {fileID: 2196282153981526028}
 --- !u!114 &8271908648223308541
 MonoBehaviour:
   m_ObjectHideFlags: 0

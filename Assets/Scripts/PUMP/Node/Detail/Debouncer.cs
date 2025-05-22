@@ -5,16 +5,13 @@ using UnityEngine;
 
 public class Debouncer : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefabPath => "PUMP/Prefab/Node/DEBOUNCER";
-
     protected override List<string> InputNames { get; } = new() { "A" };
     protected override List<string> OutputNames { get; } = new() { "out" };
     protected override float InEnumeratorXPos => -46f;
     protected override float OutEnumeratorXPos => 42f;
     protected override float EnumeratorPadding => 5f;
     protected override float EnumeratorMargin => 5f;
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
     protected override Vector2 DefaultNodeSize => new Vector2(125f, 80f);
     protected override string NodeDisplayName => "Debc";
     protected override float TextSize { get; } = 22f;
@@ -46,7 +43,7 @@ public class Debouncer : Node
     }
 
     // 변경사항 ---
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { (Transition)false };
     }

@@ -305,6 +305,24 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         }
     }
 
+    public IPolymorphicStateful[] GetPolymorphics() => _adapters.Select(adapter => (IPolymorphicStateful)adapter).ToArray();
+
+    public void SetType(int index, TransitionType type)
+    {
+        if (index < 0 || index >= _adapters.Length)
+            throw new ArgumentOutOfRangeException(nameof(index), $"Index must be between 0 and {_adapters.Length - 1}.");
+
+        _adapters[index].SetType(type);
+    }
+
+    public void SetTypeAll(TransitionType type)
+    {
+        foreach (StatefulAdapter adapter in _adapters)
+        {
+            adapter.SetType(type);
+        }
+    }
+
     public void SetNames(List<string> names)
     {
 
@@ -355,7 +373,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     #endregion
 
     #region Stateful Adapter
-    private class StatefulAdapter : ITypeListenStateful, INameable, IDisposable
+    private class StatefulAdapter : ITypeListenStateful, IPolymorphicStateful, INameable, IDisposable
     {
         private readonly ITransitionPoint _tp;
 
@@ -393,6 +411,8 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
             get => _tp.Name;
             set => _tp.Name = value;
         }
+
+        public void SetType(TransitionType type) => _tp.SetType(type);
 
         public void Dispose()
         {

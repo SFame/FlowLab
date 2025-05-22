@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: node2_0
+      name: palette_elem_0
       rect:
         serializedVersion: 2
         x: 0
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      node2_0: -5947965588422203141
+      palette_elem_0: -5947965588422203141
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

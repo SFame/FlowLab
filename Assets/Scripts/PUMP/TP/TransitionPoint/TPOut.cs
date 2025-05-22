@@ -65,7 +65,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
             value.ThrowIfTypeMismatch(Type);
             _state = value;
             PushToConnection();
-            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
+            SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
         }
     }
 
@@ -76,9 +76,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         {
             Connection?.Disconnect();
             _type = value;
-            _state = Transition.Null(_type);
+            _state = _type.Null();
             SetTextColor(_type.GetColor());
-            SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
+            SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
         }
     }
 

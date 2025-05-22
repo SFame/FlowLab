@@ -257,8 +257,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 319335247268974548, guid: a5ee1a37908c75046ba080169ee80f82, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: -5947965588422203141, guid: a364da011365cea4fa63fba55fd01d96, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -584,46 +584,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe402cf7ae01c4fc09aa1b8e879ca8a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveLoadUiController: {fileID: 479035916251999172}
-  closeButton: {fileID: 9090400497966584915}
-  openButton: {fileID: 7364980771490705527}
-  saveLoadButton: {fileID: 3927771073839668677}
-  rectMoveCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 5
-      outSlope: 5
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.10117842
-    - serializedVersion: 3
-      time: 0.24708825
-      value: 0.7340471
-      inSlope: 1.2391567
-      outSlope: 1.2391567
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  rectMoveDuration: 0.5
-  openButtonFadeDuration: 0.2
-  interactAlphaFadeDuration: 0.2
+  m_PollingRate: 0.1
+  m_SlideDuration: 0.5
+  m_DetectionAreaWidth: 250
+  m_DetectionAreaHeightOffset: 100
+  m_SaveLoadUiController: {fileID: 0}
+  m_SaveLoadButton: {fileID: 0}
+  m_nodePalette: {fileID: 0}
+  m_NodePaletteButton: {fileID: 0}
 --- !u!225 &647525828252695953
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1291,6 +1259,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ClosablePanel: {fileID: 0}
 --- !u!225 &1032690064302687543
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1649,6 +1618,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d320f5f5b9d45487fb68f09db6b041a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_PrismView: {fileID: 0}
+  m_CanvasGroup: {fileID: 0}
+  m_FadeDuration: 0.05
 --- !u!1 &3450803383814184607
 GameObject:
   m_ObjectHideFlags: 0
@@ -2299,6 +2271,9 @@ MonoBehaviour:
   dateText: {fileID: 8924503358758639442}
   image: {fileID: 32828488089130854}
   m_Displayer: {fileID: 7231268306433220719}
+  m_HighlightImage: {fileID: 0}
+  m_HighlightColor: {r: 0, g: 0, b: 0, a: 0}
+  m_DefaultColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &7231268306433220719
 MonoBehaviour:
   m_ObjectHideFlags: 0

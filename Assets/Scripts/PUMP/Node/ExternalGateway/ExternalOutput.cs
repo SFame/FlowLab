@@ -32,7 +32,6 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorPadding => 0f;
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
     protected override Vector2 DefaultNodeSize => new Vector2(18f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 2;
@@ -51,7 +50,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         };
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return Enumerable.Repeat(Transition.False, outputCount).ToArray();
     }

@@ -5,11 +5,28 @@ public class SwitchSupport : MonoBehaviour
 {
     [SerializeField] private RectTransform m_ARect;
     [SerializeField] private RectTransform m_BRect;
-    [SerializeField] private TextMeshProUGUI m_AText;
-    [SerializeField] private TextMeshProUGUI m_BText;
 
+    private GameObject _aObject;
+    private GameObject _bObject;
     private bool _transB;
-    private const string TRANS_STRING = ">";
+
+    private GameObject AObject
+    {
+        get
+        {
+            _aObject ??= m_ARect.gameObject;
+            return _aObject;
+        }
+    }
+
+    private GameObject BObject
+    {
+        get
+        {
+            _bObject ??= m_BRect.gameObject;
+            return _bObject;
+        }
+    }
 
     public bool TransB
     {
@@ -17,7 +34,7 @@ public class SwitchSupport : MonoBehaviour
         set
         {
             _transB = value;
-            SetTransText(_transB);
+            SetTransVisible(_transB);
         }
     }
 
@@ -29,16 +46,16 @@ public class SwitchSupport : MonoBehaviour
         m_BRect.localPosition = new Vector3(bPos.x, bY, bPos.z);
     }
 
-    private void SetTransText(bool isB)
+    private void SetTransVisible(bool isB)
     {
         if (isB)
         {
-            m_AText.text = string.Empty;
-            m_BText.text = TRANS_STRING;
+            AObject.SetActive(false);
+            BObject.SetActive(true);
             return;
         }
 
-        m_BText.text = string.Empty;
-        m_AText.text = TRANS_STRING;
+        AObject.SetActive(true);
+        BObject.SetActive(false);
     }
 }

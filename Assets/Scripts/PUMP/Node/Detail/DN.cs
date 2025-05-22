@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 public class DN : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     protected override List<string> InputNames { get; } = new List<string> { "I" };
 
     protected override List<string> OutputNames { get; } = new List<string>();
@@ -24,8 +22,6 @@ public class DN : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override string NodeDisplayName => "DN";
 
     private SafetyCancellationTokenSource _cts = new();
@@ -35,16 +31,15 @@ public class DN : Node
         get
         {
             List<ContextElement> contexts = base.ContextElements;
-            IPolymorphicStateful stateful = Support.InputEnumerator.GetTPs()[0];
-            contexts.Add(new ContextElement("Type: Bool", () => stateful.SetType(TransitionType.Bool)));
-            contexts.Add(new ContextElement("Type: Int", () => stateful.SetType(TransitionType.Int)));
-            contexts.Add(new ContextElement("Type: Float", () => stateful.SetType(TransitionType.Float)));
-            contexts.Add(new ContextElement("Type: String", () => stateful.SetType(TransitionType.String)));
+            contexts.Add(new ContextElement("Type: Bool", () => InputToken.SetType(0, TransitionType.Bool)));
+            contexts.Add(new ContextElement("Type: Int", () => InputToken.SetType(0, TransitionType.Int)));
+            contexts.Add(new ContextElement("Type: Float", () => InputToken.SetType(0, TransitionType.Float)));
+            contexts.Add(new ContextElement("Type: String", () => InputToken.SetType(0, TransitionType.String)));
             return contexts;
         }
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return Array.Empty<Transition>();
     }

@@ -1,10 +1,13 @@
 import clr
 
-def add_reference(reference: str) -> None:
-    clr.AddReference(reference)
+reference_ex_logger = None
 
-add_reference("System")
-add_reference("System.Net")
+def add_reference(reference: str) -> None:
+    try:
+        clr.AddReference(reference)
+    except:
+        if reference_ex_logger is not None:
+            reference_ex_logger(reference)
 
 
 class OutputApplier:

@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class FourbitALU : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     protected override List<string> InputNames { get; } = new List<string> { "Source A", "Source B", "S0", "S1" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Output", "Upper", "Zero" };
@@ -22,16 +20,14 @@ public class FourbitALU : Node
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
     protected override string NodeDisplayName => "4bit ALU";
 
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { (Transition)0, (Transition)false, (Transition)false };
+        return new[] { Transition.Zero, Transition.False, Transition.False };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

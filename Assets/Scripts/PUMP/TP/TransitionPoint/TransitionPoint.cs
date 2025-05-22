@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Utils;
 
@@ -10,8 +11,20 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                                         IGameObject, IPointerExitHandler, IPointerClickHandler
 {
     #region On Inspacetor
-
     [SerializeField] private bool m_MultiType = false;
+
+    [Space(10)]
+
+    [SerializeField] protected Color m_HighlightedColor = Color.green;
+    [SerializeField] protected Color m_StateActiveColor = Color.red;
+    [SerializeField] protected Color m_DefaultColor = Color.black;
+    #endregion
+
+    [Space(10)]
+
+    #region On Inspector Component
+    [SerializeField] private TextMeshProUGUI m_NameText;
+    [SerializeField] private Image m_Image;
     #endregion
 
     #region Privates
@@ -19,9 +32,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private string _name;
     private Node _node;
     private Canvas _rootCanvas;
-    protected readonly Color _highlightedColor = Color.green;
-    protected readonly Color _stateActiveColor = Color.red;
-    protected readonly Color _defaultColor = Color.black;
+
 
     private void OnDestroy()
     {
@@ -29,20 +40,13 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     }
     #endregion
 
-    #region On Inspector Component
-    [SerializeField]
-    private TextMeshProUGUI _nameText;
-    [SerializeField]
-    private Image _image;
-    #endregion
-
     #region Component
-    protected Image Image => _image;
+    protected Image Image => m_Image;
     protected RectTransform ImageRect
     {
         get
         {
-            _imageRect ??= _image?.GetComponent<RectTransform>();
+            _imageRect ??= m_Image?.GetComponent<RectTransform>();
             return _imageRect;
         }
     }
@@ -67,12 +71,12 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
         set
         {
             _name = value;
-            if (_nameText is null)
+            if (m_NameText is null)
             {
-                Debug.LogError($"{GetType().Name}: _nameText is null");
+                Debug.LogError($"{GetType().Name}: m_NameText is null");
                 return;
             }
-            _nameText.text = value;
+            m_NameText.text = value;
         }
     }
     public bool BlockConnect { get; set; }
@@ -145,24 +149,24 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                 {
                     SetType(TransitionType.Bool);
                     Node.ReportChanges();
-                }, text: "Type: Bool"));
+                }, text: $"Type: <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>"));
 
                 context.Add(new ContextElement(clickAction: () =>
                 {
                     SetType(TransitionType.Int);
                     Node.ReportChanges();
-                }, text: "Type: Int"));
+                }, text: $"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>"));
 
                 context.Add(new ContextElement(clickAction: () =>
                 {
                     SetType(TransitionType.Float);
                     Node.ReportChanges();
-                }, text: "Type: Float"));
+                }, text: $"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>"));
                 context.Add(new ContextElement(clickAction: () =>
                 {
                     SetType(TransitionType.String);
                     Node.ReportChanges();
-                }, text: "Type: String"));
+                }, text: $"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>"));
             }
 
             return context;
@@ -176,19 +180,19 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     protected void SetTextColor(Color color)
     {
-        _nameText.color = color;
+        m_NameText.color = color;
     }
     #endregion
 
     #region MouseEvent
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        SetImageColor(_highlightedColor);
+        SetImageColor(m_HighlightedColor);
     }
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        SetImageColor(((IStateful)this).IsActivateState() ? _stateActiveColor : _defaultColor);
+        SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
     }
     
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)

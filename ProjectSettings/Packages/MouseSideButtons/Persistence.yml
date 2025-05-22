@@ -13,25 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Scripts/PUMP/Node/ExternalGateway
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Scripts/PUMP/Node/ExternalGateway
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/PaletteImage
+  - Assets/Resources/PUMP/Sprite
   - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets
+  - Assets/Resources/PUMP/Sprite
   - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
-    I Round 20px
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/CorePro/Flat Pack/Icons/App
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP/Py/CoreTemplate
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP
   - Assets/Resources
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/NodePalette
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
   currentDirIndex: 19

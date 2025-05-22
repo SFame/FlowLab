@@ -225,7 +225,7 @@ namespace Utils
         }
     }
 
-    public static class UtilsDebug
+    public static class EasyDebug
     {
         public static T Log<T>(this T logObject, bool highlightInHierarchy = false, LogType logType = LogType.Log)
         {
@@ -287,6 +287,31 @@ namespace Utils
             }
             Debug.LogFormat(logType, LogOption.None, null, "{0}", sb.ToString());
             return materialized;
+        }
+    }
+
+    public static partial class BuildDebug
+    {
+        #region private field
+        private static DebugGUI _debugGUIController;
+        private static GameObject _debugObject;
+        #endregion
+
+        /// <summary>
+        /// 빌드 시 씬 내에서 오브젝트 디버그 (Debug.Log() 와 같이 사용)
+        /// </summary>
+        /// <param name="debugTarget">Debug object</param>
+        /// <param name="position">Window position</param>
+        public static void Log(object debugTarget, DebugGUI.Position position = DebugGUI.Position.TopLeft)
+        {
+            if (_debugObject == null)
+            {
+                GameObject tempDebugObject = new GameObject("DebugGUI");
+                tempDebugObject.AddComponent<DebugGUI>();
+                _debugObject = tempDebugObject;
+                _debugGUIController = _debugObject.GetComponent<DebugGUI>();
+            }
+            _debugGUIController.AddDebug(debugTarget, new System.Diagnostics.StackTrace(true), position);
         }
     }
 

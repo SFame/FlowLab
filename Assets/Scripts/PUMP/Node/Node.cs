@@ -356,14 +356,15 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     /*
      *  It is called in the following cases, and you should output the applicable Output TP States at that time:
-     *      1. When placed for the first time from the palette
-     *      2. When the number of TPs changes (i.e., when tokens are reinitialized)
+     *      1. When placed from the palette
+     *      2. When deserialized (Called before Type and State are set)
+     *      3. When the number of TPs changes (i.e., when tokens are reinitialized)
      */
-    protected abstract Transition[] SetOutputInitStates(int outputCount);
+    protected abstract Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes);
 
 
     // Important Life Cycle: Triggered upon every Input State update (Overriding required) ------------------
-    protected abstract void StateUpdate(TransitionEventArgs args);  // args가 null이 입력되면 생성시 호출을 의미
+    protected abstract void StateUpdate(TransitionEventArgs args);
 
 
     // Context Element: Right click menu -----------------------------
@@ -391,10 +392,10 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     // Node property -----------------------------
     public virtual string NodePrefabPath { get; } = "PUMP/Prefab/NODE";
+    protected virtual string SpritePath { get; } = "PUMP/Sprite/ingame/default_node";
     protected virtual string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
-    protected abstract string SpritePath { get; }
     protected abstract string NodeDisplayName { get; }
     protected virtual float TextSize { get; } = 30f;
 
@@ -408,8 +409,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     protected virtual float EnumeratorMargin { get; } = 0f;
     protected abstract float EnumeratorPadding { get; }
-    protected abstract Vector2 TPSize { get; }
     protected abstract Vector2 DefaultNodeSize { get; }
+    protected virtual Vector2 TPSize { get; } = new Vector2(35f, 50f);
     protected virtual bool SizeFreeze { get; } = false;
 
     // Utils for Child -----------------------------
@@ -545,7 +546,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         InputToken.SetNames(InputNames);
         OutputToken.SetNames(OutputNames);
 
-        ((INodeLifecycleCallable)this).CallSetInitializeState();
+        ((INodeLifecycleCallable)this).CallSetOutputInitStates();
 
         SubscribeTPInStateUpdateEvent();
 
@@ -685,17 +686,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
     }
 
-    void INodeLifecycleCallable.CallSetInitializeState()
+    void INodeLifecycleCallable.CallSetOutputInitStates()
     {
         CheckSupportEnumeratorNull();
 
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
         int outputCount = outputTPs.Length;
+        TransitionType[] outputTypes = outputTPs.Select(tp => tp.Type).ToArray();
 
         Transition[] outputStates = null;
         try
         {
-            outputStates = SetOutputInitStates(outputCount);
+            outputStates = SetOutputInitStates(outputCount, outputTypes);
         }
         catch (Exception e)
         {
@@ -860,7 +862,7 @@ public interface INodeLifecycleCallable
     void CallOnBeforeAutoConnect();
     void CallOnBeforeReplayPending(bool[] pendings);
     void CallOnCompletePlacementFromPalette();
-    void CallSetInitializeState();
+    void CallSetOutputInitStates();
     void CallOnAfterRefreshToken();
     void CallOnBeforeRemove();
 }

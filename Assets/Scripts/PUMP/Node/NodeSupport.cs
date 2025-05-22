@@ -13,6 +13,10 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
     [SerializeField] private TextMeshProUGUI m_NameTmp;
+
+    [Space(10)]
+
+    [SerializeField] private List<Image> m_ImageGroup;
     [SerializeField] private Color m_DefaultColor = Color.white;
     [SerializeField] private Color m_HighlightedColor = Color.green;
     #endregion
@@ -20,6 +24,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #region Don't use
     private Canvas _rootCanvas;
     private SoundEventHandler _onSounded;
+    private List<Color> _imageGroupDefaultColors;
     private bool _initialized;
     private bool _isDestroyed;
     private bool _isGetTp;
@@ -53,7 +58,20 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         if (m_Image != null && m_NameTmp != null)
             return;
 
-        throw new NullReferenceException($"{name}: Components must be assigned");
+        throw new MissingComponentException($"{name}: Components must be assigned");
+    }
+
+    private void RevertToDefaultColor()
+    {
+        Image.color = DefaultColor;
+
+        if (m_ImageGroup == null || _imageGroupDefaultColors == null || m_ImageGroup.Count != _imageGroupDefaultColors.Count)
+            return;
+
+        for (int i = 0; i < m_ImageGroup.Count; i++)
+        {
+            m_ImageGroup[i].color = _imageGroupDefaultColors[i];
+        }
     }
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
@@ -85,6 +103,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         ((INodeSupportSettable)Node).SetSupport(this);
         name = Node.GetType().Name;
         OnDragging += (pointerEventArgs, _) => _onSelectedMove?.Invoke(this, pointerEventArgs.delta);
+        _imageGroupDefaultColors = m_ImageGroup?.Select(image => image.color).ToList();
         _initialized = true;
     }
     #endregion
@@ -131,10 +150,13 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     public void SetSpriteForResourcesPath(string path)
     {
+        if (string.IsNullOrEmpty(path))
+            return;
+
         Sprite sprite = Resources.Load<Sprite>(path);
         if (sprite is null)
         {
-            Debug.LogError($"{Node.GetType().Name}: Can't find resource <Sprite>");
+            Debug.LogError($"{Node.GetType().Name}: Can't find resource <Sprite> : {path}");
             return;
         }
 
@@ -242,9 +264,28 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public void SetNameFontSize(float size) => NameText.fontSize = size;
     public void SetRectDeltaSize(Vector2 size) => Rect.sizeDelta = size;
 
+    public void SetColor(Color color)
+    {
+        Image.color = color;
+
+        if (m_ImageGroup == null)
+            return;
+
+        foreach (Image imageGroup in m_ImageGroup)
+        {
+            imageGroup.color = color;
+        }
+    }
+
     public void SetHighlight(bool highlighted)
     {
-        Image.color = highlighted ? HighlightedColor : DefaultColor;
+        if (highlighted)
+        {
+            SetColor(HighlightedColor);
+            return;
+        }
+
+        RevertToDefaultColor();
     }
 
     public void DestroyObject()

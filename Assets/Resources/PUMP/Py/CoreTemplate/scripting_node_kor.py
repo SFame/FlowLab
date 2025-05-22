@@ -17,17 +17,19 @@
 # 기본 참조: System, System.Net
 
 # 추가 참조가 필요할 경우:
-# add_reference('필요한_어셈블리')
-# from 필요한_네임스페이스 import 필요한_클래스
+# add_reference('필요_어셈블리')
+# from 필요_어셈블리.필요_네임스페이스 import 필요_클래스
 
 # 예시:
 # add_reference('System')
-# add_reference('System.Threading')
-# add_reference('System.Net')
 #
 # import System
 # from System.Net import WebClient
 # from System.Threading import Thread, ThreadStart
+
+# ※주의사항:
+# add_reference('System.Threading')과 같은 형태는 예외가 발생할 수 있습니다
+# 따라서 add_reference()의 인자로는 최상위 어셈블리 이름을 사용하는 것을 권장합니다
 
 # 주요 유용한 .NET 네임스페이스:
 # - System: 기본 클래스, 데이터 타입, 유틸리티
@@ -70,11 +72,6 @@ output_types: list = [bool]
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 is_async: bool = False
-
-# 초기화 후 state_update가 자동으로 호출되는지 제어
-# True일 경우, 시스템은 init() 후 한 번 state_update를 (index=-1, state=False, is_changed=False) 파마리터와 함께 호출합니다
-# ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-auto_state_update_after_init: bool = False
 
 
 
@@ -133,7 +130,7 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
     매개변수:
         inputs (list): 각 입력 포트의 상태를 나타내는 리스트. input_type 순서와 일치하는 타입의 값이 입력됩니다
         index (int): 방금 변경된 입력 포트의 인덱스.
-        state (input_type): 수정된 포트의 새 상태 값. 설정된 input_types에 따라 입력됩니다
+        state (input_type): 변경된 포트의 새 상태 값. 설정된 input_types에 따라 입력됩니다
         is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
         is_disconnected (bool): 연결 해제에 의한 호출히면 True
     """

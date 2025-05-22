@@ -1,12 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 
 public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     public override string NodePrefabPath => "PUMP/Prefab/Node/MERGER";
 
     protected override float InEnumeratorXPos => -32f;
@@ -16,8 +12,6 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
@@ -45,7 +39,7 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     public int AdditionalArgs { get => InputCount; set => InputCount = value; }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { Transition.Zero };
     }
@@ -59,6 +53,9 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        if (!args.IsStateChange)
+            return;
+
         int result = 0;
 
         for(int i = 0; i < InputToken.Count; i++)

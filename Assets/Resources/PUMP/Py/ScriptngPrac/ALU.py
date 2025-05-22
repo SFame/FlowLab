@@ -9,10 +9,6 @@ output_types: list = [bool, bool]
 # When True, allows this node's methods to be executed asynchronously
 # ※This value is only reflected in the node when initially set; changes after initialization have no effect
 is_async: bool = False
-# Controls whether state_update is automatically called after initialization
-# When True, system will call state_update once after init() with
-# index=-1, state=False, is_changed=False
-auto_state_update_after_init: bool = False
 # Object responsible for applying output signals to the node
 output_applier: OutputApplier = None
 

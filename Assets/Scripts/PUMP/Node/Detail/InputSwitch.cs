@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,10 +5,9 @@ using UnityEngine.EventSystems;
 
 public class InputSwitch : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-    public override string NodePrefabPath => "PUMP/Prefab/Node/INPUTSWITCH";
-
     private TransitionType _currentType = TransitionType.Int;
+    
+    public override string NodePrefabPath => "PUMP/Prefab/Node/INPUTSWITCH";
 
     protected override List<string> InputNames { get; } = new List<string> { };
 
@@ -34,8 +32,6 @@ public class InputSwitch : Node
     protected override float EnumeratorMargin => 5f;
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override string NodeDisplayName => "Click";
 
@@ -69,8 +65,7 @@ public class InputSwitch : Node
     private void SetSwitchType(TransitionType type)
     {
         _currentType = type;
-        IPolymorphicStateful stateful = Support.OutputEnumerator.GetTPs()[0];
-        stateful.SetType(type);
+        InputToken.SetType(0, type);
 
         switch (type)
         {
@@ -93,7 +88,7 @@ public class InputSwitch : Node
     }
 
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         switch (_currentType)
         {
@@ -172,5 +167,4 @@ public class InputSwitch : Node
         Support.DefaultColor = isActive ? new Color(0.7f, 0.7f, 0.7f, 1f) : Color.white;
         Support.Image.color = Support.DefaultColor;
     }
-
 }

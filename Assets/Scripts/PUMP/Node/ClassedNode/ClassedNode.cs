@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
@@ -58,8 +59,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/CLASSED";
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     protected override string NodeDisplayName => "Classed";
 
     protected override float TextSize => 24;
@@ -67,8 +66,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     protected override float InEnumeratorXPos => -72f;
 
     protected override float OutEnumeratorXPos => 72f;
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(180f, 80f);
 
@@ -107,9 +104,9 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return Enumerable.Repeat((Transition)false, outputCount).ToArray();
+        return Enumerable.Repeat(TransitionType.Bool.Null(), outputCount).ToArray();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -187,14 +184,14 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public List<Action<TransitionType>> GetInputTypeApplier()
     {
-        ITransitionPoint[] inputTps = Support.InputEnumerator.GetTPs();
-        return inputTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
+        IPolymorphicStateful[] inputPolymorphic = InputToken.GetPolymorphics();
+        return inputPolymorphic.Select(ip => new Action<TransitionType>(ip.SetType)).ToList();
     }
 
     public List<Action<TransitionType>> GetOutputTypeApplier()
     {
-        ITransitionPoint[] outTps = Support.OutputEnumerator.GetTPs();
-        return outTps.Select(tp => new Action<TransitionType>(tp.SetType)).ToList();
+        IPolymorphicStateful[] outputPolymorphic = OutputToken.GetPolymorphics();
+        return outputPolymorphic.Select(op => new Action<TransitionType>(op.SetType)).ToList();
     }
 
     public Node GetNode() => this;

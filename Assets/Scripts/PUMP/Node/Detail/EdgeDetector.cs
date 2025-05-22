@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -7,8 +8,6 @@ using Utils;
 
 public class EdgeDetector : Node, INodeAdditionalArgs<float>
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     public override string NodePrefabPath => "PUMP/Prefab/Node/EDGE";
 
     protected override float TextSize { get; } = 22f;
@@ -28,8 +27,6 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(160f, 80f);
 
@@ -67,9 +64,9 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
         }
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { Transition.False, Transition.False };
+        return Enumerable.Repeat(Transition.False, outputCount).ToArray();;
     }
 
     protected override void OnBeforeRemove()

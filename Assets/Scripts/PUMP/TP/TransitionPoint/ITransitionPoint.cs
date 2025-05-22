@@ -35,7 +35,7 @@ public interface ITPHideable
 
 public interface IStateful
 {
-    // 우선 설정, State 백킹필드에 동일 타입 Null값 삽입
+    // State보다 우선 설정, 설정 시 State의 백킹필드에 동일 타입 Null값 삽입
     TransitionType Type { get; }
     Transition State { get; set; }
 

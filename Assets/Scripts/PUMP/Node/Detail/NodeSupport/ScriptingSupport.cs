@@ -73,21 +73,21 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
             }
 
             await UniTask.Delay(TimeSpan.FromSeconds(m_LoggingDuration), cancellationToken: cancellationToken);
+            RemoveLog();
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         catch (Exception e)
         {
             Debug.LogException(e);
         }
-        finally
+    }
+
+    private void RemoveLog()
+    {
+        if (m_LogText != null)
         {
-            if (m_LogText != null)
-            {
-                m_LogText.text = string.Empty;
-                m_LogText.gameObject.SetActive(false);
-            }
+            m_LogText.text = string.Empty;
+            m_LogText.gameObject.SetActive(false);
         }
     }
 
@@ -216,9 +216,9 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 
     public void Log(string message)
     {
-        _showLogCts?.Cancel();
-        _showLogCts?.Dispose();
+        _showLogCts?.CancelAndDispose();
         _showLogCts = new SafetyCancellationTokenSource();
+        RemoveLog();
 
         ShowLogAsync(message, _showLogCts.Token).Forget();
     }

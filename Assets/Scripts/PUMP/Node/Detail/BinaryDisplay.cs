@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefabPath => "PUMP/Prefab/Node/BINARYDISPLAY";
 
     protected override int DefaultInputCount => 3;
@@ -21,8 +20,6 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 7f;
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(40f, 160f);
 
@@ -43,7 +40,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
         }
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return Array.Empty<Transition>();
     }
@@ -65,7 +62,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 
         if (IsDeserialized)
         {
-            StateUpdate(null);
+            BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(sf => (bool)sf.State).ToArray());
         }
     }
 

@@ -86,7 +86,6 @@ printer = Printer()";
         { "input_types", null },
         { "output_types", null },
         { "is_async", null },
-        { "auto_state_update_after_init", null },
         { "output_applier", null },
         { "printer", null },
         { "init", null },
@@ -130,6 +129,7 @@ printer = Printer()";
         {
             Scope = Engine.CreateScope();
             CallbackCompiled.Execute(Scope);
+            Scope.SetVariable("reference_ex_logger", new Action<string>(LoggingMissingReference));
             _logger = logger;
             _exLogger = exLogger;
         }
@@ -208,6 +208,12 @@ printer = Printer()";
             string errorCode = HighlightErrorCode(se.GetCodeLine(), startCol, endCol);
             _logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
             _exLogger?.Invoke(se);
+            return false;
+        }
+        catch (MissingReferenceException re)
+        {
+            _logger?.Invoke($"레퍼런스를 찾을 수 없습니다:\n{re.Message}");
+            _exLogger?.Invoke(re);
             return false;
         }
         catch (Exception e)
@@ -393,8 +399,7 @@ printer = Printer()";
                 EssentialMembers["output_list"],
                 typeTuple.Item1,
                 typeTuple.Item2,
-                EssentialMembers["is_async"],
-                EssentialMembers["auto_state_update_after_init"]
+                EssentialMembers["is_async"]
             );
             return true;
         }
@@ -663,6 +668,11 @@ printer = Printer()";
         }
     }
 
+    private void LoggingMissingReference(string assembly)
+    {
+        throw new MissingReferenceException($"Except: add_reference({assembly})");
+    }
+
     private bool CheckMemberType(string memberName, dynamic value, out string currentType, out string correctType)
     {
         try
@@ -683,7 +693,6 @@ printer = Printer()";
                     return value is IList<object>;
 
                 case "is_async":
-                case "auto_state_update_after_init":
                     correctType = "bool";
                     currentType = value?.GetType().Name ?? "null";
                     return value is bool;
@@ -743,7 +752,7 @@ printer = Printer()";
 
 public struct ScriptFieldInfo
 {
-    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, IList<Type> inputTypes, IList<Type> outputTypes, bool isAsync, bool autoStateUpdateAfterInit)
+    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, IList<Type> inputTypes, IList<Type> outputTypes, bool isAsync)
     {
         Name = name;
         InputList = inputList;
@@ -789,7 +798,6 @@ public struct ScriptFieldInfo
             return transitionType;
         }).ToList();
         IsAsync = isAsync;
-        AutoStateUpdateAfterInit = autoStateUpdateAfterInit;
     }
 
     public string Name;
@@ -798,5 +806,4 @@ public struct ScriptFieldInfo
     public IList<TransitionType> InputTypes;
     public IList<TransitionType> OutputTypes;
     public bool IsAsync;
-    public bool AutoStateUpdateAfterInit;
 }

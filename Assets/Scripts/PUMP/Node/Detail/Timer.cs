@@ -9,8 +9,6 @@ using static Timer;
 
 public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     public override string NodePrefabPath => "PUMP/Prefab/Node/TIMER";
 
     protected override List<string> InputNames { get; } = new List<string> { "S", "R" };
@@ -29,15 +27,13 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override Vector2 DefaultNodeSize => new Vector2(135f, 100f);
 
     protected override string NodeDisplayName => "Timer";
 
     protected override float TextSize => 25f;
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { Transition.False };
     }

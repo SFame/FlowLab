@@ -1,41 +1,104 @@
-# Defines the node's name
+# Node name configuration - Defines the name displayed in the visual editor
+# Use a clear name that represents the logic gate's function
 name: str = "AND Gate"
-# Specifies number of input ports
+
+# Input port definition - AND gate requires 2 inputs, so set 2 ports
+# Named 'A', 'B' following standard logic gate notation
 input_list: list = ['A', 'B']
-# Specifies number of output ports
+
+# Output port definition - AND gate produces only 1 output, so set 1 port
+# Named 'Y' following logic gate notation (result output)
 output_list: list = ['Y']
+
+# Input type configuration - All inputs are bool type (True/False) for logic gate
+# Must match the length of input_list (type specified for each port)
 input_types: list = [bool, bool]
+
+# Output type configuration - Logic operation result is also bool type
+# Must match the length of output_list
 output_types: list = [bool]
-# When True, allows this node's methods to be executed asynchronously
-# ※This value is only reflected in the node when initially set; changes after initialization have no effect
+
+# Asynchronous execution setting - Set to False because:
+# AND gate is a simple logic operation that computes instantly, no async needed
+# Synchronous execution ensures fast response
 is_async: bool = False
-# Controls whether state_update is automatically called after initialization
-# When True, system will call state_update once after init() with
-# index=-1, state=False, is_changed=False
-auto_state_update_after_init: bool = False
-# Object responsible for applying output signals to the node
+
+# System-managed output controller object
+# Used to send calculated results to output ports
+# Never initialize this directly - system sets it automatically
 output_applier: OutputApplier = None
-# Object responsible for displaying values above the node
-# Available API: def print(self, value: str) -> None:
-# Used to show string information on the Node.
+
+# System-managed display object
+# Not used in this example but useful for debugging
+# Never initialize this directly - system sets it automatically
 printer: Printer = None
 
 def init(inputs: list) -> None:
-    # 초기 상태에서 출력 업데이트 수행
+    """
+    Node initialization function - executed once when node is created
+    
+    Why set initial output here?
+    - To show correct output based on current input state right after node creation
+    - Allows users to see current state immediately after adding the node
+    
+    inputs: Current state of input ports [A, B]
+    """
+    # Why use all() function:
+    # - Simple implementation of AND gate logic (True only when all inputs are True)
+    # - Works consistently even if number of inputs changes
+    # - Optimized built-in function
     result = all(inputs)
+    
+    # Why create output as a list:
+    # - output_applier.apply() requires a list
+    # - Consistent interface for cases with multiple output ports
     outputs = [result]
+    
+    # Apply calculated result to actual output port
+    # This is how signals are transmitted to other connected nodes in visual editor
     output_applier.apply(outputs)
 
 def terminate() -> None:
+    """
+    Node cleanup function - executed when node is deleted
+    
+    AND gate doesn't store state or use resources, so no special cleanup needed
+    - Function must still be defined even if empty
+    """
     return
 
 def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
-    # AND 게이트 로직 구현
-    # 두 입력이 모두 True인 경우에만 출력도 True
+    """
+    Input change detection and processing function - where core logic is implemented
+    
+    Why check is_changed?
+    - Ignore signals that haven't actually changed to prevent unnecessary calculations
+    - Performance optimization and infinite loop prevention
+    
+    inputs: Current state of all input ports [A, B]
+    index: Index of port where change occurred (0: A, 1: B)
+    state: New value of the changed port
+    is_changed: Whether the value is actually different from previous
+    is_disconnected: Whether the change was caused by disconnection
+    """
+    # Don't process if value hasn't actually changed
+    # This is important optimization - prevents processing repeated identical signals
+    if not is_changed:
+        return
+    
+    # Core AND gate logic implementation
+    # Why use all() function:
+    # - Python built-in function that's optimized for performance
+    # - Code is clear and easy to understand
+    # - Works the same way regardless of number of inputs
     result = all(inputs)
     
-    # 출력 포트 수에 맞게 출력값 리스트 생성
+    # Why structure output as a list:
+    # - Required by output_applier.apply() interface
+    # - Maintains consistent code structure with multi-output nodes
+    # - Must match order and length of output_types list
     outputs = [result]
     
-    # 출력 적용
+    # Apply final result to output port
+    # This call triggers state_update in other connected nodes
     output_applier.apply(outputs)

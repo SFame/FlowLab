@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Utils;
-using VFolders.Libs;
 using static ScriptingNode;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
@@ -77,8 +76,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         }
     }
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     public override string NodePrefabPath => "PUMP/Prefab/Node/SCRIPTING";
 
     protected override float InEnumeratorXPos => -88f;
@@ -88,8 +85,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override float EnumeratorMargin => 5f;
 
     protected override float EnumeratorPadding => 10f;
-
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
 
     protected override Vector2 DefaultNodeSize => new Vector2(210f, 100f);
 
@@ -157,7 +152,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         InvokeInit();
     }
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         Func<int, TransitionType> outputTypeGetter = OutputTypeGetter ?? (_ => TransitionType.Bool);
         List<Transition> stateList = new();
@@ -261,10 +256,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         try
         {
             Communicator.InvokeInit(InputToken.Select(tp => tp.State).ToList());
-            if (Communicator.ScriptFieldInfo.AutoStateUpdateAfterInit)
-            {
-                StateUpdate(null);
-            }
         }
         catch (Exception e)
         {

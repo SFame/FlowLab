@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Switch : Node, INodeAdditionalArgs<bool>
 {
+    private List<ContextElement> _contexts;
     private SwitchSupport _switchSupport;
     private bool _transB = false;
 
@@ -31,7 +32,6 @@ public class Switch : Node, INodeAdditionalArgs<bool>
         }
     }
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
     public override string NodePrefabPath => "PUMP/Prefab/Node/SWITCH";
 
     protected override List<string> InputNames { get; } = new List<string> { "A", "Ctrl", "B" };
@@ -42,25 +42,40 @@ public class Switch : Node, INodeAdditionalArgs<bool>
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -52.5f;
+    protected override float InEnumeratorXPos => -32f;
 
-    protected override float OutEnumeratorXPos => 52.5f;
+    protected override float OutEnumeratorXPos => 32f;
 
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(140f, 50f);
-
-    protected override string NodeDisplayName => "Switch";
+    protected override string NodeDisplayName => "Sw";
 
     protected override float TextSize => 22f;
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override List<ContextElement> ContextElements
     {
-        return new[] { Transition.False };
+        get
+        {
+            if (_contexts == null)
+            {
+                _contexts = base.ContextElements;
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => SetTypeAll(TransitionType.Bool)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetTypeAll(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetTypeAll(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetTypeAll(TransitionType.String)));
+            }
+
+            return _contexts;
+        }
+    }
+
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return outputTypes.Select(type => type.Null()).ToArray();
     }
 
     protected override void OnAfterInit()
@@ -74,18 +89,17 @@ public class Switch : Node, INodeAdditionalArgs<bool>
         if (args is { Index: 1, IsStateChange: true })
         {
             TransB = args.State;
+        }
+
+        if (TransB)
+        {
+            OutputToken[0].State = InputToken[2].State;
             return;
         }
 
-        if (TransB && args.Index == 2)
+        if (!TransB)
         {
-            OutputToken[0].State = args.State;
-            return;
-        }
-
-        if (!TransB && args.Index == 0)
-        {
-            OutputToken[0].State = args.State;
+            OutputToken[0].State = InputToken[0].State;
         }
     }
 
@@ -99,6 +113,14 @@ public class Switch : Node, INodeAdditionalArgs<bool>
             return;
 
         SwitchSupport.SetYPositions(inputTpYPos[0], inputTpYPos[2]);
+    }
+
+    private void SetTypeAll(TransitionType type)
+    {
+        InputToken.SetType(0, type);
+        InputToken.SetType(2, type);
+        OutputToken.SetTypeAll(type);
+        ReportChanges();
     }
 
     public bool AdditionalArgs

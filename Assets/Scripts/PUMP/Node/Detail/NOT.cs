@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class NOT : Node
 {
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     protected override List<string> InputNames { get; } = new List<string> { "A" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
@@ -21,19 +19,20 @@ public class NOT : Node
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
     protected override string NodeDisplayName => "NOT";
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { Transition.True };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        if (!args.IsStateChange)
+            return;
+
         OutputToken[0].State = !InputToken[0].State;
     }
 }

@@ -6,8 +6,6 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/null_node";
-
     protected override List<string> InputNames { get; } = new List<string>();
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
@@ -22,15 +20,13 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
     
     protected override float EnumeratorPadding => 10f;
 
-    protected override Vector2 TPSize => new Vector2(35f, 50f);
-
     protected override Vector2 DefaultNodeSize => new Vector2(140f, 80f);
 
     protected override string NodeDisplayName => "Click";
 
     protected override float TextSize => 25f;
 
-    protected override Transition[] SetOutputInitStates(int outputCount)
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { Transition.False };
     }

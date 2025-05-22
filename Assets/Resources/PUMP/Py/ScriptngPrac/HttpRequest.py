@@ -1,5 +1,4 @@
-add_reference("System.Threading")
-add_reference("System.Net")
+add_reference("System")
 
 from System.Net import WebClient
 from System.Threading import Thread, ThreadStart
@@ -22,12 +21,6 @@ output_types: list = [bool, bool]
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 is_async: bool = True
-
-# 초기화 후 state_update가 자동으로 호출되는지 제어
-# True일 경우, 시스템은 init() 후 한 번 state_update를 호출합니다
-# (index=-1, state=False, is_changed=False) 파라미터와 함께 호출됩니다
-# ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-auto_state_update_after_init: bool = False
 
 # ====================== WARNING ======================
 # 다음 변수들을 수정하지 마세요
