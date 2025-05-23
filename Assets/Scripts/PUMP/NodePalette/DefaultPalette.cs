@@ -43,6 +43,7 @@ public class DefaultPalette : NodePalette
             "Math", new Dictionary<Type, string>
             {
                 { typeof(Comparator), "Comparator" },
+                { typeof(Equal), "Equal" },
                 { typeof(FourbitALU), "FourbitALU" },
             }
         },
