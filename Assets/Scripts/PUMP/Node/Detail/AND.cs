@@ -25,13 +25,19 @@ public class AND : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { (Transition)false };
+        return new[] { TransitionType.Bool.Null() };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (!args.IsStateChange)
             return;
+
+        if (InputToken.IsAllNull)
+        {
+            OutputToken[0].State = TransitionType.Bool.Null();
+            return;
+        }
 
         OutputToken[0].State = InputToken[0].State && InputToken[1].State;
     }

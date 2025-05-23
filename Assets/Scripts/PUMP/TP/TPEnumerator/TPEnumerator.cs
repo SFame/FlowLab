@@ -291,6 +291,39 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public int Count => _adapters.Length;
 
+    public bool IsAllNull
+    {
+        get
+        {
+
+            for (int i = 0; i < _adapters.Length; i++)
+            {
+                if (!_adapters[i].State.IsNull)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public bool HasAnyNull
+    {
+        get
+        {
+            for (int i = 0; i < _adapters.Length; i++)
+            {
+                if (_adapters[i].State.IsNull)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     public void ApplyStatesAll(ICollection<Transition> states)
     {
         if (states.Count != Count)

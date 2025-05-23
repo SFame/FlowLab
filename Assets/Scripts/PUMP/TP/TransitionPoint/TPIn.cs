@@ -66,6 +66,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             Transition beforeState = _state;
             bool isStateChange = !beforeState.Equals(value);
             _state = value;
+            //SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
             SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
             if (!OnDeserializing)
             {

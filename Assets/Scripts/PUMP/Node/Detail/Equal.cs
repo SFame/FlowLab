@@ -25,6 +25,8 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
     
     protected override string NodeDisplayName => "Eq";
+
+    protected override float TextSize => 24f;
     
     protected override float InEnumeratorXPos => -32f;
 
@@ -74,7 +76,7 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
         if (!args.IsStateChange)
             return;
 
-        Compare();
+        OutputToken[0].State = Compare();
     }
 
     protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
@@ -114,7 +116,7 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
 
     public EqualSerializeInfo AdditionalArgs
     {
-        get => new EqualSerializeInfo(InputCount, _currentType);
+        get => new(InputCount, _currentType);
         set
         {
             InputCount = value._inputCount;
