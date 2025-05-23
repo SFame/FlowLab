@@ -310,7 +310,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void SetType(int index, TransitionType type)
     {
         if (index < 0 || index >= _adapters.Length)
-            throw new ArgumentOutOfRangeException(nameof(index), $"Index must be between 0 and {_adapters.Length - 1}.");
+            throw new ArgumentOutOfRangeException(nameof(index), $"Index must be between 0 and {_adapters.Length - 1} / current: {index}.");
 
         _adapters[index].SetType(type);
     }

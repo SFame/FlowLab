@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryHistory:
   - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP/Py/ScriptngPrac
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Scripts/PUMP/Node/ExternalGateway
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Scripts/PUMP/Node/ExternalGateway
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP/Sprite/PaletteImage
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP/Py/CoreTemplate
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP/Py/ScriptngPrac
-  - Assets/Resources/PUMP/Py
   - Assets/Resources/PUMP
   - Assets/Resources
+  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Resources/PUMP/Py
+  - Assets/Resources/PUMP/Py/CoreTemplate
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
   currentDirIndex: 19
