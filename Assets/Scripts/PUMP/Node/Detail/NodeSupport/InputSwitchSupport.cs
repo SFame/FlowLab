@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class InputSwitchSupport : MonoBehaviour
 {
     [SerializeField] private TMP_InputField m_InputField;
+    [SerializeField] private GameObject m_InputEffect;
 
     public event Action<object> OnValueChanged;
 
@@ -26,7 +27,7 @@ public class InputSwitchSupport : MonoBehaviour
     {
         m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
         m_InputField.contentType = TMP_InputField.ContentType.Standard;
-        m_InputField.text = "10";
+        m_InputField.text = "0";
     }
 
     private void InvokeValueChangeEvent(string value)
@@ -42,6 +43,12 @@ public class InputSwitchSupport : MonoBehaviour
             return;
         }
         OnValueChanged?.Invoke(value);
+    }
+
+    public void SetInputEffectActive(bool active)
+    {
+        if (m_InputEffect != null)
+            m_InputEffect.SetActive(active);
     }
 
 
