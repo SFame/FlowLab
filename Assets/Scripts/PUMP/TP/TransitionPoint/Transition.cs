@@ -17,10 +17,25 @@ public enum TransitionType
 public struct Transition : IEquatable<Transition>
 {
     #region Static Interface
-    public static Transition Null(TransitionType type)
+    public static Transition Null(TransitionType transitionType)
     {
-        return new Transition(type, new TransitionValue(), true);
+        if (transitionType == TransitionType.None)
+        {
+            throw new TransitionNoneTypeException();
+        }
+
+        return new Transition(transitionType, new TransitionValue(), true);
     }
+
+    public static Transition Default(TransitionType transitionType) => transitionType switch
+    {
+        TransitionType.None => throw new TransitionNoneTypeException(),
+        TransitionType.Bool => Transition.False,
+        TransitionType.Int => Transition.Zero,
+        TransitionType.Float => Transition.FloatZero,
+        TransitionType.String => Transition.Empty,
+        _ => throw new ArgumentOutOfRangeException(nameof(transitionType), $"Unsupported transition type: {transitionType}")
+    };
 
     // ---- Bool constants ----
     public static Transition True => true;
@@ -36,6 +51,8 @@ public struct Transition : IEquatable<Transition>
     public static Transition Hundred => 100;
 
     // ---- Float constants ----
+    public static Transition FloatZero => 0.0f;
+    public static Transition FloatOne => 1.0f;
     public static Transition Pi => (float)Math.PI;
     public static Transition E => (float)Math.E;
     public static Transition NaN => float.NaN;
@@ -549,6 +566,11 @@ public static class TransitionUtil
     public static Transition Null(this TransitionType transitionType)
     {
         return Transition.Null(transitionType);
+    }
+
+    public static Transition Default(this TransitionType transitionType)
+    {
+        return Transition.Default(transitionType);
     }
 
     public static void ThrowIfTypeMismatch(this Transition transition, TransitionType type)

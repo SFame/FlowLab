@@ -121,7 +121,7 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, is_changed: bool, is_signal_lost: bool) -> None:
     """
     입력 포트에서 신호가 감지될 때마다 호출됩니다.
     모든 매개변수를 사용할 필요는 없습니다. 대부분의 경우 inputs만 사용하면 됩니다
@@ -132,6 +132,6 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
         index (int): 방금 변경된 입력 포트의 인덱스.
         state (input_type): 변경된 포트의 새 상태 값. 설정된 input_types에 따라 입력됩니다
         is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
-        is_disconnected (bool): 연결 해제에 의한 호출히면 True
+        is_signal_lost (bool): 연결 해제 또는 연결된 네트워크에서의 신호 소실에 의한 호출인지 나타냅니다
     """
     pass

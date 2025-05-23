@@ -31,7 +31,8 @@ public class DefaultPalette : NodePalette
             "Signal", new Dictionary<Type, string>
             {
                 { typeof(Splitter), "Split" },
-                { typeof(Merger), "Merger" },
+                { typeof(BinaryDecoder), "BinaryDecoder" },
+                { typeof(BinaryEncoder), "BinaryEncoder" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(Debouncer), "Debouncer" },

@@ -1,9 +1,9 @@
 using TMPro;
 using UnityEngine;
 
-public class Merger : DynamicIONode, INodeAdditionalArgs<int>
+public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 {
-    public override string NodePrefabPath => "PUMP/Prefab/Node/MERGER";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override float InEnumeratorXPos => -32f;
 
@@ -15,7 +15,7 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "M";
+    protected override string NodeDisplayName => "D";
 
     protected override int DefaultInputCount => 4;
 

@@ -284,7 +284,7 @@ printer = Printer()";
     /// <param name="inputTokenState"></param>
     public void InvokeStateUpdate(TransitionEventArgs args, List<Transition> inputTokenState)
     {
-        bool argsIsNull = args == null || args.IsNull;
+        bool isSignalLost = args == null || args.IsNull;
         int Index = args?.Index ?? -1;
         dynamic State = args?.State.GetValueAsDynamic() ?? false;
         bool IsStateChange = args is { IsStateChange: true };
@@ -296,7 +296,7 @@ printer = Printer()";
                 {
                     try
                     {
-                        _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, argsIsNull);
+                        _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, isSignalLost);
                     }
                     catch (Exception e)
                     {
@@ -314,7 +314,7 @@ printer = Printer()";
 
         try
         {
-            _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, argsIsNull);
+            _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, isSignalLost);
         }
         catch (Exception e)
         {

@@ -121,7 +121,7 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_signal_lost: bool) -> None:
     """
     The nerve center: triggered whenever any signal is detected on input ports
     Not all parameters need to be used. In most cases, only inputs is necessary
@@ -132,6 +132,6 @@ def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_dis
         index (int): Index of the input port that just changed.
         state (input_type): New state value of the changed port. Input is according to the configured input_types
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
-        is_disconnected (bool): True if triggered by disconnection
+        is_signal_lost (bool): Indicates if triggered by disconnection or signal loss in the connected network
     """
     pass

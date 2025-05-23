@@ -29,7 +29,7 @@ public class ClassedPalette : NodePalette
             "Signal", new Dictionary<Type, string>
             {
                 { typeof(Splitter), "Split" },
-                { typeof(Merger), "Merger" },
+                { typeof(BinaryDecoder), "Merger" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(Debouncer), "Debouncer" },
