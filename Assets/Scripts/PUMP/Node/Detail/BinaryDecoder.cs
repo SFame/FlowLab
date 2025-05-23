@@ -41,7 +41,7 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { Transition.Zero };
+        return new[] { TransitionType.Int.Null() };
     }
 
     protected override string DefineInputName(int tpNumber) => $"2<sup><size=18>{tpNumber}</size></sup>";
@@ -55,6 +55,12 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
     {
         if (!args.IsStateChange)
             return;
+
+        if (InputToken.IsAllNull)
+        {
+            OutputToken[0].State = TransitionType.Int.Null();
+            return;
+        }
 
         int result = 0;
 
