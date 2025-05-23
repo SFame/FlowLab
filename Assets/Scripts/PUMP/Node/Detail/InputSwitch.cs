@@ -31,7 +31,7 @@ public class InputSwitch : Node
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
 
     protected override string NodeDisplayName => "Click";
 
@@ -55,9 +55,9 @@ public class InputSwitch : Node
         get
         {
             List<ContextElement> contexts = base.ContextElements;
-            contexts.Add(new ContextElement("Type: Int", () => SetSwitchType(TransitionType.Int)));
-            contexts.Add(new ContextElement("Type: Float", () => SetSwitchType(TransitionType.Float)));
-            contexts.Add(new ContextElement("Type: String", () => SetSwitchType(TransitionType.String)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetSwitchType(TransitionType.Int)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetSwitchType(TransitionType.Float)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetSwitchType(TransitionType.String)));
             return contexts;
         }
     }
@@ -65,24 +65,24 @@ public class InputSwitch : Node
     private void SetSwitchType(TransitionType type)
     {
         _currentType = type;
-        InputToken.SetType(0, type);
+        OutputToken.SetType(0, type);
 
         switch (type)
         {
             case TransitionType.Int:
-                _value = 99;
+                _value = 0;
                 //test
-                InputSwitchSupport.SetInputText("99");
+                InputSwitchSupport.SetInputText("0");
                 break;
             case TransitionType.Float:
-                _value = 9.9f;
+                _value = 0f;
                 //test
-                InputSwitchSupport.SetInputText("9.9");
+                InputSwitchSupport.SetInputText("0");
                 break;
             case TransitionType.String:
-                _value = "Test1";
+                _value = "-";
                 //test
-                InputSwitchSupport.SetInputText("Test1");
+                InputSwitchSupport.SetInputText("-");
                 break;
         }
     }
@@ -97,7 +97,7 @@ public class InputSwitch : Node
             case TransitionType.Float:
                 return new Transition[] { (Transition)0f };
             case TransitionType.String:
-                return new Transition[] { (Transition)"" };
+                return new Transition[] { (Transition)"-" };
             default:
                 return Array.Empty<Transition>();
         }
@@ -133,11 +133,10 @@ public class InputSwitch : Node
     protected override void OnNodeUiClick(PointerEventData eventData)
     {
         base.OnNodeUiClick(eventData);
-
         if (eventData.button == PointerEventData.InputButton.Left)
         {
+            //if(pressState == PointerEventData.FramePressState.Pressed) { InputSwitchSupport.SetInputEffectActive(true); Debug.Log("pressed"); }
             Support.SelectedRemoveRequestInvoke();
-            State = !State;
             SetInputValue(InputSwitchSupport.GetInputText());
 
             OutputToken[0].State = _currentType switch
@@ -149,22 +148,9 @@ public class InputSwitch : Node
             };
             ReportChanges();
         }
+        //if(pressState == PointerEventData.FramePressState.Released) { InputSwitchSupport.SetInputEffectActive(false); Debug.Log("released"); }
     }
 
 
-    private bool _state = false;
-    public bool State
-    {
-        get => _state;
-        set
-        {
-            _state = value;
-            SetImageColor(value);
-        }
-    }
-    private void SetImageColor(bool isActive)
-    {
-        Support.DefaultColor = isActive ? new Color(0.7f, 0.7f, 0.7f, 1f) : Color.white;
-        Support.Image.color = Support.DefaultColor;
-    }
+
 }
