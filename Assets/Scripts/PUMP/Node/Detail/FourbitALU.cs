@@ -27,13 +27,22 @@ public class FourbitALU : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { Transition.Zero, Transition.False, Transition.False };
+        return new[] { TransitionType.Int.Null(), TransitionType.Bool.Null(), TransitionType.Bool.Null() };
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
         // input port : x o o o
         // 이때 inputtoken[0].isnull?
+        if (!args.IsStateChange)
+            return;
+        if (InputToken.IsAllNull)
+        {
+            OutputToken[0].State = TransitionType.Int.Null();
+            OutputToken[1].State = TransitionType.Bool.Null();
+            OutputToken[2].State = TransitionType.Bool.Null();
+            return;
+        }
 
         if (InputToken[0].State.IsNull || InputToken[1].State.IsNull)
         {
