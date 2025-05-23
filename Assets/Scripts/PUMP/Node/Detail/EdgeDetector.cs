@@ -58,7 +58,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 
     protected override void OnBeforeReplayPending(bool[] pendings)
     {
-        foreach (ITransitionPoint tp in OutputToken)
+        foreach (ITypeListenStateful tp in OutputToken)
         {
             tp.State = false;
         }
@@ -78,7 +78,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args == null || !args.IsStateChange)
+        if (args.IsNull || !args.IsStateChange)
             return;
 
         if (args.State && OutputToken[0] is IStateful r)

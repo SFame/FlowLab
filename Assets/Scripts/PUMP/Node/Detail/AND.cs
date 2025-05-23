@@ -22,7 +22,6 @@ public class AND : Node
 
     protected override string NodeDisplayName => "AND";
 
-
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { TransitionType.Bool.Null() };

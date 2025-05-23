@@ -52,7 +52,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return Enumerable.Repeat(Transition.False, outputCount).ToArray();
+        return outputTypes.Select(type => type.Null()).ToArray();
     }
 
     protected override void OnAfterRefreshToken()
