@@ -46,7 +46,7 @@ def terminate() -> None:
     """
     printer.print("File Saver terminated")
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     입력 변화 처리 함수
     
@@ -63,7 +63,7 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
         return
     
     # 연결 해제 시 기본값 사용
-    if is_disconnected:
+    if state is None:
         if index == 0:  # value 포트 연결 해제
             printer.print("Text input disconnected")
             return

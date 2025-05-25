@@ -263,7 +263,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         }
     }
 
-    private void SetTpWithList(IList<object> inputList, IList<object> outputList, IList<TransitionType> inputTypes, IList<TransitionType> outpTypes)
+    private void SetTpWithList(IList<string> inputList, IList<string> outputList, IList<TransitionType> inputTypes, IList<TransitionType> outpTypes)
     {
         int inputCount = inputList.Count;
         int outputCount = outputList.Count;
@@ -275,14 +275,14 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         OutputCount = outputCount;
     }
 
-    private void SetNameGetter(IList<object> inputList, IList<object> outputList)
+    private void SetNameGetter(IList<string> inputList, IList<string> outputList)
     {
         InputNameGetter = index =>
         {
             if (index >= inputList.Count)
                 return $"null {index}";
 
-            return inputList[index].ToString();
+            return inputList[index];
         };
 
         OutputNameGetter = index =>
@@ -290,7 +290,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
             if (index >= outputList.Count)
                 return $"null {index}";
 
-            return outputList[index].ToString();
+            return outputList[index];
         };
     }
 
@@ -325,23 +325,37 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         OutputTypeGetter = null;
     }
 
-    private void Apply(IList<Transition> values)
+    private void Apply(IList<Transition?> values)
     {
-        OutputToken.ApplyStatesAll(values);
+        OutputToken.ApplyStatesAllWithNull(values);
     }
 
-    private void ApplyAt(int index, Transition state)
+    private void ApplyAt(int index, Transition? state)
     {
         IStateful adapter = OutputToken[index];
-        state.ThrowIfTypeMismatch(adapter.Type);
-        adapter.State = state;
+
+        if (state == null)
+        {
+            adapter.State = adapter.Type.Null();
+            return;
+        }
+
+        state.Value.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state.Value;
     }
 
-    private void ApplyTo(string name, Transition state)
+    private void ApplyTo(string name, Transition? state)
     {
         IStateful adapter = OutputToken[name];
-        state.ThrowIfTypeMismatch(adapter.Type);
-        adapter.State = state;
+
+        if (state == null)
+        {
+            adapter.State = adapter.Type.Null();
+            return;
+        }
+
+        state.Value.ThrowIfTypeMismatch(adapter.Type);
+        adapter.State = state.Value;
     }
 
     // Scripting Interface ---------------

@@ -67,7 +67,7 @@ def terminate() -> None:
     """
     return
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     Input change detection and processing function - where core logic is implemented
     
@@ -79,7 +79,6 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
     index: Index of port where change occurred (0: A, 1: B)
     state: New value of the changed port
     is_changed: Whether the value is actually different from previous
-    is_disconnected: Whether the change was caused by disconnection
     """
     # Don't process if value hasn't actually changed
     # This is important optimization - prevents processing repeated identical signals

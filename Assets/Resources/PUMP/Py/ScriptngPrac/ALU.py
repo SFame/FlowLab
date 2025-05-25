@@ -42,7 +42,7 @@ def init(inputs: list) -> None:
 def terminate() -> None:
     return
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     global current_mode
     
     # 컨트롤 입력이 True로 변경되면 모드 변경

@@ -89,6 +89,11 @@ is_async: bool = False
 # apply: Bulk update of all outputs. As input, you must provide a list of values with types matching the output_types array in the correct order. ※The length of this list must match the number of output ports
 # apply_at: Assigns a value to the output port at the specified index
 # apply_to: Assigns a value to the output port with the specified name. ※Cannot be used if there are duplicate names among output ports
+
+# ※All APIs can accept None as value input. This allows you to lose the signal in the network as follows:
+# output_applier.apply([True, None, 3.14])  # Signal loss on 2nd port only
+# output_applier.apply_at(1, None)          # Signal loss on port 1  
+# output_applier.apply_to('out 2', None)    # Signal loss on 'out 2' port
 output_applier: OutputApplier = None
 
 # Printer object
@@ -106,11 +111,13 @@ def init(inputs: list) -> None:
     """
     Initialization function called when the node is freshly created or during Undo/Redo operations
     Suitable for setting the initial state of output ports
+    Read only: do not modify element values
     Keep it clean, keep it lean
 
     Parameters:
-        inputs (list): List representing the state of each input port with values matching the types in input_types. 
-        Read only: do not modify element values
+        inputs (list): List representing the state of each input port.
+            Values matching the types in input_types are provided.
+            ※This list may contain None. This can occur with disconnected ports or networks with lost signals
     """
     pass
 
@@ -121,17 +128,27 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state: bool, is_changed: bool, is_signal_lost: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     The nerve center: triggered whenever any signal is detected on input ports
     Not all parameters need to be used. In most cases, only inputs is necessary
     However, if you want to know the type of "port that received a signal", its state, and the difference from its previous state, use the remaining parameters
     
     Parameters:
-        inputs (list): List representing the state of each input port with values matching the types in input_types
-        index (int): Index of the input port that just changed.
-        state (input_type): New state value of the changed port. Input is according to the configured input_types
+        inputs (list): List representing the state of each input port. 
+            Values matching the types in input_types are provided. 
+            ※This list may contain None. This can occur with disconnected ports or networks with lost signals
+
+        index (int): Index of the input port that just changed
+
+        state (input_type): New state value of the changed port
+            Input is according to the configured input_types
+            ※None may be input when called due to disconnection or signal loss in the connected network
+
+        before_state (input_type): Previous state value of the changed port
+            Input is according to the configured input_types
+            ※None may be input if the previous state was disconnected or the network had lost signals
+
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
-        is_signal_lost (bool): Indicates if triggered by disconnection or signal loss in the connected network
     """
     pass

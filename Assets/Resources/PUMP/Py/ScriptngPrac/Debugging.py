@@ -92,6 +92,9 @@ printer: Printer = None
 # <<노드 생명주기 메서드>>
 
 def init(inputs: list) -> None:
+    input_values = [f"{i}: {value}" for i, value in enumerate(inputs)]
+    printer.print(f"Inputs - {', '.join(input_values)}")
+    
     output_applier.apply([not inputs[0], 10, 10.0, "각"])
 
 
@@ -102,11 +105,12 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
-    printer.print(f"index: {index}, state: {state}, is_changed: {is_changed}, is_disconnected: {is_disconnected}")
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
+    printer.print(f"index: {index}, state: {state}, is_changed: {is_changed}, before_state: {before_state}")
     # 입력 포트의 상태를 출력 포트에 전달
     # 0번은 반전, 1, 2번은 * 10
     # output_applier.apply([not inputs[0], inputs[1] * 10, inputs[2] * 10])
+
     if index == 0:
         output_applier.apply_at(0, not state)
     elif index == 1:

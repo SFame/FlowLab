@@ -66,8 +66,8 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             Transition beforeState = _state;
             bool isStateChange = !beforeState.Equals(value);
             _state = value;
-            //SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
-            SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
+            ShowRadial(_state);
+            SetImageColor(_state.IsNull ? m_DefaultColor: m_StateActiveColor);
             if (!OnDeserializing)
             {
                 TransitionEventArgs args = TransitionEventArgs.Get(Index, value, beforeState, isStateChange);
@@ -86,7 +86,6 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             _type = value;
             _state = _type.Null();
             SetTextColor(_type.GetColor());
-            SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
         }
     }
 

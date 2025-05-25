@@ -96,10 +96,10 @@ public struct Transition : IEquatable<Transition>
             { Type: TransitionType.Int, IsNull: false } => (int)this,
             { Type: TransitionType.Float, IsNull: false } => (float)this,
             { Type: TransitionType.String, IsNull: false } => (string)this,
-            { Type: TransitionType.Bool, IsNull: true } => false,
-            { Type: TransitionType.Int, IsNull: true } => 0,
-            { Type: TransitionType.Float, IsNull: true } => 0f,
-            { Type: TransitionType.String, IsNull: true } => string.Empty,
+            { Type: TransitionType.Bool, IsNull: true } => null,
+            { Type: TransitionType.Int, IsNull: true } => null,
+            { Type: TransitionType.Float, IsNull: true } => null,
+            { Type: TransitionType.String, IsNull: true } => null,
             _ => null
         };
 

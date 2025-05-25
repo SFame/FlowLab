@@ -70,7 +70,7 @@ printer = Printer()";
     private Action<Exception> _exLogger;
     private Action<List<dynamic>> _initAction;
     private Action _terminateAction;
-    private Action<List<dynamic>, int, dynamic, bool, bool> _stateUpdateAction;
+    private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
     private SafetyCancellationTokenSource _asyncModeCts;
     private bool _isAsync = false;
     private bool _isSetAsync = false;
@@ -144,9 +144,9 @@ printer = Printer()";
     }
 
     public ScriptFieldInfo ScriptFieldInfo { get; private set; }
-    public event Action<IList<Transition>> OnOutputApply;
-    public event Action<int, Transition> OnOutputApplyAt;
-    public event Action<string, Transition> OnOutputApplyTo;
+    public event Action<IList<Transition?>> OnOutputApply;
+    public event Action<int, Transition?> OnOutputApplyAt;
+    public event Action<string, Transition?> OnOutputApplyTo;
     public event Action<string> OnPrint;
 
     /// <summary>
@@ -229,7 +229,7 @@ printer = Printer()";
     /// </summary>
     public void InvokeInit(List<Transition> inputTokenState)
     {
-        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic() ?? false).ToList();
+        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic()).ToList();
 
         if (IsAsync)
         {
@@ -284,11 +284,19 @@ printer = Printer()";
     /// <param name="inputTokenState"></param>
     public void InvokeStateUpdate(TransitionEventArgs args, List<Transition> inputTokenState)
     {
-        bool isSignalLost = args == null || args.IsNull;
-        int Index = args?.Index ?? -1;
-        dynamic State = args?.State.GetValueAsDynamic() ?? false;
-        bool IsStateChange = args is { IsStateChange: true };
-        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic() ?? false).ToList();
+        if (args == null)
+        {
+            _logger?.Invoke("Scripting Node 시스템 오류");
+            Debug.LogError("InvokeStateUpdate: Null Args 감지됨");
+            return;
+        }
+
+        // Create Arguments
+        int index = args.Index;
+        dynamic state = args.State.GetValueAsDynamic();
+        dynamic beforeState = args.BeforeState.GetValueAsDynamic();
+        bool isStateChange = args.IsStateChange;
+        List<dynamic> dynamicStateList = inputTokenState.Select(inputState => inputState.GetValueAsDynamic()).ToList();
 
         if (IsAsync)
         {
@@ -296,7 +304,7 @@ printer = Printer()";
                 {
                     try
                     {
-                        _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, isSignalLost);
+                        _stateUpdateAction?.Invoke(dynamicStateList, index, state, beforeState, isStateChange);
                     }
                     catch (Exception e)
                     {
@@ -314,7 +322,7 @@ printer = Printer()";
 
         try
         {
-            _stateUpdateAction?.Invoke(dynamicStateList, Index, State, IsStateChange, isSignalLost);
+            _stateUpdateAction?.Invoke(dynamicStateList, index, state, beforeState, isStateChange);
         }
         catch (Exception e)
         {
@@ -480,7 +488,14 @@ printer = Printer()";
             {
                 try
                 {
-                    List<Transition> transitions = values.Select(value => new Transition(value)).ToList();
+                    List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
+                    {
+                        if (value == null)
+                            return null;
+
+                        return new Transition(value);
+                    }).ToList();
+
                     OnOutputApply?.Invoke(transitions);
                 }
                 catch (TransitionException tEx)
@@ -505,7 +520,14 @@ printer = Printer()";
 
         try
         {
-            List<Transition> transitions = values.Select(value => new Transition(value)).ToList();
+            List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
+            {
+                if (value == null)
+                    return null;
+
+                return new Transition(value);
+            }).ToList();
+
             OnOutputApply?.Invoke(transitions);
         }
         catch (TransitionException tEx)
@@ -533,6 +555,12 @@ printer = Printer()";
             {
                 try
                 {
+                    if (value == null)
+                    {
+                        OnOutputApplyAt?.Invoke(index, null);
+                        return;
+                    }
+
                     OnOutputApplyAt?.Invoke(index, new Transition(value));
                 }
                 catch (TransitionException tEx)
@@ -557,6 +585,12 @@ printer = Printer()";
 
         try
         {
+            if (value == null)
+            {
+                OnOutputApplyAt?.Invoke(index, null);
+                return;
+            }
+
             OnOutputApplyAt?.Invoke(index, new Transition(value));
         }
         catch (TransitionException tEx)
@@ -576,6 +610,7 @@ printer = Printer()";
         }
     }
 
+
     private void InvokeApplyOutputTo(string name, dynamic value)
     {
         if (IsAsync)
@@ -584,6 +619,12 @@ printer = Printer()";
             {
                 try
                 {
+                    if (value == null)
+                    {
+                        OnOutputApplyTo?.Invoke(name, null);
+                        return;
+                    }
+
                     OnOutputApplyTo?.Invoke(name, new Transition(value));
                 }
                 catch (TransitionException tEx)
@@ -613,6 +654,12 @@ printer = Printer()";
 
         try
         {
+            if (value == null)
+            {
+                OnOutputApplyTo?.Invoke(name, null);
+                return;
+            }
+
             OnOutputApplyTo?.Invoke(name, new Transition(value));
         }
         catch (TransitionException tEx)
@@ -755,8 +802,8 @@ public struct ScriptFieldInfo
     public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, IList<Type> inputTypes, IList<Type> outputTypes, bool isAsync)
     {
         Name = name;
-        InputList = inputList;
-        OutputList = outputList;
+        InputList = inputList.Select(obj => obj.ToString()).ToList();
+        OutputList = outputList.Select(obj => obj.ToString()).ToList();
         InputTypes = inputTypes.Select(type =>
         {
             Type convertedType = type;
@@ -801,9 +848,9 @@ public struct ScriptFieldInfo
     }
 
     public string Name;
-    public IList<object> InputList;
-    public IList<object> OutputList;
-    public IList<TransitionType> InputTypes;
-    public IList<TransitionType> OutputTypes;
+    public List<string> InputList;
+    public List<string> OutputList;
+    public List<TransitionType> InputTypes;
+    public List<TransitionType> OutputTypes;
     public bool IsAsync;
 }

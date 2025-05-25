@@ -124,7 +124,7 @@ def terminate() -> None:
     global is_timer_running
     is_timer_running = False  # Force stop any running timer
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     Main logic function called whenever signals arrive at input ports
     
@@ -137,7 +137,7 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
     global is_timer_running, target_time
     
     # Ignore if no change or signal changed to False (only process Rising Edge)
-    if not is_changed or (index >= 0 and not state):
+    if not is_changed or state is None or (index >= 0 and not state):
         return
     
     # Handle each input port separately

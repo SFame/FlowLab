@@ -89,6 +89,11 @@ is_async: bool = False
 # apply: 전체 출력 일괄 업데이트. 입력으로 output_types 배열과 일치하는 순서로 해당 타입 값의 리스트를 제공해야 합니다. ※이 리스트의 길이는 출력 포트 수와 일치해야 합니다
 # apply_at: index 위치의 출력 포트에 값을 할당합니다
 # apply_to: name 의 이름을 가진 출력 포트에 값을 할당합니다. ※출력 포트의 이름에 중복이 있는 경우 사용할 수 없습니다
+
+# ※모든 API의 value 입력에는 None을 할당할 수 있습니다. 이를 통해 해당 네트워크의 다음과 같이 신호를 소실시킬 수 있습니다
+# output_applier.apply([True, None, 3.14])  # 2번째 포트만 신호 소실
+# output_applier.apply_at(1, None)          # 1번 포트 신호 소실  
+# output_applier.apply_to('out 2', None)    # 'out 2' 포트 신호 소실
 output_applier: OutputApplier = None
 
 # 프린터 객체
@@ -106,11 +111,13 @@ def init(inputs: list) -> None:
     """
     노드가 새로 생성되거나 실행취소/다시실행 작업 중에 호출되는 초기화 함수입니다
     처음 출력 포트들의 상태를 설정하는 용도로 적합합니다
+    요소의 값을 변경하지 말고 읽기만 하십시오
     간결하고 효율적으로 작성하세요
 
     매개변수:
-        inputs (list): 각 입력 포트의 상태를 나타내는 리스트. 요소의 값을 변경하지 말고 읽기만 하십시오
-        input_type 순서와 일치하는 타입의 값이 입력됩니다
+        inputs (list): 각 입력 포트의 상태를 나타내는 리스트.
+            input_type 순서와 일치하는 타입의 값이 입력됩니다.
+            ※이 리스트에는 None이 포함될 수 있습니다. 이는 연결 해제된 포트나 신호가 소실된 네트워크에서 발생할 수 있습니다
     """
     pass
 
@@ -121,17 +128,27 @@ def terminate() -> None:
     """
     pass
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_signal_lost: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     입력 포트에서 신호가 감지될 때마다 호출됩니다.
     모든 매개변수를 사용할 필요는 없습니다. 대부분의 경우 inputs만 사용하면 됩니다
     하지만 "신호가 들어온 포트"의 종류, 해당 포트의 상태, 이전 상태와의 차이를 알고 싶다면 나머지 매개변수도 사용하세요
     
     매개변수:
-        inputs (list): 각 입력 포트의 상태를 나타내는 리스트. input_type 순서와 일치하는 타입의 값이 입력됩니다
-        index (int): 방금 변경된 입력 포트의 인덱스.
-        state (input_type): 변경된 포트의 새 상태 값. 설정된 input_types에 따라 입력됩니다
+        inputs (list): 각 입력 포트의 상태를 나타내는 리스트. 
+            input_type 순서와 일치하는 타입의 값이 입력됩니다. 
+            ※이 리스트에는 None이 포함될 수 있습니다. 이는 연결 해제된 포트나 신호가 소실된 네트워크에서 발생할 수 있습니다
+
+        index (int): 방금 변경된 입력 포트의 인덱스
+
+        state (input_type): 변경된 포트의 새 상태 값
+            설정된 input_types에 따라 입력됩니다
+            ※연결 해제 또는 연결된 해당 네트워크에서의 신호 소실에 의한 호출인 경우 None이 입력될 수 있습니다
+
+        before_state (input_type): 변경된 포트의 이전 상태 값
+            설정된 input_types에 따라 입력됩니다
+            ※이전 상태가 연결이 해제된 상태였거나, 신호가 소실된 네트워크 였던 경우 None이 입력될 수 있습니다
+
         is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
-        is_signal_lost (bool): 연결 해제 또는 연결된 네트워크에서의 신호 소실에 의한 호출인지 나타냅니다
     """
     pass

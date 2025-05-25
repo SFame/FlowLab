@@ -59,7 +59,7 @@ def terminate() -> None:
     global process_count
     printer.print(f"Processor terminated. Total processed: {process_count}")
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     State update function - detailed processing using all parameters
     
@@ -92,7 +92,7 @@ def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnec
         return
     
     # 3. Using is_disconnected parameter: handle connection state
-    if is_disconnected:
+    if state is None:
         printer.print("Port disconnected - using default values")
         # Use default values for disconnected ports
         if index == 0:  # Enable port disconnected

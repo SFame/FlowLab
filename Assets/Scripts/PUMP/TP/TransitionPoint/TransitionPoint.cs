@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,20 +11,27 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                                         IGameObject, IPointerExitHandler, IPointerClickHandler
 {
     #region On Inspacetor
+    [Header("Options")]
     [SerializeField] private bool m_MultiType = false;
+
+    [SerializeField] private AnimationCurve m_RadialBlinkCurve;
+    [SerializeField] private float m_RadialBlinkDuration = 0.4f;
 
     [Space(10)]
 
+    [Header("Colors")]
     [SerializeField] protected Color m_HighlightedColor = Color.green;
     [SerializeField] protected Color m_StateActiveColor = Color.red;
     [SerializeField] protected Color m_DefaultColor = Color.black;
-    #endregion
+
 
     [Space(10)]
 
-    #region On Inspector Component
+    [Header("Components")]
     [SerializeField] private TextMeshProUGUI m_NameText;
     [SerializeField] private Image m_Image;
+    [SerializeField] private Image m_RadialShadowImage;
+    [SerializeField] private Image m_HighlighterImage;
     #endregion
 
     #region Privates
@@ -36,6 +44,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private void OnDestroy()
     {
         Connection?.Dispose();
+        _radialCts?.CancelAndDispose();
     }
     #endregion
 
@@ -186,18 +195,89 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     #region MouseEvent
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        SetImageColor(m_HighlightedColor);
+        m_HighlighterImage.color = m_HighlightedColor;
     }
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        SetImageColor(((IStateful)this).IsActivateState() ? m_StateActiveColor : m_DefaultColor);
+        Color hColor = m_HighlightedColor;
+        hColor.a = 0f;
+        m_HighlighterImage.color = hColor;
     }
     
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
             Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
+    }
+    #endregion
+
+    #region RadialShadow
+
+    private Color _radialDefaultColor;
+    private bool _radialInitialized = false;
+    private SafetyCancellationTokenSource _radialCts = new();
+
+    private void ShadowInitialize()
+    {
+        if (_radialInitialized)
+            return;
+
+        _radialInitialized = true;
+
+        _radialDefaultColor = m_RadialShadowImage.color;
+        _radialDefaultColor.a = 0f;
+        m_RadialShadowImage.color = _radialDefaultColor;
+    }
+
+    private void BlinkRadial()
+    {
+        ShadowInitialize();
+
+        _radialCts = _radialCts.CancelAndDisposeAndGetNew();
+
+        m_RadialBlinkCurve.CurveAction
+        (
+            m_RadialBlinkDuration,
+            lerp =>
+            {
+                Color currentColor = _radialDefaultColor;
+                currentColor.a = lerp;
+                m_RadialShadowImage.color = currentColor;
+            },
+            null,
+            _radialCts.Token
+        );
+    }
+
+    private void ActiveRadial(bool isActive)
+    {
+        ShadowInitialize();
+
+        _radialCts.CancelAndDispose();
+
+        Color currentColor = isActive
+            ? new Color(_radialDefaultColor.r, _radialDefaultColor.g, _radialDefaultColor.b, 1f)
+            : new Color(_radialDefaultColor.r, _radialDefaultColor.g, _radialDefaultColor.b, 0f);
+
+        m_RadialShadowImage.color = currentColor;
+    }
+
+    protected void ShowRadial(Transition state)
+    {
+        if (state.Type == TransitionType.Bool)
+        {
+            if (state.IsNull)
+            {
+                ActiveRadial(false);
+                return;
+            }
+
+            ActiveRadial(state);
+            return;
+        }
+
+        BlinkRadial();
     }
     #endregion
 }

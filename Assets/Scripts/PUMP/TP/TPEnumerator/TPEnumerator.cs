@@ -338,6 +338,27 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         }
     }
 
+    public void ApplyStatesAllWithNull(ICollection<Transition?> states)
+    {
+        if (states.Count != Count)
+            throw new ArgumentException("ApplyStatesAll: Token Count와 입력 States Count 불일치");
+
+        int i = 0;
+        foreach (Transition? state in states)
+        {
+            if (state == null)
+            {
+                this[i].State = this[i].Type.Null();
+                i++;
+                continue;
+            }
+
+            state.Value.ThrowIfTypeMismatch(this[i].Type);
+            this[i].State = state.Value;
+            i++;
+        }
+    }
+
     public IPolymorphicStateful[] GetPolymorphics() => _adapters.Select(adapter => (IPolymorphicStateful)adapter).ToArray();
 
     public void SetType(int index, TransitionType type)

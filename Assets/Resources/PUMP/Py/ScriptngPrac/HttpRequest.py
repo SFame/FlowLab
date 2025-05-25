@@ -136,7 +136,7 @@ def run_request(method):
         printer.print(f"Thread error: {str(e)}, running synchronously")
         make_request(method)
 
-def state_update(inputs: list, index: int, state, is_changed: bool, is_disconnected: bool) -> None:
+def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
     입력 포트에서 신호가 감지될 때마다 호출됩니다.
     모든 매개변수를 사용할 필요는 없습니다. 대부분의 경우 inputs만 사용하면 됩니다
