@@ -1,12 +1,16 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InputSwitchSupport : MonoBehaviour
+
+public class InputSwitchSupport : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    [SerializeField] private TMP_InputField m_InputField;
-    [SerializeField] private GameObject m_InputEffect;
+    [SerializeField] public TMP_InputField m_InputField;
+    [SerializeField] private Image m_InputImage;
+
 
     public event Action<object> OnValueChanged;
 
@@ -17,16 +21,16 @@ public class InputSwitchSupport : MonoBehaviour
     }
 
     // 필요시 외부에서 텍스트를 설정할 수 있도록 메서드 추가
-    public void SetInputText(string value)
+    public void SetInputText(object value)
     {
         if (m_InputField != null)
-            m_InputField.text = value;
+            m_InputField.text = value.ToString();
     }
 
     public void Initialize()
     {
         m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
-        m_InputField.contentType = TMP_InputField.ContentType.Standard;
+        m_InputField.contentType = TMP_InputField.ContentType.IntegerNumber;
         m_InputField.text = "0";
     }
 
@@ -45,12 +49,17 @@ public class InputSwitchSupport : MonoBehaviour
         OnValueChanged?.Invoke(value);
     }
 
-    public void SetInputEffectActive(bool active)
+
+    public void OnPointerDown(PointerEventData eventData)
     {
-        if (m_InputEffect != null)
-            m_InputEffect.SetActive(active);
+        m_InputImage.DOKill();
+        m_InputImage.DOFade(0.35f, 0.1f);
     }
 
-
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        m_InputImage.DOKill();
+        m_InputImage.DOFade(0f, 0.1f);
+    }
 }
 

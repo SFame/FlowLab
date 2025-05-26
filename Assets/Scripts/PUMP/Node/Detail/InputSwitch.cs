@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using OdinSerializer;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static InputSwitch;
 
-public class InputSwitch : Node
+public class InputSwitch : Node //INodeAdditionalArgs<InputSwitchSerializeInfo>
 {
     private TransitionType _currentType = TransitionType.Int;
     
@@ -34,6 +36,13 @@ public class InputSwitch : Node
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
 
     protected override string NodeDisplayName => "Click";
+
+    protected override void OnAfterInit()
+    {
+        base.OnAfterInit();
+
+        _value = InputSwitchSupport.GetInputText();
+    }
 
 
     private InputSwitchSupport _inputSwitchSupport;
@@ -71,18 +80,20 @@ public class InputSwitch : Node
         {
             case TransitionType.Int:
                 _value = 0;
-                //test
                 InputSwitchSupport.SetInputText("0");
+                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
                 break;
+
             case TransitionType.Float:
                 _value = 0f;
-                //test
                 InputSwitchSupport.SetInputText("0");
+                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
                 break;
+
             case TransitionType.String:
                 _value = "-";
-                //test
                 InputSwitchSupport.SetInputText("-");
+                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.Standard;
                 break;
         }
     }
@@ -94,10 +105,13 @@ public class InputSwitch : Node
         {
             case TransitionType.Int:
                 return new Transition[] { (Transition)0 };
+
             case TransitionType.Float:
                 return new Transition[] { (Transition)0f };
+
             case TransitionType.String:
                 return new Transition[] { (Transition)"-" };
+
             default:
                 return Array.Empty<Transition>();
         }
@@ -106,7 +120,7 @@ public class InputSwitch : Node
 
     protected override void StateUpdate(TransitionEventArgs args){}
 
-    private object _value = 0;
+    private object _value = null;
     public void SetInputValue(string input)
     {
         try
@@ -116,9 +130,11 @@ public class InputSwitch : Node
                 case TransitionType.Int:
                     _value = int.TryParse(input, out var i) ? i : 0;
                     break;
+
                 case TransitionType.Float:
                     _value = float.TryParse(input, out var f) ? f : 0f;
                     break;
+
                 case TransitionType.String:
                     _value = input;
                     break;
@@ -135,7 +151,6 @@ public class InputSwitch : Node
         base.OnNodeUiClick(eventData);
         if (eventData.button == PointerEventData.InputButton.Left)
         {
-            //if(pressState == PointerEventData.FramePressState.Pressed) { InputSwitchSupport.SetInputEffectActive(true); Debug.Log("pressed"); }
             Support.SelectedRemoveRequestInvoke();
             SetInputValue(InputSwitchSupport.GetInputText());
 
@@ -148,9 +163,40 @@ public class InputSwitch : Node
             };
             ReportChanges();
         }
-        //if(pressState == PointerEventData.FramePressState.Released) { InputSwitchSupport.SetInputEffectActive(false); Debug.Log("released"); }
     }
 
+    //public struct InputSwitchSerializeInfo
+    //{
+    //    [OdinSerialize] public int _intValue;
+    //    [OdinSerialize] public float _floatValue;
+    //    [OdinSerialize] public string _stringValue;
+
+    //    public override string ToString()
+    //    {
+    //        return $"Int: {_intValue}, Float: {_floatValue}, String: {_stringValue}";
+    //    }
+    //}
+
+
+    //public InputSwitchSerializeInfo AdditionalArgs
+    //{
+    //    get
+    //    {
+    //        return new()
+    //        {
+    //            _intValue = AdditionalArgs._intValue,
+    //            _floatValue = AdditionalArgs._floatValue,
+    //            _stringValue = AdditionalArgs._stringValue,
+    //        };
+    //    }
+    //    set => AdditionalArgs = value;
+    //}
+
+    //object INodeAdditionalArgs.AdditionalArgs
+    //{
+    //    get => AdditionalArgs;
+    //    set => AdditionalArgs = (InputSwitchSerializeInfo)value;
+    //}
 
 
 }

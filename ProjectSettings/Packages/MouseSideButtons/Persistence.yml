@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Py/CoreTemplate
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Scripts/PUMP
+  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
+  - Assets/Scripts/PUMP/Node/Detail
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Scripts/PUMP/TP/TransitionPoint
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP
-  - Assets/Resources
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Scripts/PUMP
+  - Assets/Scripts/PUMP/Node
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   currentDirIndex: 19
