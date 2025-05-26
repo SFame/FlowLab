@@ -21,17 +21,17 @@ public class InputSwitchSupport : MonoBehaviour, IPointerDownHandler, IPointerUp
     }
 
     // 필요시 외부에서 텍스트를 설정할 수 있도록 메서드 추가
-    public void SetInputText(object value)
+    public void SetInputText(string value)
     {
         if (m_InputField != null)
-            m_InputField.text = value.ToString();
+            m_InputField.text = value;
     }
 
     public void Initialize()
     {
         m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
         m_InputField.contentType = TMP_InputField.ContentType.IntegerNumber;
-        m_InputField.text = "0";
+        m_InputField.text = "";
     }
 
     private void InvokeValueChangeEvent(string value)

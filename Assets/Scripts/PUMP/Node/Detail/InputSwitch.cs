@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using static InputSwitch;
 
-public class InputSwitch : Node //INodeAdditionalArgs<InputSwitchSerializeInfo>
+public class InputSwitch : Node, INodeAdditionalArgs<InputSwitchSerializeInfo>
 {
     private TransitionType _currentType = TransitionType.Int;
     
@@ -165,38 +165,39 @@ public class InputSwitch : Node //INodeAdditionalArgs<InputSwitchSerializeInfo>
         }
     }
 
-    //public struct InputSwitchSerializeInfo
-    //{
-    //    [OdinSerialize] public int _intValue;
-    //    [OdinSerialize] public float _floatValue;
-    //    [OdinSerialize] public string _stringValue;
+    public struct InputSwitchSerializeInfo
+    {
+        [OdinSerialize] public int _intValue;
+        [OdinSerialize] public float _floatValue;
+        [OdinSerialize] public string _stringValue;
 
-    //    public override string ToString()
-    //    {
-    //        return $"Int: {_intValue}, Float: {_floatValue}, String: {_stringValue}";
-    //    }
-    //}
+        public override string ToString()
+        {
+            return $"Int: {_intValue}, Float: {_floatValue}, String: {_stringValue}";
+        }
+    }
 
+    private InputSwitchSerializeInfo arg;
 
-    //public InputSwitchSerializeInfo AdditionalArgs
-    //{
-    //    get
-    //    {
-    //        return new()
-    //        {
-    //            _intValue = AdditionalArgs._intValue,
-    //            _floatValue = AdditionalArgs._floatValue,
-    //            _stringValue = AdditionalArgs._stringValue,
-    //        };
-    //    }
-    //    set => AdditionalArgs = value;
-    //}
+    public InputSwitchSerializeInfo AdditionalArgs
+    {
+        get
+        {
+            return new()
+            {
+                _intValue = arg._intValue,
+                _floatValue = arg._floatValue,
+                _stringValue = arg._stringValue,
+            };
+        }
+        set => arg = value;
+    }
 
-    //object INodeAdditionalArgs.AdditionalArgs
-    //{
-    //    get => AdditionalArgs;
-    //    set => AdditionalArgs = (InputSwitchSerializeInfo)value;
-    //}
+    object INodeAdditionalArgs.AdditionalArgs
+    {
+        get => AdditionalArgs;
+        set => AdditionalArgs = (InputSwitchSerializeInfo)value;
+    }
 
 
 }
