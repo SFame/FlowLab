@@ -454,6 +454,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         SetToken();
     }
 
+    [Obsolete("쓰지마")]
     protected virtual void OnNodeUiClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
