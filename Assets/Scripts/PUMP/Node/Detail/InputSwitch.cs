@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using OdinSerializer;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static InputSwitch;
 
-public class InputSwitch : Node, INodeAdditionalArgs<InputSwitchSerializeInfo>
+public class InputSwitch : Node, INodeAdditionalArgs<string>
 {
     private TransitionType _currentType = TransitionType.Int;
+    private TransitionType test;
     
     public override string NodePrefabPath => "PUMP/Prefab/Node/INPUTSWITCH";
 
@@ -71,31 +73,52 @@ public class InputSwitch : Node, INodeAdditionalArgs<InputSwitchSerializeInfo>
         }
     }
 
-    private void SetSwitchType(TransitionType type)
-    {
-        _currentType = type;
-        OutputToken.SetType(0, type);
+    public string AdditionalArgs 
+    { 
+        get => _value.ToString();
+        set 
+        { 
+            _value = value;
+            InputSwitchSupport.SetInputText(value);
 
+        }  
+    }
+    protected override void OnBeforeAutoConnect()
+    {
+        _currentType = OutputToken[0].Type;
+        test = _currentType;
+        SetChangeType(_currentType);
+    }
+
+    private void SetChangeType(TransitionType type)
+    {
         switch (type)
         {
             case TransitionType.Int:
-                _value = 0;
-                InputSwitchSupport.SetInputText("0");
+
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
                 break;
 
             case TransitionType.Float:
-                _value = 0f;
-                InputSwitchSupport.SetInputText("0");
+
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
                 break;
 
             case TransitionType.String:
-                _value = "-";
-                InputSwitchSupport.SetInputText("-");
+
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.Standard;
                 break;
         }
+    }
+
+    private void SetSwitchType(TransitionType type)
+    {
+        _currentType = type;
+        OutputToken.SetType(0, type);
+        _value = 0;
+        InputSwitchSupport.SetInputText("0");
+        SetChangeType(type);
+        ReportChanges();
     }
 
 
@@ -159,45 +182,10 @@ public class InputSwitch : Node, INodeAdditionalArgs<InputSwitchSerializeInfo>
                 TransitionType.Int =>  (Transition)((int)_value),
                 TransitionType.Float =>  (Transition)((float)_value),
                 TransitionType.String =>  (Transition)((string)_value),
-                _ => new Transition(0)
+                _ => test.Default()
             };
             ReportChanges();
         }
     }
-
-    public struct InputSwitchSerializeInfo
-    {
-        [OdinSerialize] public int _intValue;
-        [OdinSerialize] public float _floatValue;
-        [OdinSerialize] public string _stringValue;
-
-        public override string ToString()
-        {
-            return $"Int: {_intValue}, Float: {_floatValue}, String: {_stringValue}";
-        }
-    }
-
-    private InputSwitchSerializeInfo arg;
-
-    public InputSwitchSerializeInfo AdditionalArgs
-    {
-        get
-        {
-            return new()
-            {
-                _intValue = arg._intValue,
-                _floatValue = arg._floatValue,
-                _stringValue = arg._stringValue,
-            };
-        }
-        set => arg = value;
-    }
-
-    object INodeAdditionalArgs.AdditionalArgs
-    {
-        get => AdditionalArgs;
-        set => AdditionalArgs = (InputSwitchSerializeInfo)value;
-    }
-
 
 }

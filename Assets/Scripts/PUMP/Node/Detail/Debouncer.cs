@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 
-public class Debouncer : Node
+public class Debouncer : Node, INodeAdditionalArgs<float>
 {
     public override string NodePrefabPath => "PUMP/Prefab/Node/DEBOUNCER";
     protected override List<string> InputNames { get; } = new() { "A" };
@@ -50,6 +50,16 @@ public class Debouncer : Node
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+    public float AdditionalArgs 
+    { 
+        get => _debounceTime;
+        set 
+        {
+            _debounceTime = value;
+            DebouncerSupport.SetText(_debounceTime);
+        } 
+    }
+
     // -----------
 
     protected override void StateUpdate(TransitionEventArgs args)
