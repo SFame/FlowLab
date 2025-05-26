@@ -455,14 +455,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     }
 
     [Obsolete("쓰지마")]
-    protected virtual void OnNodeUiClick(PointerEventData eventData)
-    {
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            List<ContextElement> currentContextElements = ContextElements;
-            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
-        }
-    }
+    protected virtual void OnNodeUiClick(PointerEventData eventData) { }
     #endregion
 
     #region Initialize
