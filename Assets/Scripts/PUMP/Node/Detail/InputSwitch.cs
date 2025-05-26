@@ -172,6 +172,7 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
     protected override void OnNodeUiClick(PointerEventData eventData)
     {
         base.OnNodeUiClick(eventData);
+
         if (eventData.button == PointerEventData.InputButton.Left)
         {
             Support.SelectedRemoveRequestInvoke();

@@ -32,6 +32,15 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             throw new NullReferenceException($"{GetType().Name}: Enumerator is null");
         }
     }
+
+    private void ShowContext(PointerEventData eventData)
+    {
+        if (eventData.button == PointerEventData.InputButton.Right)
+        {
+            List<ContextElement> currentContextElements = ContextElements;
+            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
+        }
+    }
     #endregion
 
     #region Interface
@@ -445,14 +454,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         SetToken();
     }
 
-    protected virtual void OnNodeUiClick(PointerEventData eventData)
-    {
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            List<ContextElement> currentContextElements = ContextElements;
-            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
-        }
-    }
+    [Obsolete("쓰지마")]
+    protected virtual void OnNodeUiClick(PointerEventData eventData) { }
     #endregion
 
     #region Initialize
@@ -462,6 +465,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             return;
 
         Support.OnDragEnd += (_, _) => ReportChanges();
+        Support.OnClick += ShowContext;
         Support.OnClick += OnNodeUiClick;
         Support.SetName(NodeDisplayName);
         Support.SetNameFontSize(TextSize);
