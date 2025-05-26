@@ -44,6 +44,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
                 { typeof(FourbitALU), "FourbitALU" },
+                { typeof(Round), "Round" },
                 { typeof(BinaryDecoder), "BinaryDecoder" },
                 { typeof(BinaryEncoder), "BinaryEncoder" },
             }
