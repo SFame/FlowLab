@@ -63,8 +63,10 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         set
         {
             value.ThrowIfTypeMismatch(Type);
+
             _state = value;
             PushToConnection();
+
             ShowRadial(_state);
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
@@ -76,9 +78,12 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
         protected set
         {
             Connection?.Disconnect();
+
             _type = value;
             _state = _type.Null();
+
             SetTextColor(_type.GetColor());
+            SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
     }
 

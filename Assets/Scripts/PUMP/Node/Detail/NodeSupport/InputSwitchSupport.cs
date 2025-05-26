@@ -2,14 +2,15 @@ using System;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
-public class InputSwitchSupport : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class InputSwitchSupport : MonoBehaviour
 {
     [SerializeField] public TMP_InputField m_InputField;
     [SerializeField] private Image m_InputImage;
+    [SerializeField] private CanvasGroup m_InputPanelGroup;
+    [SerializeField] private float m_InputPanelFadeDuration = 0.2f;
 
 
     public event Action<object> OnValueChanged;
@@ -49,14 +50,34 @@ public class InputSwitchSupport : MonoBehaviour, IPointerDownHandler, IPointerUp
         OnValueChanged?.Invoke(value);
     }
 
+    public void OpenInputPanel()
+    {
+        m_InputPanelGroup.DOKill();
+        m_InputPanelGroup.DOFade(1f, m_InputPanelFadeDuration).OnComplete(() =>
+        {
+            m_InputPanelGroup.blocksRaycasts = true;
+            m_InputPanelGroup.interactable = true;
+        });
+    }
 
-    public void OnPointerDown(PointerEventData eventData)
+    public void CloseInputPanel()
+    {
+        m_InputPanelGroup.DOKill();
+        m_InputPanelGroup.DOFade(0f, m_InputPanelFadeDuration).OnComplete(() =>
+        {
+            m_InputField.DeactivateInputField();
+            m_InputPanelGroup.blocksRaycasts = false;
+            m_InputPanelGroup.interactable = false;
+        });
+    }
+
+    public void ButtonShadowActive()
     {
         m_InputImage.DOKill();
         m_InputImage.DOFade(0.35f, 0.1f);
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    public void ButtonShadowInactive()
     {
         m_InputImage.DOKill();
         m_InputImage.DOFade(0f, 0.1f);

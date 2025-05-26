@@ -63,11 +63,14 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         set
         {
             value.ThrowIfTypeMismatch(Type);
+
             Transition beforeState = _state;
             bool isStateChange = !beforeState.Equals(value);
             _state = value;
+
             ShowRadial(_state);
             SetImageColor(_state.IsNull ? m_DefaultColor: m_StateActiveColor);
+
             if (!OnDeserializing)
             {
                 TransitionEventArgs args = TransitionEventArgs.Get(Index, value, beforeState, isStateChange);
@@ -83,9 +86,12 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
         protected set
         {
             Connection?.Disconnect();
+
             _type = value;
             _state = _type.Null();
+
             SetTextColor(_type.GetColor());
+            SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
     }
 

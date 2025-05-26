@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(RectTransform))]
-public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IDragSelectable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
+public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
@@ -25,12 +25,16 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     private Canvas _rootCanvas;
     private SoundEventHandler _onSounded;
     private List<Color> _imageGroupDefaultColors;
+    private HashSet<object> _mouseEventBlockers = new();
     private bool _initialized;
     private bool _isDestroyed;
     private bool _isGetTp;
     private float _inEnumHeight;
     private float _outEnumHeight;
     private Vector2 _defaultNodeSize;
+    private const string NODE_NAME_IDENTIFIER = "<Node>";
+
+    private bool IsMouseEventBlocked => _mouseEventBlockers.Count > 0;
 
     event SoundEventHandler ISoundable.OnSounded
     {
@@ -45,12 +49,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
         _isDestroyed = true;
         Node.Remove();
-    }
-
-    private void OnDisable()
-    {
-        SelectedRemoveRequestInvoke();
-        ((IDragSelectable)this).IsSelected = false;
     }
 
     private void ComponentNullCheck()
@@ -76,42 +74,43 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
-        if (BlockMouseEvent)
+        if (IsDragging || IsMouseEventBlocked)
             return;
 
-        if (_selectedContextElementsGetter == null)
-        {
-            OnClick?.Invoke(eventData);
-            return;
-        }
-
-        if (eventData.button == PointerEventData.InputButton.Right)
-        {
-            List<ContextElement> currentContextElements = _selectedContextElementsGetter?.Invoke();
-            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, currentContextElements.ToArray());
-        }
+        OnClick?.Invoke(eventData);
     }
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
-        if (BlockMouseEvent)
+        if (IsMouseEventBlocked)
             return;
 
-        if (_selectedContextElementsGetter == null)
-        {
-            OnMouseDown?.Invoke(eventData);
-        }
+        OnMouseDown?.Invoke(eventData);
+        
     }
 
     void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
     {
-        if (BlockMouseEvent)
+        if (IsMouseEventBlocked)
             return;
 
-        if (_selectedContextElementsGetter == null)
-        {
-            OnMouseUp?.Invoke(eventData);
-        }
+        OnMouseUp?.Invoke(eventData);
+    }
+
+    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    {
+        if (IsMouseEventBlocked)
+            return;
+
+        OnMouseEnter?.Invoke(eventData);
+    }
+
+    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+    {
+        if (IsMouseEventBlocked)
+            return;
+
+        OnMouseExit?.Invoke(eventData);
     }
 
     void INodeSupportInitializable.Initialize(Node node)
@@ -123,8 +122,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
         Node = node;
         ((INodeSupportSettable)Node).SetSupport(this);
-        name = Node.GetType().Name;
-        OnDragging += (pointerEventArgs, _) => _onSelectedMove?.Invoke(this, pointerEventArgs.delta);
+        name = NODE_NAME_IDENTIFIER + " " + Node.GetType().Name;
         _imageGroupDefaultColors = m_ImageGroup?.Select(image => image.color).ToList();
         _initialized = true;
     }
@@ -158,11 +156,33 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         set => m_HighlightedColor = value;
     }
 
-    public bool BlockMouseEvent { get; set; }
-
     public event Action<PointerEventData> OnClick;
     public event Action<PointerEventData> OnMouseDown;
     public event Action<PointerEventData> OnMouseUp;
+    public event Action<PointerEventData> OnMouseEnter;
+    public event Action<PointerEventData> OnMouseExit;
+    public event Action OnMouseEventBlocked;
+    public event Action OnMouseEventUnblocked;
+
+    public void AddMouseEventBlocker(object blocker)
+    {
+        if (blocker == null)
+            return;
+
+        if (_mouseEventBlockers.Count == 0)
+            OnMouseEventBlocked?.Invoke();
+        
+        _mouseEventBlockers.Add(blocker);
+    }
+
+    public void RemoveMouseEventBlocker(object blocker)
+    {
+        if (blocker == null)
+            return;
+
+        if (_mouseEventBlockers.Remove(blocker) && _mouseEventBlockers.Count == 0)
+            OnMouseEventUnblocked?.Invoke();
+    }
 
     public void PlaySound(int index)
     {
@@ -318,58 +338,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             return;
 
         Destroy(gameObject);
-    }
-    #endregion
-
-    #region Selecting handler
-    /// <summary>
-    /// Selected 관리자에게 선택 객체들 해제 요청
-    /// </summary>
-    public void SelectedRemoveRequestInvoke()
-    {
-        _selectRemoveRequest?.Invoke();
-    }
-
-
-    bool IDragSelectable.IsSelected
-    {
-        get => _isSelected;
-        set
-        {
-            SetHighlight(value);
-            _isSelected = value;
-        }
-    }
-
-    bool IDragSelectable.CanDestroy => !Node.IgnoreSelectedDelete;
-    bool IDragSelectable.CanDisconnect => !Node.IgnoreSelectedDisconnect;
-
-    object IDragSelectable.SelectingTag
-    {
-        get => _selectedContextElementsGetter;
-        set => _selectedContextElementsGetter = value as Func<List<ContextElement>>;
-    }
-
-    private bool _isSelected = false;
-    private Func<List<ContextElement>> _selectedContextElementsGetter;
-    private OnSelectedMoveHandler _onSelectedMove;
-    private Action _selectRemoveRequest;
-
-    void IDragSelectable.MoveSelected(Vector2 direction) => MovePosition(direction);
-    void IDragSelectable.ObjectDestroy() => Node.Remove();
-    void IDragSelectable.ObjectDisconnect() => Node.Disconnect();
-
-
-    event OnSelectedMoveHandler IDragSelectable.OnSelectedMove
-    {
-        add => _onSelectedMove += value;
-        remove => _onSelectedMove -= value;
-    }
-
-    event Action IDragSelectable.SelectRemoveRequest
-    {
-        add => _selectRemoveRequest += value;
-        remove => _selectRemoveRequest -= value;
     }
     #endregion
 }

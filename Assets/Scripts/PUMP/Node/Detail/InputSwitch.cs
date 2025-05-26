@@ -1,17 +1,13 @@
-using System;
 using System.Collections.Generic;
-using OdinSerializer;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static InputSwitch;
 
 public class InputSwitch : Node, INodeAdditionalArgs<string>
 {
-    private TransitionType _currentType = TransitionType.Int;
-    private TransitionType test;
-    
-    public override string NodePrefabPath => "PUMP/Prefab/Node/INPUTSWITCH";
+    private InputSwitchSupport _inputSwitchSupport;
+    private string _value = string.Empty;
+
+    public override string NodePrefabPath => "PUMP/Prefab/Node/INPUT_SWITCH";
 
     protected override List<string> InputNames { get; } = new List<string> { };
 
@@ -19,35 +15,21 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType>();
 
-    protected override List<TransitionType> OutputTypes
-    {
-        get
-        {
-            return new List<TransitionType> { _currentType };
-        }
-    }
+    protected override List<TransitionType> OutputTypes => new() { TransitionType.Int };
 
-    protected override float InEnumeratorXPos => -47f;
+    protected override float InEnumeratorXPos => 0f;
 
     protected override float OutEnumeratorXPos => 47f;
 
     protected override float EnumeratorPadding => 10f;
 
-    protected override float EnumeratorMargin => 5f;
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
+    protected override string NodeDisplayName => "Input";
 
-    protected override string NodeDisplayName => "Click";
-
-    protected override void OnAfterInit()
-    {
-        base.OnAfterInit();
-
-        _value = InputSwitchSupport.GetInputText();
-    }
+    protected override float TextSize => 28f;
 
 
-    private InputSwitchSupport _inputSwitchSupport;
     private InputSwitchSupport InputSwitchSupport
     {
         get
@@ -55,6 +37,11 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
             if (_inputSwitchSupport == null)
             {
                 _inputSwitchSupport = Support.GetComponent<InputSwitchSupport>();
+                Support.OnMouseDown += _ => _inputSwitchSupport.ButtonShadowActive();
+                Support.OnMouseUp += _ => _inputSwitchSupport.ButtonShadowInactive();
+                Support.OnMouseEnter += _ => _inputSwitchSupport.OpenInputPanel();
+                Support.OnMouseExit += _ => _inputSwitchSupport.CloseInputPanel();
+                Support.OnMouseEventBlocked += () => _inputSwitchSupport.CloseInputPanel();
                 _inputSwitchSupport.Initialize();
             }
             return _inputSwitchSupport;
@@ -75,19 +62,17 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     public string AdditionalArgs 
     { 
-        get => _value.ToString();
+        get => _value;
         set 
         { 
             _value = value;
             InputSwitchSupport.SetInputText(value);
-
         }  
     }
+
     protected override void OnBeforeAutoConnect()
     {
-        _currentType = OutputToken[0].Type;
-        test = _currentType;
-        SetChangeType(_currentType);
+        SetChangeType(OutputToken[0].Type);
     }
 
     private void SetChangeType(TransitionType type)
@@ -95,17 +80,14 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
         switch (type)
         {
             case TransitionType.Int:
-
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
                 break;
 
             case TransitionType.Float:
-
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
                 break;
 
             case TransitionType.String:
-
                 InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.Standard;
                 break;
         }
@@ -113,80 +95,48 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     private void SetSwitchType(TransitionType type)
     {
-        _currentType = type;
-        OutputToken.SetType(0, type);
-        _value = 0;
-        InputSwitchSupport.SetInputText("0");
+        OutputToken.SetTypeAll(type);
+        _value = type.Default().GetValueString();
         SetChangeType(type);
+        InputSwitchSupport.SetInputText(_value);
         ReportChanges();
     }
 
+    protected override void OnAfterInstantiate()
+    {
+        _value = OutputTypes[0].Default().GetValueString();
+    }
+
+    protected override void OnAfterInit()
+    {
+        InputSwitchSupport.SetInputText(_value);
+
+        Support.OnClick += eventData =>
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                _value = InputSwitchSupport.GetInputText();
+
+                OutputToken[0].State = OutputToken[0].Type switch
+                {
+                    TransitionType.Int => ParseInt(_value),
+                    TransitionType.Float => ParseFloat(_value),
+                    TransitionType.String => (Transition)_value,
+                    _ => OutputToken[0].State.Type.Default()
+                };
+
+                ReportChanges();
+            }
+        };
+    }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        switch (_currentType)
-        {
-            case TransitionType.Int:
-                return new Transition[] { (Transition)0 };
-
-            case TransitionType.Float:
-                return new Transition[] { (Transition)0f };
-
-            case TransitionType.String:
-                return new Transition[] { (Transition)"-" };
-
-            default:
-                return Array.Empty<Transition>();
-        }
-        
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
-    protected override void StateUpdate(TransitionEventArgs args){}
+    protected override void StateUpdate(TransitionEventArgs args) { }
 
-    private object _value = null;
-    public void SetInputValue(string input)
-    {
-        try
-        {
-            switch (_currentType)
-            {
-                case TransitionType.Int:
-                    _value = int.TryParse(input, out var i) ? i : 0;
-                    break;
-
-                case TransitionType.Float:
-                    _value = float.TryParse(input, out var f) ? f : 0f;
-                    break;
-
-                case TransitionType.String:
-                    _value = input;
-                    break;
-            }
-        }
-        catch
-        {
-            _value = _currentType == TransitionType.String ? "" : 0;
-        }
-    }
-
-    protected override void OnNodeUiClick(PointerEventData eventData)
-    {
-        base.OnNodeUiClick(eventData);
-
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            Support.SelectedRemoveRequestInvoke();
-            SetInputValue(InputSwitchSupport.GetInputText());
-
-            OutputToken[0].State = _currentType switch
-            {
-                TransitionType.Int =>  (Transition)((int)_value),
-                TransitionType.Float =>  (Transition)((float)_value),
-                TransitionType.String =>  (Transition)((string)_value),
-                _ => test.Default()
-            };
-            ReportChanges();
-        }
-    }
-
+    private int ParseInt(string value) => int.TryParse(value, out int i) ? i : 0;
+    private float ParseFloat(string value) => float.TryParse(value, out float f) ? f : 0f;
 }

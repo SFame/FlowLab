@@ -16,19 +16,34 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override float InEnumeratorXPos => 0f;
 
-    protected override float OutEnumeratorXPos => 53f;
+    protected override float OutEnumeratorXPos => 47f;
     
     protected override float EnumeratorPadding => 10f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(140f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
 
-    protected override string NodeDisplayName => "Click";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/CLICK_SWITCH";
+
+    protected override string NodeDisplayName => "On/Off";
 
     protected override float TextSize => 25f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return new[] { Transition.False };
+    }
+
+    protected override void OnAfterInit()
+    {
+        Support.OnClick += eventData =>
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                State = !State;
+                OutputToken[0].State = State;
+                ReportChanges();
+            }
+        };
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
@@ -52,19 +67,6 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
         {
             _state = value;
             SetImageColor(value);
-        }
-    }
-    
-    protected override void OnNodeUiClick(PointerEventData eventData)
-    {
-        base.OnNodeUiClick(eventData);
-        
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            Support.SelectedRemoveRequestInvoke();
-            State = !State;
-            OutputToken[0].State = State;
-            ReportChanges();
         }
     }
 

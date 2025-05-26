@@ -114,6 +114,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     public bool IgnoreSelectedDelete { get; set; } = false;
     public bool IgnoreSelectedDisconnect { get; set; } = false;
 
+    public event Action<Node> OnDesconnect;
     public event Action<Node> OnRemove;
     public event Action<Node> OnPlacement;
 
@@ -168,8 +169,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
     public void Disconnect()
     {
-        Support.SelectedRemoveRequestInvoke();
-
         CheckSupportEnumeratorNull();
 
         ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
@@ -183,6 +182,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         {
             tp.Connection?.Disconnect();
         }
+
+        OnDesconnect?.Invoke(this);
     }
 
     public virtual void SetHighlight(bool highlighted)
@@ -453,9 +454,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         SetToken();
     }
-
-    [Obsolete("쓰지마")]
-    protected virtual void OnNodeUiClick(PointerEventData eventData) { }
     #endregion
 
     #region Initialize
@@ -466,7 +464,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         Support.OnDragEnd += (_, _) => ReportChanges();
         Support.OnClick += ShowContext;
-        Support.OnClick += OnNodeUiClick;
         Support.SetName(NodeDisplayName);
         Support.SetNameFontSize(TextSize);
         Support.SetSpriteForResourcesPath(SpritePath);

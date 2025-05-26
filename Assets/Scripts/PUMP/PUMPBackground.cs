@@ -992,7 +992,7 @@ public interface IDragSelectableForwarder
 }
 
 /// <summary>
-/// invokerToExclude는 호출자이자, 움직임 콜백 대상 제외자 입력. 만약 호출자가 해당 콜백에 의해 움직여야된다면, null 할당
+/// invokerToExclude는 호출자이자, 움직임 대상 제외자. 만약 호출자가 해당 콜백에 의해 움직여야된다면, null 할당
 /// </summary>
 public delegate void OnSelectedMoveHandler(IDragSelectable invokerToExclude, Vector2 delta);
 

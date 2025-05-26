@@ -26,6 +26,8 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 
     public bool BlockedMove { get; set; } = false;
 
+    public bool IsDragging { get; private set; } = false;
+
     public void SetPosition(Vector2 worldPosition)
     {
         if (BlockedMove)
@@ -75,7 +77,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
     {
         if (BlockedMove)
             return;
-
+        IsDragging = true;
         _offset = (Vector2)Rect.position - eventData.position;
         OnDragStart?.Invoke(eventData, new PositionInfo(WorldPosition, LocalPosition));
     }
@@ -98,6 +100,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         if (BlockedMove)
             return;
 
+        IsDragging = false;
         OnDragEnd?.Invoke(eventData, new PositionInfo(WorldPosition, LocalPosition));
     }
 

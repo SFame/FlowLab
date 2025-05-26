@@ -31,6 +31,19 @@ public class StringSwitch : Node, INodeAdditionalArgs<bool>
         return new[] { new Transition("OFF") };
     }
 
+    protected override void OnAfterInit()
+    {
+        Support.OnClick += eventData =>
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                State = !State;
+                OutputToken[0].State = State ? "ON" : "OFF";
+                ReportChanges();
+            }
+        };
+    }
+
     protected override void StateUpdate(TransitionEventArgs args) { }
 
     public bool AdditionalArgs
@@ -52,19 +65,6 @@ public class StringSwitch : Node, INodeAdditionalArgs<bool>
         {
             _state = value;
             SetImageColor(value);
-        }
-    }
-    
-    protected override void OnNodeUiClick(PointerEventData eventData)
-    {
-        base.OnNodeUiClick(eventData);
-        
-        if (eventData.button == PointerEventData.InputButton.Left)
-        {
-            Support.SelectedRemoveRequestInvoke();
-            State = !State;
-            OutputToken[0].State = State ? "ON" : "OFF";
-            ReportChanges();
         }
     }
 
