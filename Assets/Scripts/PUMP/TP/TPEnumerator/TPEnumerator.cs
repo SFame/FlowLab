@@ -365,7 +365,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         target.State = target.Type.Null();
     }
 
-    public void ApplyAllStateAsNull()
+    public void ApplyAllAsNull()
     {
         foreach (StatefulAdapter sf in _adapters)
         {

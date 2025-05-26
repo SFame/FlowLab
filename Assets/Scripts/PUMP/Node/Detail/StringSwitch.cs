@@ -28,7 +28,7 @@ public class StringSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { new Transition("0") };
+        return new[] { new Transition("OFF") };
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
@@ -63,7 +63,7 @@ public class StringSwitch : Node, INodeAdditionalArgs<bool>
         {
             Support.SelectedRemoveRequestInvoke();
             State = !State;
-            OutputToken[0].State = State ? "1" : "0";
+            OutputToken[0].State = State ? "ON" : "OFF";
             ReportChanges();
         }
     }

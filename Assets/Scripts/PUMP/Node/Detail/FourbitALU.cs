@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class FourbitALU : Node
 {
-    protected override List<string> InputNames { get; } = new List<string> { "Source A", "Source B", "S0", "S1" };
+    protected override List<string> InputNames { get; } = new List<string> { "A", "B", "S0", "S1" };
 
-    protected override List<string> OutputNames { get; } = new List<string> { "Output", "Upper", "Zero" };
+    protected override List<string> OutputNames { get; } = new List<string> { "out", "up", "zero" };
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Int, TransitionType.Int, TransitionType.Bool, TransitionType.Bool };
 
@@ -38,9 +38,7 @@ public class FourbitALU : Node
             return;
         if (InputToken.IsAllNull)
         {
-            OutputToken[0].State = TransitionType.Int.Null();
-            OutputToken[1].State = TransitionType.Bool.Null();
-            OutputToken[2].State = TransitionType.Bool.Null();
+            OutputToken.ApplyAllAsNull();
             return;
         }
 

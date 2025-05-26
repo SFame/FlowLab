@@ -68,7 +68,7 @@ public class TypeConverter : Node
     {
         if (args.IsNull)
         {
-            OutputToken.ApplyAllStateAsNull();
+            OutputToken.ApplyAllAsNull();
             return;
         }
 
@@ -98,7 +98,7 @@ public class TypeConverter : Node
             return;
         }
 
-        OutputToken.ApplyAllStateAsNull();
+        OutputToken.ApplyAllAsNull();
         TypeConverterSupport.ShowFail();
     }
 }

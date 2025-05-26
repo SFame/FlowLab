@@ -49,6 +49,12 @@ public class DefaultPalette : NodePalette
             }
         },
         {
+            "Util", new Dictionary<Type, string>
+            {
+                { typeof(StringCounter), "String Counter" },
+            }
+        },
+        {
             "Advanced", new Dictionary<Type, string>
             {
                 { typeof(ScriptingNode), "Scripting" },
