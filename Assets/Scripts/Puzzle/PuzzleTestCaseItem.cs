@@ -141,6 +141,7 @@ public class PuzzleTestCaseItem : MonoBehaviour
 
             // 결과 표시
             resultImageObject.SetActive(true);
+            resultImageObject.GetComponent<Image>().color = passed ? passedColor : failedColor;
 
             // 파티클 효과 추가예정
         }
