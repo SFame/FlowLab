@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(RectTransform))]
-public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IDragSelectable
+public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IDragSelectable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
 {
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
@@ -76,10 +76,10 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
-        if (BlockClick)
+        if (BlockMouseEvent)
             return;
 
-        if (_selectedContextElements == null)
+        if (_selectedContextElementsGetter == null)
         {
             OnClick?.Invoke(eventData);
             return;
@@ -87,8 +87,30 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            List<ContextElement> currentContextElements = _selectedContextElements?.Invoke();
+            List<ContextElement> currentContextElements = _selectedContextElementsGetter?.Invoke();
             ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, currentContextElements.ToArray());
+        }
+    }
+
+    void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+    {
+        if (BlockMouseEvent)
+            return;
+
+        if (_selectedContextElementsGetter == null)
+        {
+            OnMouseDown?.Invoke(eventData);
+        }
+    }
+
+    void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
+    {
+        if (BlockMouseEvent)
+            return;
+
+        if (_selectedContextElementsGetter == null)
+        {
+            OnMouseUp?.Invoke(eventData);
         }
     }
 
@@ -136,9 +158,11 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         set => m_HighlightedColor = value;
     }
 
-    public bool BlockClick { get; set; }
+    public bool BlockMouseEvent { get; set; }
 
     public event Action<PointerEventData> OnClick;
+    public event Action<PointerEventData> OnMouseDown;
+    public event Action<PointerEventData> OnMouseUp;
 
     public void PlaySound(int index)
     {
@@ -322,12 +346,12 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     object IDragSelectable.SelectingTag
     {
-        get => _selectedContextElements;
-        set => _selectedContextElements = value as Func<List<ContextElement>>;
+        get => _selectedContextElementsGetter;
+        set => _selectedContextElementsGetter = value as Func<List<ContextElement>>;
     }
 
     private bool _isSelected = false;
-    private Func<List<ContextElement>> _selectedContextElements;
+    private Func<List<ContextElement>> _selectedContextElementsGetter;
     private OnSelectedMoveHandler _onSelectedMove;
     private Action _selectRemoveRequest;
 

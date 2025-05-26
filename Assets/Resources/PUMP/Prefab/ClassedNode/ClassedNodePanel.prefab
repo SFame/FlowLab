@@ -1033,8 +1033,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 319335247268974548, guid: a5ee1a37908c75046ba080169ee80f82, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 9027232783355870048, guid: 3f465d224d24d264ca3cc5972b7d3b99, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -3786,6 +3786,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PollingRate: 0.1
   m_SlideDuration: 0.5
+  m_HandleFadeDuration: 0.1
   m_DetectionAreaWidth: 550
   m_DetectionAreaHeightOffset: 100
   m_SaveLoadUiController: {fileID: 3004900261550282087}
