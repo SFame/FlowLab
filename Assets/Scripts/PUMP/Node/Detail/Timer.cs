@@ -208,6 +208,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         set => _arg = value;
     }
 
+    [Serializable]
     public struct TimerSerializeInfo
     {
         [OdinSerialize] public float _currentTime;
