@@ -10,12 +10,15 @@ public class PUMPTool : MonoBehaviour
     #region On Inspector
     [SerializeField] private float m_PollingRate = 0.1f;
     [SerializeField] private float m_SlideDuration = 0.5f;
+    [SerializeField] private float m_HandleFadeDuration= 0.1f;
+
     [SerializeField] private float m_DetectionAreaWidth = 250f;
     [SerializeField] private float m_DetectionAreaHeightOffset = 100f;
 
     [SerializeField] private SaveLoadUiController m_SaveLoadUiController;
-    [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private NodePalette m_nodePalette;
+    [SerializeField] private Image m_HandleImage;
+    [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private Button m_NodePaletteButton;
     #endregion
 
@@ -132,6 +135,8 @@ public class PUMPTool : MonoBehaviour
         _isVisible = true;
         _rectTransform.DOKill();
         _rectTransform.DOAnchorPos(_visiblePosition, m_SlideDuration).SetEase(Ease.OutQuad);
+        m_HandleImage.DOKill();
+        m_HandleImage.DOFade(0f, m_HandleFadeDuration * 0.5f).SetEase(Ease.Linear);
     }
 
     private void HideToolbar()
@@ -139,5 +144,8 @@ public class PUMPTool : MonoBehaviour
         _isVisible = false;
         _rectTransform.DOKill();
         _rectTransform.DOAnchorPos(_hiddenPosition, m_SlideDuration).SetEase(Ease.InQuad);
+        m_HandleImage.DOKill();
+        m_HandleImage.DOFade(0f, 0f);
+        m_HandleImage.DOFade(1f, m_HandleFadeDuration).SetDelay(m_SlideDuration).SetEase(Ease.Linear);
     }
 }

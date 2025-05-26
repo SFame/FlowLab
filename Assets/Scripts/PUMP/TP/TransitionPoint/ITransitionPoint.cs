@@ -38,21 +38,6 @@ public interface IStateful
     // State보다 우선 설정, 설정 시 State의 백킹필드에 동일 타입 Null값 삽입
     TransitionType Type { get; }
     Transition State { get; set; }
-
-    bool IsActivateState()
-    {
-        if (Type == TransitionType.Bool)
-        {
-            if (State.Type == TransitionType.Bool)
-            {
-                return State;
-            }
-
-            return false;
-        }
-
-        return !State.IsNull;
-    }
 }
 
 public interface ITypeListenStateful : IStateful

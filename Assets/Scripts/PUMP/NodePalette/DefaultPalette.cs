@@ -31,10 +31,9 @@ public class DefaultPalette : NodePalette
             "Signal", new Dictionary<Type, string>
             {
                 { typeof(Splitter), "Split" },
-                { typeof(BinaryDecoder), "BinaryDecoder" },
-                { typeof(BinaryEncoder), "BinaryEncoder" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
+                { typeof(TypeConverter), "Type Converter"},
                 { typeof(Debouncer), "Debouncer" },
                 { typeof(Timer), "Timer" },
             }
@@ -45,6 +44,8 @@ public class DefaultPalette : NodePalette
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
                 { typeof(FourbitALU), "FourbitALU" },
+                { typeof(BinaryDecoder), "BinaryDecoder" },
+                { typeof(BinaryEncoder), "BinaryEncoder" },
             }
         },
         {

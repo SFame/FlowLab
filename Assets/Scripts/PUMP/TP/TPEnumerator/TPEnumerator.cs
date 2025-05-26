@@ -359,6 +359,20 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         }
     }
 
+    public void ApplyNull(int index)
+    {
+        ITypeListenStateful target = this[index];
+        target.State = target.Type.Null();
+    }
+
+    public void ApplyAllStateAsNull()
+    {
+        foreach (StatefulAdapter sf in _adapters)
+        {
+            sf.State = sf.Type.Null();
+        }
+    }
+
     public IPolymorphicStateful[] GetPolymorphics() => _adapters.Select(adapter => (IPolymorphicStateful)adapter).ToArray();
 
     public void SetType(int index, TransitionType type)

@@ -16,8 +16,8 @@ public class DisplaySupport : MonoBehaviour
         }
 
         _text = transition.GetValueString();
-        m_Text.text = _text;
+        m_Text.text = transition.Type == TransitionType.String ? $"\"{_text}\"" : _text;
     }
-
+    
     public string GetText() => _text;
 }
