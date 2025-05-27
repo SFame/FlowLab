@@ -189,39 +189,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     }
 
     /// <summary>
-    /// 직렬화 시 TP의 속성 정보 Get
-    /// </summary>
-    public (T[] inputElems, T[] outputElems) GetTPElement<T>(Func<ITransitionPoint, T> selector)
-    {
-        CheckSupportEnumeratorNull();
-
-        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
-        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
-
-        T[] inputElems = inputTPs.Select(selector).ToArray();
-        T[] outputElems = outputTPs.Select(selector).ToArray();
-        return (inputElems, outputElems);
-    }
-
-    /// <summary>
-    /// 직렬화 시 TP의 Connection Pending정보 Get
-    /// </summary>
-    public bool[] GetStatePending()
-    {
-        CheckSupportEnumeratorNull();
-
-        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
-
-        if (outputTPs.All(tp => tp is ITPOut))
-        {
-            return outputTPs.Select(tp => ((ITPOut)tp).IsStatePending).ToArray();
-        }
-
-        Debug.LogError("OutputToken.TPs element is not ITPOut");
-        return Enumerable.Repeat(false, outputTPs.Length).ToArray();
-    }
-
-    /// <summary>
     /// 역 직렬화 시 TP의 연결정보 Set
     /// </summary>
     public void SetTPConnectionInfo(TPConnectionInfo connectionInfo, DeserializationCompleteReceiver completeReceiver)
@@ -237,14 +204,29 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     }
 
     /// <summary>
+    /// 직렬화 시 TP의 속성 정보 Get
+    /// </summary>
+    public (T[] inputElems, T[] outputElems) GetTPElements<T>(Func<ITransitionPoint, T> selector)
+    {
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        T[] inputElems = inputTPs.Select(selector).ToArray();
+        T[] outputElems = outputTPs.Select(selector).ToArray();
+        return (inputElems, outputElems);
+    }
+
+    /// <summary>
     /// 역 직렬화 시 TP 속성 정보 Set
     /// </summary>
-    public void SetTPElems<T>(T[] inputElems, T[] outputElems, Action<ITransitionPoint, T> applier)
+    public void SetTPElements<T>(T[] inputElems, T[] outputElems, Action<ITransitionPoint, T> applier)
     {
         CheckSupportEnumeratorNull();
         if (inputElems == null || outputElems == null)
         {
-            throw new ArgumentNullException("SetTPElems: Null Args 수신");
+            throw new ArgumentNullException("SetTPElements: Null Args 수신");
         }
 
         ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
@@ -280,6 +262,24 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
                 Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
             }
         }
+    }
+
+    /// <summary>
+    /// 직렬화 시 TP의 Connection Pending정보 Get
+    /// </summary>
+    public bool[] GetStatePending()
+    {
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+
+        if (outputTPs.All(tp => tp is ITPOut))
+        {
+            return outputTPs.Select(tp => ((ITPOut)tp).IsStatePending).ToArray();
+        }
+
+        Debug.LogError("OutputToken.TPs element is not ITPOut");
+        return Enumerable.Repeat(false, outputTPs.Length).ToArray();
     }
 
     public void ReplayStatePending(bool[] pending)
@@ -497,7 +497,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
 
         if (InputToken == null || OutputToken == null)
         {
-            throw new Exception("Token casting fail");
+            throw new NullReferenceException("Token 생성 실패");
         }
 
         // 캐싱 토큰 Dispose

@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class Round : Node
 {
     private List<ContextElement> _contexts;
+
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
@@ -13,15 +12,21 @@ public class Round : Node
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Float };
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
+
     protected override float InEnumeratorXPos => -47f;
+
     protected override float OutEnumeratorXPos => 47f;
+
     protected override float EnumeratorPadding => 10f;
+
     protected override float EnumeratorMargin => 5f;
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
     protected override string NodeDisplayName => "Round";
+
     protected override float TextSize => 24f;
+
     protected override List<ContextElement> ContextElements
     {
         get
@@ -36,6 +41,7 @@ public class Round : Node
             return _contexts;
         }
     }
+
     private void SetType(TransitionType type)
     {
         OutputToken.SetTypeAll(type);
@@ -49,7 +55,6 @@ public class Round : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-
         if (InputToken.IsAllNull)
         {
             OutputToken[0].State = OutputToken[0].Type.Null();

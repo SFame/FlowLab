@@ -94,8 +94,8 @@ printer: Printer = None
 def init(inputs: list) -> None:
     input_values = [f"{i}: {value}" for i, value in enumerate(inputs)]
     printer.print(f"Inputs - {', '.join(input_values)}")
-    
-    output_applier.apply([not inputs[0], 10, 10.0, "각"])
+
+    output_applier.apply([None if inputs[0] is None else not inputs[0], None if inputs[1] is None else 10, None if inputs[2] is None else 10.0, None if inputs[3] is None else "각"])
 
 
 def terminate() -> None:

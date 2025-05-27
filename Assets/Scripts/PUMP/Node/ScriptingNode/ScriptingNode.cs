@@ -327,7 +327,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     private void Apply(IList<Transition?> values)
     {
-        OutputToken.ApplyStatesAllWithNull(values);
+        OutputToken.PushAllowingNull(values);
     }
 
     private void ApplyAt(int index, Transition? state)

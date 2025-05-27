@@ -34,7 +34,7 @@ public class StringCounter : Node
     {
         if (args.IsNull)
         {
-            OutputToken.ApplyAllAsNull();
+            OutputToken.PushAllAsNull();
             return;
         }
 

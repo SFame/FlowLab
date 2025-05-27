@@ -52,12 +52,11 @@ public class InputSwitchSupport : MonoBehaviour
 
     public void OpenInputPanel()
     {
+        m_InputPanelGroup.blocksRaycasts = true;
+        m_InputPanelGroup.interactable = true;
+
         m_InputPanelGroup.DOKill();
-        m_InputPanelGroup.DOFade(1f, m_InputPanelFadeDuration).OnComplete(() =>
-        {
-            m_InputPanelGroup.blocksRaycasts = true;
-            m_InputPanelGroup.interactable = true;
-        });
+        m_InputPanelGroup.DOFade(1f, m_InputPanelFadeDuration);
     }
 
     public void CloseInputPanel()

@@ -25,7 +25,7 @@ public struct Transition : IEquatable<Transition>
             throw new TransitionNoneTypeException();
         }
 
-        return new Transition(transitionType, new TransitionValue(), true);
+        return new Transition(transitionType, TransitionValue.Default(), true);
     }
 
     public static Transition Default(TransitionType transitionType) => transitionType switch
@@ -206,6 +206,11 @@ public struct Transition : IEquatable<Transition>
             throw new TransitionNoneTypeException();
         }
 
+        if (value.StringValue == null)
+        {
+            throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead");
+        }
+
         _type = type;
         _value = value;
         _isNull = isNull;
@@ -363,7 +368,12 @@ public struct Transition : IEquatable<Transition>
     // ---------- String ----------
     public static implicit operator Transition(string s)
     {
-        return new Transition(TransitionType.String, new TransitionValue(stringValue: s ?? string.Empty));
+        if (s == null)
+        {
+            throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead");
+        }
+
+        return new Transition(TransitionType.String, new TransitionValue(stringValue: s));
     }
 
     public static implicit operator string(Transition t)
@@ -378,7 +388,7 @@ public struct Transition : IEquatable<Transition>
             throw new TransitionTypeCastException(t.Type, typeof(string));
         }
 
-        return t.Value.StringValue ?? string.Empty;
+        return t.Value.StringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead"); ;
     }
     #endregion
 
@@ -521,12 +531,17 @@ public struct Transition : IEquatable<Transition>
 
 public struct TransitionValue
 {
+    public static TransitionValue Default()
+    {
+        return new TransitionValue(false, 0, 0f, "");
+    }
+
     public TransitionValue(bool boolValue = false, int intValue = 0, float floatValue = 0f, string stringValue = "")
     {
         _boolValue = boolValue;
         _intValue = intValue;
         _floatValue = floatValue;
-        _stringValue = stringValue;
+        _stringValue = stringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead");
     }
 
     public bool BoolValue => _boolValue;
@@ -873,5 +888,10 @@ public class TransitionTypeArgumentOutOfRangeException : TransitionException
         OutRangeTransitionType = null;
         OutRangeType = outRangeType;
     }
+}
+
+public class TransitionNullStringException : TransitionException
+{
+    public TransitionNullStringException(string message) : base(message) { }
 }
 #endregion

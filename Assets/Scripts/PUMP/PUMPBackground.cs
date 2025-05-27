@@ -546,8 +546,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             foreach (Node node in Nodes)
             {
                 Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
-                var typeTuple = node.GetTPElement(tp => tp.Type);
-                var statesTuple = node.GetTPElement(tp => tp.State);
+                var typeTuple = node.GetTPElements(tp => tp.Type);
+                var statesTuple = node.GetTPElements(tp => tp.State);
 
                 SerializeNodeInfo nodeInfo = new()
                 {
@@ -626,10 +626,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
 
                 // Set Transition Point types --------
-                newNode.SetTPElems(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
+                newNode.SetTPElements(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
 
                 // Set Transition Point states ---------
-                newNode.SetTPElems(info.InTpState, info.OutTpState, (tp, state) => tp.State = state);
+                newNode.SetTPElements(info.InTpState, info.OutTpState, (tp, state) => tp.State = state);
             }
 
             if (Nodes.Count != infos.Count)

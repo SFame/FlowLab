@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 public class PaletteElem : MonoBehaviour, IDraggable
 {
@@ -16,6 +17,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     #region Privates
     private string _displayName;
     private bool _mouseOnPalette;
+    private bool _caughtException = false;
     private List<RaycastResult> _raycastResults = new();
     private PUMPBackground _background;
     private Node _newNode;
@@ -44,6 +46,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     public void OnBeginDrag(PointerEventData eventData)
     {
         _mouseOnPalette = true;
+        _caughtException = false;
         _background = null;
         _newNode = null;
         OnDragStart?.Invoke();
@@ -59,37 +62,56 @@ public class PaletteElem : MonoBehaviour, IDraggable
         OnDragEnd?.Invoke();
         
         
-        if (_background != null && _newNode != null && _newNode is INodeLifecycleCallable callable)
+        if (_background != null && _newNode is INodeLifecycleCallable callable)
         {
             callable.CallOnCompletePlacementFromPalette();
         }
         
         _mouseOnPalette = true;
+        _caughtException = false;
         _background = null;
         _newNode = null;
     }
 
     private void FindPumpBackground(PointerEventData eventData)
     {
-        if (_background is null)
-        {
-            _raycastResults.Clear();
-            EventSystem.current.RaycastAll(eventData, _raycastResults);
-            
-            foreach (RaycastResult result in _raycastResults)
-            {
-                if (result.gameObject.TryGetComponent(out _background))
-                {
-                    _newNode = _background.AddNewNode(NodeType);
-                    OnInstantiate?.Invoke();
-                    break;
-                }
-            }
-        }
-        
-        if (_background is null)
+        if (_caughtException)
             return;
 
-        _newNode.Support.SetPosition(eventData.position);
+        try
+        {
+            if (_background is null)
+            {
+                _raycastResults.Clear();
+                EventSystem.current.RaycastAll(eventData, _raycastResults);
+
+                foreach (RaycastResult result in _raycastResults)
+                {
+                    if (result.gameObject.TryGetComponent(out _background))
+                    {
+                        _newNode = _background.AddNewNode(NodeType);
+                        OnInstantiate?.Invoke();
+                        break;
+                    }
+                }
+            }
+
+            if (_background is null)
+                return;
+
+            _newNode.Support.SetPosition(eventData.position);
+        }
+        catch (Exception e)
+        {
+            _caughtException = true;
+
+            if (_newNode != null && _newNode.Support != null)
+            {
+                _newNode.Remove();
+            }
+
+            Debug.LogError("Node 생성 중 예외 발생. 하단의 예외를 확인하십시오");
+            Debug.LogException(e);
+        }
     }
 }

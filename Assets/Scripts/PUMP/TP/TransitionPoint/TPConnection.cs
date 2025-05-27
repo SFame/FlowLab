@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class TPConnection : IStateful, IDisposable
 {
-    #region Privates
+    #region Static Privates
     private static float _waitTime = 0.5f;
     private const float MAX_WAIT_TIME = 10f;
 
@@ -37,7 +37,6 @@ public class TPConnection : IStateful, IDisposable
 
     public static ConnectionAwait AwaitType { get; set; } = ConnectionAwait.Frame;
     #endregion
-
 
     #region Privates
     private Transition _state;
@@ -85,10 +84,7 @@ public class TPConnection : IStateful, IDisposable
         get => _state;
         set
         {
-            if (value.Type != Type)
-            {
-                throw new TransitionTypeMismatchException(value.Type, Type);
-            }
+            value.ThrowIfTypeMismatch(Type);
 
             if (DisableFlush)
             {

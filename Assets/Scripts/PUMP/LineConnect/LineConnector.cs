@@ -5,7 +5,6 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 
-//[RequireComponent(typeof(UILineRenderer))]
 [RequireComponent(typeof(RectTransform))]
 public class LineConnector : MonoBehaviour
 {
@@ -90,7 +89,6 @@ public class LineConnector : MonoBehaviour
     private RectTransform _lineParent;
     private RectTransform _edgeParent;
     private LineEdge _draggingEdge;
-    private UILineRenderer _lineRenderer;
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
@@ -105,15 +103,7 @@ public class LineConnector : MonoBehaviour
         }
     }
     private LineArg[] SidePoints { get; set; } = new LineArg[2];
-    public UILineRenderer LineRenderer
-    { 
-        get 
-        { 
-            if(_lineRenderer == null)
-                _lineRenderer = GetComponent<UILineRenderer>(); 
-            return _lineRenderer;
-        } 
-    }
+
     #endregion
 
     #region Interface

@@ -38,7 +38,7 @@ public class FourbitALU : Node
             return;
         if (InputToken.IsAllNull)
         {
-            OutputToken.ApplyAllAsNull();
+            OutputToken.PushAllAsNull();
             return;
         }
 
