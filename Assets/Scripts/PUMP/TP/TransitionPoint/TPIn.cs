@@ -68,11 +68,11 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             bool isStateChange = !beforeState.Equals(value);
             _state = value;
 
-            ShowRadial(_state);
             SetImageColor(_state.IsNull ? m_DefaultColor: m_StateActiveColor);
 
             if (!OnDeserializing)
             {
+                ShowRadial(_state);
                 TransitionEventArgs args = TransitionEventArgs.Get(Index, value, beforeState, isStateChange);
                 OnStateChange?.Invoke(args);
                 TransitionEventArgs.Release(args);

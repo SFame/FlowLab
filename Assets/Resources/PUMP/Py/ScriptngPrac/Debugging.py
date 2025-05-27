@@ -112,10 +112,10 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
     # output_applier.apply([not inputs[0], inputs[1] * 10, inputs[2] * 10])
 
     if index == 0:
-        output_applier.apply_at(0, not state)
+        output_applier.apply_at(0, None if state is None else not state)
     elif index == 1:
-        output_applier.apply_to('out 2', state * 10)
+        output_applier.apply_to('out 2', None if state is None else state * 10)
     elif index == 2:
-        output_applier.apply_at(2, state * 10)
+        output_applier.apply_at(2, None if state is None else state * 10)
     elif index == 3:
-        output_applier.apply_at(3, state + " 입니다.")
+        output_applier.apply_at(3, None if state is None else state + " desu.")

@@ -66,9 +66,12 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
             _state = value;
             PushToConnection();
-
-            ShowRadial(_state);
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
+
+            if (!OnDeserializing)
+            {
+                ShowRadial(_state);
+            }
         }
     }
 

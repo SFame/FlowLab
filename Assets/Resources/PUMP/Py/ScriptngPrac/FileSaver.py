@@ -36,7 +36,7 @@ def init(inputs: list) -> None:
     global current_text
     
     # 초기 텍스트 값 저장
-    current_text = inputs[0]
+    current_text = 'None' if inputs[0] == None else inputs[0]
     
     printer.print(f"File Saver ready - Text: '{current_text[:20]}{'...' if len(current_text) > 20 else ''}'")
 
