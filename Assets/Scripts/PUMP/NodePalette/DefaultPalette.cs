@@ -47,6 +47,9 @@ public class DefaultPalette : NodePalette
                 { typeof(Round), "Round" },
                 { typeof(BinaryDecoder), "BinaryDecoder" },
                 { typeof(BinaryEncoder), "BinaryEncoder" },
+                { typeof(Lerp), "Lerp" },
+                { typeof(Clamp), "Clamp" },
+                { typeof(Absolute), "Absolute" },
             }
         },
         {
