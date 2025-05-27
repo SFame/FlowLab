@@ -56,7 +56,7 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
         if (!args.IsStateChange)
             return;
 
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken[0].State = TransitionType.Int.Null();
             return;

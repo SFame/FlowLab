@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,7 +48,6 @@ public class Absolute : Node
         ReportChanges();
     }
 
-
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return TransitionUtil.GetNullArray(outputTypes);
@@ -57,22 +55,21 @@ public class Absolute : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken[0].State = OutputToken[0].Type.Null();
             return;
         }
 
         float absValue;
-        if (InputToken[0].Type == TransitionType.Int)
+        if (InputToken[0].Type == TransitionType.Int) // 입력 여러개를 비교할 일이 없으니까 InputToken을 안쓰는게 더 깔끔할거임. args를 쓰자
         {
-            int intValue = (int)InputToken[0].State;
+            int intValue = (int)InputToken[0].State;  // (int)로 명시적 캐스팅 안해도 implicit 있어서 자동 캐스팅 됨
             absValue = Mathf.Abs(intValue);
         }
         else
         {
-            float floatValue = (float)InputToken[0].State;
+            float floatValue = (float)InputToken[0].State;  // 마찬가지
             absValue = Mathf.Abs(floatValue);
         }
 
@@ -82,5 +79,25 @@ public class Absolute : Node
             TransitionType.Float => absValue,
             _ => OutputToken[0].Type.Null()
         };
+
+        // else를 포함하는 분기는 가능하면 최대한 피하고, 각 조건문은 독립적으로 동작시키는게 가독성이 좋음. 아래처럼 코드 스타일을 수정해볼 것
+
+        /*
+         * if (args.Type == TransitionType.Int)
+         * {
+         *     int intAbs = Mathf.Abs(args.State);
+         *     OutputToken.PushFirst(intAbs);
+         *     return;
+         * }
+         *
+         * if (args.Type == TransitionType.Float)
+         * {
+         *     float floatAbs = Mathf.Abs((float)args.State);
+         *     OutputToken.PushFirst(floatAbs);
+         *     return;
+         * }
+         *
+         * 추가 타입 필요시 계속
+         */
     }
 }

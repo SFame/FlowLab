@@ -32,7 +32,7 @@ public class AND : Node
         if (!args.IsStateChange)
             return;
 
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken[0].State = TransitionType.Bool.Null();
             return;

@@ -55,7 +55,7 @@ public class Round : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken[0].State = OutputToken[0].Type.Null();
             return;

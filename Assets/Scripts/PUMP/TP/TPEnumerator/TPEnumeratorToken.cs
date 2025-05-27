@@ -64,7 +64,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public int Count => _adapters.Length;
 
-    public bool IsAllNull
+    public bool HasOnlyNull
     {
         get
         {

@@ -32,8 +32,7 @@ public class Lerp : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken[0].State = TransitionType.Float.Null();
             return;
@@ -48,9 +47,9 @@ public class Lerp : Node
         float b = InputToken[1].State;
         float t = InputToken[2].State;
 
-        t = Mathf.Clamp01(t); // �̰� �ʿ��������..?
+        t = Mathf.Clamp01(t); // 이건 필요없을지도..? => 필요없을듯. 원래 Lerp가 t값이 0~1 범위를 벗어나면 외삽하는게 기본임.
+                              // Mathf.Lerp 대신 Mathf.LerpUnclamped() 쓰자
 
         OutputToken[0].State = Mathf.Lerp(a, b, t);
-
     }
 }

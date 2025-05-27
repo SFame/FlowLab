@@ -36,7 +36,7 @@ public class FourbitALU : Node
         // 이때 inputtoken[0].isnull?
         if (!args.IsStateChange)
             return;
-        if (InputToken.IsAllNull)
+        if (InputToken.HasOnlyNull)
         {
             OutputToken.PushAllAsNull();
             return;
