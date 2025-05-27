@@ -247,7 +247,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
             },
             null,
             _radialCts.Token
-        );
+        ).Forget();
     }
 
     private void ActiveRadial(bool isActive)

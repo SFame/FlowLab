@@ -601,20 +601,23 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             // Load without connection info ==>
             foreach (SerializeNodeInfo info in infos)
             {
-                // Instantiate new node and apply arg, Initialize ---------
-                Node newNode = JoinNode(AddNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs));  // Args적용, Initialize(), Nodes.Add() 한 상태
-                
-                if (newNode is null)
-                {
-                    Debug.LogError($"{name}: AddNewNodeWithArgs Null 반환");
-                    return;
-                }
+                // Instantiate new node and apply arg ---------
+                Node newNode = AddNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs);
 
                 // Notify the node of the deserialization ---------
                 if (newNode is IDeserializingListenable listenable) // 역직렬화 시작을 알림
                 {
                     listenable.OnDeserializing = true;
                     completeReceiver.Subscribe(() => listenable.OnDeserializing = false);
+                }
+
+                // Join Node and Invoke Initialize()
+                newNode = JoinNode(newNode);  // Initialize(), Nodes.Add() 한 상태
+                
+                if (newNode is null)
+                {
+                    Debug.LogError($"{name}: AddNewNodeWithArgs Null 반환");
+                    return;
                 }
 
                 // Set node position ---------

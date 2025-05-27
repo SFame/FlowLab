@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
 
-public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenable, IDraggable, ITPHideable
+public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideable
 {
     #region Privates
     private Transition _state;
@@ -12,6 +12,8 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     private ITPHideable _hideTargetTpCache;
     private HashSet<object> _hiders = new();
     private readonly object _hider = new();
+
+    private bool OnDeserializing => Node?.OnDeserializing ?? false;
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
@@ -66,12 +68,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
 
             _state = value;
             PushToConnection();
-            SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
 
-            if (!OnDeserializing)
-            {
-                ShowRadial(_state);
-            }
+            SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
+            ShowRadial(_state);
         }
     }
 
@@ -91,8 +90,6 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDeserializingListenab
     }
 
     public bool IsStatePending => Connection?.IsFlushing ?? false;
-
-    public bool OnDeserializing { get; set; }
 
     public void PushToConnection()
     {

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(Image))]
-public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable, IDraggable, ITPHideable
+public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
 {
     #region Privates
     private Transition _state;
@@ -14,6 +14,8 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
     private ITPHideable _hideTargetTpCache;
     private HashSet<object> _hiders = new();
     private readonly object _hider = new();
+
+    private bool OnDeserializing => Node?.OnDeserializing ?? false;
 
     private TPConnection SetTPConnectionLineConnector(TPConnection tpConnection)
     {
@@ -69,10 +71,10 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             _state = value;
 
             SetImageColor(_state.IsNull ? m_DefaultColor: m_StateActiveColor);
+            ShowRadial(_state);
 
             if (!OnDeserializing)
             {
-                ShowRadial(_state);
                 TransitionEventArgs args = TransitionEventArgs.Get(Index, value, beforeState, isStateChange);
                 OnStateChange?.Invoke(args);
                 TransitionEventArgs.Release(args);
@@ -94,8 +96,6 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDeserializingListenable
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
     }
-
-    public bool OnDeserializing { get; set; }
 
     public event StateChangeEventHandler OnStateChange;
     public event SoundEventHandler OnSounded;

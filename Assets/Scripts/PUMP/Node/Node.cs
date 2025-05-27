@@ -18,8 +18,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     private bool _inEnumActive = true;
     private bool _outEnumActive = true;
 
-    private bool _onDeserializing = false;
-
     private void CheckSupportEnumeratorNull()
     {
         if (Support == null)
@@ -77,35 +75,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         }
     }
 
-    public bool OnDeserializing
-    {
-        get => _onDeserializing;
-        set
-        {
-            _onDeserializing = value;
-
-            CheckSupportEnumeratorNull();
-
-            ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
-            ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
-
-            foreach (ITransitionPoint tp in inputTPs)
-            {
-                if (tp is IDeserializingListenable listenable)
-                {
-                    listenable.OnDeserializing = value;
-                }
-            }
-
-            foreach (ITransitionPoint tp in outputTPs)
-            {
-                if (tp is IDeserializingListenable listenable)
-                {
-                    listenable.OnDeserializing = value;
-                }
-            }
-        }
-    }
+    public bool OnDeserializing { get; set; }
 
     public bool IsDeserialized { get; private set; }
 
