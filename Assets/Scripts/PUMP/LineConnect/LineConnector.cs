@@ -257,34 +257,34 @@ public class LineConnector : MonoBehaviour
 
     public void SetColor(Color color)
     {
-        if (!FreezeLinesAttributes)
-        {
-            foreach (LineArg arg in LineArgs)
-                arg?.Line?.SetColor(color);
+        if (FreezeLinesAttributes)
+            return;
 
-            foreach (LineEdge edge in Edges)
-                edge?.SetColor(color);
+        foreach (LineArg arg in LineArgs)
+            arg?.Line?.SetColor(color);
 
-            StartSidePointImage.color = color;
-            EndSidePointImage.color = color; 
-        }
+        foreach (LineEdge edge in Edges)
+            edge?.SetColor(color);
+
+        StartSidePointImage.color = color;
+        EndSidePointImage.color = color;
     }
 
     public void SetAlpha(float alpha)
     {
-        if (!FreezeLinesAttributes)
-        {
-            foreach (LineArg arg in LineArgs)
-                arg?.Line?.SetAlpha(alpha);
+        if (FreezeLinesAttributes)
+            return;
 
-            foreach (LineEdge edge in Edges)
-                edge?.SetAlpha(alpha);
+        foreach (LineArg arg in LineArgs)
+            arg?.Line?.SetAlpha(alpha);
 
-            Color startColor = StartSidePointImage.color;
-            Color endColor = EndSidePointImage.color;
-            StartSidePointImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
-            EndSidePointImage.color = new Color(endColor.r, endColor.g, endColor.b, alpha); 
-        }
+        foreach (LineEdge edge in Edges)
+            edge?.SetAlpha(alpha);
+
+        Color startColor = StartSidePointImage.color;
+        Color endColor = EndSidePointImage.color;
+        StartSidePointImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+        EndSidePointImage.color = new Color(endColor.r, endColor.g, endColor.b, alpha);
     }
     #endregion
 

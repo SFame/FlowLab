@@ -67,6 +67,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     protected override void OnAfterInstantiate()
     {
         IgnoreSelectedDelete = true;
+        Support.OnSetHighlight += SetHighlight;
     }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
@@ -95,10 +96,8 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         }
     }
     
-    public override void SetHighlight(bool highlighted)
+    private void SetHighlight(bool highlighted)
     {
-        base.SetHighlight(highlighted);
-
         if (Support is { OutputEnumerator: IHighlightable highlightable })
         {
             highlightable.SetHighlight(highlighted);

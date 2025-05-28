@@ -301,6 +301,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             Current = null;
         }
 
+        ClearDraggables();
         _externalInputAdapter.Dispose();
         _externalOutputAdapter.Dispose();
         OnDestroyed?.Invoke();
@@ -819,6 +820,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     #region Selecting
     private readonly List<IDragSelectable> _draggables = new();
+    private SafetyCancellationTokenSource _alphaControlCts = new();
+    private const float DRAGGABLES_BLINK_SPEED = 0.75f;
+    private const float DRAGGABLES_MIN_ALPHA = 0.6f;
+    private const float DRAGGABLES_MAX_ALPHA = 0.9f;
 
     private List<ContextElement> SelectContextElements
     {
@@ -852,13 +857,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         m_SelectionAreaController.OnMouseEndDrag += results =>
         {
-            HashSet<IDragSelectable> selectables = FindDragSelectableInResults(results);
-
-            foreach (IDragSelectable selectable in selectables)
-            {
-                selectable.IsSelected = true;
-                AddDraggable(selectable);
-            }
+            HashSet<IDragSelectable> draggables = FindDragSelectableInResults(results);
+            AddDraggables(draggables);
         };
     }
 
@@ -886,8 +886,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void ClearDraggables()
     {
+        _alphaControlCts.CancelAndDispose();
+
         foreach (IDragSelectable draggable in _draggables)
         {
+            draggable.SetAlpha(1f);
             draggable.OnSelectedMove -= DraggablesMoveCallback;
             draggable.SelectRemoveRequest -= ClearDraggables;
             draggable.SelectingTag = null;
@@ -917,8 +920,47 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
         ((IChangeObserver)this).ReportChanges();
     }
-    
-    private void AddDraggable(IDragSelectable draggable)
+
+    private void AddDraggables(IEnumerable<IDragSelectable> draggables)
+    {
+        if (draggables == null || !draggables.Any())
+            return;
+
+        if (_draggables.Count > 0)
+        {
+            ClearDraggables();
+        }
+
+        foreach (IDragSelectable draggable in draggables)
+        {
+            draggable.IsSelected = true;
+            JoinDraggable(draggable);
+        }
+
+        if (_draggables.Count > 0)
+        {
+            _alphaControlCts = _alphaControlCts.CancelAndDisposeAndGetNew();
+
+            Other.CosAction
+            (
+                curve =>
+                {
+                    foreach (IDragSelectable draggable in _draggables)
+                    {
+                        draggable.SetAlpha(curve);
+                    }
+                },
+                DRAGGABLES_BLINK_SPEED,
+                DRAGGABLES_MIN_ALPHA,
+                DRAGGABLES_MAX_ALPHA,
+                null,
+                _alphaControlCts.Token
+            ).Forget();
+        }
+    }
+
+
+    private void JoinDraggable(IDragSelectable draggable)
     {
         _draggables.Add(draggable);
         draggable.OnSelectedMove += DraggablesMoveCallback;
@@ -963,7 +1005,7 @@ public interface IDragSelectable
     public object SelectingTag { get; set; }
     
     /// <summary>
-    /// 선택객체 움직이는 메서드 (관리자에서 전체순회)
+    /// 선택된 "이" 객체를 움직이는 메서드 (관리자에서 전체순회)
     /// </summary>
     /// <param name="direction"></param>
     public void MoveSelected(Vector2 direction);
@@ -977,9 +1019,14 @@ public interface IDragSelectable
     /// 선택객체 연결해제
     /// </summary>
     public void ObjectDisconnect();
+
+    /// <summary>
+    /// 선택 시 알파값 지속 조절
+    /// </summary>
+    public void SetAlpha(float alpha);
     
     /// <summary>
-    /// 선택객체 이동 시.
+    /// 선택객체가 움직일 때 선택객체는 이 이벤트를 발생시킴
     /// </summary>
     public event OnSelectedMoveHandler OnSelectedMove;
     
