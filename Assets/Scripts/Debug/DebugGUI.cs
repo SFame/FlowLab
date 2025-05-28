@@ -74,7 +74,7 @@ public class DebugGUI : MonoBehaviour
     private void OpenScriptAtLine(string stackTrace)
     {
         string pattern = @"at\s+(.*?)\s+\[.*?\]\s+in\s+(.*?):(\d+)";
-        MatchCollection matches = Regex.Matches(stackTrace, pattern);
+        MatchCollection matches = System.Text.RegularExpressions.Regex.Matches(stackTrace, pattern);
 
         if (matches.Count >= 2) //두 번째 "at" 구문이 존재하는지 확인
         {
