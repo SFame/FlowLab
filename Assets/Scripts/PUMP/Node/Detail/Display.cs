@@ -4,7 +4,7 @@ using UnityEngine;
 public class Display : Node
 {
     private DisplaySupport _displaySupport;
-    List<ContextElement> _contexts;
+    private List<ContextElement> _contexts;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/DISPLAY";
     protected override string SpritePath => null;

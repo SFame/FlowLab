@@ -220,7 +220,7 @@ namespace Utils
                 return input;
 
             string pattern = @"<([a-zA-Z][a-zA-Z0-9]*)(?:[^<>]*)>(.*?)</\1>";
-            string result = Regex.Replace(input, pattern, "$2");
+            string result = System.Text.RegularExpressions.Regex.Replace(input, pattern, "$2");
             return result;
         }
     }

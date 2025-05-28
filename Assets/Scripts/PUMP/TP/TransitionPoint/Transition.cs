@@ -1,5 +1,6 @@
 using OdinSerializer;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using UnityEngine;
@@ -533,7 +534,7 @@ public struct TransitionValue
 {
     public static TransitionValue Default()
     {
-        return new TransitionValue(false, 0, 0f, "");
+        return new TransitionValue(false, 0, 0f, string.Empty);
     }
 
     public TransitionValue(bool boolValue = false, int intValue = 0, float floatValue = 0f, string stringValue = "")
@@ -547,7 +548,14 @@ public struct TransitionValue
     public bool BoolValue => _boolValue;
     public int IntValue => _intValue;
     public float FloatValue => _floatValue;
-    public string StringValue => _stringValue;
+    public string StringValue
+    {
+        get
+        {
+            _stringValue ??= string.Empty;
+            return _stringValue;
+        }
+    }
 
     #region Backing fields
     [OdinSerialize] private bool _boolValue;
@@ -779,9 +787,24 @@ public static class TransitionUtil
         }
     }
 
-    public static Transition[] GetNullArray(TransitionType[] transitionTypes)
+    public static Transition[] GetNullArray(IEnumerable<TransitionType> transitionTypes)
     {
+        if (transitionTypes == null)
+        {
+            throw new ArgumentNullException(nameof(transitionTypes), $"{nameof(GetNullArray)}: Argument cannot be null");
+        }
+
         return transitionTypes.Select(type => type.Null()).ToArray();
+    }
+
+    public static Transition[] GetDefaultArray(IEnumerable<TransitionType> transitionTypes)
+    {
+        if (transitionTypes == null)
+        {
+            throw new ArgumentNullException(nameof(transitionTypes), $"{nameof(GetDefaultArray)}: Argument cannot be null");
+        }
+
+        return transitionTypes.Select(type => type.Default()).ToArray();
     }
 
     public static Color GetColor(this TransitionType transitionType) => transitionType switch
