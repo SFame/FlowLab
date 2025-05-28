@@ -51,6 +51,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
                 { typeof(Multiplexer), "Multiplexer" },
+                { typeof(MinMax), "MinMax" },
             }
         },
         {
