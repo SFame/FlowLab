@@ -51,6 +51,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Lerp), "Lerp" },
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
+                { typeof(Multiplexer), "Multiplexer" },
             }
         },
         {
