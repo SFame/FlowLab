@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
+    private ClickSwitchSupport _clickSwitchSupport;
 
     protected override List<string> InputNames { get; } = new List<string>();
 
@@ -27,6 +28,20 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
     protected override string NodeDisplayName => "On/Off";
 
     protected override float TextSize => 25f;
+
+    private ClickSwitchSupport ClickSwitchSupport
+    {
+        get
+        {
+            if (_clickSwitchSupport == null)
+            {
+                _clickSwitchSupport = Support.GetComponent<ClickSwitchSupport>();
+                _clickSwitchSupport.Initialize();
+            }
+            
+            return _clickSwitchSupport;
+        }
+    }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -54,25 +69,13 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
         set => State = value;
     }
 
-    object INodeAdditionalArgs.AdditionalArgs
-    {
-        get => AdditionalArgs;
-        set => AdditionalArgs = (bool)value;
-    }
-
     public bool State
     {
         get => _state;
         set
         {
             _state = value;
-            SetImageColor(value);
+            ClickSwitchSupport.SetShadow(_state);
         }
-    }
-
-    private void SetImageColor(bool isActive)
-    {
-        Support.DefaultColor = isActive ? new Color(0.7f, 0.7f, 0.7f, 1f) : Color.white;
-        Support.Image.color = Support.DefaultColor;
     }
 }

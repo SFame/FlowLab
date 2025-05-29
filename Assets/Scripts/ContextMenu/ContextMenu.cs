@@ -26,7 +26,7 @@ public class ContextMenu : MonoBehaviour, IPointerDownHandler
     {
         get
         {
-            if (_buttonPrefab is null)
+            if (_buttonPrefab == null)
                 _buttonPrefab = Resources.Load<GameObject>(BUTTON_PREFAB_PATH);
             return _buttonPrefab;
         }
@@ -36,7 +36,7 @@ public class ContextMenu : MonoBehaviour, IPointerDownHandler
     {
         get
         {
-            if (_contextRect is null)
+            if (_contextRect == null)
                 _contextRect = _contexts.GetComponent<RectTransform>();
             return _contextRect;
         }
@@ -48,7 +48,7 @@ public class ContextMenu : MonoBehaviour, IPointerDownHandler
     {
         get
         {
-            if (_rect is null)
+            if (_rect == null)
                 _rect = GetComponent<RectTransform>();
             return _rect;
         }
@@ -58,7 +58,7 @@ public class ContextMenu : MonoBehaviour, IPointerDownHandler
     {
         get
         {
-            if (_buttonPool is null)
+            if (_buttonPool == null)
             {
                 _buttonPool = new Pool<ContextButton>
                 (

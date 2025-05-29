@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ClosablePanel : MonoBehaviour, IPointerDownHandler
+public class CloseablePanel : MonoBehaviour, IPointerDownHandler
 {
     [SerializeField] private bool m_ControlActive = false;
 

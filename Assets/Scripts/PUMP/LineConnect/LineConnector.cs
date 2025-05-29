@@ -73,7 +73,8 @@ public class LineConnector : MonoBehaviour
     {
         get
         {
-            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
+            if (_rootCanvas == null)
+                _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
             return _rootCanvas;
         }
     }
@@ -92,7 +93,7 @@ public class LineConnector : MonoBehaviour
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
-    [SerializeField] private List<LineArg> LineArgs { get; set; } = new();
+    private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
     private LineEdge DraggingEdge
     {
@@ -465,7 +466,6 @@ public class LineConnector : MonoBehaviour
     }
     #endregion
 
-    [Serializable]
     public class LineArg
     {
         public ImageLine Line { get; private set; }

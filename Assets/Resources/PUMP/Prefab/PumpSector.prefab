@@ -192,7 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ClosablePanel: {fileID: 8765489774307047756}
+  m_CloseablePanel: {fileID: 8765489774307047756}
 --- !u!114 &8765489774307047756
 MonoBehaviour:
   m_ObjectHideFlags: 0

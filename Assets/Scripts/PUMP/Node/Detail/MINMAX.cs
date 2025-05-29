@@ -2,15 +2,14 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeInfo>
 {
     private List<ContextElement> _contexts;
 
-    public override string NodePrefabPath => "PUMP/Prefab/Node/MinMax";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/MIN_MAX";
+
     protected override string NodeDisplayName => "";
 
     protected override float InEnumeratorXPos => -32f;
@@ -141,7 +140,7 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
     #endregion
 
     #region Serialize target
-    // InputCount Æ÷ÇÔ
+    // InputCount í¬í•¨
     private string Operator { get; set; } = "Min";
     private string NodeName { get; set; } = "Min";
     #endregion
@@ -170,5 +169,4 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
             return $"Input Count: {_inputCount}, Operator: {_operator}";
         }
     }
-
 }

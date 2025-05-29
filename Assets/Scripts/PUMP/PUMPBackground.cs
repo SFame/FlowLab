@@ -837,7 +837,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #endregion
 
     #region Selecting
-    private readonly List<IDragSelectable> _draggables = new();
+    private readonly List<IDragSelectable> _selectedDraggables = new();
     private SafetyCancellationTokenSource _alphaControlCts = new();
     private const float DRAGGABLES_BLINK_SPEED = 0.75f;
     private const float DRAGGABLES_MIN_ALPHA = 0.6f;
@@ -847,9 +847,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         get
         {
-            int draggablesRemoveCount = _draggables.Count(draggables => draggables.CanDestroy);
+            int draggablesRemoveCount = _selectedDraggables.Count(draggables => draggables.CanDestroy);
             string remove_s_char = draggablesRemoveCount == 1 ? string.Empty : "s";
-            int draggablesDisconnectCount = _draggables.Count(draggables => draggables.CanDisconnect);
+            int draggablesDisconnectCount = _selectedDraggables.Count(draggables => draggables.CanDisconnect);
             string disconnect_s_char = draggablesDisconnectCount == 1 ? string.Empty : "s";
             return new List<ContextElement>()
             {
@@ -865,7 +865,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         {
             HashSet<IDragSelectable> foundDraggables = FindDragSelectableInResults(results);
 
-            if (!foundDraggables.HasIntersection(_draggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
+            if (!foundDraggables.HasIntersection(_selectedDraggables))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
             {
                 ClearDraggables();
             }
@@ -906,7 +906,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         _alphaControlCts.CancelAndDispose();
 
-        foreach (IDragSelectable draggable in _draggables)
+        foreach (IDragSelectable draggable in _selectedDraggables)
         {
             draggable.SetAlpha(1f);
             draggable.OnSelectedMove -= DraggablesMoveCallback;
@@ -914,12 +914,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             draggable.SelectingTag = null;
             draggable.IsSelected = false;
         }
-        _draggables.Clear();
+        _selectedDraggables.Clear();
     }
     
     public void DestroyDraggables()
     {
-        foreach (IDragSelectable draggable in _draggables.ToList())
+        foreach (IDragSelectable draggable in _selectedDraggables.ToList())
         {
             if (draggable.CanDestroy)
                 draggable.ObjectDestroy();
@@ -931,7 +931,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void DisconnectDraggables()
     {
-        foreach (IDragSelectable draggable in _draggables.ToList())
+        foreach (IDragSelectable draggable in _selectedDraggables.ToList())
         {
             if (draggable.CanDisconnect)
                 draggable.ObjectDisconnect();
@@ -944,7 +944,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         if (draggables == null || !draggables.Any())
             return;
 
-        if (_draggables.Count > 0)
+        if (_selectedDraggables.Count > 0)
         {
             ClearDraggables();
         }
@@ -955,7 +955,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             JoinDraggable(draggable);
         }
 
-        if (_draggables.Count > 0)
+        if (_selectedDraggables.Count > 0)
         {
             _alphaControlCts = _alphaControlCts.CancelAndDisposeAndGetNew();
 
@@ -963,7 +963,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             (
                 curve =>
                 {
-                    foreach (IDragSelectable draggable in _draggables)
+                    foreach (IDragSelectable draggable in _selectedDraggables)
                     {
                         draggable.SetAlpha(curve);
                     }
@@ -980,7 +980,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     private void JoinDraggable(IDragSelectable draggable)
     {
-        _draggables.Add(draggable);
+        _selectedDraggables.Add(draggable);
         draggable.OnSelectedMove += DraggablesMoveCallback;
         draggable.SelectRemoveRequest += ClearDraggables;
         Func<List<ContextElement>> contextGetter = () => SelectContextElements;
@@ -996,7 +996,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         try
         {
-            foreach (IDragSelectable draggable in _draggables)
+            foreach (IDragSelectable draggable in _selectedDraggables)
             {
                 if (draggable != invokerToExclude)
                     draggable.MoveSelected(delta);
@@ -1064,18 +1064,7 @@ public interface IDragSelectableForwarder
 /// </summary>
 public delegate void OnSelectedMoveHandler(IDragSelectable invokerToExclude, Vector2 delta);
 
-/// <summary>
-/// 외부 입·출력 인터페이스의 무결성을 보장하기 위한 Adapter Pattern
-/// </summary>
-public abstract class ExternalAdapter : IDisposable
-{
-    public abstract void UpdateReference(IExternalGateway externalGateway);
-    public abstract void InvokeOnCountUpdate();
-    public abstract void InvokeOnTypeUpdate();
-    public abstract void Dispose();
-}
-
-public class ExternalInputAdapter : ExternalAdapter, IExternalInput
+public class ExternalInputAdapter : IExternalInput, IDisposable
 {
     public ITypeListenStateful this[int index]
     {
@@ -1125,12 +1114,12 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public event Action<TransitionType[]> OnTypeUpdate;
 
-    public override void InvokeOnCountUpdate()
+    public void InvokeOnCountUpdate()
     {
         OnCountUpdate?.Invoke(GateCount);
     }
 
-    public override void InvokeOnTypeUpdate()
+    public void InvokeOnTypeUpdate()
     {
         OnTypeUpdate?.Invoke(_reference.Select(stateful => stateful.Type).ToArray());
     }
@@ -1149,7 +1138,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public override void UpdateReference(IExternalGateway externalGateway)
+    public void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference == externalGateway)
             return;
@@ -1174,7 +1163,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
         InternalInvokeOnTypeUpdate(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
         StopTransition();
         foreach (ExternalInputStatesAdapter adapter in _statesAdapters)
@@ -1225,7 +1214,7 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
     #endregion
 }
 
-public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
+public class ExternalOutputAdapter : IExternalOutput, IDisposable
 {
     public ITypeListenStateful this[int index]
     {
@@ -1277,12 +1266,12 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     public event Action<TransitionType[]> OnTypeUpdate;
 
-    public override void InvokeOnCountUpdate()
+    public void InvokeOnCountUpdate()
     {
         OnCountUpdate?.Invoke(GateCount);
     }
 
-    public override void InvokeOnTypeUpdate()
+    public void InvokeOnTypeUpdate()
     {
         OnTypeUpdate?.Invoke(_reference.Select(stateful => stateful.Type).ToArray());
     }
@@ -1295,7 +1284,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    public override void UpdateReference(IExternalGateway externalGateway)
+    public void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference == externalGateway)
             return;
@@ -1332,7 +1321,7 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
         InternalInvokeOnTypeUpdate(_reference.Select(stateful => stateful.Type).ToArray());
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
         foreach (ExternalOutputStatesAdapter adapter in _statesAdapters)
         {

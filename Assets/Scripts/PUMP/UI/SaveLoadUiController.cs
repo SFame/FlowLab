@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SaveLoadUiController : MonoBehaviour
 {
-    [SerializeField] private ClosablePanel m_ClosablePanel;
+    [SerializeField] private CloseablePanel m_CloseablePanel;
 
     private CanvasGroup CanvasGroup
     {
@@ -43,14 +43,14 @@ public class SaveLoadUiController : MonoBehaviour
 
         _initialized = true;
 
-        if (m_ClosablePanel == null)
+        if (m_CloseablePanel == null)
         {
             Debug.LogError("SaveLoadUiController: ClosablePanel is null");
             return;
         }
 
-        m_ClosablePanel.ControlActive = false;
-        m_ClosablePanel.OnClose += () => SetActive(false, 0.2f).Forget();
+        m_CloseablePanel.ControlActive = false;
+        m_CloseablePanel.OnClose += () => SetActive(false, 0.2f).Forget();
     }
 
     private async UniTask Fade(float targetAlpha, float duration)
