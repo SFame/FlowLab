@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
+    private bool _isVisible = true;
+
     #region External Interface
     public ITypeListenStateful this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
@@ -13,6 +15,16 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            Support.gameObject.SetActive(_isVisible);
+        }
+    }
 
     public int GateCount
     {
@@ -113,6 +125,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     }
     #region Serialize
     public List<float> _handleRatios;
+
     public ExternalNodeSerializeInfo AdditionalArgs
     {
         get

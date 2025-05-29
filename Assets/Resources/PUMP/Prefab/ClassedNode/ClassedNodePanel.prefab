@@ -1609,7 +1609,7 @@ GameObject:
   - component: {fileID: 1546861593851114151}
   - component: {fileID: 4450343246995109547}
   m_Layer: 5
-  m_Name: ScrollView
+  m_Name: ScrollRect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3936,6 +3936,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e8ab5b20e0c74d1e9258d7da76e3fd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ScrollRect: {fileID: 4450343246995109547}
   saveButton: {fileID: 169211293717271540}
   m_TargetDirectory: 0
   savePath: classed_node_data.bin

@@ -3,6 +3,7 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using Utils;
@@ -111,9 +112,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args == null)
-            return;
-
         OnInputUpdate?.Invoke(args);
     }
 
@@ -195,6 +193,8 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     }
 
     public Node GetNode() => this;
+    public Task WaitForDeserializationComplete() => UniTask.WaitUntil(() => !OnDeserializing).AsTask();
+
     #endregion
 
     #region SerializeData

@@ -23,7 +23,7 @@ public class PairEvent : IPairEventInvokable
     /// </summary>
     private Dictionary<string, Action> Events { get; } = new();
 
-    public void AddEvent(string key, Action action)
+    public void AddEvent(string key, Action action, string caller)
     {
         if (!Events.TryAdd(key, action))
         {
@@ -31,7 +31,7 @@ public class PairEvent : IPairEventInvokable
         }
     }
 
-    public void RemoveEvent(string key, Action action)
+    public void RemoveEvent(string key, Action action, string caller)
     {
         if (Events.ContainsKey(key))
         {

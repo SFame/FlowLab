@@ -20,7 +20,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     [SerializeField] private RectTransform m_ChildZone;
     [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.055f, 0.5f);
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
-    [Space(10)]
+
+    [Space(10)] 
+
+    [SerializeField] private bool m_VisibleExternal = true;
     [SerializeField] private int m_DefaultExternalInputCount = 2;
     [SerializeField] private int m_DefaultExternalOutputCount = 2;
     [field: Space(10)]
@@ -38,6 +41,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #region Privates
     private bool _initialized = false;
     private bool _canInteractive = true;
+    private bool _destroyed = false;
     private HashSet<object> _isOnChangeBlocker = new();
     private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
@@ -174,6 +178,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             {
                 _externalInputAdapter.UpdateReference(currentInput);
                 _externalOutputAdapter.UpdateReference(currentOutput);
+                _externalInputAdapter.IsVisible = m_VisibleExternal;
+                _externalOutputAdapter.IsVisible = m_VisibleExternal;
                 return;
             }
 
@@ -249,6 +255,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             {
                 _externalOutputAdapter.InvokeOnCountUpdate();
             }
+
+            _externalInputAdapter.IsVisible = m_VisibleExternal;
+            _externalOutputAdapter.IsVisible = m_VisibleExternal;
         }
         catch (Exception e)
         {
@@ -305,6 +314,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         _externalInputAdapter.Dispose();
         _externalOutputAdapter.Dispose();
         OnDestroyed?.Invoke();
+        _destroyed = true;
     }
     #endregion
 
@@ -357,6 +367,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void Open()
     {
+        if (_destroyed)
+            return;
+
         if (Current != null && Current != this)
         {
             Current.Close();
@@ -369,8 +382,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void Close()
     {
+        if (_destroyed)
+            return;
+
         if (Current == this)
+        {
             gameObject.SetActive(false);
+        }
     }
 
     public void SetVisible(bool visible)
@@ -1070,6 +1088,25 @@ public class ExternalInputAdapter : ExternalAdapter, IExternalInput
 
     public bool ObjectIsNull => _reference == null || _reference.ObjectIsNull;
 
+    public bool IsVisible
+    {
+        get
+        {
+            if (ObjectIsNull)
+                return false;
+
+            return _reference.IsVisible;
+        }
+
+        set
+        {
+            if (ObjectIsNull)
+                return;
+
+            _reference.IsVisible = value;
+        }
+    }
+
     public int GateCount
     {
         get
@@ -1200,6 +1237,25 @@ public class ExternalOutputAdapter : ExternalAdapter, IExternalOutput
     }
 
     public bool ObjectIsNull => _reference == null || _reference.ObjectIsNull;
+
+    public bool IsVisible
+    {
+        get
+        {
+            if (ObjectIsNull)
+                return false;
+
+            return _reference.IsVisible;
+        }
+
+        set
+        {
+            if (ObjectIsNull)
+                return;
+
+            _reference.IsVisible = value;
+        }
+    }
 
     public int GateCount
     {
@@ -1446,16 +1502,10 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     public Transition State
     {
         get => Stateful.State;
-        set
-        {
-            Debug.LogWarning("ExternalOutput is readonly");
-        }
+        set => Debug.LogWarning("ExternalOutput is readonly");
     }
 
-    public TransitionType Type
-    {
-        get => Stateful.Type;
-    }
+    public TransitionType Type => Stateful.Type;
 
     public event Action<TransitionType> OnTypeChanged;
     public event Action<TransitionType> OnBeforeTypeChange;

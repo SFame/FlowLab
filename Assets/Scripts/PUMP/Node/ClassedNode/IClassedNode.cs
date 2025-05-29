@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public interface IClassedNode
 {
@@ -17,4 +18,5 @@ public interface IClassedNode
     List<Action<TransitionType>> GetInputTypeApplier();
     List<Action<TransitionType>> GetOutputTypeApplier();
     Node GetNode();
+    Task WaitForDeserializationComplete();
 }

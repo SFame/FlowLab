@@ -6,16 +6,29 @@ using UnityEngine;
 
 public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
+    private bool _isVisible = true;
+
     #region External Interface
     public ITypeListenStateful this[int index] => OutputToken[index];
     public event Action<int> OnCountUpdate;
     public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
+
     public int GateCount
     {
         get => OutputToken.Count;
         set => OutputCount = value;
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            Support.gameObject.SetActive(_isVisible);
+        }
     }
 
     public IEnumerator<ITypeListenStateful> GetEnumerator() => ((IEnumerable<ITypeListenStateful>)OutputToken).GetEnumerator();
@@ -111,6 +124,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     #region Serialize
     public List<float> _handleRatios;
+
     public ExternalNodeSerializeInfo AdditionalArgs
     {
         get
