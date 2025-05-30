@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
 public class CloseablePanel : MonoBehaviour, IPointerDownHandler
 {
     [SerializeField] private bool m_ControlActive = false;
+    [SerializeField] private UnityEvent m_OnClose;
 
     public bool ControlActive
     {
@@ -29,11 +31,13 @@ public class CloseablePanel : MonoBehaviour, IPointerDownHandler
                 gameObject.SetActive(false);
 
             OnClose?.Invoke();
+            m_OnClose.Invoke();
         }
     }
 
     private void OnDestroy()
     {
+        m_OnClose.RemoveAllListeners();
         OnClose = null;
     }
 }

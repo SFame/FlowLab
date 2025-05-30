@@ -37,6 +37,8 @@ public interface IStateful
 {
     // State보다 우선 설정, 설정 시 State의 백킹필드에 동일 타입 Null값 삽입
     TransitionType Type { get; }
+
+    // 받는 쪽에서 Type을 확인. 이후 TransitionException 던질 것
     Transition State { get; set; }
 }
 

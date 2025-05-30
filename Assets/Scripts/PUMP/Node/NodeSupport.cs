@@ -305,7 +305,14 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         return maxHeight;
     }
 
-    public void SetName(string text) => NameText.text = text;
+    public void SetName(string text)
+    {
+        if (text == null)
+            return;
+
+        NameText.text = text;
+    }
+
     public void SetNameFontSize(float size) => NameText.fontSize = size;
     public void SetRectDeltaSize(Vector2 size) => Rect.sizeDelta = size;
 

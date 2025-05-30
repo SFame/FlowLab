@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -360,11 +361,11 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
     // Node property -----------------------------
     public virtual string NodePrefabPath { get; } = "PUMP/Prefab/NODE";
-    protected virtual string SpritePath { get; } = "PUMP/Sprite/ingame/default_node";
+    [CanBeNull] protected virtual string SpritePath { get; } = "PUMP/Sprite/ingame/default_node";
     protected virtual string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
-    protected abstract string NodeDisplayName { get; }
+    [CanBeNull] protected abstract string NodeDisplayName { get; }
     protected virtual float TextSize { get; } = 30f;
 
     protected abstract List<string> InputNames { get; }
@@ -540,7 +541,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     #endregion
 
     #region  Other (ToString()..)
-    public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName}";
+    public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName ?? "Null"}";
     #endregion
 
     #region Lifecycle Callable

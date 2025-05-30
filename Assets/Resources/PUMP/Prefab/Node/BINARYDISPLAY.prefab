@@ -3217,12 +3217,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_DetectingGroup.Array.size
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: 'm_DetectingGroup.Array.data[0]'
       value: 
       objectReference: {fileID: 4419163600542260424}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[1]'
+      value: 
+      objectReference: {fileID: 510822922913780136}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[2]'
+      value: 
+      objectReference: {fileID: 4738407713381440890}
     - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Sprite
       value: 

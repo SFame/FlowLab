@@ -102,7 +102,7 @@ public class StateDisplay : MonoBehaviour
 
     private static string MakeText(Transition transition)
     {
-        string typeText = $"<color={transition.Type.GetColorHexCodeString(true)}><b>{transition.Type.ToString()}</b></color>";
+        string typeText = $"<<color={transition.Type.GetColorHexCodeString(true)}><b>{transition.Type.ToString()}</b></color>>";
         string valueText = transition.GetValueString();
         valueText = transition is { Type: TransitionType.String, IsNull: false } ? $"\"<noparse>{valueText}</noparse>\"" : valueText;
         return typeText + "\n" + valueText;

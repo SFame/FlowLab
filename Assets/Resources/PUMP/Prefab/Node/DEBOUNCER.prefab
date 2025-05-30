@@ -807,6 +807,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1953344865619092123, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_text
+      value: Debc
+      objectReference: {fileID: 0}
     - target: {fileID: 3521182047487203236, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Name
       value: DEBOUNCER

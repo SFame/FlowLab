@@ -20,8 +20,8 @@ public class DefaultPalette : NodePalette
         {
             "I/O", new Dictionary<Type, string>
             {
-                { typeof(ClickSwitch), "ClickSwitch" },
-                { typeof(InputSwitch), "InputSwitch" },
+                { typeof(ClickSwitch), "On/Off Switch" },
+                { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field"},
                 { typeof(Display), "Display"},
                 { typeof(SegmentDisplay), "7-Segment Display" },
@@ -44,10 +44,10 @@ public class DefaultPalette : NodePalette
             {
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
-                { typeof(FourbitALU), "FourbitALU" },
+                { typeof(FourbitALU), "4-bit ALU" },
                 { typeof(Round), "Round" },
-                { typeof(BinaryDecoder), "BinaryDecoder" },
-                { typeof(BinaryEncoder), "BinaryEncoder" },
+                { typeof(BinaryDecoder), "Binary Decoder" },
+                { typeof(BinaryEncoder), "Binary Encoder" },
                 { typeof(Lerp), "Lerp" },
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
@@ -70,15 +70,6 @@ public class DefaultPalette : NodePalette
                 { typeof(ClassedNode), "Classed" },
             }
         },
-        {
-            "Debug", new Dictionary<Type, string>
-            {
-                { typeof(DN), "Debug" },
-                { typeof(IntSwitch), "IntSw" },
-                { typeof(FloatSwitch), "FloatSw" },
-                { typeof(StringSwitch), "StringSw" },
-            }
-        }
     };
 
     private void Awake()

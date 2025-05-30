@@ -89,8 +89,12 @@ public abstract class NodePalette : MonoBehaviour
                 newElem.DisplayName = innerKvp.Value;
                 newElem.NodeType = innerKvp.Key;
 
-                if (GetSprite(innerKvp.Key) is { } sprite)
-                    newElem.Image.sprite = sprite;
+                var resourceTuple = GetResource(innerKvp.Key);
+
+                if (resourceTuple.sprite != null)
+                    newElem.Image.sprite = resourceTuple.sprite;
+
+                newElem.Image.color = resourceTuple.color;
 
                 SetElementCallback(newElem);
                 categoryRectList.Add(newElemRect);
@@ -116,10 +120,16 @@ public abstract class NodePalette : MonoBehaviour
         elem.OnDragEnd += () => IsVisible = true;
     }
 
-    private Sprite GetSprite(Type nodeType)
+    private (Sprite sprite, Color color) GetResource(Type nodeType)
     {
-        string imagePath = ((ResourceGetterAttribute)Attribute.GetCustomAttribute(nodeType, typeof(ResourceGetterAttribute), true))?.Path ?? string.Empty;
-        return string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath);
+        ResourceGetterAttribute resourceGetter =
+            (ResourceGetterAttribute)Attribute.GetCustomAttribute(nodeType, typeof(ResourceGetterAttribute), true);
+
+        if (resourceGetter == null)
+            return (null, Color.white);
+        
+        string imagePath = resourceGetter.Path ?? string.Empty;
+        return (string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath), resourceGetter.Color);
     }
     #endregion
 }

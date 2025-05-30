@@ -198,8 +198,9 @@ public enum BackgroundActionType
     NoAction,
     Undo,
     Redo,
-    DragDelete,
-    DragDisconnect,
+    SelectAll,
+    SelectDelete,
+    SelectDisconnect,
 }
 
 /// <summary>
@@ -211,8 +212,9 @@ public static class BackgroundActionMapper
     {
         BackgroundActionType.Undo => UndoAction,
         BackgroundActionType.Redo => RedoAction,
-        BackgroundActionType.DragDelete => DragDeleteAction,
-        BackgroundActionType.DragDisconnect => DragDisconnectAction,
+        BackgroundActionType.SelectAll => SelectAll,
+        BackgroundActionType.SelectDelete => SelectDeleteAction,
+        BackgroundActionType.SelectDisconnect => SelectDisconnectAction,
         BackgroundActionType.NoAction => null,
         _ => null
     };
@@ -228,12 +230,17 @@ public static class BackgroundActionMapper
         PUMPBackground.Current?.Redo();
     }
 
-    private static void DragDeleteAction()
+    private static void SelectAll()
+    {
+        PUMPBackground.Current?.SelectAll();
+    }
+
+    private static void SelectDeleteAction()
     {
         PUMPBackground.Current?.DestroySelected();
     }
 
-    private static void DragDisconnectAction()
+    private static void SelectDisconnectAction()
     {
         PUMPBackground.Current?.DisconnectSelected();
     }

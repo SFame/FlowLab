@@ -849,8 +849,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #endregion
 
     #region Selecting
-    private readonly HashSet<IDragSelectable> _draggables = new();
-    private readonly List<IDragSelectable> _selectedDraggables = new();
+    private readonly HashSet<IDragSelectable> _selectables = new();
+    private readonly HashSet<IDragSelectable> _selected = new();
     private SafetyCancellationTokenSource _alphaControlCts = new();
     private const float DRAGGABLES_BLINK_SPEED = 0.75f;
     private const float DRAGGABLES_MIN_ALPHA = 0.6f;
@@ -860,9 +860,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         get
         {
-            int draggablesRemoveCount = _selectedDraggables.Count(draggables => draggables.CanDestroy);
+            int draggablesRemoveCount = _selected.Count(draggables => draggables.CanDestroy);
             string remove_s_char = draggablesRemoveCount == 1 ? string.Empty : "s";
-            int draggablesDisconnectCount = _selectedDraggables.Count(draggables => draggables.CanDisconnect);
+            int draggablesDisconnectCount = _selected.Count(draggables => draggables.CanDisconnect);
             string disconnect_s_char = draggablesDisconnectCount == 1 ? string.Empty : "s";
             return new List<ContextElement>()
             {
@@ -874,15 +874,25 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void JoinDraggable(IDragSelectable draggable)
     {
-        draggable.RemoveThisRequest += removeDraggable => _draggables.Remove(removeDraggable);
-        _draggables.Add(draggable);
+        draggable.RemoveThisRequest += removeDraggable => _selectables.Remove(removeDraggable);
+        _selectables.Add(draggable);
+    }
+
+    public void SelectAll()
+    {
+        ClearSelected();
+
+        foreach (IDragSelectable selectable in _selectables)
+        {
+            AddSelected(_selectables);
+        }
     }
 
     public void ClearSelected()
     {
         _alphaControlCts.CancelAndDispose();
 
-        foreach (IDragSelectable draggable in _selectedDraggables)
+        foreach (IDragSelectable draggable in _selected)
         {
             draggable.SetAlpha(1f);
             draggable.OnSelectedMove -= DraggablesMoveCallback;
@@ -890,12 +900,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             draggable.SelectingTag = null;
             draggable.IsSelected = false;
         }
-        _selectedDraggables.Clear();
+        _selected.Clear();
     }
     
     public void DestroySelected()
     {
-        foreach (IDragSelectable draggable in _selectedDraggables.ToList())
+        foreach (IDragSelectable draggable in _selected.ToList())
         {
             if (draggable.CanDestroy)
                 draggable.ObjectDestroy();
@@ -907,7 +917,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     public void DisconnectSelected()
     {
-        foreach (IDragSelectable draggable in _selectedDraggables.ToList())
+        foreach (IDragSelectable draggable in _selected.ToList())
         {
             if (draggable.CanDisconnect)
                 draggable.ObjectDisconnect();
@@ -919,7 +929,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         m_SelectionAreaController.OnMouseDown += mousePos =>
         {
-            if (!_selectedDraggables.Any(draggable => draggable.IsUnderPoint(mousePos)))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
+            if (!_selected.Any(draggable => draggable.IsUnderPoint(mousePos)))  // 마우스 아래에 있는 오브젝트 중 선택된 오브젝트가 없으면 선택취소
             {
                 ClearSelected();
             }
@@ -929,7 +939,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         m_SelectionAreaController.OnMouseEndDrag += (startPos, endPos) =>
         {
-            IEnumerable<IDragSelectable> draggables = _draggables.Where(draggable => draggable.IsInsideInArea(startPos, endPos));
+            IEnumerable<IDragSelectable> draggables = _selectables.Where(draggable => draggable.IsInsideInArea(startPos, endPos));
             AddSelected(draggables);
         };
     }
@@ -939,7 +949,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         if (draggables == null || !draggables.Any())
             return;
 
-        if (_selectedDraggables.Count > 0)
+        if (_selected.Count > 0)
         {
             ClearSelected();
         }
@@ -950,7 +960,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             JoinSelected(draggable);
         }
 
-        if (_selectedDraggables.Count > 0)
+        if (_selected.Count > 0)
         {
             _alphaControlCts = _alphaControlCts.CancelAndDisposeAndGetNew();
 
@@ -958,7 +968,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             (
                 curve =>
                 {
-                    foreach (IDragSelectable draggable in _selectedDraggables)
+                    foreach (IDragSelectable draggable in _selected)
                     {
                         draggable.SetAlpha(curve);
                     }
@@ -975,7 +985,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     private void JoinSelected(IDragSelectable draggable)
     {
-        _selectedDraggables.Add(draggable);
+        _selected.Add(draggable);
         draggable.OnSelectedMove += DraggablesMoveCallback;
         draggable.RemoveAllOnSelectedRequest += ClearSelected;
         Func<List<ContextElement>> contextGetter = () => SelectContextElements;
@@ -991,7 +1001,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         try
         {
-            foreach (IDragSelectable draggable in _selectedDraggables)
+            foreach (IDragSelectable draggable in _selected)
             {
                 if (draggable != invokerToExclude)
                     draggable.MoveSelected(delta);
@@ -1205,7 +1215,7 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
 
         foreach (ITypeListenStateful stateful in _reference)
         {
-            _statesAdapters.Add(new ExternalInputStatesAdapter(stateful, () => UniTask.WaitForEndOfFrame(_cts.Token), _cts.Token));
+            _statesAdapters.Add(new ExternalInputStatesAdapter(stateful, () => UniTask.Yield(PlayerLoopTiming.Update, _cts.Token), _cts.Token));
         }
     }
 

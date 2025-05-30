@@ -47,7 +47,7 @@ public class TPConnection : IStateful, IDisposable
     private LineConnector _lineConnector = null;
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
-    private CancellationTokenSource _cts = new CancellationTokenSource();
+    private readonly SafetyCancellationTokenSource _pendingCts = new();
     private bool _typeSet = false;
     private bool _disposed = false;
     private bool _disconnected = false;
@@ -198,14 +198,16 @@ public class TPConnection : IStateful, IDisposable
 
     public void Disconnect()
     {
+        if (_disconnected)
+            return;
+
+        _disconnected = true;
+
         if (SourceState == null || TargetState == null)
         {
             Debug.Log($"{GetType().Name}: SourceState or TargetState is null");
             return;
         }
-
-        if (_disconnected)
-            return;
 
         SourceState.ClearConnection();
         TargetState.ClearConnection();
@@ -215,7 +217,6 @@ public class TPConnection : IStateful, IDisposable
         LineConnector?.Remove();
         _sourceState = null;
         _targetState = null;
-        _disconnected = true;
     }
     
     public void Dispose()
@@ -223,8 +224,7 @@ public class TPConnection : IStateful, IDisposable
         if (_disposed)
             return;
         
-        _cts.Cancel();
-        _cts.Dispose();
+        _pendingCts.CancelAndDispose();
         OnSelfDisconnect = null;
         _sourceState = null;
         _targetState = null;
@@ -251,9 +251,9 @@ public class TPConnection : IStateful, IDisposable
 
         try
         {
-            await GetStateUpdateTask(_cts.Token);
+            await GetStateUpdateTask(_pendingCts.Token);
 
-            if (TargetState is not null && !_cts.Token.IsCancellationRequested)
+            if (TargetState is not null && !_pendingCts.Token.IsCancellationRequested)
             {
                 _state = _stateCache;
                 IsFlushing = false;

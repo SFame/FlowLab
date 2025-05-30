@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: b3dc5857bb06520468b3f7a8c1eca520
+guid: 0144eac834f8f2f41b278ebacbdc42c4
 TextureImporter:
   internalIDToNameTable:
   - first:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 2d_node_white_0
+      name: 2d_node_mask_0
       rect:
         serializedVersion: 2
         x: 0
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      2d_node_white_0: 9027232783355870048
+      2d_node_mask_0: 9027232783355870048
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

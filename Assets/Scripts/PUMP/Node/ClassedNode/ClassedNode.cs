@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
@@ -59,6 +58,8 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     protected override int DefaultOutputCount => 2;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/CLASSED";
+
+    protected override string SpritePath => null;
 
     protected override string NodeDisplayName => "Classed";
 
