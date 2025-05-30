@@ -17,9 +17,12 @@ public class LineConnectManager : MonoBehaviour
         GameObject lineGo = new GameObject("LineConnector");
         lineGo.transform.SetParent(transform);
         LineConnector lc = lineGo.AddComponent<LineConnector>();
+
         lc.OnDragEnd += ((IChangeObserver)m_Background).ReportChanges;
-        _lineRefreshAction += lc.RefreshPoints;
         lc.OnRemove += () => _lineRefreshAction -= lc.RefreshPoints;
+        lc.OnEdgeAdded += edge => m_Background.JoinDraggable(edge);
+
+        _lineRefreshAction += lc.RefreshPoints;
         return lc;
     }
 

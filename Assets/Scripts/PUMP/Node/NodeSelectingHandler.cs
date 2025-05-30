@@ -9,13 +9,18 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     #region On Inspector
     [SerializeField] private NodeSupport m_NodeSuppoet;
     [SerializeField] private CanvasGroup m_NodeCanvasGroup;
+    [SerializeField] private List<RectTransform> m_DetectingGroup;
     #endregion
 
     private readonly object _supportMouseBlocker = new();
     private bool _isSelected = false;
+    private bool _isRemoved = false;
     private Func<List<ContextElement>> _selectedContextElementsGetter;
     private OnSelectedMoveHandler _onSelectedMove;
     private Action _selectRemoveRequest;
+    private RectTransform _rect;
+
+    private RectTransform Rect => _rect ??= GetComponent<RectTransform>();
 
     bool IDragSelectable.IsSelected
     {
@@ -49,7 +54,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
         remove => _onSelectedMove -= value;
     }
 
-    event Action IDragSelectable.SelectRemoveRequest
+    event Action IDragSelectable.RemoveAllOnSelectedRequest
     {
         add => _selectRemoveRequest += value;
         remove => _selectRemoveRequest -= value;
@@ -59,6 +64,91 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     {
         m_NodeCanvasGroup.alpha = alpha;
     }
+
+    public bool IsInsideInArea(Vector2 startPos, Vector2 endPos)
+    {
+        float areaMinX = Mathf.Min(startPos.x, endPos.x);
+        float areaMaxX = Mathf.Max(startPos.x, endPos.x);
+        float areaMinY = Mathf.Min(startPos.y, endPos.y);
+        float areaMaxY = Mathf.Max(startPos.y, endPos.y);
+
+        if (IsRectInArea(Rect, areaMinX, areaMaxX, areaMinY, areaMaxY))
+            return true;
+
+        if (m_DetectingGroup != null)
+        {
+            foreach (var detectingRect in m_DetectingGroup)
+            {
+                if (detectingRect != null && IsRectInArea(detectingRect, areaMinX, areaMaxX, areaMinY, areaMaxY))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    public bool IsUnderPoint(Vector2 point)
+    {
+        if (IsPointInRect(Rect, point))
+            return true;
+
+        if (m_DetectingGroup != null)
+        {
+            foreach (var detectingRect in m_DetectingGroup)
+            {
+                if (detectingRect != null && IsPointInRect(detectingRect, point))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsRectInArea(RectTransform rectTransform, float areaMinX, float areaMaxX, float areaMinY, float areaMaxY)
+    {
+        Vector3[] worldCorners = new Vector3[4];
+        rectTransform.GetWorldCorners(worldCorners);
+
+        float rectMinX = worldCorners[0].x;
+        float rectMaxX = worldCorners[0].x;
+        float rectMinY = worldCorners[0].y;
+        float rectMaxY = worldCorners[0].y;
+
+        for (int i = 1; i < 4; i++)
+        {
+            rectMinX = Mathf.Min(rectMinX, worldCorners[i].x);
+            rectMaxX = Mathf.Max(rectMaxX, worldCorners[i].x);
+            rectMinY = Mathf.Min(rectMinY, worldCorners[i].y);
+            rectMaxY = Mathf.Max(rectMaxY, worldCorners[i].y);
+        }
+
+        return !(rectMaxX < areaMinX || rectMinX > areaMaxX ||
+                 rectMaxY < areaMinY || rectMinY > areaMaxY);
+    }
+
+    private bool IsPointInRect(RectTransform rectTransform, Vector2 point)
+    {
+        Vector3[] worldCorners = new Vector3[4];
+        rectTransform.GetWorldCorners(worldCorners);
+
+        float rectMinX = worldCorners[0].x;
+        float rectMaxX = worldCorners[0].x;
+        float rectMinY = worldCorners[0].y;
+        float rectMaxY = worldCorners[0].y;
+
+        for (int i = 1; i < 4; i++)
+        {
+            rectMinX = Mathf.Min(rectMinX, worldCorners[i].x);
+            rectMaxX = Mathf.Max(rectMaxX, worldCorners[i].x);
+            rectMinY = Mathf.Min(rectMinY, worldCorners[i].y);
+            rectMaxY = Mathf.Max(rectMaxY, worldCorners[i].y);
+        }
+
+        return point.x >= rectMinX && point.x <= rectMaxX &&
+               point.y >= rectMinY && point.y <= rectMaxY;
+    }
+
+    public event Action<IDragSelectable> RemoveThisRequest;
 
     void IDragSelectable.MoveSelected(Vector2 direction) => m_NodeSuppoet.MovePosition(direction);
 
@@ -85,6 +175,27 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 
         m_NodeSuppoet.OnDragging += (pointerEventArgs, _) => _onSelectedMove?.Invoke(this, pointerEventArgs.delta);
         m_NodeSuppoet.Node.OnDisconnect += _ => SelectedRemoveRequestInvoke();
+        m_NodeSuppoet.Node.OnRemove += _ =>
+        {
+            if (_isRemoved)
+                return;
+
+            _isRemoved = true;
+
+            RemoveThisRequest?.Invoke(this);
+            SelectedRemoveRequestInvoke();
+        };
+    }
+
+    private void OnDestroy()
+    {
+        if (_isRemoved)
+            return;
+
+        _isRemoved = true;
+
+        SelectedRemoveRequestInvoke();
+        RemoveThisRequest?.Invoke(this);
     }
 
     private void OnDisable()
