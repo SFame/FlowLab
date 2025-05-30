@@ -1,17 +1,12 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using Utils;
 
 public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDraggable
 {
     #region  On Inspector
-    [SerializeField] private GraphicRaycaster m_Raycaster;
     [SerializeField] private GameObject m_SelectionRangePrefab;
     [SerializeField] private RectTransform m_SelectingZone;
-    [SerializeField] private float m_GridSize = 20f;
     #endregion
 
     #region Privates
@@ -36,15 +31,14 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
     }
     #endregion
 
-    public event Action<List<RaycastResult>> OnMouseDown;
+    public event Action<Vector2> OnMouseDown;
     public event Action OnMouseBeginDrag;
     public event Action OnMouseDrag;
-    public event Action<List<RaycastResult>> OnMouseEndDrag;
+    public event Action<Vector2, Vector2> OnMouseEndDrag;
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
-        List<RaycastResult> result = m_Raycaster.FindUnderPoint(eventData.position);
-        OnMouseDown?.Invoke(result);
+        OnMouseDown?.Invoke(eventData.position);
     }
 
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
@@ -74,10 +68,6 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
         SelectingRangeRect.gameObject.SetActive(false);
-
-        Vector2 selectEndPos = eventData.position;
-        List<RaycastResult> result = m_Raycaster.GridRaycast(_selectStartPos, selectEndPos, m_GridSize);
-
-        OnMouseEndDrag?.Invoke(result);
+        OnMouseEndDrag?.Invoke(_selectStartPos, eventData.position);
     }
 }

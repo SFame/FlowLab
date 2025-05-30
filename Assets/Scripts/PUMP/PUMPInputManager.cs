@@ -230,12 +230,12 @@ public static class BackgroundActionMapper
 
     private static void DragDeleteAction()
     {
-        PUMPBackground.Current?.DestroyDraggables();
+        PUMPBackground.Current?.DestroySelected();
     }
 
     private static void DragDisconnectAction()
     {
-        PUMPBackground.Current?.DisconnectDraggables();
+        PUMPBackground.Current?.DisconnectSelected();
     }
     #endregion
 }

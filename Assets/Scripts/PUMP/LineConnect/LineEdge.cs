@@ -17,6 +17,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     private readonly float _expansionScale = 1.5f;
     private bool _isSetDefaultSize = false;
     private bool _isSetDefaultColor = false;
+    private bool _isRemoved = false;
     private UILineRenderer _lineRenderer;
     
     private RectTransform Rect
@@ -115,8 +116,18 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public void Remove()
     {
+        if (_isRemoved)
+            return;
+
+        _isRemoved = true;
+
+        RemoveThisRequest?.Invoke(this);
+        RemoveAllOnSelectedRequest?.Invoke();
+
         if (gameObject != null)
+        {
             Destroy(gameObject);
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -175,17 +186,52 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     public bool _isSelected = false;
     
     public object SelectingTag { get; set; }
-    
+
+
     public void MoveSelected(Vector2 direction)
     {
         MovePositionWithLine(direction);
+    }
+
+    public bool IsInsideInArea(Vector2 startPos, Vector2 endPos)
+    {
+        float areaMinX = Mathf.Min(startPos.x, endPos.x);
+        float areaMaxX = Mathf.Max(startPos.x, endPos.x);
+        float areaMinY = Mathf.Min(startPos.y, endPos.y);
+        float areaMaxY = Mathf.Max(startPos.y, endPos.y);
+
+        Vector2 rectWorldPos = Rect.position;
+        Vector2 rectSize = Rect.sizeDelta;
+
+        float rectMinX = rectWorldPos.x - rectSize.x * 0.5f;
+        float rectMaxX = rectWorldPos.x + rectSize.x * 0.5f;
+        float rectMinY = rectWorldPos.y - rectSize.y * 0.5f;
+        float rectMaxY = rectWorldPos.y + rectSize.y * 0.5f;
+
+        return !(rectMaxX < areaMinX || rectMinX > areaMaxX ||
+                 rectMaxY < areaMinY || rectMinY > areaMaxY);
+    }
+
+    public bool IsUnderPoint(Vector2 point)
+    {
+        Vector2 rectWorldPos = Rect.position;
+        Vector2 rectSize = Rect.sizeDelta;
+
+        float rectMinX = rectWorldPos.x - rectSize.x * 0.5f;
+        float rectMaxX = rectWorldPos.x + rectSize.x * 0.5f;
+        float rectMinY = rectWorldPos.y - rectSize.y * 0.5f;
+        float rectMaxY = rectWorldPos.y + rectSize.y * 0.5f;
+
+        return point.x >= rectMinX && point.x <= rectMaxX &&
+               point.y >= rectMinY && point.y <= rectMaxY;
     }
 
     public void ObjectDestroy() { }
     public void ObjectDisconnect() { }
 
     public event OnSelectedMoveHandler OnSelectedMove;
-    public event Action SelectRemoveRequest;
+    public event Action<IDragSelectable> RemoveThisRequest;
+    public event Action RemoveAllOnSelectedRequest;
 
     private void SetDefaultSize()
     {
@@ -207,12 +253,18 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     private void OnDestroy()
     {
-        SelectRemoveRequest?.Invoke();
+        if (_isRemoved)
+            return;
+
+        _isRemoved = true;
+
+        RemoveThisRequest?.Invoke(this);
+        RemoveAllOnSelectedRequest?.Invoke();
     }
 
     private void OnDisable()
     {
-        SelectRemoveRequest?.Invoke();
+        RemoveAllOnSelectedRequest?.Invoke();
         IsSelected = false;
     }
     #endregion

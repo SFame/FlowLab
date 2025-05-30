@@ -111,6 +111,7 @@ public class LineConnector : MonoBehaviour
     public event Action OnDragEnd;
     public event Action LineUpdated;
     public event Action OnRemove;
+    public event Action<LineEdge> OnEdgeAdded;
 
     public List<ContextElement> ContextElements { get; set; }
 
@@ -416,6 +417,7 @@ public class LineConnector : MonoBehaviour
         edge.OnDragEnd += () => LineUpdated?.Invoke();
         edge.OnDragging += () => LineUpdated?.Invoke();
         edge.OnRightClick += ShowContext;
+        OnEdgeAdded?.Invoke(edge);
         return edge;
     }
 
