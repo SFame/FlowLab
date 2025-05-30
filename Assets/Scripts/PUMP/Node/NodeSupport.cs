@@ -161,6 +161,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public event Action<PointerEventData> OnMouseUp;
     public event Action<PointerEventData> OnMouseEnter;
     public event Action<PointerEventData> OnMouseExit;
+    public event Action<bool> OnSetHighlight;
     public event Action OnMouseEventBlocked;
     public event Action OnMouseEventUnblocked;
 
@@ -326,10 +327,13 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         if (highlighted)
         {
             SetColor(HighlightedColor);
-            return;
+        }
+        else
+        {
+            RevertToDefaultColor();
         }
 
-        RevertToDefaultColor();
+        OnSetHighlight?.Invoke(highlighted);
     }
 
     public void DestroyObject()

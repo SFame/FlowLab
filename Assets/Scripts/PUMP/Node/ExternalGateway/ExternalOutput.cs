@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArgs<ExternalNodeSerializeInfo>
 {
+    private bool _isVisible = true;
+
     #region External Interface
     public ITypeListenStateful this[int index] => InputToken[index];
     public event Action<int> OnCountUpdate;
@@ -13,6 +15,16 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     public event Action<TransitionType[]> OnTypeUpdate;
 
     public bool ObjectIsNull => Support.gameObject == null;
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            _isVisible = value;
+            Support.gameObject.SetActive(_isVisible);
+        }
+    }
 
     public int GateCount
     {
@@ -32,7 +44,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorPadding => 0f;
-    protected override Vector2 DefaultNodeSize => new Vector2(18f, Background.Rect.rect.height);
+    protected override Vector2 DefaultNodeSize => new Vector2(6f, Background.Rect.rect.height);
     protected override bool SizeFreeze => true;
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 0;
@@ -85,6 +97,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     protected override void OnAfterInstantiate()
     {
         IgnoreSelectedDelete = true;
+        Support.OnSetHighlight += SetHighlight;
     }
 
     protected override void OnAfterInit()
@@ -98,10 +111,8 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
         }
     }
 
-    public override void SetHighlight(bool highlighted)
+    private void SetHighlight(bool highlighted)
     {
-        base.SetHighlight(highlighted);
-
         if (Support.InputEnumerator is IHighlightable highlightable)
         {
             highlightable.SetHighlight(highlighted);
@@ -114,6 +125,7 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
     }
     #region Serialize
     public List<float> _handleRatios;
+
     public ExternalNodeSerializeInfo AdditionalArgs
     {
         get

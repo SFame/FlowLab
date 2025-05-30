@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -44,7 +45,8 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private void OnDestroy()
     {
         Connection?.Dispose();
-        _radialCts?.CancelAndDispose();
+        _radialCts.CancelAndDispose();
+        _stateDisplayCts.CancelAndDispose();
     }
     #endregion
 
@@ -196,6 +198,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         m_HighlighterImage.color = m_HighlightedColor;
+        HoverStart();
     }
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
@@ -203,6 +206,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
         Color hColor = m_HighlightedColor;
         hColor.a = 0f;
         m_HighlighterImage.color = hColor;
+        HoverEnd();
     }
     
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
@@ -278,6 +282,80 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
         }
 
         BlinkRadial();
+    }
+    #endregion
+
+    #region StateDisplay
+    private SafetyCancellationTokenSource _stateDisplayCts = new();
+    private readonly float _mouseMoveThreshold = 0.5f;
+    private readonly float _mouseHoverDelay = 0.5f;
+    private Vector2 _mouseLastPosition;
+
+    private void HoverStart()
+    {
+        _stateDisplayCts = _stateDisplayCts.CancelAndDisposeAndGetNew();
+        CheckMouseMove(_stateDisplayCts.Token).Forget();
+    }
+
+    private void HoverEnd()
+    {
+        _stateDisplayCts.CancelAndDispose();
+        StateDisplay.Clear();
+    }
+
+    private async UniTaskVoid CheckMouseMove(CancellationToken token)
+    {
+        _mouseLastPosition = Input.mousePosition;
+        float currentHoverDelay = 0f;
+        bool isShow = false;
+        Transition stateCache = Transition.False;
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                Vector2 currentPosition = Input.mousePosition;
+                float sqrDistance = (_mouseLastPosition - currentPosition).sqrMagnitude;
+                _mouseLastPosition = currentPosition;
+
+                if (sqrDistance < _mouseMoveThreshold)
+                {
+                    if (isShow)
+                    {
+                        if (stateCache != State)
+                        {
+                            stateCache = State;
+                            StateDisplay.Update(stateCache);
+                        }
+                        await UniTask.Yield(token);
+                        continue;
+                    }
+
+                    if (currentHoverDelay > _mouseHoverDelay)
+                    {
+                        isShow = true;
+                        stateCache = State;
+                        StateDisplay.Render(stateCache, WorldPosition, RootCanvas);
+                    }
+                    else
+                    {
+                        currentHoverDelay += Time.deltaTime;
+                    }
+                }
+                else
+                {
+                    currentHoverDelay = 0f;
+
+                    if (isShow)
+                    {
+                        StateDisplay.Clear();
+                        isShow = false;
+                    }
+                }
+
+                await UniTask.Yield(token);
+            }
+        }
+        catch (OperationCanceledException) { }
     }
     #endregion
 }

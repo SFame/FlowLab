@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4280423168
+  m_fontColor: {r: 0, g: 0.07450981, b: 0.13333334, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -147,6 +147,7 @@ GameObject:
   - component: {fileID: 5483115683594355173}
   - component: {fileID: 685556493573618524}
   - component: {fileID: 6560553130387192381}
+  - component: {fileID: 5256127476579471854}
   - component: {fileID: 3407088412786012311}
   - component: {fileID: 6368112864780920419}
   - component: {fileID: 298567353741124581}
@@ -216,6 +217,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &5256127476579471854
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3521182047487203236}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!114 &3407088412786012311
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -246,6 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_NodeSuppoet: {fileID: 3407088412786012311}
+  m_NodeCanvasGroup: {fileID: 5256127476579471854}
 --- !u!114 &298567353741124581
 MonoBehaviour:
   m_ObjectHideFlags: 0

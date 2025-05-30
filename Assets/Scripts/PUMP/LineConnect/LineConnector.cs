@@ -73,7 +73,8 @@ public class LineConnector : MonoBehaviour
     {
         get
         {
-            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
+            if (_rootCanvas == null)
+                _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
             return _rootCanvas;
         }
     }
@@ -92,7 +93,7 @@ public class LineConnector : MonoBehaviour
     private bool _freezeLinesAttributes;
     private bool _isRemoved = false;
 
-    [SerializeField] private List<LineArg> LineArgs { get; set; } = new();
+    private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
     private LineEdge DraggingEdge
     {
@@ -257,34 +258,34 @@ public class LineConnector : MonoBehaviour
 
     public void SetColor(Color color)
     {
-        if (!FreezeLinesAttributes)
-        {
-            foreach (LineArg arg in LineArgs)
-                arg?.Line?.SetColor(color);
+        if (FreezeLinesAttributes)
+            return;
 
-            foreach (LineEdge edge in Edges)
-                edge?.SetColor(color);
+        foreach (LineArg arg in LineArgs)
+            arg?.Line?.SetColor(color);
 
-            StartSidePointImage.color = color;
-            EndSidePointImage.color = color; 
-        }
+        foreach (LineEdge edge in Edges)
+            edge?.SetColor(color);
+
+        StartSidePointImage.color = color;
+        EndSidePointImage.color = color;
     }
 
     public void SetAlpha(float alpha)
     {
-        if (!FreezeLinesAttributes)
-        {
-            foreach (LineArg arg in LineArgs)
-                arg?.Line?.SetAlpha(alpha);
+        if (FreezeLinesAttributes)
+            return;
 
-            foreach (LineEdge edge in Edges)
-                edge?.SetAlpha(alpha);
+        foreach (LineArg arg in LineArgs)
+            arg?.Line?.SetAlpha(alpha);
 
-            Color startColor = StartSidePointImage.color;
-            Color endColor = EndSidePointImage.color;
-            StartSidePointImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
-            EndSidePointImage.color = new Color(endColor.r, endColor.g, endColor.b, alpha); 
-        }
+        foreach (LineEdge edge in Edges)
+            edge?.SetAlpha(alpha);
+
+        Color startColor = StartSidePointImage.color;
+        Color endColor = EndSidePointImage.color;
+        StartSidePointImage.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+        EndSidePointImage.color = new Color(endColor.r, endColor.g, endColor.b, alpha);
     }
     #endregion
 
@@ -465,7 +466,6 @@ public class LineConnector : MonoBehaviour
     }
     #endregion
 
-    [Serializable]
     public class LineArg
     {
         public ImageLine Line { get; private set; }

@@ -8,6 +8,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 {
     #region On Inspector
     [SerializeField] private NodeSupport m_NodeSuppoet;
+    [SerializeField] private CanvasGroup m_NodeCanvasGroup;
     #endregion
 
     private readonly object _supportMouseBlocker = new();
@@ -54,6 +55,11 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
         remove => _selectRemoveRequest -= value;
     }
 
+    void IDragSelectable.SetAlpha(float alpha)
+    {
+        m_NodeCanvasGroup.alpha = alpha;
+    }
+
     void IDragSelectable.MoveSelected(Vector2 direction) => m_NodeSuppoet.MovePosition(direction);
 
     void IDragSelectable.ObjectDestroy() => m_NodeSuppoet.Node.Remove();
@@ -72,8 +78,13 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
             throw new MissingComponentException("NodeSelectingHandler: Missing Node Support");
         }
 
+        if (m_NodeCanvasGroup == null)
+        {
+            throw new MissingComponentException("NodeSelectingHandler: Missing Node CanvasGroup");
+        }
+
         m_NodeSuppoet.OnDragging += (pointerEventArgs, _) => _onSelectedMove?.Invoke(this, pointerEventArgs.delta);
-        m_NodeSuppoet.Node.OnDesconnect += _ => SelectedRemoveRequestInvoke();
+        m_NodeSuppoet.Node.OnDisconnect += _ => SelectedRemoveRequestInvoke();
     }
 
     private void OnDisable()

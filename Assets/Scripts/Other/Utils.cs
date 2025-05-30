@@ -209,6 +209,26 @@ namespace Utils
             }
         }
 
+        public static async UniTask CosAction(Action<float> action, float speed, float min = 0f, float max = 1f, Action finalizer = null, CancellationToken token = default)
+        {
+            float time = 0f;
+
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    float cosineValue = (Mathf.Cos(time * speed * 2f * Mathf.PI) + 1f) * 0.5f;
+                    action?.Invoke(Mathf.Lerp(min, max, cosineValue));
+                    time += Time.deltaTime;
+                    await UniTask.Yield(PlayerLoopTiming.Update, token);
+                }
+            }
+            finally
+            {
+                finalizer?.Invoke();
+            }
+        }
+
         /// <summary>
         /// 문자열 꺾쇠괄호 제거
         /// </summary>
@@ -220,7 +240,7 @@ namespace Utils
                 return input;
 
             string pattern = @"<([a-zA-Z][a-zA-Z0-9]*)(?:[^<>]*)>(.*?)</\1>";
-            string result = Regex.Replace(input, pattern, "$2");
+            string result = System.Text.RegularExpressions.Regex.Replace(input, pattern, "$2");
             return result;
         }
     }

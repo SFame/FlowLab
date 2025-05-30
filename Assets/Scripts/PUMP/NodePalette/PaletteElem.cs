@@ -16,7 +16,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     #region Privates
     private string _displayName;
-    private bool _mouseOnPalette;
     private bool _caughtException = false;
     private List<RaycastResult> _raycastResults = new();
     private PUMPBackground _background;
@@ -45,7 +44,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        _mouseOnPalette = true;
         _caughtException = false;
         _background = null;
         _newNode = null;
@@ -67,7 +65,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
             callable.CallOnCompletePlacementFromPalette();
         }
         
-        _mouseOnPalette = true;
         _caughtException = false;
         _background = null;
         _newNode = null;

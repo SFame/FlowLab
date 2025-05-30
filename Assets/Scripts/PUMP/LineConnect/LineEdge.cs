@@ -37,7 +37,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         }
     }
     #endregion
-
+    
     public LineArg StartArg { get; set; }
     public LineArg EndArg { get; set; }
 

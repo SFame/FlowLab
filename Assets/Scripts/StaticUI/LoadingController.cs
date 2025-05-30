@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,18 +10,26 @@ public class LoadingController : MonoBehaviour, ILoadingUi
 {
     [SerializeField] private GameObject m_ShowHideTarget;
     [SerializeField] private Slider m_Slider;
+    [SerializeField] private TextMeshProUGUI m_ProgressText;
     [SerializeField] private TextMeshProUGUI m_Tmp;
     [SerializeField] private List<string> m_TextAnimation;
     [SerializeField] private float m_animationInterval = 0.5f;
 
     private bool _isShowing = false;
-    private CancellationTokenSource _cts;
+    private SafetyCancellationTokenSource _textAnimationCts = new();
+    private SafetyCancellationTokenSource _sliderAnimationCts = new();
 
-    public float SliderValue
+    private float Value
     {
-        get => m_Slider.value;
-        set => m_Slider.value = value;
+        set
+        {
+            m_Slider.value = value;
+            int progressValue = Mathf.RoundToInt(value * 100);
+            m_ProgressText.text = $"{progressValue} %";
+        }
     }
+
+    public float SliderMoveDuration { get; set; }
 
     public void Show()
     {
@@ -29,7 +38,7 @@ public class LoadingController : MonoBehaviour, ILoadingUi
 
         _isShowing = true;
         m_ShowHideTarget?.SetActive(true);
-        SliderValue = 0;
+        Value = 0;
         TextAnimationActive(true);
     }
 
@@ -37,29 +46,30 @@ public class LoadingController : MonoBehaviour, ILoadingUi
     {
         _isShowing = false;
         m_ShowHideTarget?.SetActive(false);
-        SliderValue = 0;
+        Value = 0;
         TextAnimationActive(false);
+    }
+
+    public void SetSliderValue(float value)
+    {
+        _sliderAnimationCts = _sliderAnimationCts.CancelAndDisposeAndGetNew();
+        SliderAnimationAsync(value, _sliderAnimationCts.Token).Forget();
     }
 
     private void TextAnimationActive(bool active)
     {
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch { }
-        _cts?.Dispose();
+        _textAnimationCts.CancelAndDispose();
 
         if (active)
         {
-            _cts = new();
-            TextAnimationAsync(_cts.Token).Forget();
+            _textAnimationCts = new();
+            TextAnimationAsync(_textAnimationCts.Token).Forget();
         }
     }
 
     private async UniTaskVoid TextAnimationAsync(CancellationToken token)
     {
-        if (m_TextAnimation == null || m_TextAnimation == null)
+        if (m_TextAnimation == null)
             return;
 
         while (!token.IsCancellationRequested)
@@ -71,11 +81,33 @@ public class LoadingController : MonoBehaviour, ILoadingUi
             }
         }
     }
+
+    private async UniTaskVoid SliderAnimationAsync(float targetValue, CancellationToken token)
+    {
+        float currentValue = m_Slider.value;
+        float elapsed = 0f;
+        try
+        {
+            while (elapsed < SliderMoveDuration && !token.IsCancellationRequested)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / SliderMoveDuration;
+                Value = Mathf.Lerp(currentValue, targetValue, t);
+                await UniTask.Yield(token);
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            Value = targetValue;
+        }
+    }
 }
 
 public interface ILoadingUi
 {
-    float SliderValue { get; set; }
+    float SliderMoveDuration { get; set; }
+    void SetSliderValue(float value);
     void Show();
     void Hide();
 }

@@ -11,6 +11,8 @@ public class InputSwitchSupport : MonoBehaviour
     [SerializeField] private Image m_InputImage;
     [SerializeField] private CanvasGroup m_InputPanelGroup;
     [SerializeField] private float m_InputPanelFadeDuration = 0.2f;
+    [SerializeField] private float m_ButtonShadowDuration = 0.1f;
+    [SerializeField] private float m_ButtonShadowAlpha = 0.35f;
 
 
     public event Action<object> OnValueChanged;
@@ -73,13 +75,13 @@ public class InputSwitchSupport : MonoBehaviour
     public void ButtonShadowActive()
     {
         m_InputImage.DOKill();
-        m_InputImage.DOFade(0.35f, 0.1f);
+        m_InputImage.DOFade(m_ButtonShadowAlpha, m_ButtonShadowDuration);
     }
 
     public void ButtonShadowInactive()
     {
         m_InputImage.DOKill();
-        m_InputImage.DOFade(0f, 0.1f);
+        m_InputImage.DOFade(0f, m_ButtonShadowDuration);
     }
 }
 

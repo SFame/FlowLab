@@ -43,7 +43,7 @@ public class PUMPResourcesSerializeManager : ISerializeManagable<PUMPSaveDataStr
                 data.SubscribeUpdateNotification(_ => InvokeDataUpdated(fileName));
             }
 
-            _onDataUpdated.AddEvent(fileName, () => WriteData(fileName));
+            _onDataUpdated.AddEvent(fileName, () => WriteData(fileName), GetType().Name);
             _saveDatas.Add(fileName, datas);
         }
         finally

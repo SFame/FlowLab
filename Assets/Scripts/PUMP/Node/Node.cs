@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using Utils;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
-public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHighlightable, IDeserializingListenable
+public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDeserializingListenable
 {
     #region Privates
     private bool _initialized = false;
@@ -84,7 +84,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
     public bool IgnoreSelectedDelete { get; set; } = false;
     public bool IgnoreSelectedDisconnect { get; set; } = false;
 
-    public event Action<Node> OnDesconnect;
+    public event Action<Node> OnDisconnect;
     public event Action<Node> OnRemove;
     public event Action<Node> OnPlacement;
 
@@ -153,12 +153,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
             tp.Connection?.Disconnect();
         }
 
-        OnDesconnect?.Invoke(this);
-    }
-
-    public virtual void SetHighlight(bool highlighted)
-    {
-        Support.SetHighlight(highlighted);
+        OnDisconnect?.Invoke(this);
     }
 
     /// <summary>
@@ -232,35 +227,28 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IHigh
         ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
         ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
 
-        if (inputElems != null)
+        if (inputElems.Length == inputTPs.Length)
         {
-
-            if (inputElems.Length == inputTPs.Length)
+            for (int i = 0; i < inputElems.Length; i++)
             {
-                for (int i = 0; i < inputElems.Length; i++)
-                {
-                    applier?.Invoke(inputTPs[i], inputElems[i]);
-                }
-            }
-            else
-            {
-                Debug.LogError($"{Support.name}: 데이터와 Input의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+                applier?.Invoke(inputTPs[i], inputElems[i]);
             }
         }
-
-        if (outputElems != null)
+        else
         {
-            if (outputElems.Length == outputTPs.Length)
+            Debug.LogError($"{Support.name}: 데이터와 Input의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+        }
+
+        if (outputElems.Length == outputTPs.Length)
+        {
+            for (int i = 0; i < outputElems.Length; i++)
             {
-                for (int i = 0; i < outputElems.Length; i++)
-                {
-                    applier?.Invoke(outputTPs[i], outputElems[i]);
-                }
+                applier?.Invoke(outputTPs[i], outputElems[i]);
             }
-            else
-            {
-                Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
-            }
+        }
+        else
+        {
+            Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
         }
     }
 

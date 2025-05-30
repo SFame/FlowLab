@@ -17,10 +17,10 @@ public static class Loading
     private static GameObject _prefab;
     private static GameObject _uiGameObject;
     private static ILoadingUi _loadingUi;
-    private static CancellationTokenSource _cts;
-    private static List<IProgressManagable> _currentProgresses = new();
+    private static SafetyCancellationTokenSource _cts = new();
+    private static List<IProgressManageable> _currentProgresses = new();
 
-    private static Pool<IProgressManagable> _progressPool = new
+    private static Pool<IProgressManageable> _progressPool = new
     (
         createFunc: () => new Progress(),
         initSize: 20,
@@ -28,7 +28,7 @@ public static class Loading
         actionOnDestroy: p => p.Terminate()
     );
 
-    private static Pool<IProgressManagable<Task>> _progressTaskPool = new
+    private static Pool<IProgressManageable<Task>> _progressTaskPool = new
     (
         createFunc: () => new ProgressTask(),
         initSize: 20,
@@ -49,7 +49,8 @@ public static class Loading
     {
         get
         {
-            _uiGameObject ??= Object.Instantiate(Prefab);
+            if (_uiGameObject == null)
+                _uiGameObject = Object.Instantiate(Prefab);
             return _uiGameObject;
         }
     }
@@ -73,6 +74,7 @@ public static class Loading
                     }
                 }
                 _loadingUi.Hide();
+                _loadingUi.SliderMoveDuration = COMPLETE_WAIT_TIME;
             }
             return _loadingUi;
         }
@@ -82,13 +84,7 @@ public static class Loading
     {
         int currentProgressAvg = InternalGetProgressesAverage();
         UiUpdate(currentProgressAvg);
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch { }
-        _cts?.Dispose();
-        _cts = new();
+        _cts = _cts.CancelAndDisposeAndGetNew();
         CheckProgressCompleteAsync(_cts.Token).Forget();
     }
 
@@ -121,11 +117,11 @@ public static class Loading
         catch (OperationCanceledException) { }
     }
 
-    private static void InitProgressManagable(IProgressManagable managable, object tag)
+    private static void InitProgressManageable(IProgressManageable manageable, object tag)
     {
-        _currentProgresses.Add(managable);
-        managable.ProgressUpdated += ProgressUpdated;
-        if (!managable.Initialize(tag))
+        _currentProgresses.Add(manageable);
+        manageable.ProgressUpdated += ProgressUpdated;
+        if (!manageable.Initialize(tag))
         {
             throw new InvalidCastException();
         }
@@ -133,17 +129,17 @@ public static class Loading
         ProgressUpdated();
     }
 
-    private static void TerminateProgressManagable(IProgressManagable managable)
+    private static void TerminateProgressManageable(IProgressManageable manageable)
     {
-        managable.Terminate();
-        _currentProgresses.Remove(managable);
+        manageable.Terminate();
+        _currentProgresses.Remove(manageable);
     }
 
     private static void Reset()
     {
-        foreach (IProgressManagable pm in _currentProgresses.ToList()) // 순회중 Enumerable 변경에 의해 복사본 전달
+        foreach (IProgressManageable pm in _currentProgresses.ToList()) // 순회중 Enumerable 변경에 의해 복사본 전달
         {
-            TerminateProgressManagable(pm);
+            TerminateProgressManageable(pm);
 
             if (pm is Progress progress)
             {
@@ -161,9 +157,9 @@ public static class Loading
 
     private static void UiUpdate(int value)
     {
-        float fillValue = value / 100f;
+        float fillValue = value * 0.01f;
         fillValue = Mathf.Clamp01(fillValue);
-        LoadingUi.SliderValue = fillValue;
+        LoadingUi.SetSliderValue(fillValue);
     }
     #endregion
 
@@ -175,9 +171,9 @@ public static class Loading
     public static Progress GetProgress()
     {
         LoadingUi.Show();
-        IProgressManagable managable = _progressPool.Get();
-        InitProgressManagable(managable, null);
-        return managable as Progress;
+        IProgressManageable manageable = _progressPool.Get();
+        InitProgressManageable(manageable, null);
+        return manageable as Progress;
     }
 
     /// <summary>
@@ -188,8 +184,8 @@ public static class Loading
     public static Task AddTask(Task task)
     {
         LoadingUi.Show();
-        IProgressManagable<Task> progressTask = _progressTaskPool.Get();
-        InitProgressManagable(progressTask, task);
+        IProgressManageable<Task> progressTask = _progressTaskPool.Get();
+        InitProgressManageable(progressTask, task);
         return progressTask.ProcessingObject;
     }
 
@@ -202,8 +198,8 @@ public static class Loading
     public static Task<T> AddTask<T>(Task<T> task)
     {
         LoadingUi.Show();
-        IProgressManagable<Task<T>> progressTask = new ProgressTask<T>();
-        InitProgressManagable(progressTask, task);
+        IProgressManageable<Task<T>> progressTask = new ProgressTask<T>();
+        InitProgressManageable(progressTask, task);
         return progressTask.ProcessingObject;
     }
 
@@ -251,35 +247,36 @@ public static class Loading
     /// </summary>
     public static void ForceReset()
     {
+        _cts.CancelAndDispose();
         Reset();
     }
     #endregion
 
     #region Progress Class
-    public sealed class Progress : IProgressManagable
+    public sealed class Progress : IProgressManageable
     {
         #region Manage Only
         private int _progress = 0;
         private Action _progressUpdated;
 
-        event Action IProgressManagable.ProgressUpdated
+        event Action IProgressManageable.ProgressUpdated
         {
             add => _progressUpdated += value;
             remove => _progressUpdated -= value;
         }
 
-        int IProgressManagable.GetProgress()
+        int IProgressManageable.GetProgress()
         {
             return _progress;
         }
 
-        bool IProgressManagable.Initialize(object _)
+        bool IProgressManageable.Initialize(object _)
         {
             _progress = 0;
             return true;
         }
 
-        void IProgressManagable.Terminate()
+        void IProgressManageable.Terminate()
         {
             _progress = 0;
             _progressUpdated = null;
@@ -334,7 +331,7 @@ public static class Loading
         #endregion
     }
 
-    private abstract class ProgressTaskBase : IProgressManagable
+    private abstract class ProgressTaskBase : IProgressManageable
     {
         protected SafetyCancellationTokenSource _cts;
         protected int _progress = 0;
@@ -362,7 +359,7 @@ public static class Loading
         }
     }
 
-    private sealed class ProgressTask : ProgressTaskBase, IProgressManagable<Task>
+    private sealed class ProgressTask : ProgressTaskBase, IProgressManageable<Task>
     {
         public Task ProcessingObject { get; private set; }
 
@@ -445,7 +442,7 @@ public static class Loading
         }
     }
 
-    private sealed class ProgressTask<T> : ProgressTaskBase, IProgressManagable<Task<T>>
+    private sealed class ProgressTask<T> : ProgressTaskBase, IProgressManageable<Task<T>>
     {
         public Task<T> ProcessingObject { get; private set; }
 
@@ -528,7 +525,7 @@ public static class Loading
         }
     }
 
-    private interface IProgressManagable
+    private interface IProgressManageable
     {
         event Action ProgressUpdated;
         int GetProgress();
@@ -536,7 +533,7 @@ public static class Loading
         void Terminate();
     }
 
-    private interface IProgressManagable<T> : IProgressManagable
+    private interface IProgressManageable<out T> : IProgressManageable
     {
         T ProcessingObject { get; }
     }

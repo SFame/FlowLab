@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Absolute : Node
 {
@@ -61,24 +62,18 @@ public class Absolute : Node
             return;
         }
 
-        float absValue;
-        if (InputToken[0].Type == TransitionType.Int) // 입력 여러개를 비교할 일이 없으니까 InputToken을 안쓰는게 더 깔끔할거임. args를 쓰자
+        if (args.Type == TransitionType.Int) // 입력 여러개를 비교할 일이 없으니까 InputToken을 안쓰는게 더 깔끔할거임. args를 쓰자
         {
-            int intValue = (int)InputToken[0].State;  // (int)로 명시적 캐스팅 안해도 implicit 있어서 자동 캐스팅 됨
-            absValue = Mathf.Abs(intValue);
+            int intValue = Mathf.Abs(args.State);  // (int)로 명시적 캐스팅 안해도 implicit 있어서 자동 캐스팅 됨
+            OutputToken.PushFirst(intValue);
+            return;
         }
-        else
+        if (args.Type == TransitionType.Float)
         {
-            float floatValue = (float)InputToken[0].State;  // 마찬가지
-            absValue = Mathf.Abs(floatValue);
+            float floatValue = Mathf.Abs((float)args.State);
+            OutputToken.PushFirst(floatValue);
+            return;
         }
-
-        OutputToken[0].State = OutputToken[0].Type switch
-        {
-            TransitionType.Int => (int)absValue,
-            TransitionType.Float => absValue,
-            _ => OutputToken[0].Type.Null()
-        };
 
         // else를 포함하는 분기는 가능하면 최대한 피하고, 각 조건문은 독립적으로 동작시키는게 가독성이 좋음. 아래처럼 코드 스타일을 수정해볼 것
 

@@ -1490,6 +1490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e8ab5b20e0c74d1e9258d7da76e3fd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ScrollRect: {fileID: 2166085863499722810}
   saveButton: {fileID: 7994746778597014906}
   m_TargetDirectory: 1
   savePath: puzzle_data.bytes
@@ -1507,6 +1508,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ClosablePanel: {fileID: 0}
 --- !u!225 &1187149937875711986
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2471,46 +2473,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe402cf7ae01c4fc09aa1b8e879ca8a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saveLoadUiController: {fileID: 1845950072482450800}
-  closeButton: {fileID: 130112066915477441}
-  openButton: {fileID: 5158844045821264541}
-  saveLoadButton: {fileID: 3143586247823667347}
-  rectMoveCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 5
-      outSlope: 5
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.10117842
-    - serializedVersion: 3
-      time: 0.24708825
-      value: 0.7340471
-      inSlope: 1.2391567
-      outSlope: 1.2391567
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  rectMoveDuration: 0.5
-  openButtonFadeDuration: 0.2
-  interactAlphaFadeDuration: 0.2
+  m_PollingRate: 0.1
+  m_SlideDuration: 0.5
+  m_HandleFadeDuration: 0.1
+  m_DetectionAreaWidth: 250
+  m_DetectionAreaHeightOffset: 100
+  m_SaveLoadUiController: {fileID: 0}
+  m_nodePalette: {fileID: 0}
+  m_HandleImage: {fileID: 0}
+  m_SaveLoadButton: {fileID: 0}
+  m_NodePaletteButton: {fileID: 0}
 --- !u!225 &8014621387789986220
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2612,6 +2584,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46b51d00712ff1141bfa2b2fb8300be6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_PrismView: {fileID: 0}
+  m_CanvasGroup: {fileID: 0}
+  m_FadeDuration: 0.05
 --- !u!1 &8038124657692540083
 GameObject:
   m_ObjectHideFlags: 0
@@ -2956,7 +2931,7 @@ GameObject:
   - component: {fileID: 2166085863499722810}
   - component: {fileID: 8026203853886950827}
   m_Layer: 5
-  m_Name: ScrollView
+  m_Name: ScrollRect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

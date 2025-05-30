@@ -174,6 +174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e8ab5b20e0c74d1e9258d7da76e3fd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ScrollRect: {fileID: 1308025586014007626}
   saveButton: {fileID: 579025804810471754}
   m_TargetDirectory: 0
   savePath: node_data.bin
@@ -191,7 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ClosablePanel: {fileID: 8765489774307047756}
+  m_CloseablePanel: {fileID: 8765489774307047756}
 --- !u!114 &8765489774307047756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1754,7 +1755,7 @@ GameObject:
   - component: {fileID: 4791060421661815488}
   - component: {fileID: 1308025586014007626}
   m_Layer: 5
-  m_Name: ScrollView
+  m_Name: ScrollRect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2317,6 +2318,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2592999621388892361}
     m_Modifications:
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: m_VisibleExternal
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_DefaultExternalInputCount
       value: 2

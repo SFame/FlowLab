@@ -229,7 +229,7 @@ MonoBehaviour:
   m_TitleText: {fileID: 5126191452849437375}
   m_InputField: {fileID: 2985546835365479161}
   m_ConfirmButton: {fileID: 2915129899220098040}
-  m_ClosablePanel: {fileID: 1717057197693439683}
+  m_CloseablePanel: {fileID: 1717057197693439683}
 --- !u!114 &1717057197693439683
 MonoBehaviour:
   m_ObjectHideFlags: 0

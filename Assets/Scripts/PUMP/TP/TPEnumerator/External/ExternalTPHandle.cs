@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -8,31 +9,27 @@ public class ExternalTPHandle : MonoBehaviour, IDragHandler, IPointerEnterHandle
 {
     [SerializeField] private TransitionPoint m_Tp;
     [SerializeField] private Image m_Image;
+    [SerializeField] private List<Graphic> m_ColorControlGroup;
 
     #region Privates
     private RectTransform _rect;
-    private bool _imageInitalized = false;
+    private bool _imageInitialized = false;
     private Color _defaultColor;
     private readonly Color _highlightColor = Color.green;
     private Vector2 _defaultSize;
     private readonly float _zoomScale = 1.1f;
 
-    private Image Image
+    private void ImageInitialize()
     {
-        get
+        if (m_Image == null)
         {
-            if (m_Image == null)
-            {
-                Debug.Log($"{name}: Image component has not set");
-                return null;
-            }
+            Debug.Log($"{name}: Image component has not set");
+        }
 
-            if (!_imageInitalized)
-            {
-                _defaultColor = m_Image.color;
-                _imageInitalized = true;
-            }
-            return m_Image;
+        if (!_imageInitialized)
+        {
+            _defaultColor = m_Image.color;
+            _imageInitialized = true;
         }
     }
     #endregion
@@ -79,7 +76,18 @@ public class ExternalTPHandle : MonoBehaviour, IDragHandler, IPointerEnterHandle
 
     public void SetHighlight(bool highlight)
     {
-        Image.color = highlight ? _highlightColor : _defaultColor;
+        ImageInitialize();
+
+        Color color = highlight ? _highlightColor : _defaultColor;
+        m_Image.color = color;
+
+        if (m_ColorControlGroup == null)
+            return;
+
+        foreach (Graphic graphic in m_ColorControlGroup)
+        {
+            graphic.color = color;
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)

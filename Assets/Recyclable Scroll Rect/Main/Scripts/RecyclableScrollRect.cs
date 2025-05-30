@@ -34,14 +34,8 @@ namespace PolyAndCode.UI
         //Segments : coloums for vertical and rows for horizontal.
         public int Segments
         {
-            set
-            {
-                _segments = Math.Max(value, 2);
-            }
-            get
-            {
-                return _segments;
-            }
+            set => _segments = Math.Max(value, 2);
+            get => _segments;
         }
         [SerializeField]
         private int _segments;
@@ -53,7 +47,7 @@ namespace PolyAndCode.UI
 
         protected override void Start()
         {
-            //defafult(built-in) in scroll rect can have both directions enabled, Recyclable scroll rect can be scrolled in only one direction.
+            //default(built-in) in scroll rect can have both directions enabled, Recyclable scroll rect can be scrolled in only one direction.
             //setting default as vertical, Initialize() will set this again. 
             vertical = true;
             horizontal = false;
@@ -64,19 +58,19 @@ namespace PolyAndCode.UI
         }
 
         /// <summary>
-        /// Initialization when selfInitalize is true. Assumes that data source is set in controller's Awake.
+        /// Initialization when selfInitialize is true. Assumes that data source is set in controller's Awake.
         /// </summary>
         private void Initialize()
         {
-            //Contruct the recycling system.
-            if (Direction == DirectionType.Vertical)
+            //Construct the recycling system.
+            _recyclingSystem = Direction switch
             {
-                _recyclingSystem = new VerticalRecyclingSystem(PrototypeCell, viewport, content, DataSource, IsGrid, Segments);
-            }
-            else if (Direction == DirectionType.Horizontal)
-            {
-                _recyclingSystem = new HorizontalRecyclingSystem(PrototypeCell, viewport, content, DataSource, IsGrid, Segments);
-            }
+                DirectionType.Vertical => new VerticalRecyclingSystem(PrototypeCell, viewport, content, DataSource,
+                    IsGrid, Segments),
+                DirectionType.Horizontal => new HorizontalRecyclingSystem(PrototypeCell, viewport, content, DataSource,
+                    IsGrid, Segments),
+                _ => _recyclingSystem
+            };
             vertical = Direction == DirectionType.Vertical;
             horizontal = Direction == DirectionType.Horizontal;
 
@@ -89,7 +83,7 @@ namespace PolyAndCode.UI
         }
 
         /// <summary>
-        /// public API for Initializing when datasource is not set in controller's Awake. Make sure selfInitalize is set to false. 
+        /// public API for Initializing when datasource is not set in controller's Awake. Make sure selfInitialize is set to false. 
         /// </summary>
         public void Initialize(IRecyclableScrollRectDataSource dataSource)
         {

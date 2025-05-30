@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -10,6 +11,7 @@ using Debug = UnityEngine.Debug;
 public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource, IClassedImportTarget
 {
     #region On Inspector
+    [SerializeField] private RecyclableScrollRect m_ScrollRect;
     [SerializeField] private Button saveButton;
     [SerializeField] private DataDirectory m_TargetDirectory = DataDirectory.PumpAppData;
     [SerializeField] private string savePath;
@@ -59,7 +61,10 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
 
     private void OnDestroy()
     {
-        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData, GetType().Name);
+
+        foreach (PUMPSaveDataStructure data in _saveDatas)
+            data.UnsubscribeUpdateNotification(RefreshEventAdapter);
     }
 
     async Task IClassedImportTarget.Import(PUMPSaveDataStructure structure)
@@ -124,9 +129,10 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
             );
         });
 
-        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).AddEvent(savePath, ReloadData);
+        SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).AddEvent(savePath, ReloadData, GetType().Name);
         _initialized = true;
     }
+
 
     private async UniTask GetDatasFromManager()
     {
@@ -160,15 +166,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     #endregion
     
     #region RecyclableScrollRect
-    private RecyclableScrollRect ScrollRect
-    {
-        get
-        {
-            _scrollRect ??= GetComponentInChildren<RecyclableScrollRect>();
-            return _scrollRect;
-        }
-    }
-    
+    private RecyclableScrollRect ScrollRect => m_ScrollRect;
+
     public int GetItemCount()
     {
         return _saveDatas?.Count ?? 0;

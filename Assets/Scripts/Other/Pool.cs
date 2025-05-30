@@ -305,8 +305,8 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     #region Other methods
     private void Init()
     {
-        _pool = new();
-        _activeInstances = new();
+        _pool = new LinkedList<T>();
+        _activeInstances = new HashSet<T>();
         Instantiate();
     }
 

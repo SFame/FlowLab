@@ -10,7 +10,7 @@ public class TextGetter : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_TitleText;
     [SerializeField] private TMP_InputField m_InputField;
     [SerializeField] private Button m_ConfirmButton;
-    [SerializeField] private ClosablePanel m_ClosablePanel;
+    [SerializeField] private CloseablePanel m_CloseablePanel;
 
     #region Privates
     private const KeyCode CONFIRM_KEY = KeyCode.Return;
@@ -72,7 +72,7 @@ public class TextGetter : MonoBehaviour
 
         _initialized = true;
 
-        m_ClosablePanel.OnClose += Exit;
+        m_CloseablePanel.OnClose += Exit;
         m_ConfirmButton.onClick.AddListener(SendWithExit);
     }
     

@@ -21,6 +21,9 @@ public class ClassedPalette : NodePalette
             "I/O", new Dictionary<Type, string>
             {
                 { typeof(ClickSwitch), "ClickSwitch" },
+                { typeof(InputSwitch), "InputSwitch" },
+                { typeof(InputField), "Input Field"},
+                { typeof(Display), "Display"},
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
             }
@@ -29,9 +32,9 @@ public class ClassedPalette : NodePalette
             "Signal", new Dictionary<Type, string>
             {
                 { typeof(Splitter), "Split" },
-                { typeof(BinaryDecoder), "Merger" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
+                { typeof(TypeConverter), "Type Converter"},
                 { typeof(Debouncer), "Debouncer" },
                 { typeof(Timer), "Timer" },
             }
@@ -40,7 +43,24 @@ public class ClassedPalette : NodePalette
             "Math", new Dictionary<Type, string>
             {
                 { typeof(Comparator), "Comparator" },
+                { typeof(Equal), "Equal" },
                 { typeof(FourbitALU), "FourbitALU" },
+                { typeof(Round), "Round" },
+                { typeof(BinaryDecoder), "BinaryDecoder" },
+                { typeof(BinaryEncoder), "BinaryEncoder" },
+                { typeof(Lerp), "Lerp" },
+                { typeof(Clamp), "Clamp" },
+                { typeof(Absolute), "Absolute" },
+                { typeof(Multiplexer), "Multiplexer" },
+                { typeof(MinMax), "MinMax" },
+            }
+        },
+        {
+            "Util", new Dictionary<Type, string>
+            {
+                { typeof(StringCounter), "String Counter" },
+                { typeof(StringReplace), "String Replace" },
+                { typeof(StringContain), "String Contain" },
             }
         },
         {

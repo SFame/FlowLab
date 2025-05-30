@@ -22,6 +22,7 @@ public class DefaultPalette : NodePalette
             {
                 { typeof(ClickSwitch), "ClickSwitch" },
                 { typeof(InputSwitch), "InputSwitch" },
+                { typeof(InputField), "Input Field"},
                 { typeof(Display), "Display"},
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
@@ -51,6 +52,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
                 { typeof(Multiplexer), "Multiplexer" },
+                { typeof(MinMax), "MinMax" },
             }
         },
         {

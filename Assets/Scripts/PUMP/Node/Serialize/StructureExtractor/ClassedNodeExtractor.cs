@@ -5,6 +5,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using Utils;
+using Object = UnityEngine.Object;
 
 public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeDataManager
 {
@@ -209,6 +210,8 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         Loading.Progress prog = Loading.GetProgress();
 
         prog.SetProgress(20);
+
+        await Loading.AddTask(classedNode.WaitForDeserializationComplete());
 
         List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
 

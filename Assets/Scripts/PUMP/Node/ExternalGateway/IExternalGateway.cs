@@ -5,6 +5,7 @@ public interface IExternalGateway : IEnumerable<ITypeListenStateful>
 {
     public bool ObjectIsNull { get; }
     public int GateCount { get; set; }
+    public bool IsVisible { get; set; }
     public ITypeListenStateful this[int index] { get; }
 
     public event Action<int> OnCountUpdate;
