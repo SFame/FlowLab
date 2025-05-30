@@ -36,8 +36,7 @@ public class Multiplexer : Node
             OutputToken[0].State = TransitionType.Bool.Null();
             return;
         }
-
-        int s = InputToken[4].State << 1 | InputToken[5].State;
+        int s = ((InputToken[4].State ? 1 : 0) << 1 | (InputToken[5].State ? 1 : 0));
 
         switch (s)
         {
