@@ -9,7 +9,7 @@ public class UI_MainMenu : MonoBehaviour
     [SerializeField]
     private GameObject StartUI;
     [SerializeField]
-    private GameObject MainMenuUI;
+    private GameObject ExitUI;
     [SerializeField]
     private GameObject LoadGameUI;
 
@@ -22,22 +22,11 @@ public class UI_MainMenu : MonoBehaviour
         if (StartUI.activeSelf)
         {
             StartUI.SetActive(false);
-            MainMenuUI.SetActive(true);
         }
         else
         {
             StartUI.SetActive(true);
-            MainMenuUI.SetActive(false);
         }
-    }
-    public void OnClickStartGame()
-    {
-        SceneManager.LoadSceneAsync("2.FieldScene");
-    }
-    public void OnClickSandboxMode()
-    {
-        //SceneManager.LoadScene("SandboxMode");
-        SceneManager.LoadScene("2.FieldScene");
     }
     public void OnClickSettings()
     {
