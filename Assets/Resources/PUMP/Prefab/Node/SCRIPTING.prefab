@@ -382,7 +382,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: -42.2}
+  m_AnchoredPosition: {x: 0, y: -44}
   m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7585160048822306882
@@ -406,14 +406,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.12941177, g: 0.34509805, b: 0.5058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1932996131284776157, guid: c03ffe000e575c94da8c05fc4c5b4575, type: 3}
+  m_Sprite: {fileID: 1932996131284776157, guid: f9cd78070fa8af841b6a0aa8fa0db8e8, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1402,14 +1402,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.28773582, g: 0.69170636, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -9129840192552698105, guid: 18c0f360c18e3cd47b8ee7c582a9713e, type: 3}
+  m_Sprite: {fileID: -9129840192552698105, guid: 2c53666d83b34c24d811aed8fc12b677, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2013,6 +2013,18 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_DefaultColor.b
+      value: 0.5058824
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_DefaultColor.g
+      value: 0.34509805
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_DefaultColor.r
+      value: 0.13333334
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_ImageGroup.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -2120,6 +2132,22 @@ PrefabInstance:
       propertyPath: 'm_DetectingGroup.Array.data[1]'
       value: 
       objectReference: {fileID: 8718140953912749322}
+    - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 2188659656609629457, guid: 6ae7cfa3b1c08f24fb0acd56b9bb74d5, type: 3}
+    - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Color.b
+      value: 0.5058824
+      objectReference: {fileID: 0}
+    - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Color.g
+      value: 0.34509805
+      objectReference: {fileID: 0}
+    - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Color.r
+      value: 0.13333334
+      objectReference: {fileID: 0}
     - target: {fileID: 8237929459029892467, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_SizeDelta.x
       value: 120

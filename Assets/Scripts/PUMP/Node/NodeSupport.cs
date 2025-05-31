@@ -25,7 +25,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     private Canvas _rootCanvas;
     private SoundEventHandler _onSounded;
     private List<Color> _imageGroupDefaultColors;
-    private HashSet<object> _mouseEventBlockers = new();
+    private readonly HashSet<object> _mouseEventBlockers = new();
     private bool _initialized;
     private bool _isDestroyed;
     private bool _isGetTp;
@@ -123,6 +123,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         Node = node;
         ((INodeSupportSettable)Node).SetSupport(this);
         name = NODE_NAME_IDENTIFIER + " " + Node.GetType().Name;
+        Image.color = m_DefaultColor;
         _imageGroupDefaultColors = m_ImageGroup?.Select(image => image.color).ToList();
         _initialized = true;
     }

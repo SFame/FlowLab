@@ -14,7 +14,7 @@ public class SoundEventListener : MonoBehaviour
     [SerializeField] private List<AudioClip> m_AudioList;
 
     [Space(20)]
-
+    
     [SerializeField] private bool m_FindSoundableThisObject = true;
     [SerializeField] private List<Component> m_SoundableComponent;
     #endregion
@@ -48,7 +48,7 @@ public class SoundEventListener : MonoBehaviour
     #endregion
 
     #region Privates
-    private HashSet<ISoundable> _soundables = new();
+    private readonly HashSet<ISoundable> _soundables = new();
 
     private AudioClip GetClipByIndex(int index)
     {

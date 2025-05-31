@@ -200,14 +200,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5947965588422203141, guid: a364da011365cea4fa63fba55fd01d96, type: 3}
+  m_Sprite: {fileID: 2188659656609629457, guid: 6ae7cfa3b1c08f24fb0acd56b9bb74d5, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -244,8 +244,8 @@ MonoBehaviour:
   m_Image: {fileID: 6560553130387192381}
   m_NameTmp: {fileID: 1953344865619092123}
   m_ImageGroup: []
-  m_DefaultColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HighlightedColor: {r: 0, g: 1, b: 0, a: 1}
+  m_DefaultColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
+  m_HighlightedColor: {r: 0, g: 0.754717, b: 0, a: 1}
 --- !u!114 &6368112864780920419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +260,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_NodeSuppoet: {fileID: 3407088412786012311}
   m_NodeCanvasGroup: {fileID: 5256127476579471854}
+  m_DetectingGroup: []
 --- !u!114 &298567353741124581
 MonoBehaviour:
   m_ObjectHideFlags: 0

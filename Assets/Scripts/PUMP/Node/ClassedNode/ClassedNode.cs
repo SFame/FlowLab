@@ -59,8 +59,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/CLASSED";
 
-    protected override string SpritePath => null;
-
     protected override string NodeDisplayName => "Classed";
 
     protected override float TextSize => 24;

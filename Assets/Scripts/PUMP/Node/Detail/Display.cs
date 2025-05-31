@@ -7,7 +7,6 @@ public class Display : Node
     private List<ContextElement> _contexts;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/DISPLAY";
-    protected override string SpritePath => null;
     protected override string NodeDisplayName => string.Empty;
     protected override List<string> InputNames => new List<string>() { "in" };
     protected override List<string> OutputNames => new List<string>() { "out" };

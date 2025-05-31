@@ -13,20 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Prefab
-  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
-    I Round 20px
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
   - Assets
   - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
@@ -35,4 +21,17 @@ MonoBehaviour:
   - Assets/Scripts/UI
   - Assets/Scripts/PUMP/Node/Detail/NodeSupport
   - Assets/Scripts/UI
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   currentDirIndex: 19

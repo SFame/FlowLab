@@ -8,7 +8,6 @@ public class InputField : Node, INodeAdditionalArgs<string>
     private List<ContextElement> _contexts;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/INPUT_FIELD";
-    protected override string SpritePath => null;
     protected override string NodeDisplayName => "Field";
     protected override List<string> InputNames => new List<string>();
     protected override List<string> OutputNames => new List<string>() { "out" };

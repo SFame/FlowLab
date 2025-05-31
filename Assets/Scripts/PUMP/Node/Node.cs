@@ -361,7 +361,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
     // Node property -----------------------------
     public virtual string NodePrefabPath { get; } = "PUMP/Prefab/NODE";
-    [CanBeNull] protected virtual string SpritePath { get; } = "PUMP/Sprite/ingame/default_node";
+    [CanBeNull] protected virtual string SpritePath { get; } = null;
+    [CanBeNull] protected virtual Color? DefaultColor { get; } = null;
     protected virtual string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
@@ -420,6 +421,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     {
         if (_initialized)
             return;
+
+        if (DefaultColor != null)
+            Support.DefaultColor = DefaultColor.Value;
 
         Support.OnDragEnd += (_, _) => ReportChanges();
         Support.OnClick += ShowContext;
