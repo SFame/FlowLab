@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6817264134223746632
+--- !u!1 &4938722860653616988
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 369350186979667279}
-  - component: {fileID: 1673108347621026837}
+  - component: {fileID: 1425225157921346039}
+  - component: {fileID: 6101145510789569714}
   m_Layer: 0
   m_Name: PUMP_InputManager
   m_TagString: Untagged
@@ -17,47 +17,30 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &369350186979667279
+--- !u!4 &1425225157921346039
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6817264134223746632}
+  m_GameObject: {fileID: 4938722860653616988}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 959.9975, y: 518.7129, z: 0}
+  m_LocalPosition: {x: 958.82574, y: 540, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1673108347621026837
+--- !u!114 &6101145510789569714
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6817264134223746632}
+  m_GameObject: {fileID: 4938722860653616988}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41d4e5bc0aa651a46b0db802cd14b03b, type: 3}
+  m_Script: {fileID: 11500000, guid: 0aab22eeddefae745807235560c304f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_KeyMap:
-  - m_ActionType: 1
-    m_Modifiers: 32010000
-    m_ActionKeys: 14010000
-  - m_ActionType: 2
-    m_Modifiers: 32010000
-    m_ActionKeys: 13010000
-  - m_ActionType: 3
-    m_Modifiers: 32010000
-    m_ActionKeys: 61000000
-  - m_ActionType: 4
-    m_Modifiers: 
-    m_ActionKeys: 7f000000
-  - m_ActionType: 5
-    m_Modifiers: 
-    m_ActionKeys: 08000000
-  m_Enable: 1

@@ -175,14 +175,14 @@ public class BackgroundActionKeyMap
         }
     }
 
-    private bool IsKeyMapInvalid => m_Modifiers == null || m_ActionKeys == null || m_ActionKeys.Count == 0;
+    private bool IsKeyMapInvalid => m_ActionKeys == null || m_ActionKeys.Count == 0;
 
     private bool StateCheck()
     {
         if (IsKeyMapInvalid)
             return false;
 
-        if (m_Modifiers.Count == 0 || m_Modifiers.All(Input.GetKey))
+        if (m_Modifiers == null || m_Modifiers.Count == 0 || m_Modifiers.All(Input.GetKey))
         {
             bool result = false;
             if (_lastKey != null && Input.GetKeyDown(_lastKey.Value))
