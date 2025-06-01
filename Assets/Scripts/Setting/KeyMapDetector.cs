@@ -72,6 +72,7 @@ public class KeyMapDetector
                         if (IsModifierKey(key))
                         {
                             modifiers.Add(key);
+                            await UniTask.Yield(token);
                             continue;
                         }
 
