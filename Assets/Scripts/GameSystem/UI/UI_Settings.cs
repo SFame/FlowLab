@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -6,119 +7,200 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 public class UI_Settings : MonoBehaviour
 {
-    // sound volume? screen size? etc.
-
-    [SerializeField] private AudioMixer audioMixer;
-    [SerializeField] private Slider musicSlider;
+    [Header("Audio Settings")]
     [SerializeField] private Slider vfxSlider;
-    [SerializeField] private TextMeshProUGUI musicValueText;
     [SerializeField] private TextMeshProUGUI vfxValueText;
 
-    // 오디오 믹서 파라미터 이름
-    private const string MusicVolume = "Music";
-    private const string VFXVolume = "VFX";
+    [Header("Simulation Delay Settings")]
+    [SerializeField] private Slider simulationSpeedSlider;
+    [SerializeField] private TextMeshProUGUI simulationSpeedText;
+
+    [Header("Buttons")]
+    [SerializeField] private Button applyButton;
+    [SerializeField] private Button resetToDefaultButton;
+    [SerializeField] private Button closeButton;
+
+    [Header("KeyMap Settings")]
+    [SerializeField] private GameObject keyMapPanel;
+    [SerializeField] private Transform keyMapContent;
+    [SerializeField] private GameObject keyMapItemPrefab;
+
 
     private void Start()
     {
-        DefalutSettings();
-        // 이벤트 리스너 설정
-        musicSlider.onValueChanged.AddListener(SetMusicVolume);
-        vfxSlider.onValueChanged.AddListener(SetVFXVolume);
+        InitializeUI();
+        SetupEventHandlers();
 
     }
-
-    public void Init()
+    private void InitializeUI()
     {
-        // 믹서에서 값 가져오기
-        GetAudioSettings();
-        musicSlider.onValueChanged.AddListener(SetMusicVolume);
-        vfxSlider.onValueChanged.AddListener(SetVFXVolume);
-    }
-
-    private void DefalutSettings()
-    {
-        // 기본값 1f (100%)
-        float bgmVolume = 1f;
-        float sfxVolume = 1f;
-
-        // 슬라이더 값 설정
-        musicSlider.value = bgmVolume;
-        vfxSlider.value = sfxVolume;
-
-        // 슬라이더 값을 오디오 믹서에 적용
-        SetMusicVolume(bgmVolume);
-        SetVFXVolume(sfxVolume);
-
-        // 텍스트 업데이트
-        UpdateVolumeText();
-    }
-
-    public void SetMusicVolume(float volume)
-    {
-        // 볼륨 값을 데시벨로 변환 (로그 스케일)
-        // 0 = 음소거, 1 = 0dB (최대 볼륨)
-        float dB = volume > 0.0001f ? Mathf.Log10(volume) * 20 : -80f;
-        audioMixer.SetFloat(MusicVolume, dB);
-
-       
-        // 텍스트 업데이트
-        if (musicValueText != null)
-            musicValueText.text = Mathf.RoundToInt(volume * 100) + "%";
-    }
-
-    public void SetVFXVolume(float volume)
-    {
-        // 볼륨 값을 데시벨로 변환
-        float dB = volume > 0.0001f ? Mathf.Log10(volume) * 20 : -80f;
-        audioMixer.SetFloat(VFXVolume, dB);
-
-        // 텍스트 업데이트
-        if (vfxValueText != null)
-            vfxValueText.text = Mathf.RoundToInt(volume * 100) + "%";
-    }
-
-    private void UpdateVolumeText()
-    {
-        if (musicValueText != null)
-            musicValueText.text = Mathf.RoundToInt(musicSlider.value * 100) + "%";
-
-        if (vfxValueText != null)
-            vfxValueText.text = Mathf.RoundToInt(vfxSlider.value * 100) + "%";
-    }
-
-    private void GetAudioSettings()
-    {
-        float musicDB, vfxDB;
-
-        if (audioMixer.GetFloat(MusicVolume, out musicDB))
+        if (vfxSlider != null)
         {
-            // dB 값을 0-1 범위로 변환
-            float bgmVolume = Mathf.Pow(10, musicDB / 20);
-            musicSlider.value = bgmVolume;
-        }
-        else
-        {
-            // 기본값 설정
-            musicSlider.value = 1f; // 75% 볼륨
-            SetMusicVolume(1f);
+            vfxSlider.minValue = 0f;
+            vfxSlider.maxValue = 1f;
         }
 
-        if (audioMixer.GetFloat(VFXVolume, out vfxDB))
+        if (simulationSpeedSlider != null)
         {
-            float sfxVolume = Mathf.Pow(10, vfxDB / 20);
-            vfxSlider.value = sfxVolume;
+            simulationSpeedSlider.minValue = 0f;
+            simulationSpeedSlider.maxValue = 2.0f;
         }
-        else
+
+        // 키맵 패널 초기 상태
+        if (keyMapPanel != null)
         {
-            vfxSlider.value = 1f;
-            SetVFXVolume(1f);
+            keyMapPanel.SetActive(false);
+        }
+
+        // 초기 UI 값 설정
+        RefreshUIFromTempSettings();
+    }
+    private void SetupEventHandlers()
+    {
+        if (vfxSlider != null)
+        {
+            vfxSlider.onValueChanged.AddListener(OnVFXVolumeChanged);
+        }
+
+        if (simulationSpeedSlider != null)
+        {
+            simulationSpeedSlider.onValueChanged.AddListener(OnSimulationSpeedChanged);
+        }
+
+        // 버튼 이벤트
+        if (applyButton != null)
+        {
+            applyButton.onClick.AddListener(OnApplyButtonClicked);
+        }
+
+        if (resetToDefaultButton != null)
+        {
+            resetToDefaultButton.onClick.AddListener(OnResetToDefaultClicked);
+        }
+
+        if (closeButton != null)
+        {
+            closeButton.onClick.AddListener(OnCloseButtonClicked);
+        }
+
+        // Setting 이벤트 구독
+        Setting.OnSettingUpdated += OnSettingUpdated;
+    }
+    private void RefreshUIFromTempSettings()
+    {
+        var (vfx, speed, keyMap) = Setting.GetTempSettings();
+
+        if (vfxSlider != null)
+        {
+            vfxSlider.SetValueWithoutNotify(vfx);
+        }
+
+        if (simulationSpeedSlider != null)
+        {
+            simulationSpeedSlider.SetValueWithoutNotify(speed);
         }
 
         // 텍스트 업데이트
-        UpdateVolumeText();
+        UpdateVFXVolumeText(vfx);
+        UpdateSimulationSpeedText(speed);
     }
-    public void OnClickClose()
+
+    #region UI Event Handlers
+
+    private void OnVFXVolumeChanged(float value)
+    {
+        Setting.SetTempVFXVolume(value);
+        UpdateVFXVolumeText(value);
+    }
+    private void OnSimulationSpeedChanged(float value)
+    {
+        Setting.SetTempSimulationSpeed(value);
+        UpdateSimulationSpeedText(value);
+    }
+
+    private void OnApplyButtonClicked()
+    {
+        Setting.OnClickApplyButton();
+    }
+    private void OnResetToDefaultClicked()
+    {
+        Setting.ResetTempToDefault();
+        RefreshUIFromTempSettings();
+    }
+    #endregion
+    private void OnCloseButtonClicked()
     {
         gameObject.SetActive(false);
+    }
+
+    #region UI Update Methods
+    private void UpdateVFXVolumeText(float volume)
+    {
+        if (vfxValueText != null)
+        {
+            vfxValueText.text = $"{Mathf.RoundToInt(volume * 100)}%";
+        }
+    }
+    private void UpdateSimulationSpeedText(float speed)
+    {
+        if (simulationSpeedText != null)
+        {
+            simulationSpeedText.text = $"{speed:F1}";
+        }
+    }
+    private void RefreshKeyMapUI()
+    {
+        // 기존 키맵 아이템 제거
+        foreach (Transform child in keyMapContent)
+        {
+            Destroy(child.gameObject);
+        }
+        // 현재 임시 설정값에서 키맵 가져오기
+        List<BackgroundActionKeyMap> keyMapList = Setting.CurrentKeyMap;
+
+        // 키맵 아이템 생성
+        foreach (BackgroundActionKeyMap keyMap in keyMapList)
+        {
+            var item = Instantiate(keyMapItemPrefab, keyMapContent);
+            var dropbox = item.GetComponentInChildren<TextMeshProUGUI>(); // 키맵Item 스크립트 가져와서 값넘겨주고 드롭박스UI 갱신시키기
+            if (dropbox != null)
+            {
+                
+            }
+        }
+    }
+    private void OnKeyMapItemChanged()
+    {
+        // 변경된 키맵 리스트 수집
+        List<BackgroundActionKeyMap> updatedKeyMapList = new List<BackgroundActionKeyMap>();
+
+        foreach (Transform child in keyMapContent)
+        {
+            //KeyMapItemUI itemUI = child.GetComponent<KeyMapItemUI>();
+            //if (itemUI != null)
+            //{
+            //    updatedKeyMapList.Add(itemUI.GetKeyMap());
+            //}
+        }
+
+        // 임시 키맵 업데이트
+        Setting.SetTempKeyMap(updatedKeyMapList);
+    }
+    #endregion
+    private void OnSettingUpdated()
+    {
+        // 현재 적용된 설정값으로 UI 업데이트
+        Debug.Log("UI_Settings: 설정이 적용되었습니다.");
+    }
+    private void OnEnable()
+    {
+        // 패널이 열릴 때마다 현재 임시 설정값으로 UI 업데이트
+        RefreshUIFromTempSettings();
+    }
+
+    private void OnDestroy()
+    {
+        // 이벤트 구독 해제
+        Setting.OnSettingUpdated -= OnSettingUpdated;
     }
 }

@@ -15,7 +15,7 @@ public class Lerp : Node
 
     protected override float OutEnumeratorXPos => 47f;
 
-    protected override float EnumeratorPadding => 10f;
+    protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
 

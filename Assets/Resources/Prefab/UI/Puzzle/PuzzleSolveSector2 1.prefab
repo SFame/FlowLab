@@ -129,6 +129,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 348345845275596764, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_VisibleExternal
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1510068913751018988, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_Name
       value: PuzzleSolveSector2 1
