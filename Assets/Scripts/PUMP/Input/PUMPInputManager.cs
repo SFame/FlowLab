@@ -97,9 +97,9 @@ public enum BackgroundActionType
 public class BackgroundActionKeyMap
 {
     #region OnInspector
-    [SerializeField, OdinSerialize, Tooltip("Action Type")] private BackgroundActionType m_ActionType;
-    [SerializeField, OdinSerialize, Tooltip("Shift, Ctrl, Alt...")] private List<KeyCode> m_Modifiers;
-    [SerializeField, OdinSerialize, Tooltip("Character Key")] private List<KeyCode> m_ActionKeys;
+    [SerializeField, OdinSerialize, Tooltip("Action Type")] public BackgroundActionType m_ActionType;
+    [SerializeField, OdinSerialize, Tooltip("Shift, Ctrl, Alt...")] public List<KeyCode> m_Modifiers;
+    [SerializeField, OdinSerialize, Tooltip("Character Key")] public List<KeyCode> m_ActionKeys;
     #endregion
 
     #region Interface

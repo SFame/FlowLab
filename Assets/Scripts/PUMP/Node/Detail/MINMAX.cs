@@ -12,15 +12,15 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
 
     protected override string NodeDisplayName => "";
 
-    protected override float InEnumeratorXPos => -32f;
+    protected override float InEnumeratorXPos => -60f;
 
-    protected override float OutEnumeratorXPos => 32f;
+    protected override float OutEnumeratorXPos => 60f;
 
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(160f, 50f);
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 1;
     protected override void StateUpdate(TransitionEventArgs args) => PushResult();
