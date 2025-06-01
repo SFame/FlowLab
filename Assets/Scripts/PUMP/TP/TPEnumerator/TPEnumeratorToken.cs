@@ -125,6 +125,31 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     }
 
     /// <summary>
+    /// 첫번째 인덱스에 state를 안전하게 적용합니다
+    /// </summary>
+    /// <param name="state">State</param>
+    public void PushFirstSafety(Transition state)
+    {
+        if (Count <= 0)
+            return;
+
+        this[0].State = state;
+    }
+
+    /// <summary>
+    /// 해당 인덱스의 State에 안전하게 적용합니다
+    /// </summary>
+    /// <param name="index">Target Index</param>
+    /// <param name="state">State</param>
+    public void PushAtSafety(int index, Transition state)
+    {
+        if (index < 0 || Count <= 0 || index >= Count)
+            return;
+
+        this[index].State = state;
+    }
+
+    /// <summary>
     /// Token의 State들을 컬렉션을 통해 한 번에 적용합니다
     /// </summary>
     /// <param name="states">일괄 적용할 Transition 컬렉션</param>
@@ -186,6 +211,19 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     {
         if (index < 0 || index >= Count)
             throw new IndexOutOfRangeException($"Index must be between 0 and {_adapters.Length - 1} / current: {index}");
+
+        ITypeListenStateful target = this[index];
+        target.State = target.Type.Null();
+    }
+
+    /// <summary>
+    /// 해당 인덱스의 State에 Null을 적용합니다
+    /// </summary>
+    /// <param name="index">Target Index</param>
+    public void PushNullAtSafety(int index)
+    {
+        if (index < 0 || Count <= 0 || index >= Count)
+            return;
 
         ITypeListenStateful target = this[index];
         target.State = target.Type.Null();

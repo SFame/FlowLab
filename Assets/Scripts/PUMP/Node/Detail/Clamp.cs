@@ -21,9 +21,9 @@ public class Clamp : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
-    protected override string NodeDisplayName => "Clamp";
+    protected override string NodeDisplayName => "Clmp";
 
-    protected override float TextSize => 22f;
+    protected override float NameTextSize => 24f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

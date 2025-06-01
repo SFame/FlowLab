@@ -80,19 +80,19 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override void StateUpdate(TransitionEventArgs args) => OnStateUpdate?.Invoke(args);
 
-    protected override string DefineInputName(int tpNumber)
+    protected override string DefineInputName(int tpIndex)
     {
-        return $"out {tpNumber}";
+        return $"out {tpIndex}";
     }
 
-    protected override string DefineOutputName(int tpNumber)
+    protected override string DefineOutputName(int tpIndex)
     {
-        return $"out {tpNumber}";
+        return $"out {tpIndex}";
     }
 
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
 
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
 
     protected override void OnAfterInstantiate()
     {

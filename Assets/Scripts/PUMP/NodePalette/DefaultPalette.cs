@@ -61,6 +61,7 @@ public class DefaultPalette : NodePalette
                 { typeof(StringCounter), "String Counter" },
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
+                { typeof(StringSplit), "String Split" },
             }
         },
         {

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using OdinSerializer;
+using Utils;
+using System.Text;
 
 /// <summary>
 /// MonoBehaviour Component
@@ -29,6 +31,29 @@ public class PUMPInputManager : MonoBehaviour
     public void AddBlocker(object blocker) => _blocker.Add(blocker);
 
     public void RemoveBlocker(object blocker) => _blocker.Remove(blocker);
+
+    public void SortKeyMap()
+    {
+        KeyMap.Sort((a, b) =>
+        {
+            if (a.m_Modifiers == null && b.m_Modifiers == null)
+                return 0;
+
+            if (a.m_Modifiers == null)
+                return 1;
+
+            if (b.m_Modifiers == null)
+                return -1;
+
+            if (a.m_Modifiers.Count < b.m_Modifiers.Count)
+                return 1;
+
+            if (a.m_Modifiers.Count > b.m_Modifiers.Count)
+                return -1;
+
+            return 0;
+        });
+    }
     #endregion
 
     #region Privates / Protected
@@ -119,6 +144,37 @@ public class BackgroundActionKeyMap
         }
 
         return StateCheck();
+    }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+
+        sb.Append($"[{m_ActionType}] ");
+
+        if (m_Modifiers != null && m_Modifiers.Count > 0)
+        {
+            sb.Append(string.Join(" + ", m_Modifiers.Select(m => m.ToString())));
+            sb.Append(" + ");
+        }
+
+        if (m_ActionKeys != null && m_ActionKeys.Count > 0)
+        {
+            if (m_ActionKeys.Count == 1)
+            {
+                sb.Append(m_ActionKeys[0].ToString());
+            }
+            else
+            {
+                sb.Append($"({string.Join(" | ", m_ActionKeys.Select(a => a.ToString()))})");
+            }
+        }
+        else
+        {
+            sb.Append("(No Action Keys)");
+        }
+
+        return sb.ToString();
     }
     #endregion
 

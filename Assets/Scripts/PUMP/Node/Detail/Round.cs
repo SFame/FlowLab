@@ -25,7 +25,7 @@ public class Round : Node
 
     protected override string NodeDisplayName => "Round";
 
-    protected override float TextSize => 24f;
+    protected override float NameTextSize => 24f;
 
     protected override List<ContextElement> ContextElements
     {

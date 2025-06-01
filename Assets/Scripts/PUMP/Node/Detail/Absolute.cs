@@ -21,11 +21,11 @@ public class Absolute : Node
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
 
     protected override string NodeDisplayName => "Abs";
 
-    protected override float TextSize => 24f;
+    protected override float NameTextSize => 28f;
 
     protected override List<ContextElement> ContextElements
     {

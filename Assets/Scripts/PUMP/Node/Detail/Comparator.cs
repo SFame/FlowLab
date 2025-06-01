@@ -19,17 +19,17 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override string NodeDisplayName => "Comp";
 
-    protected override float TextSize => 22f;
+    protected override float NameTextSize => 22f;
 
     protected override int DefaultInputCount => 2;
 
     protected override int DefaultOutputCount => 1;
 
     protected override void StateUpdate(TransitionEventArgs args) => PushResult();
-    protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
-    protected override string DefineOutputName(int tpNumber) => "out";
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+    protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
+    protected override string DefineOutputName(int tpIndex) => "out";
+    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
 
     private ComparatorSupport ComparatorSupport
     {

@@ -44,11 +44,11 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
         return new[] { TransitionType.Int.Null() };
     }
 
-    protected override string DefineInputName(int tpNumber) => $"2<sup><size=18>{tpNumber}</size></sup>";
-    protected override string DefineOutputName(int tpNumber) => "out";
+    protected override string DefineInputName(int tpIndex) => $"2<sup><size=18>{tpIndex}</size></sup>";
+    protected override string DefineOutputName(int tpIndex) => "out";
 
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Int;
+    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Int;
 
 
     protected override void StateUpdate(TransitionEventArgs args)

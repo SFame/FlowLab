@@ -39,10 +39,10 @@ public abstract class DynamicIONode : Node
     #region Override Require
     protected abstract int DefaultInputCount { get; }
     protected abstract int DefaultOutputCount { get; }
-    protected abstract string DefineInputName(int tpNumber);
-    protected abstract string DefineOutputName(int tpNumber);
-    protected abstract TransitionType DefineInputType(int tpNumber);
-    protected abstract TransitionType DefineOutputType(int tpNumber);
+    protected abstract string DefineInputName(int tpIndex);
+    protected abstract string DefineOutputName(int tpIndex);
+    protected abstract TransitionType DefineInputType(int tpIndex);
+    protected abstract TransitionType DefineOutputType(int tpIndex);
     #endregion
 
     #region Set count on child

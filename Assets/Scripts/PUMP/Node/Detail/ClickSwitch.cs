@@ -27,7 +27,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override string NodeDisplayName => "On/Off";
 
-    protected override float TextSize => 25f;
+    protected override float NameTextSize => 25f;
 
     private ClickSwitchSupport ClickSwitchSupport
     {

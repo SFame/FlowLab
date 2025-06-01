@@ -27,7 +27,7 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     protected override string NodeDisplayName => "Input";
 
-    protected override float TextSize => 28f;
+    protected override float NameTextSize => 28f;
 
 
     private InputSwitchSupport InputSwitchSupport

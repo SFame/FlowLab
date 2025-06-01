@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/Prefab
-  - Assets/Resources/Prefab/UI
-  - Assets/Resources/Prefab/UI/Puzzle
-  - Assets/Resources/Prefab/UI
-  - Assets/Resources/Prefab
-  - Assets/Resources/Prefab/UI
-  - Assets/Resources/Prefab/UI/Puzzle
-  - Assets/Resources/Prefab
-  - Assets/Resources/Prefab/UI
-  - Assets
-  - Assets/Scripts
   - Assets/Scripts/UI
-  - Assets/Scripts
-  - Assets/Scripts/GameSystem
-  - Assets/Scripts/GameSystem/UI
-  - Assets
+  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
+  - Assets/Scripts/UI
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources
-  - Assets/Resources/Prefab
-  - Assets/Resources/Prefab/UI
-  - Assets/Scripts/GameSystem/UI
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   currentDirIndex: 19

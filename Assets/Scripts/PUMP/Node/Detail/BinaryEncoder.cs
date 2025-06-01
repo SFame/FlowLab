@@ -22,19 +22,19 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string DefineInputName(int tpNumber) => "in";
+    protected override string DefineInputName(int tpIndex) => "in";
 
-    protected override TransitionType DefineInputType(int tpNumber)
+    protected override TransitionType DefineInputType(int tpIndex)
     {
         return TransitionType.Int;
     }
 
-    protected override string DefineOutputName(int tpNumber)
+    protected override string DefineOutputName(int tpIndex)
     {
-        return $"2<sup><size=18>{tpNumber}</size></sup>";
+        return $"2<sup><size=18>{tpIndex}</size></sup>";
     }
 
-    protected override TransitionType DefineOutputType(int tpNumber)
+    protected override TransitionType DefineOutputType(int tpIndex)
     {
         return TransitionType.Bool;
     }

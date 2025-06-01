@@ -14,7 +14,7 @@ public class Debouncer : Node, INodeAdditionalArgs<float>
     protected override float EnumeratorMargin => 5f;
     protected override Vector2 DefaultNodeSize => new Vector2(125f, 80f);
     protected override string NodeDisplayName => "Debc";
-    protected override float TextSize { get; } = 22f;
+    protected override float NameTextSize { get; } = 22f;
 
     private DebouncerSupport _debouncerSupport;
     private DebouncerSupport DebouncerSupport
