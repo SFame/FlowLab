@@ -59,6 +59,7 @@ public class PUMPAppdataSerializeManager : ISerializeManagable<PUMPSaveDataStruc
     {
         _ = SaveDataAsync(fileName, _saveDatas[fileName]);
     }
+
     private void DeleteData(string fileName, PUMPSaveDataStructure data)
     {
         _saveDatas[fileName].Remove(data);

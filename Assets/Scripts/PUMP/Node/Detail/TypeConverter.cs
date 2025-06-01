@@ -95,6 +95,7 @@ public class TypeConverter : Node
         if (convertSuccess)
         {
             OutputToken[0].State = converted;
+            TypeConverterSupport.HideFail();
             return;
         }
 

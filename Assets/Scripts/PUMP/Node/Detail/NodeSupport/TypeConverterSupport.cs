@@ -14,4 +14,10 @@ public class TypeConverterSupport : MonoBehaviour
         m_FailText.DOFade(1f, 0f);
         m_FailText.DOFade(0f, m_FailFadeDuration).SetDelay(m_FailShowDuration);
     }
+
+    public void HideFail()
+    {
+        m_FailText.DOKill();
+        m_FailText.DOFade(0f, 0f);
+    }
 }

@@ -16,7 +16,7 @@ public enum TransitionType
 }
 
 [Serializable]
-public struct Transition : IEquatable<Transition>
+public struct Transition : IComparable<Transition>, IEquatable<Transition>
 {
     #region Static Interface
     public static Transition Null(TransitionType transitionType)
@@ -151,6 +151,43 @@ public struct Transition : IEquatable<Transition>
             TransitionType.Float => Value.FloatValue.Equals(other.Value.FloatValue),
             TransitionType.String => string.Equals(Value.StringValue, other.Value.StringValue, StringComparison.Ordinal),
             _ => false
+        };
+    }
+
+    public int CompareTo(Transition other)
+    {
+        if (Type == TransitionType.None || other.Type == TransitionType.None)
+        {
+            throw new TransitionNoneTypeException();
+        }
+
+        if (Type != other.Type)
+        {
+            throw new TransitionTypeMismatchException(Type, other.Type);
+        }
+
+        if (IsNull && other.IsNull)
+        {
+            return 0;
+        }
+
+        if (IsNull)
+        {
+            return -1;
+        }
+
+        if (other.IsNull)
+        {
+            return 1;
+        }
+
+        return Type switch
+        {
+            TransitionType.Bool => ((bool)this).CompareTo((bool)other),
+            TransitionType.Int => ((int)this).CompareTo((int)other),
+            TransitionType.Float => ((float)this).CompareTo((float)other),
+            TransitionType.String => string.Compare(((string)this), (string)other, StringComparison.Ordinal),
+            _ => throw new TransitionTypeArgumentOutOfRangeException(Type)
         };
     }
 
@@ -809,8 +846,8 @@ public static class TransitionUtil
 
     public static Color GetColor(this TransitionType transitionType) => transitionType switch
     {
-        TransitionType.Bool => Color.black,
-        TransitionType.Int => new Color(0f, 0.94f, 0.47f),
+        TransitionType.Bool => new Color(0f, 0.8f, 1f),
+        TransitionType.Int => new Color(0f, 1f, 0f),
         TransitionType.Float => new Color(0.94f, 0.69f, 0f),
         TransitionType.String => new Color(0.94f, 0.34f, 1f),
         TransitionType.None => throw new TransitionNoneTypeException(),

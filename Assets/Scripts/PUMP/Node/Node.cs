@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
 
-[ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem")]
+[ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem", "#225881")]
 public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDeserializingListenable
 {
     #region Privates
