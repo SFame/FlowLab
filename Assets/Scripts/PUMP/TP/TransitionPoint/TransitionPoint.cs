@@ -31,6 +31,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     [Header("Components")]
     [SerializeField] private TextMeshProUGUI m_NameText;
     [SerializeField] private Image m_Image;
+    [SerializeField] private Image m_TypeRingImage;
     [SerializeField] private Image m_RadialShadowImage;
     [SerializeField] private Image m_HighlighterImage;
     #endregion
@@ -186,6 +187,11 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     protected void SetImageColor(Color color)
     {
         Image.color = color;
+    }
+
+    protected void SetTypeRingColor(Color color)
+    {
+        m_TypeRingImage.color = color;
     }
 
     protected void SetTextColor(Color color)

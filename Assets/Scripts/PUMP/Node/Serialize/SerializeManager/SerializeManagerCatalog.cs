@@ -80,7 +80,7 @@ public static class SerializeManagerCatalog
             Debug.Log("DataDirectory is invalid");
             return Task.CompletedTask;
         }
-        Debug.Log(serializeObject);
+
         return currentManager.AddData(fileName, serializeObject);
     }
 
@@ -126,7 +126,6 @@ public static class SerializeManagerCatalog
             return null;
         }
 
-        Debug.Log(results);
         return results;
     }
 

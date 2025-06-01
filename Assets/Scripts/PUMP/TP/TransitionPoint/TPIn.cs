@@ -92,7 +92,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
             _type = value;
             _state = _type.Null();
 
-            SetTextColor(_type.GetColor());
+            Color typeColor = _type.GetColor();
+            SetTextColor(typeColor);
+            SetTypeRingColor(typeColor);
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
     }
