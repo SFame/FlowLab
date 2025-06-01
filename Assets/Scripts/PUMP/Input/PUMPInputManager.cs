@@ -2,36 +2,53 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using OdinSerializer;
 
 /// <summary>
 /// MonoBehaviour Component
 /// </summary>
 public class PUMPInputManager : MonoBehaviour
 {
-    #region On Inspector
-    [SerializeField] private List<BackgroundActionKeyMap> m_KeyMap;
-    [SerializeField] private bool m_Enable = true;
-    #endregion
-
     #region Interface
-    public static PUMPInputManager Current { get; private set; }
+    public static PUMPInputManager Current
+    {
+        get => _current;
+        private set
+        {
+            _current = value;
+            OnCurrentUpdated?.Invoke(_current);
+        }
+    }
+
+    public static event Action<PUMPInputManager> OnCurrentUpdated;
+
+    public List<BackgroundActionKeyMap> KeyMap { get; } = new();
+
+    public bool Enable { get; set; } = true;
+
     public void AddBlocker(object blocker) => _blocker.Add(blocker);
-    public void SubBlocker(object blocker) => _blocker.Remove(blocker);
+
+    public void RemoveBlocker(object blocker) => _blocker.Remove(blocker);
     #endregion
 
-    #region Privates
+    #region Privates / Protected
+    protected virtual void Initialize() { }
+    protected virtual void Terminate() { }
+
     private readonly HashSet<object> _blocker = new();
+    private static PUMPInputManager _current;
+
     private void Update()
     {
-        if (!m_Enable)
+        if (!Enable)
             return;
 
         if (_blocker.Count > 0)
             return;
 
-        for (int i = 0; i < m_KeyMap.Count; i++)
+        for (int i = 0; i < KeyMap.Count; i++)
         {
-            if (m_KeyMap[i].Run()) // 1프레임당 1회 호출 제한
+            if (KeyMap[i].Run()) // 1프레임당 1회 호출 제한
                 break;
         }
     }
@@ -44,6 +61,8 @@ public class PUMPInputManager : MonoBehaviour
         }
 
         Current = this;
+
+        Initialize();
     }
 
     private void OnDestroy()
@@ -52,8 +71,23 @@ public class PUMPInputManager : MonoBehaviour
         {
             Current = null;
         }
+
+        Terminate();
     }
     #endregion
+}
+
+/// <summary>
+/// Action Type
+/// </summary>
+public enum BackgroundActionType
+{
+    NoAction,
+    Undo,
+    Redo,
+    SelectAll,
+    SelectDelete,
+    SelectDisconnect,
 }
 
 /// <summary>
@@ -63,9 +97,9 @@ public class PUMPInputManager : MonoBehaviour
 public class BackgroundActionKeyMap
 {
     #region OnInspector
-    [SerializeField, Tooltip("Action Type")] private BackgroundActionType m_ActionType;
-    [SerializeField, Tooltip("Shift, Ctrl, Alt...")] private List<KeyCode> m_Modifiers;
-    [SerializeField, Tooltip("Character Key")] private List<KeyCode> m_ActionKeys;
+    [SerializeField, OdinSerialize, Tooltip("Action Type")] private BackgroundActionType m_ActionType;
+    [SerializeField, OdinSerialize, Tooltip("Shift, Ctrl, Alt...")] private List<KeyCode> m_Modifiers;
+    [SerializeField, OdinSerialize, Tooltip("Character Key")] private List<KeyCode> m_ActionKeys;
     #endregion
 
     #region Interface
@@ -188,19 +222,6 @@ public class BackgroundActionKeyMap
         return result;
     }
     #endregion
-}
-
-/// <summary>
-/// Action Type
-/// </summary>
-public enum BackgroundActionType
-{
-    NoAction,
-    Undo,
-    Redo,
-    SelectAll,
-    SelectDelete,
-    SelectDisconnect,
 }
 
 /// <summary>

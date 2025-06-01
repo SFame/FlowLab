@@ -592,6 +592,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1673108347621026837, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: 'm_KeyMap.Array.data[2].m_Modifiers.Array.data[0]'
+      value: 306
+      objectReference: {fileID: 0}
     - target: {fileID: 6817264134223746632, guid: 6a4621286dcd1374283e70b801957200, type: 3}
       propertyPath: m_Name
       value: PUMP_InputManager

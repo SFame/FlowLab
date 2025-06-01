@@ -125,7 +125,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
                 },
                 titleString: "Save name",
                 inputString: defaultSaveName,
-                onExit: () => inputManager?.SubBlocker(blocker)
+                onExit: () => inputManager?.RemoveBlocker(blocker)
             );
         });
 
@@ -239,7 +239,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
                             },
                             titleString: "New name",
                             inputString: data.Name,
-                            onExit: () => inputManager?.SubBlocker(blocker)
+                            onExit: () => inputManager?.RemoveBlocker(blocker)
                         );
                     }
                 )

@@ -17,7 +17,7 @@ public class TPConnection : IStateful, IDisposable
         (
             duration: WaitTime,
             ignoreTimeScale: false,
-            delayTiming: PlayerLoopTiming.LastPostLateUpdate,
+            delayTiming: PlayerLoopTiming.Update,
             cancellationToken: token
         ),
         _ => UniTask.WaitForEndOfFrame(token),

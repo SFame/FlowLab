@@ -119,7 +119,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
             callback: DataManager.Push,
             titleString: "Save Name",
             inputString: defaultSaveName,
-            onExit: () => inputManager?.SubBlocker(blocker)
+            onExit: () => inputManager?.RemoveBlocker(blocker)
         );
     }
 
@@ -142,7 +142,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
             },
             titleString: "Save Name",
             inputString: defaultSaveName,
-            onExit: () => inputManager?.SubBlocker(blocker)
+            onExit: () => inputManager?.RemoveBlocker(blocker)
         );
     }
 
