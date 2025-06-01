@@ -12,7 +12,7 @@ public static class Setting
     public static float DefaultVFXVolume = 1.0f; // Default VFX volume
     public static float DefaultSimulationSpeed = 1.0f; // Default simulation speed
     // Default key map settings
-    public static readonly List<BackgroundActionKeyMap> DefaultKeyMap = new List<BackgroundActionKeyMap>
+    public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
     {
         new BackgroundActionKeyMap
         {
@@ -46,30 +46,30 @@ public static class Setting
 
     #endregion
     #region Properties
-    // ÇöÀç ¼³Á¤°ª (UI¿¡¼­ ¼öÁ¤ÇÏ´Â ÀÓ½Ã°ª)
+    // í˜„ì¬ ì„¤ì •ê°’ (UIì—ì„œ ìˆ˜ì •í•˜ëŠ” ì„ì‹œê°’)
     private static float _tempVfxVolume = DefaultVFXVolume;
     private static float _tempSimulationSpeed = DefaultSimulationSpeed;
     private static List<BackgroundActionKeyMap> _tempKeyMap = new List<BackgroundActionKeyMap>(DefaultKeyMap);
 
-    // ½ÇÁ¦ Àû¿ëµÈ ¼³Á¤°ª
+    // ì‹¤ì œ ì ìš©ëœ ì„¤ì •ê°’
     private static SettingData _currentSettings = new SettingData();
-    // AudioMixer ÂüÁ¶
+    // AudioMixer ì°¸ì¡°
     private static AudioMixer _audioMixer;
 
-    // AudioMixer ÆÄ¶ó¹ÌÅÍ ÀÌ¸§
+    // AudioMixer íŒŒë¼ë¯¸í„° ì´ë¦„
     private const string MusicVolumeParam = "Music";
     private const string VFXVolumeParam = "VFX";
-    // ÀúÀå ÆÄÀÏ¸í
+    // ì €ì¥ íŒŒì¼ëª…
     private const string SAVE_FILE_NAME = "Game_Settings.json";
 
-    // °ø°³ ÇÁ·ÎÆÛÆ¼
+    // ê³µê°œ í”„ë¡œí¼í‹°
     public static float VFXVolume => _currentSettings.vfxVolume;
     public static float SimulationSpeed => _currentSettings.simulationSpeed;
     public static List<BackgroundActionKeyMap> CurrentKeyMap => new List<BackgroundActionKeyMap>(_currentSettings.keyMapList);
     #endregion
 
     #region Events
-    // ¼³Á¤ º¯°æ ÀÌº¥Æ®
+    // ì„¤ì • ë³€ê²½ ì´ë²¤íŠ¸
     public static event Action OnSettingUpdated;
     #endregion
 
@@ -77,7 +77,7 @@ public static class Setting
     public static void Initialize()
     {
         
-        // ÀúÀåµÈ ¼³Á¤ ·Îµå
+        // ì €ì¥ëœ ì„¤ì • ë¡œë“œ
         LoadSettings();
 
         ApplyAllSettings();//sound
@@ -86,7 +86,7 @@ public static class Setting
     }
     #endregion
 
-    #region Temporary Settings (UI¿¡¼­ »ç¿ë)
+    #region Temporary Settings (UIì—ì„œ ì‚¬ìš©)
 
     public static void SetTempVFXVolume(float volume)
     {
@@ -110,18 +110,18 @@ public static class Setting
     }
     public static void OnClickApplyButton()
     {
-        // ÀÓ½Ã ¼³Á¤°ªÀ» ÇöÀç ¼³Á¤À¸·Î º¹»ç
+        // ì„ì‹œ ì„¤ì •ê°’ì„ í˜„ì¬ ì„¤ì •ìœ¼ë¡œ ë³µì‚¬
         _currentSettings.vfxVolume = _tempVfxVolume;
         _currentSettings.simulationSpeed = _tempSimulationSpeed;
         _currentSettings.keyMapList = new List<BackgroundActionKeyMap>(_tempKeyMap);
 
-        // ¼³Á¤ Àû¿ë
+        // ì„¤ì • ì ìš©
         ApplyAllSettings();
 
-        // ¼³Á¤ ÀúÀå
+        // ì„¤ì • ì €ì¥
         SaveSettings();
 
-        // ÀÌº¥Æ® ¹ß»ı - °¢ ½Ã½ºÅÛÀÌ ÀÌ¸¦ ¹Ş¾Æ¼­ SettingÀÇ °ªÀ» °¡Á®°¡ Àû¿ë
+        // ì´ë²¤íŠ¸ ë°œìƒ - ê° ì‹œìŠ¤í…œì´ ì´ë¥¼ ë°›ì•„ì„œ Settingì˜ ê°’ì„ ê°€ì ¸ê°€ ì ìš©
         OnSettingUpdated?.Invoke();
     }
     private static void ApplyAllSettings()
@@ -138,7 +138,7 @@ public static class Setting
     
     private static float ConvertToDecibel(float volume)
     {
-        // 0 = À½¼Ò°Å, 1 = 0dB (ÃÖ´ë º¼·ı)
+        // 0 = ìŒì†Œê±°, 1 = 0dB (ìµœëŒ€ ë³¼ë¥¨)
         return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
     }
 
@@ -175,11 +175,11 @@ public static class Setting
         try
         {
             Serializer.SaveData(SAVE_FILE_NAME, _currentSettings, format: DataFormat.Binary);
-            Debug.Log("¼³Á¤ÀÌ ÀúÀåµÇ¾ú½À´Ï´Ù.");
+            Debug.Log("ì„¤ì •ì´ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤.");
         }
         catch (Exception e)
         {
-            Debug.LogError($"¼³Á¤ ÀúÀå ½ÇÆĞ: {e.Message}");
+            Debug.LogError($"ì„¤ì • ì €ì¥ ì‹¤íŒ¨: {e.Message}");
         }
     }
 
@@ -193,24 +193,24 @@ public static class Setting
             {
                 _currentSettings = loadedData;
 
-                // ·ÎµåµÈ °ªÀ¸·Î ÀÓ½Ã ¼³Á¤°ªµµ ÃÊ±âÈ­
+                // ë¡œë“œëœ ê°’ìœ¼ë¡œ ì„ì‹œ ì„¤ì •ê°’ë„ ì´ˆê¸°í™”
                 _tempVfxVolume = _currentSettings.vfxVolume;
                 _tempSimulationSpeed = _currentSettings.simulationSpeed;
                 _tempKeyMap = new List<BackgroundActionKeyMap>(_currentSettings.keyMapList);
 
-                Debug.Log("¼³Á¤ÀÌ ·ÎµåµÇ¾ú½À´Ï´Ù.");
+                Debug.Log("ì„¤ì •ì´ ë¡œë“œë˜ì—ˆìŠµë‹ˆë‹¤.");
             }
             else
             {
-                // ·Îµå ½ÇÆĞ½Ã ±âº»°ª »ç¿ë
+                // ë¡œë“œ ì‹¤íŒ¨ì‹œ ê¸°ë³¸ê°’ ì‚¬ìš©
                 _currentSettings = new SettingData();
                 ResetTempToDefault();
-                Debug.Log("ÀúÀåµÈ ¼³Á¤ÀÌ ¾ø½À´Ï´Ù. ±âº»°ªÀ» »ç¿ëÇÕ´Ï´Ù.");
+                Debug.Log("ì €ì¥ëœ ì„¤ì •ì´ ì—†ìŠµë‹ˆë‹¤. ê¸°ë³¸ê°’ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.");
             }
         }
         catch (Exception e)
         {
-            Debug.LogError($"¼³Á¤ ·Îµå ½ÇÆĞ: {e.Message}");
+            Debug.LogError($"ì„¤ì • ë¡œë“œ ì‹¤íŒ¨: {e.Message}");
             _currentSettings = new SettingData();
             ResetTempToDefault();
         }
@@ -219,7 +219,7 @@ public static class Setting
 
 
 
-    // ÇöÀç ÀÓ½Ã ¼³Á¤°ª °¡Á®¿À±â (UI Ç¥½Ã¿ë)
+    // í˜„ì¬ ì„ì‹œ ì„¤ì •ê°’ ê°€ì ¸ì˜¤ê¸° (UI í‘œì‹œìš©)
     public static (float vfx, float speed, List<BackgroundActionKeyMap> keyMap) GetTempSettings()
     {
         return (_tempVfxVolume, _tempSimulationSpeed, new List<BackgroundActionKeyMap>(_tempKeyMap));
