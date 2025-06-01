@@ -35,11 +35,13 @@ public static class Setting
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDelete,
+            m_Modifiers = new List<KeyCode> {},
             m_ActionKeys = new List<KeyCode> { KeyCode.Delete }
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDisconnect,
+            m_Modifiers = new List<KeyCode> {},
             m_ActionKeys = new List<KeyCode> { KeyCode.Backspace }
         }
     };
@@ -53,14 +55,9 @@ public static class Setting
 
     // 실제 적용된 설정값
     private static SettingData _currentSettings = new SettingData();
-    // AudioMixer 참조
-    private static AudioMixer _audioMixer;
 
-    // AudioMixer 파라미터 이름
-    private const string MusicVolumeParam = "Music";
-    private const string VFXVolumeParam = "VFX";
     // 저장 파일명
-    private const string SAVE_FILE_NAME = "Game_Settings.json";
+    private const string SAVE_FILE_NAME = "Settings.json";
 
     // 공개 프로퍼티
     public static float VFXVolume => _currentSettings.vfxVolume;
@@ -74,13 +71,10 @@ public static class Setting
     #endregion
 
     #region Initialization
-    public static void Initialize()
+    static Setting()
     {
-        
         // 저장된 설정 로드
         LoadSettings();
-
-        ApplyAllSettings();//sound
 
         OnSettingUpdated?.Invoke();
     }
@@ -95,9 +89,9 @@ public static class Setting
 
     public static void SetTempSimulationSpeed(float speed)
     {
-        _tempSimulationSpeed = Mathf.Clamp(speed, 0.1f, 2.0f);
+        _tempSimulationSpeed = Mathf.Clamp(speed, 0f, 2.0f);
     }
-    public static void SetTempKeyMap(List<BackgroundActionKeyMap> keyMap)
+    public static void SetTempKeyMap(List<BackgroundActionKeyMap> keyMap) //apply 버튼을 누를시 UI의 목록을 가져와 다듬어 넣기..
     {
         _tempKeyMap = new List<BackgroundActionKeyMap>(keyMap);
     }
@@ -115,55 +109,30 @@ public static class Setting
         _currentSettings.simulationSpeed = _tempSimulationSpeed;
         _currentSettings.keyMapList = new List<BackgroundActionKeyMap>(_tempKeyMap);
 
-        // 설정 적용
-        ApplyAllSettings();
-
         // 설정 저장
         SaveSettings();
 
         // 이벤트 발생 - 각 시스템이 이를 받아서 Setting의 값을 가져가 적용
         OnSettingUpdated?.Invoke();
     }
-    private static void ApplyAllSettings()
-    {
-        ApplyVFXVolume(_currentSettings.vfxVolume);
-    }
-    #region Sound Settings
-    private static void ApplyVFXVolume(float volume)
-    {
-
-        float dB = ConvertToDecibel(volume);
-        _audioMixer.SetFloat(VFXVolumeParam, dB);
-    }
-    
-    private static float ConvertToDecibel(float volume)
-    {
-        // 0 = 음소거, 1 = 0dB (최대 볼륨)
-        return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
-    }
-
-    #endregion
-
+  
     #region Save/Load Settings
     [Serializable]
     public class SettingData
     {
-        [OdinSerialize] public float soundVolume;
         [OdinSerialize] public float vfxVolume;
         [OdinSerialize] public float simulationSpeed;
         [OdinSerialize] public List<BackgroundActionKeyMap> keyMapList;
 
         public SettingData()
         {
-            soundVolume = DefaultSoundVolume;
             vfxVolume = DefaultVFXVolume;
             simulationSpeed = DefaultSimulationSpeed;
             keyMapList = new List<BackgroundActionKeyMap>(DefaultKeyMap);
         }
 
-        public SettingData(float sound, float vfx, float speed, List<BackgroundActionKeyMap> keyMap)
+        public SettingData( float vfx, float speed, List<BackgroundActionKeyMap> keyMap)
         {
-            soundVolume = sound;
             vfxVolume = vfx;
             simulationSpeed = speed;
             keyMapList = new List<BackgroundActionKeyMap>(keyMap);
@@ -224,5 +193,20 @@ public static class Setting
     {
         return (_tempVfxVolume, _tempSimulationSpeed, new List<BackgroundActionKeyMap>(_tempKeyMap));
     }
+
+    // ActionType에 해당하는 디폴트 키맵 가져오기
+    public static BackgroundActionType GetActionType(BackgroundActionType actionType)
+    {
+        return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_ActionType ?? actionType;
+    }
+    public static List<KeyCode> GetActionKeys(BackgroundActionType actionType)
+    {
+        return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_ActionKeys ?? new List<KeyCode>();
+    }
+    public static List<KeyCode> GetActionModifiers(BackgroundActionType actionType)
+    {
+        return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_Modifiers ?? new List<KeyCode>();
+    }
+
 
 }
