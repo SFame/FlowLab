@@ -235,9 +235,16 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
         _radialInitialized = true;
 
-        _radialDefaultColor = m_RadialShadowImage.color;
+        _radialDefaultColor = Type.GetColor();
         _radialDefaultColor.a = 0f;
         m_RadialShadowImage.color = _radialDefaultColor;
+    }
+
+    protected void RadialDefaultColorUpdate(Color color)
+    {
+        _radialDefaultColor = color;
+        _radialDefaultColor.a = 0f;
+        m_RadialShadowImage.color = new Color(_radialDefaultColor.r, _radialDefaultColor.g, _radialDefaultColor.b, m_RadialShadowImage.color.a);
     }
 
     private void BlinkRadial()

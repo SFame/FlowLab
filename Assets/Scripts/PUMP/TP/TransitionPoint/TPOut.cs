@@ -87,6 +87,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
             Color typeColor = _type.GetColor();
             SetTextColor(typeColor);
             SetTypeRingColor(typeColor);
+            RadialDefaultColorUpdate(typeColor);
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
         }
     }
