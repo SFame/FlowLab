@@ -24,6 +24,7 @@ public class KeyMapDetector
     #region Interface
     public KeyMapDetector(BackgroundActionType actionType)
     {
+        Initialize();
         _actionType = actionType;
     }
 
@@ -38,8 +39,6 @@ public class KeyMapDetector
 
     private async UniTask<BackgroundActionKeyMap> Detect(CancellationToken token)
     {
-        Initialize();
-
         HashSet<KeyCode> modifiers = new();
         HashSet<KeyCode> actions = new();
 
