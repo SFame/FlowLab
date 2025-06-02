@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class PaletteElem : MonoBehaviour, IDraggable
+public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI m_Text;
@@ -23,6 +23,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     public event Action OnDragStart;
     public event Action OnDragEnd;
     public event Action OnInstantiate;
+    public event Action OnClick;
 
     public Image Image => m_Image;
 
@@ -108,5 +109,10 @@ public class PaletteElem : MonoBehaviour, IDraggable
             Debug.LogError("Node 생성 중 예외 발생. 하단의 예외를 확인하십시오");
             Debug.LogException(e);
         }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+
     }
 }
