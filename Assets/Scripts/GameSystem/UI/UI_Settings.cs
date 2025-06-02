@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 public class UI_Settings : MonoBehaviour
 {
     [Header("Audio Settings")]
+    [SerializeField] private AudioMixer audioMixer;
     [SerializeField] private Slider vfxSlider;
     [SerializeField] private TextMeshProUGUI vfxValueText;
 
@@ -21,9 +23,10 @@ public class UI_Settings : MonoBehaviour
     [SerializeField] private Button closeButton;
 
     [Header("KeyMap Settings")]
-    [SerializeField] private GameObject keyMapPanel;
     [SerializeField] private Transform keyMapContent;
     [SerializeField] private GameObject keyMapItemPrefab;
+
+    private readonly object blocker = new object();
 
 
     private void Start()
@@ -31,6 +34,7 @@ public class UI_Settings : MonoBehaviour
         InitializeUI();
         SetupEventHandlers();
 
+        ApplyVFXVolume(Setting.VFXVolume);
     }
     private void InitializeUI()
     {
@@ -44,12 +48,6 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.minValue = 0f;
             simulationSpeedSlider.maxValue = 2.0f;
-        }
-
-        // 키맵 패널 초기 상태
-        if (keyMapPanel != null)
-        {
-            keyMapPanel.SetActive(false);
         }
 
         // 초기 UI 값 설정
@@ -99,10 +97,13 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.SetValueWithoutNotify(speed);
         }
+        
 
         // 텍스트 업데이트
         UpdateVFXVolumeText(vfx);
         UpdateSimulationSpeedText(speed);
+        // 키맵 UI 업데이트
+        RefreshKeyMapUI(keyMap);
     }
 
     #region UI Event Handlers
@@ -120,6 +121,17 @@ public class UI_Settings : MonoBehaviour
 
     private void OnApplyButtonClicked()
     {
+        List<BackgroundActionKeyMap> UI_KeyMap = new List<BackgroundActionKeyMap>();
+        // 키맵 아이템에서 변경된 값을 가져와 임시 설정에 적용
+        foreach (Transform child in keyMapContent)
+        {
+            UI_KeyMapItem itemUI = child.GetComponent<UI_KeyMapItem>();
+            if (itemUI != null)
+            {
+                UI_KeyMap.Add(itemUI.GetKeyMap());
+            }
+        }
+        Setting.SetTempKeyMap(UI_KeyMap);
         Setting.OnClickApplyButton();
     }
     private void OnResetToDefaultClicked()
@@ -145,10 +157,15 @@ public class UI_Settings : MonoBehaviour
     {
         if (simulationSpeedText != null)
         {
+            if(speed < 0.1f) 
+            {
+                simulationSpeedText.text = $"Frame";
+                return;
+            }
             simulationSpeedText.text = $"{speed:F1}";
         }
     }
-    private void RefreshKeyMapUI()
+    private void RefreshKeyMapUI(List<BackgroundActionKeyMap> keyMaps)
     {
         // 기존 키맵 아이템 제거
         foreach (Transform child in keyMapContent)
@@ -156,35 +173,14 @@ public class UI_Settings : MonoBehaviour
             Destroy(child.gameObject);
         }
         // 현재 임시 설정값에서 키맵 가져오기
-        List<BackgroundActionKeyMap> keyMapList = Setting.CurrentKeyMap;
+       
 
         // 키맵 아이템 생성
-        foreach (BackgroundActionKeyMap keyMap in keyMapList)
+        foreach (BackgroundActionKeyMap keyMap in keyMaps)
         {
             var item = Instantiate(keyMapItemPrefab, keyMapContent);
-            var dropbox = item.GetComponentInChildren<TextMeshProUGUI>(); // 키맵Item 스크립트 가져와서 값넘겨주고 드롭박스UI 갱신시키기
-            if (dropbox != null)
-            {
-                
-            }
+            item.GetComponent<UI_KeyMapItem>().Initialize(keyMap);
         }
-    }
-    private void OnKeyMapItemChanged()
-    {
-        // 변경된 키맵 리스트 수집
-        List<BackgroundActionKeyMap> updatedKeyMapList = new List<BackgroundActionKeyMap>();
-
-        foreach (Transform child in keyMapContent)
-        {
-            //KeyMapItemUI itemUI = child.GetComponent<KeyMapItemUI>();
-            //if (itemUI != null)
-            //{
-            //    updatedKeyMapList.Add(itemUI.GetKeyMap());
-            //}
-        }
-
-        // 임시 키맵 업데이트
-        Setting.SetTempKeyMap(updatedKeyMapList);
     }
     #endregion
     private void OnSettingUpdated()
@@ -192,15 +188,32 @@ public class UI_Settings : MonoBehaviour
         // 현재 적용된 설정값으로 UI 업데이트
         Debug.Log("UI_Settings: 설정이 적용되었습니다.");
     }
+ 
     private void OnEnable()
     {
         // 패널이 열릴 때마다 현재 임시 설정값으로 UI 업데이트
+        PUMPInputManager.Current.AddBlocker(blocker);
         RefreshUIFromTempSettings();
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         // 이벤트 구독 해제
         Setting.OnSettingUpdated -= OnSettingUpdated;
+        PUMPInputManager.Current.RemoveBlocker(blocker);
+    }
+
+    //sound temp
+    private void ApplyVFXVolume(float volume)
+    {
+
+        float dB = ConvertToDecibel(volume);
+        audioMixer.SetFloat("VFX", dB);
+    }
+
+    private float ConvertToDecibel(float volume)
+    {
+        // 0 = 음소거, 1 = 0dB (최대 볼륨)
+        return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
     }
 }

@@ -23,7 +23,7 @@ public class StringCounter : Node
 
     protected override string NodeDisplayName => "String Count";
 
-    protected override float TextSize => 22f;
+    protected override float NameTextSize => 22f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

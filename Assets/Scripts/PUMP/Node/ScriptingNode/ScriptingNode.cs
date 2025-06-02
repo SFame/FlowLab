@@ -90,42 +90,42 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override string NodeDisplayName => "Scripting";
 
-    protected override float TextSize => 25f;
+    protected override float NameTextSize => 25f;
 
     protected override int DefaultInputCount => 0;
 
     protected override int DefaultOutputCount => 0;
 
-    protected override string DefineInputName(int tpNumber)
+    protected override string DefineInputName(int tpIndex)
     {
         if (InputNameGetter == null)
-            return $"in {tpNumber}";
+            return $"in {tpIndex}";
 
-        return InputNameGetter(tpNumber);
+        return InputNameGetter(tpIndex);
     }
 
-    protected override string DefineOutputName(int tpNumber)
+    protected override string DefineOutputName(int tpIndex)
     {
         if (OutputNameGetter == null)
-            return $"out {tpNumber}";
+            return $"out {tpIndex}";
 
-        return OutputNameGetter(tpNumber);
+        return OutputNameGetter(tpIndex);
     }
 
-    protected override TransitionType DefineInputType(int tpNumber)
+    protected override TransitionType DefineInputType(int tpIndex)
     {
         if (InputTypeGetter == null)
             return TransitionType.Bool;
 
-        return InputTypeGetter(tpNumber);
+        return InputTypeGetter(tpIndex);
     }
 
-    protected override TransitionType DefineOutputType(int tpNumber)
+    protected override TransitionType DefineOutputType(int tpIndex)
     {
         if (OutputTypeGetter == null)
             return TransitionType.Bool;
 
-        return OutputTypeGetter(tpNumber);
+        return OutputTypeGetter(tpIndex);
     }
 
     protected override void OnAfterInit()

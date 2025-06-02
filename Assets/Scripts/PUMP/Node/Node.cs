@@ -367,7 +367,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
 
     [CanBeNull] protected abstract string NodeDisplayName { get; }
-    protected virtual float TextSize { get; } = 30f;
+    protected virtual float NameTextSize { get; } = 30f;
+    [CanBeNull] protected virtual Vector2? NameTextOffset { get; } = null;
 
     protected abstract List<string> InputNames { get; }
     protected abstract List<string> OutputNames { get; }
@@ -425,10 +426,13 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         if (DefaultColor != null)
             Support.DefaultColor = DefaultColor.Value;
 
+        if (NameTextOffset != null)
+            Support.SetNamePositionOffset(NameTextOffset.Value);
+
         Support.OnDragEnd += (_, _) => ReportChanges();
         Support.OnClick += ShowContext;
         Support.SetName(NodeDisplayName);
-        Support.SetNameFontSize(TextSize);
+        Support.SetNameFontSize(NameTextSize);
         Support.SetSpriteForResourcesPath(SpritePath);
         Support.SetRectDeltaSize(DefaultNodeSize);
         Support.InitializeTPEnumerator

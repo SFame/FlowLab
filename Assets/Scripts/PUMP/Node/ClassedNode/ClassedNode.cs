@@ -61,7 +61,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override string NodeDisplayName => "Classed";
 
-    protected override float TextSize => 24;
+    protected override float NameTextSize => 24;
 
     protected override float InEnumeratorXPos => -72f;
 
@@ -90,19 +90,19 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);
     }
 
-    protected override string DefineInputName(int tpNumber)
+    protected override string DefineInputName(int tpIndex)
     {
-        return "in" + tpNumber;
+        return "in" + tpIndex;
     }
 
-    protected override string DefineOutputName(int tpNumber)
+    protected override string DefineOutputName(int tpIndex)
     {
-        return "out" + tpNumber;
+        return "out" + tpIndex;
     }
 
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
 
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

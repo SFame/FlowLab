@@ -24,10 +24,10 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
     protected override int DefaultInputCount => 2;
     protected override int DefaultOutputCount => 1;
     protected override void StateUpdate(TransitionEventArgs args) => PushResult();
-    protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
-    protected override string DefineOutputName(int tpNumber) => "out";
-    protected override TransitionType DefineInputType(int tpNumber) => TransitionType.Int;
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Int;
+    protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
+    protected override string DefineOutputName(int tpIndex) => "out";
+    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Int;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Int;
 
     private MinMaxSupport MinMaxSupport
     {

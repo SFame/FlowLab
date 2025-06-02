@@ -26,7 +26,7 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
     
     protected override string NodeDisplayName => "Eq";
 
-    protected override float TextSize => 24f;
+    protected override float NameTextSize => 24f;
     
     protected override float InEnumeratorXPos => -32f;
 
@@ -79,13 +79,13 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
         OutputToken[0].State = Compare();
     }
 
-    protected override string DefineInputName(int tpNumber) => $"in {tpNumber}";
+    protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
 
-    protected override string DefineOutputName(int tpNumber) => "EQ";
+    protected override string DefineOutputName(int tpIndex) => "EQ";
 
-    protected override TransitionType DefineInputType(int tpNumber) => _currentType;
+    protected override TransitionType DefineInputType(int tpIndex) => _currentType;
 
-    protected override TransitionType DefineOutputType(int tpNumber) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
     
     private bool Compare()
     {

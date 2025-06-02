@@ -31,7 +31,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override string NodeDisplayName => "Timer";
 
-    protected override float TextSize => 25f;
+    protected override float NameTextSize => 25f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

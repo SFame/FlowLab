@@ -82,10 +82,10 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override int DefaultInputCount => 1;
     protected override int DefaultOutputCount => 2;
-    protected override string DefineInputName(int tpNumber) => "I";
-    protected override string DefineOutputName(int tpNumber) => $"O{tpNumber}";
-    protected override TransitionType DefineInputType(int tpNumber) => _currentType;
-    protected override TransitionType DefineOutputType(int tpNumber) => _currentType;
+    protected override string DefineInputName(int tpIndex) => "I";
+    protected override string DefineOutputName(int tpIndex) => $"O{tpIndex}";
+    protected override TransitionType DefineInputType(int tpIndex) => _currentType;
+    protected override TransitionType DefineOutputType(int tpIndex) => _currentType;
 
     public int AdditionalArgs { get => OutputCount; set => OutputCount = value; }
 }

@@ -23,7 +23,7 @@ public class NOT : Node
 
     protected override string NodeDisplayName => "NOT";
 
-    protected override float TextSize => 28f;
+    protected override float NameTextSize => 28f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

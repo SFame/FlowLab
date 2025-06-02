@@ -19,7 +19,7 @@ public class InputField : Node, INodeAdditionalArgs<string>
     protected override float EnumeratorMargin => -10f;
     protected override Vector2 DefaultNodeSize => new Vector2(60f, 45f);
 
-    protected override float TextSize => 17f;
+    protected override float NameTextSize => 17f;
 
     protected override List<ContextElement> ContextElements
     {

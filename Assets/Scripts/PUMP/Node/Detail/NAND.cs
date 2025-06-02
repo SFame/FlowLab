@@ -21,7 +21,7 @@ public class NAND : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
 
-    protected override float TextSize => 22f;
+    protected override float NameTextSize => 22f;
 
     protected override string NodeDisplayName => "NAND";
 

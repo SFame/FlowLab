@@ -54,7 +54,7 @@ public class Switch : Node, INodeAdditionalArgs<bool>
 
     protected override string NodeDisplayName => "Sw";
 
-    protected override float TextSize => 22f;
+    protected override float NameTextSize => 22f;
 
     protected override List<ContextElement> ContextElements
     {

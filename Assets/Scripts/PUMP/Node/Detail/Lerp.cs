@@ -23,7 +23,7 @@ public class Lerp : Node
 
     protected override string NodeDisplayName => "Lerp";
 
-    protected override float TextSize => 24f;
+    protected override float NameTextSize => 24f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

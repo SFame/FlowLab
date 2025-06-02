@@ -36,7 +36,7 @@ public class TypeConverter : Node
 
     protected override string NodeDisplayName => "Conv";
 
-    protected override float TextSize => 25f;
+    protected override float NameTextSize => 25f;
 
     protected override List<ContextElement> ContextElements
     {

@@ -16,7 +16,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
     [Space(10)]
 
-    [SerializeField] private List<Image> m_ImageGroup;
+    [SerializeField] private List<Graphic> m_ImageGroup;
     [SerializeField] private Color m_DefaultColor = Color.white;
     [SerializeField] private Color m_HighlightedColor = Color.green;
     #endregion
@@ -32,6 +32,8 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     private float _inEnumHeight;
     private float _outEnumHeight;
     private Vector2 _defaultNodeSize;
+    private Vector2 _defaultNameTextPosition;
+    private RectTransform _nameTextRect;
     private const string NODE_NAME_IDENTIFIER = "<Node>";
 
     private bool IsMouseEventBlocked => _mouseEventBlockers.Count > 0;
@@ -124,7 +126,9 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         ((INodeSupportSettable)Node).SetSupport(this);
         name = NODE_NAME_IDENTIFIER + " " + Node.GetType().Name;
         Image.color = m_DefaultColor;
-        _imageGroupDefaultColors = m_ImageGroup?.Select(image => image.color).ToList();
+        _nameTextRect = m_NameTmp.GetComponent<RectTransform>();
+        _defaultNameTextPosition = _nameTextRect.anchoredPosition;
+        _imageGroupDefaultColors = m_ImageGroup?.Select(graphic => graphic.color).ToList();
         _initialized = true;
     }
     #endregion
@@ -314,7 +318,10 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         NameText.text = text;
     }
 
+    public void SetNamePositionOffset(Vector2 offset) => _nameTextRect.anchoredPosition = _defaultNameTextPosition + offset;
+
     public void SetNameFontSize(float size) => NameText.fontSize = size;
+
     public void SetRectDeltaSize(Vector2 size) => Rect.sizeDelta = size;
 
     public void SetColor(Color color)
@@ -324,9 +331,9 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         if (m_ImageGroup == null)
             return;
 
-        foreach (Image imageGroup in m_ImageGroup)
+        foreach (Graphic graphic in m_ImageGroup)
         {
-            imageGroup.color = color;
+            graphic.color = color;
         }
     }
 
