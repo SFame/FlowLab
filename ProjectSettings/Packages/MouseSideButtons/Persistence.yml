@@ -13,17 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
   - Assets
   - Assets/Scenes
   - Assets/TextMesh Pro/Resources/Fonts & Materials
@@ -33,4 +22,16 @@ MonoBehaviour:
   - Assets/Resources/Prefab/UI
   - Assets
   - Assets/Scenes
+  - Assets
+  - Assets/Resources
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Scripts/UI
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/CorePro/Flat Pack/Icons/App/Signs
+  - Assets
+  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 black frame/Rectangle 512x512
+    I Round 20px
   currentDirIndex: 19
