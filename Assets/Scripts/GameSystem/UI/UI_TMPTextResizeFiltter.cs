@@ -44,7 +44,6 @@ public class UI_TMPTextResizeFiltter : MonoBehaviour
         m_PreferredHeight = TextMeshPro.preferredHeight;
         rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, m_PreferredHeight);
         rectTransform.anchoredPosition = Vector2.zero;
-        Debug.Log(TextMeshPro.GetPreferredValues());
     }
 
     private void OnEnable()

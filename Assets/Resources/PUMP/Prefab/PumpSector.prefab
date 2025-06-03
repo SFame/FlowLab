@@ -2223,6 +2223,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -23.25
       objectReference: {fileID: 0}
+    - target: {fileID: 3091739272052771966, guid: f9a60f06572cae44080126d2dfa58760, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 68f9ae504ce7c414b8bdc2315cc29c71, type: 3}
     - target: {fileID: 3448610174425519778, guid: f9a60f06572cae44080126d2dfa58760, type: 3}
       propertyPath: m_Name
       value: PrismView
