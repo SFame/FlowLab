@@ -20,7 +20,6 @@ public class PUMPTool : MonoBehaviour
     [SerializeField] private Image m_HandleImage;
     [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private Button m_NodePaletteButton;
-    [SerializeField] private Button m_CodexButton;
     #endregion
 
     private Vector2 _hiddenPosition;
@@ -33,7 +32,7 @@ public class PUMPTool : MonoBehaviour
 
     public void SetButtonCallbacks()
     {
-        if (m_SaveLoadButton == null || m_SaveLoadUiController == null || m_NodePaletteButton == null || m_nodePalette == null || m_CodexButton == null)
+        if (m_SaveLoadButton == null || m_SaveLoadUiController == null || m_NodePaletteButton == null || m_nodePalette == null)
         {
             Debug.LogError("PUMPTool: Inspector 확인");
             return;
@@ -41,7 +40,6 @@ public class PUMPTool : MonoBehaviour
 
         m_SaveLoadButton.onClick.AddListener(() => m_SaveLoadUiController.SetActive(true, 0.2f).Forget());
         m_NodePaletteButton.onClick.AddListener(m_nodePalette.Open);
-        m_CodexButton.onClick.AddListener(UI_MainMenu.Instance.GetCodexPalette().Open);
     }
 
     private void Awake()
