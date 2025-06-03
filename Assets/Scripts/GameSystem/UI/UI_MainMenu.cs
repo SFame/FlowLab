@@ -42,6 +42,10 @@ public class UI_MainMenu : MonoBehaviour
         }
         return m_codexPalette;
     }
+    public void GetStartUIOpen()
+    {
+        StartUI.SetActive(true);
+    }
     public void OnClickStart()
     {
         if (StartUI.activeSelf)
