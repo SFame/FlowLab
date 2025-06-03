@@ -140,7 +140,7 @@ public class UI_Settings : MonoBehaviour
         RefreshUIFromTempSettings();
     }
     #endregion
-    private void OnCloseButtonClicked()
+    public void OnCloseButtonClicked()
     {
         gameObject.SetActive(false);
     }
