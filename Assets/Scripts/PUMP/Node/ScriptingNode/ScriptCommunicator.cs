@@ -13,7 +13,7 @@ using UnityEngine;
 public class ScriptCommunicator : IDisposable
 {
     #region Static / Const
-    private const string CALLBACKS_SCRIPT_PATH = "PUMP/Py/CoreTemplate/script_callbacks";
+    private const string CALLBACKS_SCRIPT_PATH = "PUMP/Py/CoreTemplate/script_bridge";
     private const string CALLBACKS_INJECT_CODE = @"output_applier = OutputApplier()
 printer = Printer()";
     private static string _callbacksScript;
@@ -500,7 +500,7 @@ printer = Printer()";
                 }
                 catch (TransitionException tEx)
                 {
-                    _logger?.Invoke("출력의 타입이 다르거나 Null을 할당하였습니다");
+                    _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다\n{tEx.Message}");
                     _exLogger?.Invoke(tEx);
                 }
                 catch (ArgumentException e)

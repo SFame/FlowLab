@@ -105,6 +105,19 @@ printer: Printer = None
 
 
 
+# <<유틸리티>>
+
+# JSON 유틸리티 객체
+# <사용 가능한 API>
+#   json_util.serialize(data, pretty: bool=False) -> str:
+#   json_util.deserialize(json_text: str) -> object:
+#   json_util.try_serialize(data, pretty: bool=False) -> (bool, str):
+#   json_util.try_deserialize(json_text: str) -> (bool, object):
+#   json_util.is_valid(json_text: str) -> bool:
+json_util: JsonUtil = JsonUtil()
+
+
+
 # <<노드 생명주기 메서드>>
 
 def init(inputs: list) -> None:

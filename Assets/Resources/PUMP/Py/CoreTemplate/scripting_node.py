@@ -105,6 +105,19 @@ printer: Printer = None
 
 
 
+# <<Utilities>>
+
+# JSON Utility object
+# <Available API>
+#   json_util.serialize(data, pretty: bool=False) -> str:
+#   json_util.deserialize(json_text: str) -> object:
+#   json_util.try_serialize(data, pretty: bool=False) -> (bool, str):
+#   json_util.try_deserialize(json_text: str) -> (bool, object):
+#   json_util.is_valid(json_text: str) -> bool:
+json_util: JsonUtil = JsonUtil()
+
+
+
 # <<Node Lifecycle Methods>>
 
 def init(inputs: list) -> None:

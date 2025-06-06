@@ -118,10 +118,5 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         [OdinSerialize] public int _inputCount;
         [OdinSerialize] public int _compareNumber;
         [OdinSerialize] public string _operator;
-
-        public override string ToString()
-        {
-            return $"Input Count: {_inputCount}, Compare Number: {_compareNumber}, Operator: {_operator}";
-        }
     }
 }

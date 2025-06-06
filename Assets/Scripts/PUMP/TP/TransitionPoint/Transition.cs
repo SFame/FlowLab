@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using ColorUtility = UnityEngine.ColorUtility;
 
@@ -334,7 +335,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         }
         else
         {
-            throw new TransitionException("Dynamic constructor: Casting Error");
+            throw new TransitionException($"Dynamic constructor: Casting Error: {value.GetType().Name}");
         }
     }
     #endregion

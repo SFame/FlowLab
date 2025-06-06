@@ -1,0 +1,58 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Counter : Node, INodeAdditionalArgs<int>
+{
+    private int _count = 0;
+    protected override List<string> InputNames { get; } = new List<string> { "in", "rst" };
+
+    protected override List<string> OutputNames { get; } = new List<string> { "cont" };
+
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
+
+    protected override float InEnumeratorXPos => -47f;
+
+    protected override float OutEnumeratorXPos => 47f;
+    
+    protected override float EnumeratorPadding => 10f;
+
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
+
+    protected override string NodeDisplayName => "Count";
+
+    protected override float NameTextSize => 22f;
+
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetDefaultArray(outputTypes);
+    }
+
+    protected override void StateUpdate(TransitionEventArgs args)
+    {
+        if (!args.IsStateChange)
+            return;
+
+        if (args.Index == 0 && args.State)
+        {
+            _count++;
+            OutputToken.PushFirst(_count);
+            return;
+        }
+
+        if (args.Index == 1 && args.State)
+        {
+            _count = 0;
+            OutputToken.PushFirst(_count);
+        }
+    }
+
+    public int AdditionalArgs
+    {
+        get => _count;
+        set => _count = value;
+    }
+}

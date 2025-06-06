@@ -13,25 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
+  - Assets/Modern UI Pack/Textures/Border/Rounded/1024px
+  - Assets/Modern UI Pack/Textures/Border/Rounded/128px
   - Assets
-  - Assets/Scenes
-  - Assets/TextMesh Pro/Resources/Fonts & Materials
-  - Assets
+  - Assets/Shader
+  - Assets/Modern UI Pack/Textures/Border/Rounded/128px
+  - Assets/Shader
+  - Assets/Modern UI Pack/Textures/Border/Rounded/128px
   - Assets/Resources
-  - Assets/Resources/Prefab
-  - Assets/Resources/Prefab/UI
-  - Assets
-  - Assets/Scenes
   - Assets
   - Assets/Resources
   - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP
+  - Assets/Scenes
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/Scripts/UI
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/CorePro/Flat Pack/Icons/App/Signs
+  - Assets/Resources/PUMP
   - Assets
-  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 black frame/Rectangle 512x512
-    I Round 20px
+  - Assets/Shader
+  - Assets/Scenes
   currentDirIndex: 19

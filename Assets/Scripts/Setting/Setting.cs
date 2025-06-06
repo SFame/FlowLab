@@ -14,6 +14,20 @@ public static class Setting
     // Default key map settings
     public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
     {
+#if UNITY_EDITOR
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Undo,
+            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
+            m_ActionKeys = new List<KeyCode> { KeyCode.LeftArrow }
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Redo,
+            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
+            m_ActionKeys = new List<KeyCode> { KeyCode.RightArrow }
+        },
+#else
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Undo,
@@ -26,6 +40,7 @@ public static class Setting
             m_Modifiers = new List<KeyCode> { KeyCode.LeftControl, KeyCode.LeftShift },
             m_ActionKeys = new List<KeyCode> { KeyCode.Z }
         },
+#endif
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectAll,
@@ -46,7 +61,7 @@ public static class Setting
         }
     };
 
-    #endregion
+#endregion
     #region Properties
     // 현재 설정값 (UI에서 수정하는 임시값)
     private static float _tempVfxVolume = DefaultVFXVolume;

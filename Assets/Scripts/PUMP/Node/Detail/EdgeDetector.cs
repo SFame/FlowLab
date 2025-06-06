@@ -10,7 +10,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 {
     public override string NodePrefabPath => "PUMP/Prefab/Node/EDGE";
 
-    protected override float NameTextSize { get; } = 22f;
+    protected override float NameTextSize { get; } = 20f;
 
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
@@ -20,17 +20,17 @@ public class EdgeDetector : Node, INodeAdditionalArgs<float>
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -61.5f;
+    protected override float InEnumeratorXPos => -38f;
 
-    protected override float OutEnumeratorXPos => 61.5f;
+    protected override float OutEnumeratorXPos => 38f;
 
     protected override float EnumeratorPadding => 5f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(160f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(110f, 100f);
 
-    protected override string NodeDisplayName => "Edge Detector";
+    protected override string NodeDisplayName => "Edge";
 
     private EdgeSupport EdgeSupport
     {

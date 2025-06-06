@@ -36,6 +36,9 @@ public class DefaultPalette : NodePalette
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter"},
                 { typeof(Debouncer), "Debouncer" },
+                { typeof(Delay), "Delay" },
+                { typeof(Counter), "Counter" },
+                { typeof(SignalDetector), "Signal Detector" },
                 { typeof(Timer), "Timer" },
             }
         },
