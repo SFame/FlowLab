@@ -33,9 +33,6 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (!args.IsStateChange)
-            return;
-
         if (args.Index == 0 && args.State)
         {
             _count++;
@@ -47,6 +44,7 @@ public class Counter : Node, INodeAdditionalArgs<int>
         {
             _count = 0;
             OutputToken.PushFirst(_count);
+            return;
         }
     }
 

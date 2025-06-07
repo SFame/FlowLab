@@ -38,6 +38,7 @@ public class ClassedPalette : NodePalette
                 { typeof(Debouncer), "Debouncer" },
                 { typeof(Delay), "Delay" },
                 { typeof(Counter), "Counter" },
+                { typeof(Sender), "Sender" },
                 { typeof(SignalDetector), "Signal Detector" },
                 { typeof(Timer), "Timer" },
             }

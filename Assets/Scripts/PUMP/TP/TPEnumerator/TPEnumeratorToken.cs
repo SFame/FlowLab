@@ -64,6 +64,10 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public int Count => _adapters.Length;
 
+    public Transition First => this[0].State;
+
+    public Transition Last => this[^1].State;
+
     public bool HasOnlyNull
     {
         get

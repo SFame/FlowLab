@@ -2,10 +2,10 @@
 name: str = "Data Processor"
 
 # Input port setup using all supported types
-input_list: list = ['Enable', 'Value', 'Multiplier', 'Label']
+input_list: list = ['Actv', 'Val', 'Mul', 'Labl']
 
 # Output port setup using all supported types  
-output_list: list = ['Result', 'Is_Active']
+output_list: list = ['Res', 'Actv']
 
 # Input types: bool(control), float(value), int(multiplier), str(label)
 input_types: list = [bool, float, int, str]

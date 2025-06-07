@@ -16,10 +16,10 @@ from System.Text import Encoding
 name: str = "Sentiment Analysis"
 
 # Input: text to analyze, endpoint, API key for authentication
-input_list: list = ['text', 'endpoint', 'api_key']
+input_list: list = ['text', 'end', 'key']
 
 # Output: sentiment score (-1.0 to 1.0), confidence (0.0 to 1.0), emotion label
-output_list: list = ['score', 'confidence', 'emotion']
+output_list: list = ['sco', 'con', 'emo']
 
 # Input types: all text inputs
 input_types: list = [str, str, str]
