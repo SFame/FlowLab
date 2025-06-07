@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Xml;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,7 +23,7 @@ public class CodexElem : MonoBehaviour, IPointerClickHandler
     #endregion
 
     public event Action OnInstantiate;
-    public TMPro.TMP_Text TMP_Text;
+    public TMP_Text TMP_Text;
     public Image Image => m_Image;
 
     public string DisplayName
@@ -62,7 +61,5 @@ public class CodexElem : MonoBehaviour, IPointerClickHandler
         {
             Debug.LogError($"텍스트 파일을 찾을 수 없습니다: {path}.txt");
         }
-
-
     }
 }

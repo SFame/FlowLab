@@ -152,7 +152,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: 2d_node_save_elem_0
+      name: displayer_elem_0
       rect:
         serializedVersion: 2
         x: 0
@@ -187,7 +187,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      2d_node_save_elem_0: 9027232783355870048
+      displayer_elem_0: 9027232783355870048
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
