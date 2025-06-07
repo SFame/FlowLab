@@ -782,6 +782,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d149e134df2b1147a321d9ba35443a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &1276623304
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 958.82574
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 540
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1425225157921346039, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4938722860653616988, guid: 6a4621286dcd1374283e70b801957200, type: 3}
+      propertyPath: m_Name
+      value: PUMP_InputManager
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6a4621286dcd1374283e70b801957200, type: 3}
 --- !u!1001 &1573524142
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -792,19 +849,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4232805604876965794, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4296891695291032083, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_Name
       value: UI_Settings
       objectReference: {fileID: 0}
+    - target: {fileID: 4296891695291032083, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6547983848415038650, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6991622593907669993, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8906128587339112747, guid: 1e0f2087de7783d42bdda174a742e974, type: 3}
       propertyPath: m_Pivot.x
@@ -914,7 +975,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1643714230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1104,7 +1165,7 @@ PrefabInstance:
     - target: {fileID: 8857023425992388975, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}
       propertyPath: m_PumpSectorPrefab
       value: 
-      objectReference: {fileID: 4912043204784081257, guid: 3f85f0104de974e4fbb6316dbaf002dd, type: 3}
+      objectReference: {fileID: 8146367666692771469, guid: 71a25ae4b9659eb4a97cb7950f481549, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1253,3 +1314,4 @@ SceneRoots:
   - {fileID: 1643714233}
   - {fileID: 91682575}
   - {fileID: 1573524142}
+  - {fileID: 1276623304}

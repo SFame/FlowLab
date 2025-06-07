@@ -68,7 +68,7 @@ public class PuzzleBackground : MonoBehaviour, ISoundable
     {
         if (saveData.Tag is PuzzleData puzzleData)
         {
-            //currentPuzzleData = puzzleData;
+            currentPuzzleData = puzzleData;
             //Debug.Log($"Loaded PuzzleData with {currentPuzzleData.testCases?.Count ?? 0} test cases.");
         }
         else

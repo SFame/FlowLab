@@ -18,7 +18,7 @@ public class UIButtonEvent : MonoBehaviour
     public void OnExitButton()
     {
         GlobalEventManager.OnGameExitEvent();
-        SceneManager.LoadSceneAsync("1.MainMenu");
+        SceneManager.LoadSceneAsync("3.StageScene_UI");
     }
     public void OnClickHowToPlay()
     {

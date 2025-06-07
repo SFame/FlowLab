@@ -8,9 +8,11 @@ public class PuzzleExtractor : SaveLoadStructureExtractor
     public override void ApplyData(PUMPSaveDataStructure structure)
     {
         background.SetInfos(structure.NodeInfos, true);
+        Debug.Log("Applying NodeInfos to PuzzleBackground");
 
         if (structure.Tag is PuzzleData puzzleData)
         {
+            Debug.Log("Applying PuzzleData to PuzzleDataPanel");
             puzzleDataPanel.currentPuzzleData = puzzleData;
 
             // TestCase UI

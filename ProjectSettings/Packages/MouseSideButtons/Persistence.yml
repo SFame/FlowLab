@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP/Py/CoreTemplate
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/Node
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Resources/PUMP/Prefab/Node
+  - Assets
+  - Assets/Resources
+  - Assets/Resources/Prefab
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/Prefab/UI/Puzzle
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/Prefab/UI/Puzzle
+  - Assets/Resources/Prefab/UI
+  - Assets
+  - Assets/Scenes
+  - Assets
+  - Assets/Resources
+  - Assets/Resources/Prefab
+  - Assets/Resources/Prefab/UI
+  - Assets
+  - Assets/Resources/Prefab/UI
+  - Assets
+  - Assets/Scenes
+  - Assets
+  - Assets/Scenes
   currentDirIndex: 19
