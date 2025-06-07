@@ -53,7 +53,7 @@ public abstract class DynamicIONode : Node
         {
             _inputCount = CompareDefaultValue(value, DefaultInputCount);
             if (InputToken != null)
-                ResetToken();
+                ResetInputToken();
         }
     }
 
@@ -64,7 +64,7 @@ public abstract class DynamicIONode : Node
         {
             _outputCount = CompareDefaultValue(value, DefaultOutputCount);
             if (OutputToken != null)
-                ResetToken();
+                ResetOutputToken();
         }
     }
 
@@ -78,7 +78,8 @@ public abstract class DynamicIONode : Node
 
         if (InputToken != null && OutputToken != null)
         {
-            ResetToken();
+            ResetOutputToken();
+            ResetInputToken();
         }
     }
     #endregion

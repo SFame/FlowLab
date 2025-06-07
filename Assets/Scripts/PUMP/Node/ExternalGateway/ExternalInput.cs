@@ -88,7 +88,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         return outputTypes.Select(type => type.Null()).ToArray();
     }
 
-    protected override void OnAfterRefreshToken()
+    protected override void OnAfterRefreshOutputToken()
     {
         foreach (ITypeListenStateful stateful in OutputToken)
         {

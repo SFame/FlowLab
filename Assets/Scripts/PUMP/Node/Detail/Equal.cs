@@ -61,9 +61,14 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
     
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new Transition[] { Compare() };
+        return TransitionUtil.GetNullArray(outputTypes);
     }
-    
+
+    protected override void OnAfterRefreshInputToken()
+    {
+        OutputToken.PushFirst(Compare());
+    }
+
     protected override void OnAfterInit()
     {
         Dropdown.value = InputCount - 1;

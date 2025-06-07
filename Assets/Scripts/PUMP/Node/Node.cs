@@ -319,7 +319,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     protected virtual void OnAfterInstantiate() { }
     protected virtual void OnBeforeInit() { }
     protected virtual void OnAfterInit() { }
-    protected virtual void OnAfterRefreshToken() { }
+    protected virtual void OnAfterRefreshOutputToken() { }
+    protected virtual void OnAfterRefreshInputToken() { }
     protected virtual void OnBeforeRemove() { }
 
 
@@ -406,15 +407,26 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
-    protected void ResetToken()
+    protected void ResetOutputToken()
     {
-        if (Support?.InputEnumerator == null || Support?.OutputEnumerator == null)
+        if (Support?.OutputEnumerator == null)
         {
-            Debug.LogError($"{GetType().Name}: Support(or Enumerator) is null");
+            Debug.LogError($"{GetType().Name}.{nameof(ResetOutputToken)}: Support(or Enumerator) is null");
             return;
         }
 
-        SetToken();
+        SetOutputToken();
+    }
+
+    protected void ResetInputToken()
+    {
+        if (Support?.InputEnumerator == null)
+        {
+            Debug.LogError($"{GetType().Name}.{nameof(ResetInputToken)}: Support(or Enumerator) is null");
+            return;
+        }
+
+        SetInputToken();
     }
     #endregion
 
@@ -443,7 +455,8 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             defaultNodeSize: DefaultNodeSize,
             sizeFreeze: SizeFreeze
         );
-        SetToken();
+        SetOutputToken();
+        SetInputToken();
         Support.HeightSynchronizationWithEnum();
         _initialized = true;
     }
@@ -457,32 +470,20 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         _isSupportSet = true;
     }
 
-
-    /// <summary>
-    /// 최초 토큰 설정
-    /// </summary>
-    private void SetToken()
+    private void SetOutputToken()
     {
-        if (Support.InputEnumerator == null || Support.OutputEnumerator == null)
+        if (Support.OutputEnumerator == null)
         {
-            throw new NullReferenceException($"{GetType().Name}: Enumerator가 없는 상태로 Token 설정 불가");
+            throw new NullReferenceException($"{GetType().Name}.{nameof(SetOutputToken)}: Enumerator가 없는 상태로 Token 설정 불가");
         }
 
-        if (InputNames.Count != InputTypes.Count || OutputNames.Count != OutputTypes.Count)
+        if (OutputNames.Count != OutputTypes.Count)
         {
-            throw new InvalidOperationException($"{GetType().Name}: Names와 Types 개수 불일치");
+            throw new InvalidOperationException($"{GetType().Name}.{nameof(SetOutputToken)}: Names와 Types 개수 불일치");
         }
 
         // 이전 토큰 캐싱 (Token이 null인 간극 제거)
-        TPEnumeratorToken inputTokenCache = InputToken;
         TPEnumeratorToken outputTokenCache = OutputToken;
-
-        InputToken = Support.InputEnumerator
-            .SetPadding(EnumeratorSpacing)
-            .SetMargin(EnumeratorMargin)
-            .SetTPSize(TPSize)
-            .SetTPs(InputTypes.ToArray())
-            .GetToken();
 
         OutputToken = Support.OutputEnumerator
             .SetPadding(EnumeratorSpacing)
@@ -491,15 +492,9 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             .SetTPs(OutputTypes.ToArray())
             .GetToken();
 
-        if (InputToken == null || OutputToken == null)
+        if (OutputToken == null)
         {
-            throw new NullReferenceException("Token 생성 실패");
-        }
-
-        // 캐싱 토큰 Dispose
-        if (inputTokenCache is IDisposable InputDisposable)
-        {
-            InputDisposable.Dispose();
+            throw new NullReferenceException($"{GetType().Name}.{nameof(SetOutputToken)}: Token 생성 실패");
         }
 
         if (outputTokenCache is IDisposable outputDisposable)
@@ -507,17 +502,48 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             outputDisposable.Dispose();
         }
 
-        ((TPEnumeratorToken.IReadonlyToken)InputToken).IsReadonly = true;
         ((TPEnumeratorToken.IReadonlyToken)OutputToken).IsReadonly = false;
-
-        InputToken.SetNames(InputNames);
         OutputToken.SetNames(OutputNames);
-
         ((INodeLifecycleCallable)this).CallSetOutputInitStates();
+        ((INodeLifecycleCallable)this).CallOnAfterRefreshOutputToken();
+    }
 
+    private void SetInputToken()
+    {
+        if (Support.InputEnumerator == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}.{nameof(SetInputToken)}: Enumerator가 없는 상태로 Token 설정 불가");
+        }
+
+        if (InputNames.Count != InputTypes.Count)
+        {
+            throw new InvalidOperationException($"{GetType().Name}.{nameof(SetInputToken)}: Names와 Types 개수 불일치");
+        }
+
+        // 이전 토큰 캐싱 (Token이 null인 간극 제거)
+        TPEnumeratorToken inputTokenCache = InputToken;
+
+        InputToken = Support.InputEnumerator
+            .SetPadding(EnumeratorSpacing)
+            .SetMargin(EnumeratorMargin)
+            .SetTPSize(TPSize)
+            .SetTPs(InputTypes.ToArray())
+            .GetToken();
+
+        if (InputToken == null)
+        {
+            throw new NullReferenceException($"{GetType().Name}.{nameof(SetInputToken)}: Token 생성 실패");
+        }
+
+        if (inputTokenCache is IDisposable inputDisposable)
+        {
+            inputDisposable.Dispose();
+        }
+
+        ((TPEnumeratorToken.IReadonlyToken)InputToken).IsReadonly = true;
+        InputToken.SetNames(InputNames);
         SubscribeTPInStateUpdateEvent();
-
-        ((INodeLifecycleCallable)this).CallOnAfterRefreshToken();
+        ((INodeLifecycleCallable)this).CallOnAfterRefreshInputToken();
     }
 
     /// <summary>
@@ -700,15 +726,28 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
-    void INodeLifecycleCallable.CallOnAfterRefreshToken()
+    void INodeLifecycleCallable.CallOnAfterRefreshInputToken()
     {
         try
         {
-            OnAfterRefreshToken();
+            OnAfterRefreshInputToken();
         }
         catch (Exception e)
         {
-            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterRefreshToken]</b></color>");
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterRefreshInputToken]</b></color>");
+            Debug.LogException(e);
+        }
+    }
+
+    void INodeLifecycleCallable.CallOnAfterRefreshOutputToken()
+    {
+        try
+        {
+            OnAfterRefreshOutputToken();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterRefreshOutputToken]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -843,7 +882,8 @@ public interface INodeLifecycleCallable
     void CallOnBeforeReplayPending(bool[] pendings);
     void CallOnCompletePlacementFromPalette();
     void CallSetOutputInitStates();
-    void CallOnAfterRefreshToken();
+    void CallOnAfterRefreshInputToken();
+    void CallOnAfterRefreshOutputToken();
     void CallOnBeforeRemove();
 }
 

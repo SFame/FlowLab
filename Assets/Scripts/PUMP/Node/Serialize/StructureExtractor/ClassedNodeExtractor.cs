@@ -5,7 +5,6 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using Utils;
-using Object = UnityEngine.Object;
 
 public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeDataManager
 {
@@ -120,7 +119,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             Debug.LogError($"{GetType().Name}: CurrentPair elements are null");
             return;
         }
-        var current = GetCurrent();
+        CurrentClassedPairManagerToken current = GetCurrent();
         current.PairBackground.SetInfos(structure.NodeInfos, true);
         current.ClassedNode.Id = structure.Tag.ToString();
         current.ClassedNode.Name = structure.Name;
@@ -205,6 +204,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     private Action<TransitionEventArgs> _classedOnInputUpdateCache;
     private Action<TransitionEventArgs> _exOutOnStateUpdateCache;
 
+    private List<Action<TransitionType>> _inputTypeApplierCache;
+    private List<Action<TransitionType>> _outputTypeApplierCache;
+
     private async UniTask AddNewAsync(IClassedNode classedNode)
     {
         Loading.Progress prog = Loading.GetProgress();
@@ -279,15 +281,41 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         }
     }
 
+    private void UnsubscribeBeforeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
+    {
+        if (applier == null || applier.Count != gateway.Count())
+            return;
+
+        for (int i = 0; i < applier.Count; i++)
+        {
+            gateway[i].OnBeforeTypeChange -= applier[i];
+        }
+    }
+
+    private void UnsubscribeTypeUpdate(List<Action<TransitionType>> applier, IExternalGateway gateway)
+    {
+        if (applier == null || applier.Count != gateway.Count())
+            return;
+
+        for (int i = 0; i < applier.Count; i++)
+        {
+            gateway[i].OnTypeChanged -= applier[i];
+        }
+    }
+
     /// <summary>
     /// Classed와 Background 타입 이벤트 동기화
     /// </summary>
     private void AttachTypeApplier(IClassedNode classed, IExternalInput exIn, IExternalOutput exOut)
     {
-        List<Action<TransitionType>> inputTypeApplier = classed.GetInputTypeApplier();
-        List<Action<TransitionType>> outputTypeApplier = classed.GetOutputTypeApplier();
-        SubscribeBeforeTypeUpdate(inputTypeApplier, exIn);
-        SubscribeTypeUpdate(outputTypeApplier, exOut);
+        UnsubscribeBeforeTypeUpdate(_inputTypeApplierCache, exIn);
+        UnsubscribeTypeUpdate(_outputTypeApplierCache, exOut);
+
+        _inputTypeApplierCache = classed.GetInputTypeApplier();
+        _outputTypeApplierCache = classed.GetOutputTypeApplier();
+
+        SubscribeBeforeTypeUpdate(_inputTypeApplierCache, exIn);
+        SubscribeTypeUpdate(_outputTypeApplierCache, exOut);
     }
 
     /// <summary>
