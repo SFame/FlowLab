@@ -57,7 +57,7 @@ public class CodexPalette : BaseCodexPalette
         {
             "Util", new Dictionary<Type, string>
             {
-                { typeof(StringCounter), "String Counter" },
+                { typeof(StringLength), "String Counter" },
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
             }

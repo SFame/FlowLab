@@ -61,15 +61,17 @@ public class ClassedPalette : NodePalette
         {
             "Util", new Dictionary<Type, string>
             {
-                { typeof(StringCounter), "String Counter" },
+                { typeof(StringLength), "String Length" },
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
+                { typeof(StringSplit), "String Split" },
             }
         },
         {
             "Advanced", new Dictionary<Type, string>
             {
                 { typeof(ScriptingNode), "Scripting" },
+                { typeof(ClassedNode), "Classed" },
             }
         },
     };

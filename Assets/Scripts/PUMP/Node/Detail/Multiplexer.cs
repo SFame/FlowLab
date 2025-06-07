@@ -17,9 +17,9 @@ public class Multiplexer : Node
 
     protected override float OutEnumeratorXPos => 75f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(200f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(200f, 50f);
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

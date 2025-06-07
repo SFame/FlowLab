@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StringCounter : Node
+public class StringLength : Node
 {
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
@@ -11,19 +11,19 @@ public class StringCounter : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
-    protected override float InEnumeratorXPos => -47f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 34f;
 
-    protected override float EnumeratorPadding => 10f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 70f);
+    protected override Vector2 DefaultNodeSize => new Vector2(110f, 50f);
 
-    protected override string NodeDisplayName => "String Count";
+    protected override string NodeDisplayName => "Str\nLen";
 
-    protected override float NameTextSize => 22f;
+    protected override float NameTextSize => 18f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

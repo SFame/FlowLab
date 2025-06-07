@@ -15,8 +15,8 @@ public class Counter : Node, INodeAdditionalArgs<int>
     protected override float InEnumeratorXPos => -47f;
 
     protected override float OutEnumeratorXPos => 47f;
-    
-    protected override float EnumeratorPadding => 10f;
+
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
@@ -24,7 +24,7 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override string NodeDisplayName => "Count";
 
-    protected override float NameTextSize => 22f;
+    protected override float NameTextSize => 20f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

@@ -23,12 +23,12 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     {
         if (Support == null)
         {
-            throw new NullReferenceException($"{GetType().Name}: NodeSupport is null");
+            throw new NullReferenceException($"<color=red><b>{GetType().Name}: NodeSupport is null</b></color>");
         }
 
         if (Support.InputEnumerator == null || Support.OutputEnumerator == null)
         {
-            throw new NullReferenceException($"{GetType().Name}: Enumerator is null");
+            throw new NullReferenceException($"<color=red><b>{GetType().Name}: Enumerator is null</b></color>");
         }
     }
 
@@ -237,7 +237,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         else
         {
-            Debug.LogError($"{Support.name}: 데이터와 Input의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+            Debug.LogError($"{Support.name}: 데이터와 Input의 Element 개수가 일치하지 않습니다. <b>INodeAdditionalArgs를 사용하여 직렬화 하십시오</b>");
         }
 
         if (outputElems.Length == outputTPs.Length)
@@ -249,7 +249,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         else
         {
-            Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. INodeModifiableArgs를 사용하여 직렬화 하십시오");
+            Debug.LogError($"{Support.name}: 데이터와 Output의 Element 개수가 일치하지 않습니다. <b>INodeAdditionalArgs를 사용하여 직렬화 하십시오</b>");
         }
     }
 
@@ -368,7 +368,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
     [CanBeNull] protected abstract string NodeDisplayName { get; }
     protected virtual float NameTextSize { get; } = 30f;
-    [CanBeNull] protected virtual Vector2? NameTextOffset { get; } = null;
+    protected virtual Vector2 NameTextOffset { get; } = Vector2.zero;
 
     protected abstract List<string> InputNames { get; }
     protected abstract List<string> OutputNames { get; }
@@ -377,9 +377,10 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
     protected abstract float InEnumeratorXPos { get; }
     protected abstract float OutEnumeratorXPos { get; }
+    protected virtual float EnumeratorXPosOffset { get; } = -2f;
 
     protected virtual float EnumeratorMargin { get; } = 0f;
-    protected abstract float EnumeratorPadding { get; }
+    protected abstract float EnumeratorSpacing { get; }
     protected abstract Vector2 DefaultNodeSize { get; }
     protected virtual Vector2 TPSize { get; } = new Vector2(35f, 50f);
     protected virtual bool SizeFreeze { get; } = false;
@@ -426,21 +427,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         if (DefaultColor != null)
             Support.DefaultColor = DefaultColor.Value;
 
-        if (NameTextOffset != null)
-            Support.SetNamePositionOffset(NameTextOffset.Value);
-
         Support.OnDragEnd += (_, _) => ReportChanges();
         Support.OnClick += ShowContext;
         Support.SetName(NodeDisplayName);
         Support.SetNameFontSize(NameTextSize);
+        Support.SetNamePositionOffset(NameTextOffset);
         Support.SetSpriteForResourcesPath(SpritePath);
         Support.SetRectDeltaSize(DefaultNodeSize);
         Support.InitializeTPEnumerator
         (
             inPath: InputEnumeratorPrefabPath,
             outPath: OutputEnumeratorOutPrefabPath,
-            inEnumXPos: InEnumeratorXPos,
-            outEnumXPos: OutEnumeratorXPos,
+            inEnumXPos: InEnumeratorXPos + EnumeratorXPosOffset,
+            outEnumXPos: OutEnumeratorXPos + EnumeratorXPosOffset,
             defaultNodeSize: DefaultNodeSize,
             sizeFreeze: SizeFreeze
         );
@@ -479,14 +478,14 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         TPEnumeratorToken outputTokenCache = OutputToken;
 
         InputToken = Support.InputEnumerator
-            .SetPadding(EnumeratorPadding)
+            .SetPadding(EnumeratorSpacing)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
             .SetTPs(InputTypes.ToArray())
             .GetToken();
 
         OutputToken = Support.OutputEnumerator
-            .SetPadding(EnumeratorPadding)
+            .SetPadding(EnumeratorSpacing)
             .SetMargin(EnumeratorMargin)
             .SetTPSize(TPSize)
             .SetTPs(OutputTypes.ToArray())
@@ -564,6 +563,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: StateUpdate]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -576,6 +576,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterInstantiate]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -590,6 +591,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterSetAdditionalArgs]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -602,6 +604,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnBeforeInit]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -614,6 +617,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterInit]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -626,6 +630,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnBeforeAutoConnect]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -638,6 +643,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnBeforeReplayPending]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -650,6 +656,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnCompletePlacementFromPalette]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -669,19 +676,22 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: SetOutputInitStates]</b></color>");
             Debug.LogException(e);
             return;
         }
 
         if (outputStates == null)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: SetOutputInitStates]</b></color>");
             throw new NullReferenceException($"{Support.name}: SetOutputInitStates()의 반환은 null일 수 없습니다.");
         }
 
         if (outputStates.Length != outputCount)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: SetOutputInitStates]</b></color>");
             throw new IndexOutOfRangeException(
-                $"{Support.name}: 초기화 State 개수({outputStates.Length})와 출력 TP 개수({outputCount})가 일치하지 않습니다. ");
+                $"{Support.name}: SetOutputInitStates의 반환 개수와 ({outputStates.Length})와 출력 TP 개수({outputCount})가 일치하지 않습니다.");
         }
 
         for (int i = 0; i < outputCount; i++)
@@ -698,6 +708,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAfterRefreshToken]</b></color>");
             Debug.LogException(e);
         }
     }
@@ -710,6 +721,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
         catch (Exception e)
         {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnBeforeRemove]</b></color>");
             Debug.LogException(e);
         }
     }

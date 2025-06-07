@@ -17,7 +17,7 @@ public class Round : Node
 
     protected override float OutEnumeratorXPos => 47f;
 
-    protected override float EnumeratorPadding => 10f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

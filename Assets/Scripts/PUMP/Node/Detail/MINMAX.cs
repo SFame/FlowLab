@@ -12,11 +12,11 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
 
     protected override string NodeDisplayName => "";
 
-    protected override float InEnumeratorXPos => -60f;
+    protected override float InEnumeratorXPos => -64f;
 
-    protected override float OutEnumeratorXPos => 60f;
+    protected override float OutEnumeratorXPos => 64f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

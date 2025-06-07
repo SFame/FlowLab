@@ -67,9 +67,9 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     protected override float OutEnumeratorXPos => 72f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(180f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(180f, 50f);
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

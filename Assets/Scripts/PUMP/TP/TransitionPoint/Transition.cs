@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 using ColorUtility = UnityEngine.ColorUtility;
 
@@ -866,7 +865,7 @@ public static class TransitionUtil
 #region Exceptions
 public class TransitionException : Exception
 {
-    public TransitionException(string message) : base(message) { }
+    public TransitionException(string message) : base($"<color=#39E336><b>TRANSITION ERROR ▶</b></color> {message}") { }
 }
 
 public class TransitionTypeCastException : TransitionException
@@ -875,7 +874,7 @@ public class TransitionTypeCastException : TransitionException
     public Type[] To { get; }
 
     public TransitionTypeCastException(TransitionType from, params Type[] to)
-        : base($"Cannot cast from Transition Type '{from.ToString()}' to Type '{string.Join(", ", to.Select(t => t.Name))}'.")
+        : base($"<color=#7DAAFF><b>[CASTING]</b></color> Cannot cast from Transition Type <color={from.GetColorHexCodeString(true)}><b>{from.ToString()}</b></color> to Type <color=#7DAAFF><b>{string.Join(", ", to.Select(t => t.Name))}</b></color>.")
     {
         From = from;
         To = to;
@@ -888,7 +887,7 @@ public class TransitionTypeConvertException : TransitionException
     public TransitionType To { get; }
 
     public TransitionTypeConvertException(TransitionType from, TransitionType to)
-        : base($"Cannot convert from Transition Type '{from.ToString()}' to Transition Type '{to.ToString()}'.")
+        : base($"<color=#7DAAFF><b>[CONVERT]</b></color> Cannot convert from Transition Type <color={from.GetColorHexCodeString(true)}><b>{from.ToString()}</b></color> to Transition Type <color={to.GetColorHexCodeString(true)}><b>{to.ToString()}</b></color>.")
     {
         From = from;
         To = to;
@@ -901,7 +900,7 @@ public class TransitionTypeMismatchException : TransitionException
     public TransitionType T2 { get; }
 
     public TransitionTypeMismatchException(TransitionType t1, TransitionType t2)
-        : base($"Cannot perform operation between incompatible transition types: {t1} and {t2}.")
+        : base($"<color=#7DAAFF><b>[MISMATCH]</b></color> Cannot perform operation between incompatible transition types: <color={t1.GetColorHexCodeString(true)}><b>{t1}</b></color> and <color={t2.GetColorHexCodeString(true)}><b>{t2}</b></color>.")
     {
         T1 = t1;
         T2 = t2;
@@ -910,7 +909,7 @@ public class TransitionTypeMismatchException : TransitionException
 
 public class TransitionNoneTypeException : TransitionException
 {
-    public TransitionNoneTypeException() : base("TransitionType.None cannot be used as a value.") { }
+    public TransitionNoneTypeException() : base("<color=#FF7B00><b>[NONE TYPE]</b></color> TransitionType.None cannot be used as a value.") { }
 }
 
 public class TransitionInvalidOperationException : TransitionException
@@ -919,7 +918,7 @@ public class TransitionInvalidOperationException : TransitionException
     public TransitionType[] Types { get; }
 
     public TransitionInvalidOperationException(string @operator, params TransitionType[] types)
-    : base($"The '{@operator}' operator cannot be applied to Transition of type '{string.Join(", ", types)}'.")
+        : base($"<color=#7DAAFF><b>[INVALID OPERATION]</b></color> The '<color=#7DAAFF><b>{@operator}</b></color>' operator cannot be applied to Transition of type <color=#7DAAFF><b>{string.Join(", ", types.Select(type => $"<color={type.GetColorHexCodeString(true)}>{type.ToString()}</color>"))}</b></color>.")
     {
         Operator = @operator;
         Types = types;
@@ -928,23 +927,21 @@ public class TransitionInvalidOperationException : TransitionException
 
 public class TransitionArgumentNullException : TransitionException
 {
-    public TransitionArgumentNullException(string message) : base(message) { }
+    public TransitionArgumentNullException(string message) : base($"<color=#7DAAFF><b>[NULL ARGUMENT]</b></color> {message}") { }
 }
 
 public class TransitionTypeArgumentOutOfRangeException : TransitionException
 {
     public TransitionType? OutRangeTransitionType { get; }
     public Type OutRangeType { get; }
-
     public TransitionTypeArgumentOutOfRangeException(TransitionType outRangeTrType)
-        : base($"TransitionType '{outRangeTrType}' is not supported or out of range.")
+        : base($"<color=#7DAAFF><b>[OUT OF RANGE]</b></color> TransitionType <color={outRangeTrType.GetColorHexCodeString(true)}><b>{outRangeTrType}</b></color> is not supported or out of range.")
     {
         OutRangeTransitionType = outRangeTrType;
         OutRangeType = null;
     }
-
     public TransitionTypeArgumentOutOfRangeException(Type outRangeType)
-        : base($"Type '{outRangeType?.Name ?? "null"}' is not supported or out of range.")
+        : base($"<color=#7DAAFF><b>[OUT OF RANGE]</b></color> Type '<color=#7DAAFF><b>{outRangeType?.Name ?? "null"}</b></color>' is not supported or out of range.")
     {
         OutRangeTransitionType = null;
         OutRangeType = outRangeType;
@@ -953,6 +950,6 @@ public class TransitionTypeArgumentOutOfRangeException : TransitionException
 
 public class TransitionNullStringException : TransitionException
 {
-    public TransitionNullStringException(string message) : base(message) { }
+    public TransitionNullStringException(string message) : base($"<color=#FF7B00><b>[NULL STRING]</b></color> {message}") { }
 }
 #endregion

@@ -16,11 +16,11 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override float OutEnumeratorXPos => 32f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
     protected override string DefineInputName(int tpIndex) => "in";
 

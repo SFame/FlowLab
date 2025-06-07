@@ -11,17 +11,19 @@ public class XOR : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -47f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 34f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
     protected override string NodeDisplayName => "XOR";
+
+    protected override float NameTextSize => 20f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

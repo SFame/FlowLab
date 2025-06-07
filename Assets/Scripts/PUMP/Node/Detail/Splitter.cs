@@ -32,7 +32,7 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override float OutEnumeratorXPos => 32f;
     
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

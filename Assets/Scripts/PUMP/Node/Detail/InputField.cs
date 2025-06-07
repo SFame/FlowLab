@@ -15,7 +15,7 @@ public class InputField : Node, INodeAdditionalArgs<string>
     protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.String };
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 65f;
-    protected override float EnumeratorPadding => 0f;
+    protected override float EnumeratorSpacing => 0f;
     protected override float EnumeratorMargin => -10f;
     protected override Vector2 DefaultNodeSize => new Vector2(60f, 45f);
 

@@ -18,8 +18,8 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
     protected override float InEnumeratorXPos => 0f;
 
     protected override float OutEnumeratorXPos => 47f;
-    
-    protected override float EnumeratorPadding => 10f;
+
+    protected override float EnumeratorSpacing => 3f;
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
 

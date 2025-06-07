@@ -61,7 +61,7 @@ public class DefaultPalette : NodePalette
         {
             "Util", new Dictionary<Type, string>
             {
-                { typeof(StringCounter), "String Counter" },
+                { typeof(StringLength), "String Length" },
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
                 { typeof(StringSplit), "String Split" },

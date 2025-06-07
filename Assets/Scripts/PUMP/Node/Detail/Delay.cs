@@ -43,7 +43,7 @@ public class Delay : Node, INodeAdditionalArgs<float>
 
     protected override float OutEnumeratorXPos => 38f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

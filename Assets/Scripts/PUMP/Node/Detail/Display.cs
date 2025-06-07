@@ -14,7 +14,7 @@ public class Display : Node
     protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Bool };
     protected override float InEnumeratorXPos => -185.5f;
     protected override float OutEnumeratorXPos => 185.5f;
-    protected override float EnumeratorPadding => 0f;
+    protected override float EnumeratorSpacing => 0f;
     protected override Vector2 DefaultNodeSize => new Vector2(300f, 150f);
 
     protected override List<ContextElement> ContextElements

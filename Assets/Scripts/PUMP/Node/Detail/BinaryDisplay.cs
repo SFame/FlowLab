@@ -17,7 +17,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override float OutEnumeratorXPos => 0f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 7f;
 

@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using Utils;
 
 public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 {
@@ -18,21 +17,22 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
+
+    protected override Vector2 NameTextOffset => new Vector2(0f, 15f);
+
     protected override string NodeDisplayName => "Str\nSplt";
 
-    protected override Vector2? NameTextOffset => new Vector2(0f, 15f);
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float NameTextSize => 22f;
+    protected override float OutEnumeratorXPos => 34f;
 
-    protected override float InEnumeratorXPos => -40f;
-
-    protected override float OutEnumeratorXPos => 40f;
-
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(115f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
+
+    protected override float NameTextSize => 18f;
 
     protected override int DefaultInputCount => 2;
 

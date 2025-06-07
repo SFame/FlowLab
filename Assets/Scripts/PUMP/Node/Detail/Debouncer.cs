@@ -10,7 +10,7 @@ public class Debouncer : Node, INodeAdditionalArgs<float>
     protected override List<string> OutputNames { get; } = new() { "out" };
     protected override float InEnumeratorXPos => -46f;
     protected override float OutEnumeratorXPos => 42f;
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
     protected override float EnumeratorMargin => 5f;
     protected override Vector2 DefaultNodeSize => new Vector2(125f, 80f);
     protected override string NodeDisplayName => "Debc";

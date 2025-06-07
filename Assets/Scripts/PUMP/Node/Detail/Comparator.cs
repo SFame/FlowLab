@@ -11,7 +11,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override float OutEnumeratorXPos => 50f;
 
-    protected override float EnumeratorPadding => 5f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 

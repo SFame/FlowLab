@@ -84,7 +84,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override float EnumeratorPadding => 10f;
+    protected override float EnumeratorSpacing => 3f;
 
     protected override Vector2 DefaultNodeSize => new Vector2(210f, 100f);
 

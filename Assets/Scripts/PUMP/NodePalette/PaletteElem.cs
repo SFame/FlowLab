@@ -106,7 +106,7 @@ public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
                 _newNode.Remove();
             }
 
-            Debug.LogError("Node 생성 중 예외 발생. 하단의 예외를 확인하십시오");
+            Debug.LogError("<color=red><b>[NODE INSTANTIATE ERROR]</b></color>");
             Debug.LogException(e);
         }
     }

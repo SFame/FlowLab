@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using Utils;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
