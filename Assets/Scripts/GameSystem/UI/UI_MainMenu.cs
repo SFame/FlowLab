@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
+using UnityEngine.SceneManagement;
 
 public class UI_MainMenu : MonoBehaviour
 {
@@ -9,6 +10,10 @@ public class UI_MainMenu : MonoBehaviour
     [SerializeField]private Button CodexUI;
     [SerializeField] private CodexPalette m_codexPalette;
     [SerializeField] private GameObject m_codexPrefab;
+
+    [SerializeField] private UI_Settings m_SettingsUI;
+    [SerializeField] private Button QuizButton;
+    [SerializeField] private GameObject m_SettingUIPrefab;
     public static UI_MainMenu Instance { get; private set; }
     private void Awake()
     {
@@ -24,6 +29,14 @@ public class UI_MainMenu : MonoBehaviour
             temp.transform.parent = transform.parent;
             temp.GetComponent<RectTransform>().SetOffset(Vector2.zero, Vector2.zero);
             m_codexPalette = temp.GetComponent<CodexPalette>();
+            temp.SetActive(false);
+        }
+
+        if (m_SettingsUI == null)
+        {
+            GameObject temp = Instantiate(m_SettingUIPrefab);
+            temp.transform.parent = transform.parent;
+            m_SettingsUI = temp.GetComponent<UI_Settings>();
             temp.SetActive(false);
         }
     }
@@ -61,14 +74,17 @@ public class UI_MainMenu : MonoBehaviour
     {
         if (SettingUI.activeSelf)
         {
-            SettingUI.SetActive(false);
+            m_SettingsUI.gameObject.SetActive(true);
         }
         else
         {
             SettingUI.SetActive(true);
         }
     }
-
+    public void OnClickQuiz()
+    {
+        SceneManager.LoadScene("PuzzleSelectScene");
+    }
     public void OnClickQuit()
     {
 #if UNITY_EDITOR

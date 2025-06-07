@@ -6,25 +6,19 @@
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "Welcome to NodeSimulation.",
+          "messageText": "Welcome to Puzzle Game.",
           "speakerImagePath": "None",
           "choices": []
         },
         {
           "speakerName": "Tutorial",
-          "messageText": "This NodeSimulation 너는 무엇할수있고 어쩌구저쩌구",
+          "messageText": "In this puzzle game, you can learn how to use the simulation by solving puzzles before actually using it.",
           "speakerImagePath": "None",
           "choices": []
         },
         {
           "speakerName": "Tutorial",
-          "messageText": "이걸 통해 어쩌구저쩌구 너의 창의력을 발휘해보세요",
-          "speakerImagePath": "None",
-          "choices": []
-        },
-        {
-          "speakerName": "Tutorial",
-          "messageText": "구성요소를 설명해드리겟습니다.",
+          "messageText": "Let me start by explaining the game components and how to play the puzzle.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -36,19 +30,13 @@
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "This is Node. You can place this on NodePalette.",
+          "messageText": "These are the nodes you can use in the puzzle. Place them on the background to solve the puzzle.",
           "speakerImagePath": "None",
           "choices": []
         },
         {
           "speakerName": "Tutorial",
-          "messageText": "노드는 이렇게 구성되어있고 어쩌구 저쩌구.",
-          "speakerImagePath": "None",
-          "choices": []
-        },
-        {
-          "speakerName": "Tutorial",
-          "messageText": "음",
+          "messageText": "When you clear puzzles with reward nodes, you'll unlock more nodes that you can use in future puzzles.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -56,17 +44,17 @@
     },
     {
       "id": "HTP_3",
-      "title": "NodePaletteExplain",
+      "title": "TestCaseExplain",
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "This is NodePalette. 노드팔레트에 너는 뭐할수있고 어쩌구저쩌구",
+          "messageText": "This is the test case, which shows the puzzle's conditions.",
           "speakerImagePath": "None",
           "choices": []
         },
         {
           "speakerName": "Tutorial",
-          "messageText": "니가 쓸수있는 노드들이 있다.",
+          "messageText": "You can check the results by looking at the test case content, placing your nodes accordingly, and pressing the test button.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -74,11 +62,17 @@
     },
     {
       "id": "HTP_4",
-      "title": "PuzzleExplain1",
+      "title": "ClearExplain",
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "오른쪽 위 메뉴버튼을 통해 퍼즐에 진입 가능합니다.",
+          "messageText": "After clearing a puzzle, you can save your progress and check your clear record.",
+          "speakerImagePath": "None",
+          "choices": []
+        },
+        {
+          "speakerName": "Tutorial",
+          "messageText": "Try to challenge yourself by solving puzzles with fewer nodes or in less time.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -86,17 +80,11 @@
     },
     {
       "id": "HTP_5",
-      "title": "PuzzleExplain2",
+      "title": "PuzzleListExplain",
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "퍼즐 리스트에 나열된 퍼즐을 즐길수있습니다.",
-          "speakerImagePath": "None",
-          "choices": []
-        },
-        {
-          "speakerName": "Tutorial",
-          "messageText": "퍼즐을 클리어하면 기록과 Reward인 Node를 퍼즐에 사용할수있습니다.",
+          "messageText": "Some puzzles require you to use specific nodes as part of the solution.",
           "speakerImagePath": "None",
           "choices": []
         }
@@ -108,13 +96,7 @@
       "entries": [
         {
           "speakerName": "Tutorial",
-          "messageText": "이것이 퍼즐 내부 화면입니다.",
-          "speakerImagePath": "None",
-          "choices": []
-        },
-        {
-          "speakerName": "Tutorial",
-          "messageText": "소년이여 신화가 되라",
+          "messageText": "This concludes the tutorial. Now you're ready to start solving puzzles! Good luck!.",
           "speakerImagePath": "None",
           "choices": []
         }

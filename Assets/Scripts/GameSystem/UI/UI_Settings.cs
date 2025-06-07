@@ -20,7 +20,7 @@ public class UI_Settings : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button applyButton;
     [SerializeField] private Button resetToDefaultButton;
-    [SerializeField] private Button closeButton;
+    public Button closeButton;
 
     [Header("KeyMap Settings")]
     [SerializeField] private Transform keyMapContent;
