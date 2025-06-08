@@ -50,6 +50,7 @@ public class PuzzleStagePrefab : MonoBehaviour
 
         bool isClear;
         stageData = GameSaveManager.Instance.FindPuzzleDataState(puzzleInteraction.puzzleName);
+
         if (stageData == null)
         {
             isClear = false;
@@ -126,5 +127,11 @@ public class PuzzleStagePrefab : MonoBehaviour
                 SetInfo();
             }
         }
+    }
+    
+    private void OnDestroy()
+    {
+        puzzleInteraction.OnPuzzleValidation -= PuzzleSolved;
+        PlayerNodeInventory.OnNodeUnlocked -= OnNodeUnlocked;
     }
 }

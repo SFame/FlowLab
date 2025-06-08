@@ -45,16 +45,12 @@ public class PuzzleInteraction : MonoBehaviour, IInteractable
 
     private void Awake()
     {
-        // PUMPSeparator가 설정되지 않았다면 자동으로 찾기
+
         if (PUMPSeparator == null)
         {
             PUMPSeparator = FindFirstObjectByType<PUMPSeparator>();
         }
-        // 참조가 설정되지 않았다면 자동으로 찾기
-        if (playerController == null)
-        {
-            playerController = FindFirstObjectByType<PlayerController>();
-        }
+
     }
 
     public Transform GetTransform()

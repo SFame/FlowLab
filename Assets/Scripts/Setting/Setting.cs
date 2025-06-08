@@ -1,8 +1,10 @@
+using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using VFolders.Libs;
 using Serializer = Utils.Serializer;
 public static class Setting
 {
@@ -10,7 +12,7 @@ public static class Setting
     //default Settings
     public static float DefaultSoundVolume = 1.0f; // Default sound volume
     public static float DefaultVFXVolume = 1.0f; // Default VFX volume
-    public static float DefaultSimulationSpeed = 1.0f; // Default simulation speed
+    public static float DefaultSimulationSpeed = 0.0f; // Default simulation speed
     // Default key map settings
     public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
     {
@@ -92,6 +94,24 @@ public static class Setting
         LoadSettings();
 
         OnSettingUpdated?.Invoke();
+        AudioMixer audioMixer = Resources.Load<AudioMixer>("AudioMixer");
+        if (audioMixer != null)
+        {
+            SetAudio(audioMixer);
+            // VFX 볼륨을 오디오 믹서에 적용
+            //float dB = ConvertToDecibel(_currentSettings.vfxVolume);
+            //audioMixer.SetFloat("VFX", dB);
+        }
+        else
+        {
+            Debug.LogWarning("AudioMixer not found. VFX volume will not be applied.");
+        }
+    }
+    private static async UniTaskVoid SetAudio(AudioMixer audioMixer)
+    {
+        await UniTask.Yield();
+        float dB = ConvertToDecibel(_currentSettings.vfxVolume);
+        audioMixer.SetFloat("VFX", dB);
     }
     #endregion
 
@@ -209,6 +229,11 @@ public static class Setting
     {
         return (_tempVfxVolume, _tempSimulationSpeed, new List<BackgroundActionKeyMap>(_tempKeyMap));
     }
+    // 현재 설정값 가져오기 (시스템 적용용)
+    public static (float vfx, float speed, List<BackgroundActionKeyMap> keyMap) GetCurrentSettings()
+    {
+        return (_currentSettings.vfxVolume, _currentSettings.simulationSpeed, new List<BackgroundActionKeyMap>(_currentSettings.keyMapList));
+    }
 
     // ActionType에 해당하는 디폴트 키맵 가져오기
     public static BackgroundActionType GetActionType(BackgroundActionType actionType)
@@ -224,5 +249,9 @@ public static class Setting
         return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_Modifiers ?? new List<KeyCode>();
     }
 
-
+    private static float ConvertToDecibel(float volume)
+    {
+        // 0 = 음소거, 1 = 0dB (최대 볼륨)
+        return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
+    }
 }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
+using VFolders.Libs;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 public class UI_Settings : MonoBehaviour
@@ -51,7 +53,7 @@ public class UI_Settings : MonoBehaviour
         }
 
         // 초기 UI 값 설정
-        RefreshUIFromTempSettings();
+        RefreshUIFromCurrentSettings();
     }
     private void SetupEventHandlers()
     {
@@ -105,6 +107,24 @@ public class UI_Settings : MonoBehaviour
         // 키맵 UI 업데이트
         RefreshKeyMapUI(keyMap);
     }
+    private void RefreshUIFromCurrentSettings()
+    {
+        var (vfx, speed, keyMap) = Setting.GetCurrentSettings();
+
+        if (vfxSlider != null)
+        {
+            vfxSlider.SetValueWithoutNotify(vfx);
+        }
+        if (simulationSpeedSlider != null)
+        {
+            simulationSpeedSlider.SetValueWithoutNotify(speed);
+        }
+        // 텍스트 업데이트
+        UpdateVFXVolumeText(vfx);
+        UpdateSimulationSpeedText(speed);
+        // 키맵 UI 업데이트
+        RefreshKeyMapUI(keyMap);
+    }
 
     #region UI Event Handlers
 
@@ -133,6 +153,8 @@ public class UI_Settings : MonoBehaviour
         }
         Setting.SetTempKeyMap(UI_KeyMap);
         Setting.OnClickApplyButton();
+        ApplyVFXVolume(Setting.VFXVolume);
+        RefreshUIFromTempSettings();
     }
     private void OnResetToDefaultClicked()
     {
@@ -185,15 +207,17 @@ public class UI_Settings : MonoBehaviour
     #endregion
     private void OnSettingUpdated()
     {
-        // 현재 적용된 설정값으로 UI 업데이트
+        // 설정이 업데이트되면 UI를 현재 설정값으로 갱신
+        RefreshUIFromCurrentSettings();
+        // VFX 볼륨을 오디오 믹서에 적용
+        ApplyVFXVolume(Setting.VFXVolume);
         Debug.Log("UI_Settings: 설정이 적용되었습니다.");
     }
- 
     private void OnEnable()
     {
         // 패널이 열릴 때마다 현재 임시 설정값으로 UI 업데이트
         PUMPInputManager.Current.AddBlocker(blocker);
-        RefreshUIFromTempSettings();
+        RefreshUIFromCurrentSettings();
     }
 
     private void OnDisable()
@@ -206,9 +230,13 @@ public class UI_Settings : MonoBehaviour
     //sound temp
     private void ApplyVFXVolume(float volume)
     {
-
         float dB = ConvertToDecibel(volume);
         audioMixer.SetFloat("VFX", dB);
+    }
+    public void ApplyCurrentVFXVolume()
+    {
+        float volume = Setting.VFXVolume;
+        ApplyVFXVolume(volume);
     }
 
     private float ConvertToDecibel(float volume)
