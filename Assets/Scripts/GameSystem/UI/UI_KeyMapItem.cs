@@ -2,8 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using Unity.VisualScripting;
-using Utils;
 
 public class UI_KeyMapItem : MonoBehaviour
 {
@@ -47,22 +45,21 @@ public class UI_KeyMapItem : MonoBehaviour
         {
             m_ActionKeyButton.onClick.AddListener(async () =>
             {
-                BackgroundActionKeyMap changekeyMap = await new KeyMapDetector(_keyMap.m_ActionType).GetKeyMapAsync();
-                if (changekeyMap == null)
+                BackgroundActionKeyMap changeKeyMap = await new KeyMapDetector(_keyMap.m_ActionType).GetKeyMapAsync();
+                if (changeKeyMap == null)
                 {
                     return;
                 }
-                if (changekeyMap.m_Modifiers.Count > 0)
+                if (changeKeyMap.m_Modifiers.Count > 0)
                 {
-                    m_ButtonText.text = string.Join(" + ", changekeyMap.m_Modifiers) + " + " + string.Join(" + ", changekeyMap.m_ActionKeys);
+                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_Modifiers) + " + " + string.Join(" + ", changeKeyMap.m_ActionKeys);
                 }
                 else
                 {
-                    m_ButtonText.text = string.Join(" + ", changekeyMap.m_ActionKeys);
+                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_ActionKeys);
                 }
-                _keyMap.m_ActionKeys = changekeyMap.m_ActionKeys;
-                _keyMap.m_Modifiers = changekeyMap.m_Modifiers;
-
+                _keyMap.m_ActionKeys = changeKeyMap.m_ActionKeys;
+                _keyMap.m_Modifiers = changeKeyMap.m_Modifiers;
             });
 
         }

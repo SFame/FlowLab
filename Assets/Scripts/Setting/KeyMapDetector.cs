@@ -28,15 +28,16 @@ public class KeyMapDetector
         _actionType = actionType;
     }
 
-    public UniTask<BackgroundActionKeyMap> GetKeyMapAsync(CancellationToken token = default)
+    public UniTask<BackgroundActionKeyMap> GetKeyMapAsync(CancellationToken token = default, params KeyCode[] cancelKeyCodes)
     {
+        _cancelKeyCodes = cancelKeyCodes;
         return Detect(token);
     }
     #endregion
 
     #region Privates
     private readonly BackgroundActionType _actionType;
-
+    private KeyCode[] _cancelKeyCodes;
     private async UniTask<BackgroundActionKeyMap> Detect(CancellationToken token)
     {
         HashSet<KeyCode> modifiers = new();
@@ -45,7 +46,7 @@ public class KeyMapDetector
         bool detectStart = false;
         try
         {
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested && !IsCancelKeyPressed())
             {
                 bool isAnyKeyPressed = IsAnyKeyboardKeyPressed();
 
@@ -170,6 +171,24 @@ public class KeyMapDetector
     private bool IsMouseKey(KeyCode keyCode)
     {
         return keyCode is >= KeyCode.Mouse0 and <= KeyCode.Mouse6;
+    }
+
+    private bool IsCancelKeyPressed()
+    {
+        if (_cancelKeyCodes == null || _cancelKeyCodes.Length == 0)
+        {
+            return false;
+        }
+
+        foreach (KeyCode keyCode in _cancelKeyCodes)
+        {
+            if (Input.GetKeyDown(keyCode))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
     #endregion
 }
