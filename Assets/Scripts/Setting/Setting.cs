@@ -189,7 +189,8 @@ public static class Setting
                 // 로드 실패시 기본값 사용
                 _currentSettings = new SettingData();
                 ResetTempToDefault();
-                Debug.Log("저장된 설정이 없습니다. 기본값을 사용합니다.");
+                Debug.Log("저장된 설정이 없습니다. 기본값을 사용하고 저장하겠습니다.");
+                SaveSettings(); // 기본값 저장
             }
         }
         catch (Exception e)
