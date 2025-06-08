@@ -1,90 +1,81 @@
 using UnityEngine;
-using UnityEngine.UI;
 using Utils;
 using UnityEngine.SceneManagement;
 
 public class UI_MainMenu : MonoBehaviour
 {
-    [SerializeField]private GameObject SettingUI;
-    [SerializeField]private GameObject StartUI;
-    [SerializeField]private Button CodexUI;
-    [SerializeField] private CodexPalette m_codexPalette;
+    [SerializeField] private GameObject m_MenuObject;
     [SerializeField] private GameObject m_codexPrefab;
 
-    [SerializeField] private UI_Settings m_SettingsUI;
-    [SerializeField] private Button QuizButton;
     [SerializeField] private GameObject m_SettingUIPrefab;
     public static UI_MainMenu Instance { get; private set; }
+
+    private CodexPalette _codexPalette;
+    private UI_Settings _settingsUI;
+
     private void Awake()
     {
-        // 싱글톤 처리
         if (Instance == null)
         {
             Instance = this;
+            gameObject.SetActive(false);
         }
 
-        if (m_codexPalette == null)
+        if (_codexPalette == null)
         {
-            GameObject temp = Instantiate(m_codexPrefab);
-            temp.transform.parent = transform.parent;
+            GameObject temp = Instantiate(m_codexPrefab, transform.parent, false);
             temp.GetComponent<RectTransform>().SetOffset(Vector2.zero, Vector2.zero);
-            m_codexPalette = temp.GetComponent<CodexPalette>();
+            _codexPalette = temp.GetComponent<CodexPalette>();
             temp.SetActive(false);
         }
 
-        if (m_SettingsUI == null)
+        if (_settingsUI == null)
         {
-            GameObject temp = Instantiate(m_SettingUIPrefab);
-            temp.transform.parent = transform.parent;
-            m_SettingsUI = temp.GetComponent<UI_Settings>();
+            GameObject temp = Instantiate(m_SettingUIPrefab, transform.parent, false);
+            _settingsUI = temp.GetComponent<UI_Settings>();
             temp.SetActive(false);
         }
     }
-    private void Start()
+
+    public void Open()
     {
-        CodexUI.onClick.AddListener(m_codexPalette.Open);
+        m_MenuObject.SetActive(true);
     }
-    public CodexPalette GetCodexPalette()
+
+    public void OpenCodex()
     {
-        if (m_codexPalette == null)
-        {
-            GameObject temp = Instantiate(m_codexPrefab);
-            temp.transform.parent = transform.parent;
-            m_codexPalette = temp.GetComponent<CodexPalette>();
-            temp.SetActive(false);
-        }
-        return m_codexPalette;
+        _codexPalette.Open();
     }
-    public void GetStartUIOpen()
-    {
-        StartUI.SetActive(true);
-    }
+
     public void OnClickStart()
     {
-        if (StartUI.activeSelf)
+        if (m_MenuObject.activeSelf)
         {
-            StartUI.SetActive(false);
+            m_MenuObject.SetActive(false);
         }
         else
         {
-            StartUI.SetActive(true);
+            m_MenuObject.SetActive(true);
         }
     }
+
     public void OnClickSettings()
     {
-        if (SettingUI.activeSelf)
+        if (_settingsUI.gameObject.activeSelf)
         {
-            m_SettingsUI.gameObject.SetActive(true);
+            _settingsUI.gameObject.SetActive(true);
         }
         else
         {
-            SettingUI.SetActive(true);
+            _settingsUI.gameObject.SetActive(true);
         }
     }
+
     public void OnClickQuiz()
     {
         SceneManager.LoadScene("PuzzleSelectScene");
     }
+
     public void OnClickQuit()
     {
 #if UNITY_EDITOR
