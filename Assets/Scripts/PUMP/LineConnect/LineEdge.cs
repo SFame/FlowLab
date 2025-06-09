@@ -8,6 +8,8 @@ using static LineConnector;
 [RequireComponent(typeof(RectTransform), typeof(Image))]
 public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragSelectable, IHighlightable
 {
+    [SerializeField] private Image m_RingImage;
+
     #region Privates
     private RectTransform _rect;
     private Image _image;
@@ -17,6 +19,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     private readonly float _expansionScale = 1.5f;
     private bool _isSetDefaultSize = false;
     private bool _isSetDefaultColor = false;
+    private bool _isSelected = false;
     private bool _isRemoved = false;
     private UILineRenderer _lineRenderer;
     
@@ -114,6 +117,17 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         Image.color = color;
     }
 
+    public void SetRingColor(Color color)
+    {
+        if (m_RingImage == null)
+        {
+            Debug.LogWarning("LineEdge: RingImage missing");
+            return;
+        }
+
+        m_RingImage.color = color;
+    }
+
     public void Remove()
     {
         if (_isRemoved)
@@ -183,7 +197,6 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
             _isSelected = value;
         }
     }
-    public bool _isSelected = false;
     
     public object SelectingTag { get; set; }
 

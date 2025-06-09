@@ -583,7 +583,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2013469632}
         m_TargetAssemblyTypeName: UI_MainMenu, Assembly-CSharp
-        m_MethodName: OnClickQuit
+        m_MethodName: GameQuit
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -642,6 +642,7 @@ GameObject:
   - component: {fileID: 476413617}
   - component: {fileID: 476413619}
   - component: {fileID: 476413618}
+  - component: {fileID: 476413620}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -707,6 +708,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 476413616}
   m_CullTransparentMesh: 1
+--- !u!114 &476413620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476413616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161b6e473a15714469968f02cc75e37b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ControlActive: 0
+  m_OnClose:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2013469632}
+        m_TargetAssemblyTypeName: UI_MainMenu, Assembly-CSharp
+        m_MethodName: Close
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -884,7 +913,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2013469632}
         m_TargetAssemblyTypeName: UI_MainMenu, Assembly-CSharp
-        m_MethodName: OnClickSettings
+        m_MethodName: OpenSetting
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1537,7 +1566,7 @@ GameObject:
   - component: {fileID: 1484585114}
   - component: {fileID: 1484585113}
   m_Layer: 0
-  m_Name: StartButton
+  m_Name: GoBackButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1609,7 +1638,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2013469632}
         m_TargetAssemblyTypeName: UI_MainMenu, Assembly-CSharp
-        m_MethodName: OnClickStart
+        m_MethodName: Close
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1845,7 +1874,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2013469632}
         m_TargetAssemblyTypeName: UI_MainMenu, Assembly-CSharp
-        m_MethodName: OnClickQuiz
+        m_MethodName: OpenPuzzle
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

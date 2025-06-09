@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
-using VFolders.Libs;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 public class UI_Settings : MonoBehaviour
 {
@@ -52,7 +48,7 @@ public class UI_Settings : MonoBehaviour
             simulationSpeedSlider.maxValue = 2.0f;
         }
 
-        // ÃÊ±â UI °ª ¼³Á¤
+        // ì´ˆê¸° UI ê°’ ì„¤ì •
         RefreshUIFromCurrentSettings();
     }
     private void SetupEventHandlers()
@@ -67,7 +63,7 @@ public class UI_Settings : MonoBehaviour
             simulationSpeedSlider.onValueChanged.AddListener(OnSimulationSpeedChanged);
         }
 
-        // ¹öÆ° ÀÌº¥Æ®
+        // ë²„íŠ¼ ì´ë²¤íŠ¸
         if (applyButton != null)
         {
             applyButton.onClick.AddListener(OnApplyButtonClicked);
@@ -83,7 +79,7 @@ public class UI_Settings : MonoBehaviour
             closeButton.onClick.AddListener(OnCloseButtonClicked);
         }
 
-        // Setting ÀÌº¥Æ® ±¸µ¶
+        // Setting ì´ë²¤íŠ¸ êµ¬ë…
         Setting.OnSettingUpdated += OnSettingUpdated;
     }
     private void RefreshUIFromTempSettings()
@@ -101,10 +97,10 @@ public class UI_Settings : MonoBehaviour
         }
         
 
-        // ÅØ½ºÆ® ¾÷µ¥ÀÌÆ®
+        // í…ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
         UpdateVFXVolumeText(vfx);
         UpdateSimulationSpeedText(speed);
-        // Å°¸Ê UI ¾÷µ¥ÀÌÆ®
+        // í‚¤ë§µ UI ì—…ë°ì´íŠ¸
         RefreshKeyMapUI(keyMap);
     }
     private void RefreshUIFromCurrentSettings()
@@ -119,10 +115,10 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.SetValueWithoutNotify(speed);
         }
-        // ÅØ½ºÆ® ¾÷µ¥ÀÌÆ®
+        // í…ìŠ¤íŠ¸ ì—…ë°ì´íŠ¸
         UpdateVFXVolumeText(vfx);
         UpdateSimulationSpeedText(speed);
-        // Å°¸Ê UI ¾÷µ¥ÀÌÆ®
+        // í‚¤ë§µ UI ì—…ë°ì´íŠ¸
         RefreshKeyMapUI(keyMap);
     }
 
@@ -142,7 +138,7 @@ public class UI_Settings : MonoBehaviour
     private void OnApplyButtonClicked()
     {
         List<BackgroundActionKeyMap> UI_KeyMap = new List<BackgroundActionKeyMap>();
-        // Å°¸Ê ¾ÆÀÌÅÛ¿¡¼­ º¯°æµÈ °ªÀ» °¡Á®¿Í ÀÓ½Ã ¼³Á¤¿¡ Àû¿ë
+        // í‚¤ë§µ ì•„ì´í…œì—ì„œ ë³€ê²½ëœ ê°’ì„ ê°€ì ¸ì™€ ì„ì‹œ ì„¤ì •ì— ì ìš©
         foreach (Transform child in keyMapContent)
         {
             UI_KeyMapItem itemUI = child.GetComponent<UI_KeyMapItem>();
@@ -189,15 +185,15 @@ public class UI_Settings : MonoBehaviour
     }
     private void RefreshKeyMapUI(List<BackgroundActionKeyMap> keyMaps)
     {
-        // ±âÁ¸ Å°¸Ê ¾ÆÀÌÅÛ Á¦°Å
+        // ê¸°ì¡´ í‚¤ë§µ ì•„ì´í…œ ì œê±°
         foreach (Transform child in keyMapContent)
         {
             Destroy(child.gameObject);
         }
-        // ÇöÀç ÀÓ½Ã ¼³Á¤°ª¿¡¼­ Å°¸Ê °¡Á®¿À±â
+        // í˜„ì¬ ì„ì‹œ ì„¤ì •ê°’ì—ì„œ í‚¤ë§µ ê°€ì ¸ì˜¤ê¸°
        
 
-        // Å°¸Ê ¾ÆÀÌÅÛ »ı¼º
+        // í‚¤ë§µ ì•„ì´í…œ ìƒì„±
         foreach (BackgroundActionKeyMap keyMap in keyMaps)
         {
             var item = Instantiate(keyMapItemPrefab, keyMapContent);
@@ -207,22 +203,22 @@ public class UI_Settings : MonoBehaviour
     #endregion
     private void OnSettingUpdated()
     {
-        // ¼³Á¤ÀÌ ¾÷µ¥ÀÌÆ®µÇ¸é UI¸¦ ÇöÀç ¼³Á¤°ªÀ¸·Î °»½Å
+        // ì„¤ì •ì´ ì—…ë°ì´íŠ¸ë˜ë©´ UIë¥¼ í˜„ì¬ ì„¤ì •ê°’ìœ¼ë¡œ ê°±ì‹ 
         RefreshUIFromCurrentSettings();
-        // VFX º¼·ıÀ» ¿Àµğ¿À ¹Í¼­¿¡ Àû¿ë
+        // VFX ë³¼ë¥¨ì„ ì˜¤ë””ì˜¤ ë¯¹ì„œì— ì ìš©
         ApplyVFXVolume(Setting.VFXVolume);
-        Debug.Log("UI_Settings: ¼³Á¤ÀÌ Àû¿ëµÇ¾ú½À´Ï´Ù.");
+        Debug.Log("UI_Settings: ì„¤ì •ì´ ì ìš©ë˜ì—ˆìŠµë‹ˆë‹¤.");
     }
     private void OnEnable()
     {
-        // ÆĞ³ÎÀÌ ¿­¸± ¶§¸¶´Ù ÇöÀç ÀÓ½Ã ¼³Á¤°ªÀ¸·Î UI ¾÷µ¥ÀÌÆ®
+        // íŒ¨ë„ì´ ì—´ë¦´ ë•Œë§ˆë‹¤ í˜„ì¬ ì„ì‹œ ì„¤ì •ê°’ìœ¼ë¡œ UI ì—…ë°ì´íŠ¸
         PUMPInputManager.Current.AddBlocker(blocker);
         RefreshUIFromCurrentSettings();
     }
 
     private void OnDisable()
     {
-        // ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         Setting.OnSettingUpdated -= OnSettingUpdated;
         PUMPInputManager.Current.RemoveBlocker(blocker);
     }
@@ -241,7 +237,7 @@ public class UI_Settings : MonoBehaviour
 
     private float ConvertToDecibel(float volume)
     {
-        // 0 = À½¼Ò°Å, 1 = 0dB (ÃÖ´ë º¼·ı)
+        // 0 = ìŒì†Œê±°, 1 = 0dB (ìµœëŒ€ ë³¼ë¥¨)
         return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -12,14 +13,26 @@ public class LineConnector : MonoBehaviour
     private static string LINE_PREFAB_PATH = "PUMP/Prefab/Line/Line";
     private static string LINE_SIDE_PREFAB_PATH = "PUMP/Prefab/Line/LineSide";
     private static string LINE_EDGE_PREFAB_PATH = "PUMP/Prefab/Line/LineEdge";
-    
-    private GameObject ImageLine
+
+    private GameObject ImageLinePrefab
     {
         get
         {
             if (_imageLine == null)
                 _imageLine = Resources.Load<GameObject>(LINE_PREFAB_PATH);
+
             return _imageLine;
+        }
+    }
+
+    private GameObject LineEdgePrefab
+    {
+        get
+        {
+            if (_lineEdgePrefab == null)
+                _lineEdgePrefab = Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH);
+
+            return _lineEdgePrefab;
         }
     }
 
@@ -32,6 +45,7 @@ public class LineConnector : MonoBehaviour
                 _startEdgePoint = Instantiate(Resources.Load<GameObject>(LINE_SIDE_PREFAB_PATH)).GetComponent<RectTransform>();
                 _startEdgePoint.SetParent(_edgeParent);
             }
+
             return _startEdgePoint;
         }
     }
@@ -45,6 +59,7 @@ public class LineConnector : MonoBehaviour
                 _endEdgePoint = Instantiate(Resources.Load<GameObject>(LINE_SIDE_PREFAB_PATH)).GetComponent<RectTransform>();
                 _endEdgePoint.SetParent(_edgeParent);
             }
+
             return _endEdgePoint;
         }
     }
@@ -54,7 +69,8 @@ public class LineConnector : MonoBehaviour
         get
         {
             if (_startSidePointImage == null)
-                _startSidePointImage = EndSidePointRect.GetComponent<Image>();
+                _startSidePointImage = StartSidePointRect.GetComponent<Image>();
+
             return _startSidePointImage;
         }
     }
@@ -65,6 +81,7 @@ public class LineConnector : MonoBehaviour
         {
             if (_endEdgePointImage == null)
                 _endEdgePointImage = EndSidePointRect.GetComponent<Image>();
+
             return _endEdgePointImage;
         }
     }
@@ -75,11 +92,13 @@ public class LineConnector : MonoBehaviour
         {
             if (_rootCanvas == null)
                 _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
+
             return _rootCanvas;
         }
     }
 
     private GameObject _imageLine;
+    private GameObject _lineEdgePrefab;
     private Vector2 _startSidePoint;
     private Vector2 _endSidePoint;
     private Canvas _rootCanvas;
@@ -91,6 +110,7 @@ public class LineConnector : MonoBehaviour
     private RectTransform _edgeParent;
     private LineEdge _draggingEdge;
     private bool _freezeLinesAttributes;
+    private Color? _edgeRingColor = null;
     private bool _isRemoved = false;
 
     private List<LineArg> LineArgs { get; set; } = new();
@@ -112,6 +132,7 @@ public class LineConnector : MonoBehaviour
     public event Action LineUpdated;
     public event Action OnRemove;
     public event Action<LineEdge> OnEdgeAdded;
+    public event Action<LineEdge> OnEdgeRemoved;
 
     public List<ContextElement> ContextElements { get; set; }
 
@@ -147,13 +168,13 @@ public class LineConnector : MonoBehaviour
         SetEdges();
     }
 
-    public void Initialize(List<Vector2> vertices)
+    public void Initialize(List<Vector2> vertices, Color? edgeRingColor = null)
     {
         if (vertices == null || vertices.Count < 2)
             return;
 
         AddLineEdgeParent();
-
+        _edgeRingColor = edgeRingColor;
         LineArgs.Clear();
 
         for (int i = 0; i < vertices.Count - 1; i++)
@@ -201,14 +222,14 @@ public class LineConnector : MonoBehaviour
             StartSidePointRect.position = startSide.StartPoint;
             _startSidePoint = startSide.StartPoint;
         }
-        
+
         ImageLine endSide = SidePoints[1]?.Line;
         if (endSide != null)
         {
             EndSidePointRect.position = endSide.EndPoint;
             _endSidePoint = endSide.EndPoint;
         }
-        
+
         SetEdges();
     }
 
@@ -227,7 +248,7 @@ public class LineConnector : MonoBehaviour
         Destroy(EndSidePointRect.gameObject);
         Destroy(_edgeParent.gameObject);
         Destroy(_lineParent.gameObject);
-        
+
         OnRemove?.Invoke();
         _isRemoved = true;
         Destroy(gameObject);
@@ -301,7 +322,7 @@ public class LineConnector : MonoBehaviour
 
     private LineArg DrawLine(Vector2 start, Vector2 end)
     {
-        GameObject lineGo = Instantiate(ImageLine, _lineParent, false);
+        GameObject lineGo = Instantiate(ImageLinePrefab, _lineParent, false);
         ImageLine line = lineGo.GetComponent<ImageLine>();
         line.SetPoints(start, end);
         LineArg lineArg = new LineArg(line);
@@ -348,7 +369,7 @@ public class LineConnector : MonoBehaviour
         lineArg.Line.OnDragging += eventData =>
         {
             if (!isDragging) return;
-            
+
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 transform as RectTransform,
                 eventData.position,
@@ -375,7 +396,7 @@ public class LineConnector : MonoBehaviour
             isDragging = false;
         };
 
-        lineArg.Line.OnRightClick += ShowContext;
+        lineArg.Line.OnRightClick += ShowLineContext;
     }
 
     private LineArg AddArgToNext(LineArg current, Vector2 start, Vector2 end)
@@ -405,8 +426,13 @@ public class LineConnector : MonoBehaviour
 
     private LineEdge InstantiateNewEdge()
     {
-        LineEdge edge = Instantiate(Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH)).GetComponent<LineEdge>();
-        edge.transform.SetParent(_edgeParent);
+        LineEdge edge = Instantiate(LineEdgePrefab, _edgeParent, true).GetComponent<LineEdge>();
+
+        if (_edgeRingColor != null)
+        {
+            edge.SetRingColor(_edgeRingColor.Value);
+        }
+
         return edge;
     }
 
@@ -416,7 +442,7 @@ public class LineConnector : MonoBehaviour
         edge.OnDragEnd += () => OnDragEnd?.Invoke();
         edge.OnDragEnd += () => LineUpdated?.Invoke();
         edge.OnDragging += () => LineUpdated?.Invoke();
-        edge.OnRightClick += ShowContext;
+        edge.OnRightClick += eventData => ShowEdgeContext(eventData, edge);
         OnEdgeAdded?.Invoke(edge);
         return edge;
     }
@@ -459,12 +485,48 @@ public class LineConnector : MonoBehaviour
         DraggingEdge.gameObject.SetActive(false);
     }
 
-    private void ShowContext(PointerEventData eventData)
+    private void ShowLineContext(PointerEventData eventData)
     {
         if (ContextElements != null && ContextElements.Count > 0)
         {
             ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
         }
+    }
+
+    private void ShowEdgeContext(PointerEventData eventData, LineEdge edge)
+    {
+        ContextElement[] element = new ContextElement[] { new("Remove Vertex", () => RemoveEdge(edge)) };
+        if (ContextElements is { Count: > 0 })
+        {
+            element = ContextElements.Concat(element).ToArray();
+        }
+
+        ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, element);
+    }
+
+    private void RemoveEdge(LineEdge edge)
+    {
+        int edgeIndex = Edges.IndexOf(edge);
+        if (edgeIndex == -1 || LineArgs.Count < 2)
+            return;
+
+        LineArg startArg = LineArgs[edgeIndex];
+        LineArg endArg = LineArgs[edgeIndex + 1];
+
+        startArg.Line.SetEndPoint(endArg.End);
+
+        endArg.Remove();
+        LineArgs.RemoveAt(edgeIndex + 1);
+
+        edge.Remove();
+        Edges.RemoveAt(edgeIndex);
+
+        UpdateSidePoints();
+
+        SetEdges();
+
+        OnEdgeRemoved?.Invoke(edge);
+        LineUpdated?.Invoke();
     }
     #endregion
 

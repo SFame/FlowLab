@@ -241,7 +241,7 @@ public class TPConnection : IStateful, IDisposable
             return;
         }
 
-        LineConnector.Initialize(LineEdges);
+        LineConnector.Initialize(LineEdges, Type.GetColor());
         LineConnector.ContextElements = ContextElements;
     }
 

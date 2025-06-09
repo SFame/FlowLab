@@ -42,41 +42,27 @@ public class UI_MainMenu : MonoBehaviour
         m_MenuObject.SetActive(true);
     }
 
+    public void Close()
+    {
+        m_MenuObject.SetActive(false);
+    }
+
     public void OpenCodex()
     {
         _codexPalette.Open();
     }
 
-    public void OnClickStart()
+    public void OpenSetting()
     {
-        if (m_MenuObject.activeSelf)
-        {
-            m_MenuObject.SetActive(false);
-        }
-        else
-        {
-            m_MenuObject.SetActive(true);
-        }
+        _settingsUI.gameObject.SetActive(true);
     }
 
-    public void OnClickSettings()
-    {
-        if (_settingsUI.gameObject.activeSelf)
-        {
-            _settingsUI.gameObject.SetActive(true);
-        }
-        else
-        {
-            _settingsUI.gameObject.SetActive(true);
-        }
-    }
-
-    public void OnClickQuiz()
+    public void OpenPuzzle()
     {
         SceneManager.LoadScene("PuzzleSelectScene");
     }
 
-    public void OnClickQuit()
+    public void GameQuit()
     {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

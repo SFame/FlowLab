@@ -19,6 +19,7 @@ public class LineConnectManager : MonoBehaviour
         LineConnector lc = lineGo.AddComponent<LineConnector>();
 
         lc.OnDragEnd += ((IChangeObserver)m_Background).ReportChanges;
+        lc.OnEdgeRemoved += _ => ((IChangeObserver)m_Background).ReportChanges();
         lc.OnRemove += () => _lineRefreshAction -= lc.RefreshPoints;
         lc.OnEdgeAdded += edge => m_Background.JoinDraggable(edge);
 

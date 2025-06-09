@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using VFolders.Libs;
 using Serializer = Utils.Serializer;
+
 public static class Setting
 {
     #region default values
@@ -221,7 +221,6 @@ public static class Setting
         }
     }
     #endregion
-
 
 
     // 현재 임시 설정값 가져오기 (UI 표시용)
