@@ -12,17 +12,17 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
-    protected override float InEnumeratorXPos => -47f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
-    protected override string NodeDisplayName => "Count";
+    protected override string NodeDisplayName => "Cnt";
 
     protected override float NameTextSize => 20f;
 

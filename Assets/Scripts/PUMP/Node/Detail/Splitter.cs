@@ -1,20 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
 
 public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 {
     private List<ContextElement> _contexts;
-    private TMP_Dropdown _dropdown;
     private TransitionType _currentType = TransitionType.Bool;
-    private TMP_Dropdown Dropdown
+    private SplitterSupport _splitterSupport;
+
+    private SplitterSupport SplitterSupport
     {
         get
         {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
+            if (_splitterSupport == null)
+                _splitterSupport = Support.GetComponent<SplitterSupport>();
+
+            return _splitterSupport;
         }
     }
 
@@ -59,7 +60,13 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return outputTypes.Select(type => type.Null()).ToArray();
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        Transition currentInput = InputToken.First;
+        return Enumerable.Repeat(currentInput, outputCount).ToArray();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -70,9 +77,11 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void OnAfterInit()
     {
-        Dropdown.value = OutputCount - 1;
-        Dropdown.onValueChanged.AddListener(value => OutputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
+        SplitterSupport.Initialize(OutputCount, value =>
+        {
+            OutputCount = value;
+            ReportChanges();
+        });
     }
 
     protected override void OnBeforeAutoConnect()

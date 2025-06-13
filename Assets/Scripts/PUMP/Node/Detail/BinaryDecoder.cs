@@ -1,8 +1,20 @@
-using TMPro;
 using UnityEngine;
 
 public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 {
+    private SplitterSupport _splitterSupport;
+
+    private SplitterSupport SplitterSupport
+    {
+        get
+        {
+            if (_splitterSupport == null)
+                _splitterSupport = Support.GetComponent<SplitterSupport>();
+
+            return _splitterSupport;
+        }
+    }
+
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override float InEnumeratorXPos => -32f;
@@ -20,24 +32,15 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
     protected override int DefaultInputCount => 4;
 
     protected override int DefaultOutputCount => 1;
+
     protected override void OnAfterInit()
     {
-        Dropdown.value = InputCount - 1;
-        Dropdown.onValueChanged.AddListener(value => InputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
-    }
-    private TMP_Dropdown Dropdown
-    {
-        get
+        SplitterSupport.Initialize(InputCount, value =>
         {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
-        }
+            InputCount = value;
+            ReportChanges();
+        });
     }
-    private TMP_Dropdown _dropdown;
-
-    public int AdditionalArgs { get => InputCount; set => InputCount = value; }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -72,4 +75,6 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 
         OutputToken[0].State = result;
     }
+
+    public int AdditionalArgs { get => InputCount; set => InputCount = value; }
 }

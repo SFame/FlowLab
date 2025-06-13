@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Multiplexer : Node
 {
-    protected override string NodeDisplayName => "Multiplexer";
+    protected override string NodeDisplayName => "Mux";
 
     protected override List<string> InputNames => new List<string> { "A", "B", "C", "D","S1","S0" };
 
@@ -13,13 +13,17 @@ public class Multiplexer : Node
 
     protected override List<TransitionType> OutputTypes => new List<TransitionType> { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -75f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 75f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(200f, 50f);
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
+
+    protected override float NameTextSize => 20f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

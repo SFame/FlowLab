@@ -328,9 +328,12 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
      *  It is called in the following cases, and you should output the applicable Output TP States at that time:
      *      1. When placed from the palette
      *      2. When deserialized (Called before Type and State are set)
-     *      3. When the number of TPs changes (i.e., when tokens are reinitialized)
      */
     protected abstract Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes);
+
+
+    // Called when the output token is reset
+    protected virtual Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes) => null;
 
 
     // Important Life Cycle: Triggered upon every Input State update (Overriding required) ------------------
@@ -407,7 +410,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
-    protected void ResetOutputToken()
+    protected void ResetOutputToken(bool callLifeCycle = true)
     {
         if (Support?.OutputEnumerator == null)
         {
@@ -415,7 +418,12 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             return;
         }
 
-        SetOutputToken();
+        SetOutputToken(false);
+
+        if (callLifeCycle)
+        {
+            ((INodeLifecycleCallable)this).CallSetOutputResetStates();
+        }
     }
 
     protected void ResetInputToken()
@@ -455,7 +463,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             defaultNodeSize: DefaultNodeSize,
             sizeFreeze: SizeFreeze
         );
-        SetOutputToken();
+        SetOutputToken(true);
         SetInputToken();
         Support.HeightSynchronizationWithEnum();
         _initialized = true;
@@ -470,7 +478,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         _isSupportSet = true;
     }
 
-    private void SetOutputToken()
+    private void SetOutputToken(bool isInitializing)
     {
         if (Support.OutputEnumerator == null)
         {
@@ -504,7 +512,12 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
         ((TPEnumeratorToken.IReadonlyToken)OutputToken).IsReadonly = false;
         OutputToken.SetNames(OutputNames);
-        ((INodeLifecycleCallable)this).CallSetOutputInitStates();
+
+        if (isInitializing)
+        {
+            ((INodeLifecycleCallable)this).CallSetOutputInitStates();
+        }
+            
         ((INodeLifecycleCallable)this).CallOnAfterRefreshOutputToken();
     }
 
@@ -726,6 +739,44 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
+    void INodeLifecycleCallable.CallSetOutputResetStates()
+    {
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] outputTPs = Support.OutputEnumerator.GetTPs();
+        int outputCount = outputTPs.Length;
+        TransitionType[] outputTypes = outputTPs.Select(tp => tp.Type).ToArray();
+
+        Transition[] outputStates = null;
+        try
+        {
+            outputStates = SetOutputResetStates(outputCount, outputTypes);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: SetOutputResetStates]</b></color>");
+            Debug.LogException(e);
+            return;
+        }
+
+        if (outputStates == null)
+        {
+            return;
+        }
+
+        if (outputStates.Length != outputCount)
+        {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: SetOutputResetStates]</b></color>");
+            throw new IndexOutOfRangeException(
+                $"{Support.name}: SetOutputResetStates의 반환 개수와 ({outputStates.Length})와 출력 TP 개수({outputCount})가 일치하지 않습니다.");
+        }
+
+        for (int i = 0; i < outputCount; i++)
+        {
+            outputTPs[i].State = outputStates[i];
+        }
+    }
+
     void INodeLifecycleCallable.CallOnAfterRefreshInputToken()
     {
         try
@@ -882,6 +933,7 @@ public interface INodeLifecycleCallable
     void CallOnBeforeReplayPending(bool[] pendings);
     void CallOnCompletePlacementFromPalette();
     void CallSetOutputInitStates();
+    void CallSetOutputResetStates();
     void CallOnAfterRefreshInputToken();
     void CallOnAfterRefreshOutputToken();
     void CallOnBeforeRemove();

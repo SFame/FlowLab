@@ -43,6 +43,7 @@ public abstract class DynamicIONode : Node
     protected abstract string DefineOutputName(int tpIndex);
     protected abstract TransitionType DefineInputType(int tpIndex);
     protected abstract TransitionType DefineOutputType(int tpIndex);
+    protected abstract override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes);
     #endregion
 
     #region Set count on child
@@ -64,7 +65,7 @@ public abstract class DynamicIONode : Node
         {
             _outputCount = CompareDefaultValue(value, DefaultOutputCount);
             if (OutputToken != null)
-                ResetOutputToken();
+                ResetOutputToken(true);
         }
     }
 
@@ -78,8 +79,9 @@ public abstract class DynamicIONode : Node
 
         if (InputToken != null && OutputToken != null)
         {
-            ResetOutputToken();
+            ResetOutputToken(false);
             ResetInputToken();
+            ((INodeLifecycleCallable)this).CallSetOutputResetStates();
         }
     }
     #endregion

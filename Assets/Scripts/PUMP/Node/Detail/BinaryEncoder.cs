@@ -1,9 +1,21 @@
 using System.Linq;
-using TMPro;
 using UnityEngine;
 
 public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 {
+    private SplitterSupport _splitterSupport;
+
+    private SplitterSupport SplitterSupport
+    {
+        get
+        {
+            if (_splitterSupport == null)
+                _splitterSupport = Support.GetComponent<SplitterSupport>();
+
+            return _splitterSupport;
+        }
+    }
+
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override int DefaultInputCount => 1;
@@ -46,9 +58,11 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void OnAfterInit()
     {
-        Dropdown.value = OutputCount - 1;
-        Dropdown.onValueChanged.AddListener(value => OutputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
+        SplitterSupport.Initialize(OutputCount, value =>
+        {
+            OutputCount = value;
+            ReportChanges();
+        });
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -70,17 +84,6 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
             OutputToken[i].State = bitValue;
         }
     }
-
-    private TMP_Dropdown Dropdown
-    {
-        get
-        {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
-        }
-    }
-    private TMP_Dropdown _dropdown;
 
     public int AdditionalArgs { get => OutputCount; set => OutputCount = value; }
 }

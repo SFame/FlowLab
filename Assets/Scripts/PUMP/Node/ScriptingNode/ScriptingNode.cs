@@ -410,7 +410,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         public override string ToString()
         {
-            return $"input: {_inputCount} / output: {_outputCount} / script: {_script}";
+            return $"input: {_inputCount}\noutput: {_outputCount}\nfileName: {_fileName}\nscript: {_script}";
         }
     }
     #endregion

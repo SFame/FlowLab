@@ -1,17 +1,17 @@
-using TMPro;
 using UnityEngine;
 
 public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 {
-    private TMP_Dropdown _dropdown;
+    private SplitterSupport _splitterSupport;
 
-    private TMP_Dropdown Dropdown
+    private SplitterSupport SplitterSupport
     {
         get
         {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
+            if (_splitterSupport == null)
+                _splitterSupport = Support.GetComponent<SplitterSupport>();
+
+            return _splitterSupport;
         }
     }
 
@@ -61,9 +61,11 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void OnAfterInit()
     {
-        Dropdown.value = OutputCount - 1;
-        Dropdown.onValueChanged.AddListener(value => OutputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
+        SplitterSupport.Initialize(OutputCount, value =>
+        {
+            OutputCount = value;
+            ReportChanges();
+        });
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

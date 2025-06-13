@@ -15,6 +15,8 @@ public class DefaultPalette : NodePalette
                 { typeof(NOT), "NOT" },
                 { typeof(XNOR), "XNOR" },
                 { typeof(XOR), "XOR" },
+                { typeof(Any), "Any"},
+                { typeof(All), "All" },
             }
         },
         {
@@ -36,6 +38,7 @@ public class DefaultPalette : NodePalette
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter"},
                 { typeof(Debouncer), "Debouncer" },
+                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(Delay), "Delay" },
                 { typeof(Counter), "Counter" },
                 { typeof(Sender), "Sender" },
@@ -55,7 +58,6 @@ public class DefaultPalette : NodePalette
                 { typeof(Lerp), "Lerp" },
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
-                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(MinMax), "MinMax" },
             }
         },

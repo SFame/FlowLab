@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OdinSerializer;
-using TMPro;
 using UnityEngine;
 using static Equal;
 
@@ -10,15 +9,16 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
 {
     private TransitionType _currentType = TransitionType.Int;
     private List<ContextElement> _contexts;
-    private TMP_Dropdown _dropdown;
+    private SplitterSupport _splitterSupport;
 
-    private TMP_Dropdown Dropdown
+    private SplitterSupport SplitterSupport
     {
         get
         {
-            if (_dropdown == null)
-                _dropdown = Support.GetComponentInChildren<TMP_Dropdown>();
-            return _dropdown;
+            if (_splitterSupport == null)
+                _splitterSupport = Support.GetComponent<SplitterSupport>();
+
+            return _splitterSupport;
         }
     }
 
@@ -71,9 +71,11 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
 
     protected override void OnAfterInit()
     {
-        Dropdown.value = InputCount - 1;
-        Dropdown.onValueChanged.AddListener(value => InputCount = value + 1);
-        Dropdown.onValueChanged.AddListener(_ => ReportChanges());
+        SplitterSupport.Initialize(InputCount, value =>
+        {
+            InputCount = value;
+            ReportChanges();
+        });
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
