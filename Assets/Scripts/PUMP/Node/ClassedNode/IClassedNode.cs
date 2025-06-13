@@ -15,6 +15,7 @@ public interface IClassedNode
     void OutputsApplyAll(Transition[] outputs);
     void OutputApply(TransitionEventArgs args);
     void InputStateValidate(Transition[] exInStates);
+    void OutputStateValidate(Transition[] exOutStates);
     List<Action<TransitionType>> GetInputTypeApplier();
     List<Action<TransitionType>> GetOutputTypeApplier();
     Node GetNode();

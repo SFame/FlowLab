@@ -64,7 +64,12 @@ public class ExternalOutput : DynamicIONode, IExternalOutput, INodeAdditionalArg
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return outputTypes.Select(type => type.Null()).ToArray();
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
     protected override void OnAfterRefreshInputToken()

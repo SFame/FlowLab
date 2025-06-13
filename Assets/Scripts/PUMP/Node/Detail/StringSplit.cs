@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEngine;
 
 public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
@@ -54,6 +56,36 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.String;
 
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        Transition[] result = SplitOperation();
+
+        if (outputCount == result.Length)
+        {
+            return result;
+        }
+
+        if (outputCount < result.Length)
+        {
+            Transition[] newResult = new Transition[outputCount];
+            Array.Copy(result, newResult, outputCount);
+            return newResult;
+        }
+        else
+        {
+            Transition[] newResult = new Transition[outputCount];
+
+            Array.Copy(result, newResult, result.Length);
+
+            for (int i = result.Length; i < outputCount; i++)
+            {
+                newResult[i] = TransitionType.String.Null();
+            }
+
+            return newResult;
+        }
+    }
+
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
         return TransitionUtil.GetNullArray(outputTypes);
@@ -70,16 +102,19 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        OutputToken.PushAllSafety(SplitOperation());
+    }
+
+    private Transition[] SplitOperation()
+    {
         if (InputToken[0].State.IsNull)
         {
-            OutputToken.PushAllAsNull();
-            return;
+            return Enumerable.Repeat(OutputToken.First.Type.Null(), OutputToken.Count).ToArray();
         }
 
         if (InputToken[1].State.IsNull)
         {
-            OutputToken.PushAtSafety(0, InputToken[0].State);
-            return;
+            return new [] { InputToken[0].State };
         }
 
         string value = InputToken[0].State;
@@ -87,15 +122,7 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
 
         string[] split = value.Split(splitter);
 
-        for (int i = 0; i < split.Length; i++)
-        {
-            OutputToken.PushAtSafety(i, split[i]);
-        }
-
-        for (int i = split.Length; i < OutputToken.Count; i++)
-        {
-            OutputToken.PushNullAtSafety(i);
-        }
+        return split.Select(str => (Transition)str).ToArray();
     }
 
     public int AdditionalArgs

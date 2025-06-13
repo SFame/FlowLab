@@ -64,6 +64,11 @@ public class Equal : DynamicIONode, INodeAdditionalArgs<EqualSerializeInfo>
         return TransitionUtil.GetNullArray(outputTypes);
     }
 
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return ((Transition)Compare()).PutArray();
+    }
+
     protected override void OnAfterRefreshInputToken()
     {
         OutputToken.PushFirst(Compare());

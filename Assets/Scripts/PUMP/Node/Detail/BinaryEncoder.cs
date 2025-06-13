@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -51,9 +52,27 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
         return TransitionType.Bool;
     }
 
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        if (InputToken.First.IsNull)
+        {
+            return TransitionUtil.GetNullArray(outputTypes);
+        }
+
+        int decimalValue = (int)InputToken[0].State;
+        List<Transition> bitList = new();
+        for (int i = 0; i < OutputToken.Count; i++)
+        {
+            bool bitValue = (decimalValue & (1 << i)) != 0;
+            bitList.Add(bitValue);
+        }
+
+        return bitList.ToArray();
+    }
+
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return outputTypes.Select(type => type.Null()).ToArray();
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
     protected override void OnAfterInit()

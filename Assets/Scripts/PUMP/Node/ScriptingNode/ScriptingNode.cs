@@ -154,6 +154,11 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
         Func<int, TransitionType> outputTypeGetter = OutputTypeGetter ?? (_ => TransitionType.Bool);
         List<Transition> stateList = new();
 
@@ -164,7 +169,6 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         return stateList.ToArray();
     }
-
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
@@ -294,7 +298,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         };
     }
 
-    private void SetTypeGetter(IList<TransitionType> inputTypes, IList<TransitionType> outpTypes)
+    private void SetTypeGetter(IList<TransitionType> inputTypes, IList<TransitionType> outputTypes)
     {
         InputTypeGetter = index =>
         {
@@ -306,10 +310,10 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         OutputTypeGetter = index =>
         {
-            if (index >= outpTypes.Count)
+            if (index >= outputTypes.Count)
                 return TransitionType.Bool;
 
-            return outpTypes[index];
+            return outputTypes[index];
         };
     }
 

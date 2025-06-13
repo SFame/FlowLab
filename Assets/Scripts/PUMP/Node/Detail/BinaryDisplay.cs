@@ -45,6 +45,11 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
         return Array.Empty<Transition>();
     }
 
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return Array.Empty<Transition>();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         BinaryDisplaySupport.UpdateBinaryDisplay(InputToken.Select(sf => (bool)sf.State).ToArray());

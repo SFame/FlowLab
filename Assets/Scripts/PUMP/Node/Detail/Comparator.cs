@@ -25,7 +25,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override int DefaultOutputCount => 1;
 
-    protected override void StateUpdate(TransitionEventArgs args) => PushResult();
+    protected override void StateUpdate(TransitionEventArgs args) => OutputToken.PushFirst(GetResult());
     protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
     protected override string DefineOutputName(int tpIndex) => "out";
     protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
@@ -50,18 +50,20 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         _ => false
     };
 
-    private void PushResult()
+    private Transition GetResult()
     {
         int activeCount = InputToken.Count(tp => tp.State);
-        bool result = Operating(activeCount, CompareNumber, Operator);
-
-        foreach (ITypeListenStateful sf in OutputToken)
-            sf.State = result;
+        return Operating(activeCount, CompareNumber, Operator);
     }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { Transition.False };
+        return TransitionUtil.GetDefaultArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return new []{ GetResult() };
     }
 
     protected override void OnAfterInit()
@@ -71,7 +73,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         ComparatorSupport.OnCompareNumberUpdated += compareNumber =>
         {
             CompareNumber = compareNumber;
-            PushResult();
+            OutputToken.PushFirst(GetResult());
             ReportChanges();
         };
 
@@ -84,7 +86,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         ComparatorSupport.OnOperatorUpdated += @operator =>
         {
             Operator = @operator;
-            PushResult();
+            OutputToken.PushFirst(GetResult());
             ReportChanges();
         };
     }

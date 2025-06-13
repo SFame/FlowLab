@@ -26,7 +26,7 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
 
     protected override int DefaultOutputCount => 1;
 
-    protected override void StateUpdate(TransitionEventArgs args) => PushResult();
+    protected override void StateUpdate(TransitionEventArgs args) => OutputToken.PushFirst(GetResult());
 
     protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
 
@@ -71,6 +71,12 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
     {
         return TransitionUtil.GetNullArray(outputTypes);
     }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return GetResult().PutArray();
+    }
+
     private int IntOperating(string @operator)
     {
 
@@ -99,26 +105,24 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
         };
     }
 
-    private void PushResult()
+    private Transition GetResult()
     {
         if (InputToken.HasOnlyNull)
         {
-            OutputToken[0].State = OutputToken[0].Type.Null();
-            return;
+            return OutputToken[0].Type.Null();
         }
         if (OutputToken[0].Type == TransitionType.Int)
         {
             int result = IntOperating(Operator);
-            OutputToken[0].State = result;
-            return;
+            return result;
         }
         if (OutputToken[0].Type == TransitionType.Float)
         {
             float result = FloatOperating(Operator);
-            OutputToken[0].State = result;
-            return;
+            return result;
         }
- 
+
+        return OutputToken[0].Type.Null();
     }
 
     protected override void OnAfterInit()
@@ -135,7 +139,7 @@ public class MinMax : DynamicIONode, INodeAdditionalArgs<MinMax.MinMaxSerializeI
         {
             Operator = @operator;
             NodeName = @operator;
-            PushResult();
+            OutputToken.PushFirst(GetResult());
             ReportChanges();
         };
         

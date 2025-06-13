@@ -159,16 +159,18 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     /// <param name="states">일괄 적용할 Transition 컬렉션</param>
     /// <exception cref="ArgumentNullException">states가 null일 때 발생합니다</exception>
     /// <exception cref="ArgumentException">states.Count와 Token의 Count가 불일치 시 throw 합니다</exception>
-    public void PushAll(ICollection<Transition> states)
+    public void PushAll(IEnumerable<Transition> states)
     {
         if (states == null)
             throw new ArgumentNullException($"TPEnumeratorToken.PushAll(): {nameof(states)} is null");
 
-        if (states.Count != Count)
+        Transition[] statesArray = states.ToArray();
+
+        if (statesArray.Count() != Count)
             throw new ArgumentException("PushAll: Token Count와 입력 States Count 불일치");
 
         int i = 0;
-        foreach (Transition state in states)
+        foreach (Transition state in statesArray)
         {
             state.ThrowIfTypeMismatch(this[i].Type);
             this[i].State = state;
@@ -182,16 +184,18 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     /// <param name="states">일괄 적용할 Transition 컬렉션. null을 포함할 수 있습니다</param>
     /// <exception cref="ArgumentNullException">states가 null일 때 발생합니다</exception>
     /// <exception cref="ArgumentException">states.Count와 Token의 Count가 불일치 시 throw 합니다</exception>
-    public void PushAllowingNull(ICollection<Transition?> states)
+    public void PushAllowingNull(IEnumerable<Transition?> states)
     {
         if (states == null)
             throw new ArgumentNullException($"TPEnumeratorToken.PushAllowingNull(): {nameof(states)} is null");
 
-        if (states.Count != Count)
+        Transition?[] statesArray = states.ToArray();
+
+        if (statesArray.Count() != Count)
             throw new ArgumentException("PushAllowingNull: Token Count와 입력 States Count 불일치");
 
         int i = 0;
-        foreach (Transition? state in states)
+        foreach (Transition? state in statesArray)
         {
             if (state == null)
             {
@@ -203,6 +207,31 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
             state.Value.ThrowIfTypeMismatch(this[i].Type);
             this[i].State = state.Value;
             i++;
+        }
+    }
+
+    /// <summary>
+    /// Token의 State들을 컬렉션을 통해 안전하게 한 번에 적용합니다
+    /// </summary>
+    /// <param name="states">일괄 적용할 Transition 컬렉션</param>
+    /// <param name="fillRemainingWithNull">남은 공간을 Null로 채웁니다</param>
+    public void PushAllSafety(IEnumerable<Transition> states, bool fillRemainingWithNull = true)
+    {
+        if (states == null)
+            return;
+
+        Transition[] statesArray = states.ToArray();
+
+        for (int i = 0; i < Count; i++)
+        {
+            if (i < statesArray.Length)
+            {
+                this[i].State = statesArray[i];
+            }
+            else if (fillRemainingWithNull)
+            {
+                this[i].State = this[i].Type.Null();
+            }
         }
     }
 
@@ -242,6 +271,16 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         {
             sf.State = sf.Type.Null();
         }
+    }
+
+    /// <summary>
+    /// 해당 인덱스를 가지고 있는지 조사합니다
+    /// </summary>
+    /// <param name="index">index</param>
+    /// <returns>해당 인덱스가 존재하는 경우 true 반환</returns>
+    public bool HasIndex(int index)
+    {
+        return index >= 0 && index < Count;
     }
 
     /// <summary>

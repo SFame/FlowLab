@@ -383,6 +383,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         };
         exOut.OnStateUpdate += _exOutOnStateUpdateCache;
 
+        classed.OutputStateValidate(exOut.Select(tp => tp.State).ToArray());
         classed.InputStateValidate(exIn.Select(tp => tp.State).ToArray());
     }
 

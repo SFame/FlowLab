@@ -44,7 +44,25 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { TransitionType.Int.Null() };
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        if (InputToken.HasOnlyNull)
+        {
+            return TransitionUtil.GetNullArray(outputTypes);
+        }
+
+        int result = 0;
+
+        for (int i = 0; i < InputToken.Count; i++)
+        {
+            if (!InputToken[i].State.IsNull)
+                result += (InputToken[i].State ? 1 : 0) << i;
+        }
+
+        return new[] { (Transition)result };
     }
 
     protected override string DefineInputName(int tpIndex) => $"2<sup><size=18>{tpIndex}</size></sup>";

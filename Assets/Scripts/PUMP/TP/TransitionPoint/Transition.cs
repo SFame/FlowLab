@@ -860,6 +860,16 @@ public static class TransitionUtil
         string colorString = ColorUtility.ToHtmlStringRGB(color);
         return containSharp ? "#" + colorString : colorString;
     }
+
+    public static List<Transition> PutList(this Transition transition)
+    {
+        return new List<Transition>() { transition };
+    }
+
+    public static Transition[] PutArray(this Transition transition)
+    {
+        return new[] { transition };
+    }
 }
 
 #region Exceptions

@@ -60,7 +60,7 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
                 text: "Disconnect"),
         };
     }
-    
+
     protected override void StateUpdate(TransitionEventArgs args) { }
     
     protected override string DefineInputName(int tpIndex)
@@ -85,7 +85,12 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return outputTypes.Select(type => type.Null()).ToArray();
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
     protected override void OnAfterRefreshOutputToken()

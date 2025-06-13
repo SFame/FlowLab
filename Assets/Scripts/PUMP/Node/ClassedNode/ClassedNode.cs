@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
@@ -109,6 +110,11 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         return Enumerable.Repeat(TransitionType.Bool.Null(), outputCount).ToArray();
     }
 
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return Enumerable.Repeat(TransitionType.Bool.Null(), outputCount).ToArray();
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         OnInputUpdate?.Invoke(args);
@@ -176,6 +182,23 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
                 stateful.State = stateful.State;
             }
             ((IReadonlyToken)InputToken).IsReadonly = true;
+        }
+    }
+
+    public void OutputStateValidate(Transition[] exOutStates)
+    {
+        if (exOutStates.Length != OutputToken.Count)
+        {
+            throw new ArgumentOutOfRangeException($"Expected {OutputToken.Count} elements, but received {exOutStates.Length}.");
+        }
+
+        if (!OutputToken.Select(sf => sf.State).SequenceEqual(exOutStates))
+        {
+            int i = 0;
+            foreach (ITypeListenStateful stateful in OutputToken)
+            {
+                stateful.State = exOutStates[i++];
+            }
         }
     }
 
