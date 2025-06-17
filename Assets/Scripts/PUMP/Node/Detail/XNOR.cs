@@ -27,7 +27,7 @@ public class XNOR : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { TransitionType.Bool.Null() };
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

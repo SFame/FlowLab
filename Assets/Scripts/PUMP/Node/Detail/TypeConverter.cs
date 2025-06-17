@@ -45,14 +45,14 @@ public class TypeConverter : Node
             if (_contexts == null)
             {
                 _contexts = base.ContextElements;
-                _contexts.Add(new ContextElement($"Input: <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => InputTypeChange(TransitionType.Bool)));
-                _contexts.Add(new ContextElement($"Input: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => InputTypeChange(TransitionType.Int)));
-                _contexts.Add(new ContextElement($"Input: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => InputTypeChange(TransitionType.Float)));
-                _contexts.Add(new ContextElement($"Input: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => InputTypeChange(TransitionType.String)));
-                _contexts.Add(new ContextElement($"Output: <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => OutputTypeChange(TransitionType.Bool)));
-                _contexts.Add(new ContextElement($"Output: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => OutputTypeChange(TransitionType.Int)));
-                _contexts.Add(new ContextElement($"Output: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => OutputTypeChange(TransitionType.Float)));
-                _contexts.Add(new ContextElement($"Output: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => OutputTypeChange(TransitionType.String)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color> > In", () => InputTypeChange(TransitionType.Bool)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> > In", () => InputTypeChange(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>  > In", () => InputTypeChange(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>  > In", () => InputTypeChange(TransitionType.String)));
+                _contexts.Add(new ContextElement($"Out > <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => OutputTypeChange(TransitionType.Bool)));
+                _contexts.Add(new ContextElement($"Out > <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => OutputTypeChange(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"Out > <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => OutputTypeChange(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"Out > <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => OutputTypeChange(TransitionType.String)));
             }
 
             return _contexts;
@@ -91,7 +91,7 @@ public class TypeConverter : Node
 
     private void ConvertAndApply(Transition initState)
     {
-        bool convertSuccess = initState.TryConvert(OutputToken[0].Type, out Transition converted);
+        bool convertSuccess = initState.TryConvert(OutputToken[0].Type, out Transition converted, true);
         if (convertSuccess)
         {
             OutputToken[0].State = converted;

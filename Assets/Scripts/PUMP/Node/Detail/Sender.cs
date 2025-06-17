@@ -53,7 +53,7 @@ public class Sender : Node
     {
         if (args.Index == 1 && args.State)
         {
-            OutputToken.PushFirst(InputToken.First);
+            OutputToken.PushFirst(InputToken.FirstState);
         }
     }
 

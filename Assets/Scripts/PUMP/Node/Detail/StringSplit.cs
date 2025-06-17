@@ -109,7 +109,7 @@ public class StringSplit : DynamicIONode, INodeAdditionalArgs<int>
     {
         if (InputToken[0].State.IsNull)
         {
-            return Enumerable.Repeat(OutputToken.First.Type.Null(), OutputToken.Count).ToArray();
+            return Enumerable.Repeat(OutputToken.FirstState.Type.Null(), OutputToken.Count).ToArray();
         }
 
         if (InputToken[1].State.IsNull)

@@ -49,6 +49,8 @@ public class DefaultPalette : NodePalette
         {
             "Math", new Dictionary<Type, string>
             {
+                { typeof(Add), "+"},
+                { typeof(Multiply), "x"},
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
                 { typeof(FourbitALU), "4-bit ALU" },

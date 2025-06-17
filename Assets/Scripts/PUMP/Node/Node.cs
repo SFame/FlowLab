@@ -410,7 +410,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
-    protected void ResetOutputToken(bool callLifeCycle = true)
+    protected void ResetOutputToken(bool operateOutputState = true)
     {
         if (Support?.OutputEnumerator == null)
         {
@@ -418,12 +418,14 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             return;
         }
 
-        SetOutputToken(false);
+        SetOutputToken();
 
-        if (callLifeCycle)
+        if (operateOutputState)
         {
             ((INodeLifecycleCallable)this).CallSetOutputResetStates();
         }
+
+        ((INodeLifecycleCallable)this).CallOnAfterRefreshOutputToken();
     }
 
     protected void ResetInputToken()
@@ -435,6 +437,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
 
         SetInputToken();
+        ((INodeLifecycleCallable)this).CallOnAfterRefreshInputToken();
     }
     #endregion
 
@@ -463,8 +466,18 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             defaultNodeSize: DefaultNodeSize,
             sizeFreeze: SizeFreeze
         );
-        SetOutputToken(true);
-        SetInputToken();
+
+        {
+            SetOutputToken();
+            ((INodeLifecycleCallable)this).CallSetOutputInitStates();
+            ((INodeLifecycleCallable)this).CallOnAfterRefreshOutputToken();
+        }
+
+        {
+            SetInputToken();
+            ((INodeLifecycleCallable)this).CallOnAfterRefreshInputToken();
+        }
+
         Support.HeightSynchronizationWithEnum();
         _initialized = true;
     }
@@ -478,7 +491,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         _isSupportSet = true;
     }
 
-    private void SetOutputToken(bool isInitializing)
+    private void SetOutputToken()
     {
         if (Support.OutputEnumerator == null)
         {
@@ -512,13 +525,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
         ((TPEnumeratorToken.IReadonlyToken)OutputToken).IsReadonly = false;
         OutputToken.SetNames(OutputNames);
-
-        if (isInitializing)
-        {
-            ((INodeLifecycleCallable)this).CallSetOutputInitStates();
-        }
-            
-        ((INodeLifecycleCallable)this).CallOnAfterRefreshOutputToken();
     }
 
     private void SetInputToken()
@@ -556,7 +562,6 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         ((TPEnumeratorToken.IReadonlyToken)InputToken).IsReadonly = true;
         InputToken.SetNames(InputNames);
         SubscribeTPInStateUpdateEvent();
-        ((INodeLifecycleCallable)this).CallOnAfterRefreshInputToken();
     }
 
     /// <summary>

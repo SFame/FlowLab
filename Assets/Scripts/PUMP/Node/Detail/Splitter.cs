@@ -65,7 +65,7 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
     {
-        Transition currentInput = InputToken.First;
+        Transition currentInput = InputToken.FirstState;
         return Enumerable.Repeat(currentInput, outputCount).ToArray();
     }
 

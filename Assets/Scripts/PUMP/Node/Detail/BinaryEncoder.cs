@@ -54,7 +54,7 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
     {
-        if (InputToken.First.IsNull)
+        if (InputToken.FirstState.IsNull)
         {
             return TransitionUtil.GetNullArray(outputTypes);
         }

@@ -641,7 +641,7 @@ public static class TransitionUtil
             throw new TransitionNoneTypeException();
         }
 
-        Transition MakeNull(Transition targetTransition)
+        Transition RefiningNull(Transition targetTransition)
         {
             if (targetTransition.IsNull)
             {
@@ -653,7 +653,7 @@ public static class TransitionUtil
 
         if (fromTransition.Type == toType)
         {
-            return MakeNull(fromTransition);
+            return RefiningNull(fromTransition);
         }
 
         switch (toType)
@@ -663,11 +663,21 @@ public static class TransitionUtil
                 {
                     case (TransitionType.Int):
                         bool boolValue = (int)fromTransition != 0;
-                        return MakeNull(new Transition(boolValue, fromTransition.IsNull));
+                        return RefiningNull(new Transition(boolValue, fromTransition.IsNull));
                     case (TransitionType.Float):
-                        throw new TransitionTypeConvertException(fromTransition.Type, toType);
+                        throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
                     case (TransitionType.String):
-                        throw new TransitionTypeConvertException(fromTransition.Type, toType);
+                        string fromString = fromTransition;
+                        if (fromString is "True" or "true")
+                        {
+                            return RefiningNull(new Transition(true, fromTransition.IsNull));
+                        }
+
+                        if (fromString is "False" or "false")
+                        {
+                            return RefiningNull(new Transition(false, fromTransition.IsNull));
+                        }
+                        throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
@@ -677,14 +687,14 @@ public static class TransitionUtil
                 {
                     case (TransitionType.Bool):
                         int intValue1 = (bool)fromTransition ? 1 : 0;
-                        return MakeNull(new Transition(intValue1, fromTransition.IsNull));
+                        return RefiningNull(new Transition(intValue1, fromTransition.IsNull));
                     case (TransitionType.Float):
                         int intValue2 = (int)((float)fromTransition);
-                        return MakeNull(new Transition(intValue2, fromTransition.IsNull));
+                        return RefiningNull(new Transition(intValue2, fromTransition.IsNull));
                     case (TransitionType.String):
                         if (!int.TryParse(fromTransition, out int intValue3))
-                            throw new TransitionTypeConvertException(fromTransition.Type, toType);
-                        return MakeNull(new Transition(intValue3, fromTransition.IsNull));
+                            throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
+                        return RefiningNull(new Transition(intValue3, fromTransition.IsNull));
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
@@ -693,27 +703,27 @@ public static class TransitionUtil
                 switch (fromTransition.Type)
                 {
                     case (TransitionType.Bool):
-                        throw new TransitionTypeConvertException(fromTransition.Type, toType);
+                        throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
                     case (TransitionType.Int):
                         float floatValue1 = (int)fromTransition;
-                        return MakeNull(new Transition(floatValue1, fromTransition.IsNull));
+                        return RefiningNull(new Transition(floatValue1, fromTransition.IsNull));
                     case (TransitionType.String):
                         if (!float.TryParse(fromTransition, out float floatValue2))
-                            throw new TransitionTypeConvertException(fromTransition.Type, toType);
-                        return MakeNull(new Transition(floatValue2, fromTransition.IsNull));
+                            throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
+                        return RefiningNull(new Transition(floatValue2, fromTransition.IsNull));
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
 
             case TransitionType.String:
-                return MakeNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
+                return RefiningNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
 
             default:
                 throw new TransitionTypeArgumentOutOfRangeException(toType);
         }
     }
 
-    public static bool TryConvert(this Transition fromTransition, TransitionType toType, out Transition result)
+    public static bool TryConvert(this Transition fromTransition, TransitionType toType, out Transition result, bool stringFailOk = false)
     {
         result = default;
 
@@ -722,7 +732,7 @@ public static class TransitionUtil
             return false;
         }
 
-        Transition MakeNull(Transition targetTransition)
+        Transition RefiningNull(Transition targetTransition)
         {
             if (targetTransition.IsNull)
             {
@@ -734,7 +744,7 @@ public static class TransitionUtil
 
         if (fromTransition.Type == toType)
         {
-            result = MakeNull(fromTransition);
+            result = RefiningNull(fromTransition);
             return true;
         }
 
@@ -745,8 +755,29 @@ public static class TransitionUtil
                 {
                     case (TransitionType.Int):
                         bool boolValue = (int)fromTransition != 0;
-                        result = MakeNull(new Transition(boolValue, fromTransition.IsNull));
+                        result = RefiningNull(new Transition(boolValue, fromTransition.IsNull));
                         return true;
+                    case (TransitionType.String):
+                        string fromString = fromTransition;
+                        if (fromString is "True" or "true")
+                        {
+                            result = RefiningNull(new Transition(true, fromTransition.IsNull));
+                            return true;
+                        }
+
+                        if (fromString is "False" or "false")
+                        {
+                            result = RefiningNull(new Transition(false, fromTransition.IsNull));
+                            return true;
+                        }
+
+                        if (stringFailOk)
+                        {
+                            result = TransitionType.Bool.Null();
+                            return true;
+                        }
+
+                        return false;
                     default:
                         return false;
                 }
@@ -756,16 +787,24 @@ public static class TransitionUtil
                 {
                     case (TransitionType.Bool):
                         int intValue1 = (bool)fromTransition ? 1 : 0;
-                        result = MakeNull(new Transition(intValue1, fromTransition.IsNull));
+                        result = RefiningNull(new Transition(intValue1, fromTransition.IsNull));
                         return true;
                     case (TransitionType.Float):
                         int intValue2 = (int)((float)fromTransition);
-                        result = MakeNull(new Transition(intValue2, fromTransition.IsNull));
+                        result = RefiningNull(new Transition(intValue2, fromTransition.IsNull));
                         return true;
                     case (TransitionType.String):
                         if (!int.TryParse(fromTransition, out int intValue3))
+                        {
+                            if (stringFailOk)
+                            {
+                                result = TransitionType.Int.Null();
+                                return true;
+                            }
+
                             return false;
-                        result = MakeNull(new Transition(intValue3, fromTransition.IsNull));
+                        }
+                        result = RefiningNull(new Transition(intValue3, fromTransition.IsNull));
                         return true;
                     default:
                         return false;
@@ -778,19 +817,27 @@ public static class TransitionUtil
                         return false;
                     case (TransitionType.Int):
                         float floatValue1 = (int)fromTransition;
-                        result = MakeNull(new Transition(floatValue1, fromTransition.IsNull));
+                        result = RefiningNull(new Transition(floatValue1, fromTransition.IsNull));
                         return true;
                     case (TransitionType.String):
                         if (!float.TryParse(fromTransition, out float floatValue2))
+                        {
+                            if (stringFailOk)
+                            {
+                                result = TransitionType.Float.Null();
+                                return true;
+                            }
+
                             return false;
-                        result = MakeNull(new Transition(floatValue2, fromTransition.IsNull));
+                        }
+                        result = RefiningNull(new Transition(floatValue2, fromTransition.IsNull));
                         return true;
                     default:
                         return false;
                 }
 
             case TransitionType.String:
-                result = MakeNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
+                result = RefiningNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
                 return true;
 
             default:
@@ -896,11 +943,28 @@ public class TransitionTypeConvertException : TransitionException
     public TransitionType From { get; }
     public TransitionType To { get; }
 
-    public TransitionTypeConvertException(TransitionType from, TransitionType to)
-        : base($"<color=#7DAAFF><b>[CONVERT]</b></color> Cannot convert from Transition Type <color={from.GetColorHexCodeString(true)}><b>{from.ToString()}</b></color> to Transition Type <color={to.GetColorHexCodeString(true)}><b>{to.ToString()}</b></color>.")
+    public TransitionTypeConvertException(TransitionType from, TransitionType to, string message) : base(message)
     {
         From = from;
         To = to;
+    }
+}
+
+public class TransitionIncompatibleTypeException : TransitionTypeConvertException
+{
+    public TransitionIncompatibleTypeException(TransitionType from, TransitionType to)
+        : base(from, to,
+            $"<color=#7DAAFF><b>[CONVERT]</b></color> Cannot convert between incompatible types: From [<color={from.GetColorHexCodeString(true)}><b>{from.ToString()}</b></color>] To [<color={to.GetColorHexCodeString(true)}><b>{to.ToString()}</b></color>]")
+    { }
+}
+
+public class TransitionStringConversionException : TransitionTypeConvertException
+{
+    public string FromString { get; }
+    public TransitionStringConversionException(TransitionType from, TransitionType to, string fromString) 
+        : base(from, to, $"<color=#7DAAFF><b>[CONVERT]</b></color> Invalid numeric format in string: From [{fromString}: <color={from.GetColorHexCodeString(true)}><b>{from.ToString()}</b></color>] To [<color={to.GetColorHexCodeString(true)}><b>{to.ToString()}</b></color>]")
+    {
+        FromString = fromString;
     }
 }
 

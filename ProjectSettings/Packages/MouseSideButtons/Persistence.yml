@@ -13,14 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Sprite
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets
-  - Assets/Scenes
-  - Assets/Scripts/GameSystem/UI
   - Assets
   - Assets/Scenes
   - Assets
@@ -33,4 +25,12 @@ MonoBehaviour:
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Py
   - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
+  - Assets/Scripts/PUMP/Node/ExternalGateway
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Scripts/PUMP/Node/ClassedNode
+  - Assets/Scripts/PUMP/Node/Detail
   currentDirIndex: 19

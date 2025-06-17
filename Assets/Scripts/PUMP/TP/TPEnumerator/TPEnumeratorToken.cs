@@ -64,9 +64,13 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public int Count => _adapters.Length;
 
-    public Transition First => this[0].State;
+    public Transition FirstState => First.State;
 
-    public Transition Last => this[^1].State;
+    public Transition LastState => Last.State;
+
+    public ITypeListenStateful First => this[0];
+
+    public ITypeListenStateful Last => this[^1];
 
     public bool HasOnlyNull
     {
@@ -98,6 +102,33 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
             }
 
             return false;
+        }
+    }
+
+    public bool AllSameType
+    {
+        get
+        {
+            if (Count == 0)
+                return true;
+
+            TransitionType firstType = First.Type;
+            return this.All(sf => sf.Type == firstType);
+        }
+    }
+
+    public bool AllSameState
+    {
+        get
+        {
+            if (Count == 0)
+                return true;
+
+            if (!AllSameType)
+                return false;
+
+            Transition firstState = FirstState;
+            return this.All(sf => sf.State.Equals(firstState));
         }
     }
 
