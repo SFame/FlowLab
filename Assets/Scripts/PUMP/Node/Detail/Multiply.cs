@@ -36,9 +36,9 @@ public class Multiply : DynamicIONode
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
-    protected override float InEnumeratorXPos => -32f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 32f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 
@@ -46,9 +46,9 @@ public class Multiply : DynamicIONode
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "x";
+    protected override string NodeDisplayName => "Mul";
 
-    protected override float NameTextSize => 28f;
+    protected override float NameTextSize => 20f;
 
     protected override List<ContextElement> ContextElements
     {

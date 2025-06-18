@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Add : DynamicIONode, INodeAdditionalArgs<int>
+public class Subtract : DynamicIONode, INodeAdditionalArgs<int>
 {
     private List<ContextElement> _contexts;
     private TransitionType _inputType = TransitionType.Int;
@@ -46,7 +46,7 @@ public class Add : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "Add";
+    protected override string NodeDisplayName => "Sub";
 
     protected override float NameTextSize => 20f;
 
@@ -116,9 +116,17 @@ public class Add : DynamicIONode, INodeAdditionalArgs<int>
         if (InputToken.HasOnlyNull)
             return OutputToken.First.Type.Null();
 
-        Transition sum = InputToken.Aggregate(InputToken.First.Type.Default(), (acc, current) => acc + current.State);
+        Transition[] notNullArray = InputToken.GetNotNullArray().Select(sf => sf.State).ToArray();
 
-        return sum.Convert(OutputToken.First.Type);
+        Transition[] splits = notNullArray[1..];
+        Transition sub = notNullArray[0];
+
+        foreach (Transition state in splits)
+        {
+            sub -= state;
+        }
+
+        return sub.Convert(OutputToken.First.Type);
     }
 
     public int AdditionalArgs { get => InputCount; set => InputCount = value; }

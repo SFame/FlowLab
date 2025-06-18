@@ -132,6 +132,11 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         }
     }
 
+    public ITypeListenStateful[] GetNotNullArray()
+    {
+        return this.Where(sf => !sf.State.IsNull).ToArray();
+    }
+
     /// <summary>
     /// 첫번째 인덱스에 state를 적용합니다
     /// </summary>

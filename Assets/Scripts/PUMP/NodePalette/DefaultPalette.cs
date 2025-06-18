@@ -33,6 +33,7 @@ public class DefaultPalette : NodePalette
         {
             "Signal", new Dictionary<Type, string>
             {
+                { typeof(IsNull), "IsNull" },
                 { typeof(Splitter), "Split" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
@@ -49,11 +50,12 @@ public class DefaultPalette : NodePalette
         {
             "Math", new Dictionary<Type, string>
             {
-                { typeof(Add), "+"},
-                { typeof(Multiply), "x"},
+                { typeof(Add), "Add"},
+                { typeof(Subtract), "Sub" },
+                { typeof(Multiply), "Mul"},
+                { typeof(Divide), "Div" },
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
-                { typeof(FourbitALU), "4-bit ALU" },
                 { typeof(Round), "Round" },
                 { typeof(BinaryDecoder), "Binary Decoder" },
                 { typeof(BinaryEncoder), "Binary Encoder" },

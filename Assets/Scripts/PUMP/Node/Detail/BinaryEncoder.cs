@@ -25,9 +25,9 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override string NodeDisplayName => "E";
 
-    protected override float InEnumeratorXPos => -32f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 32f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 

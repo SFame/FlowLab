@@ -48,7 +48,6 @@ public class ClassedPalette : NodePalette
             {
                 { typeof(Comparator), "Comparator" },
                 { typeof(Equal), "Equal" },
-                { typeof(FourbitALU), "4-bit ALU" },
                 { typeof(Round), "Round" },
                 { typeof(BinaryDecoder), "Binary Decoder" },
                 { typeof(BinaryEncoder), "Binary Encoder" },

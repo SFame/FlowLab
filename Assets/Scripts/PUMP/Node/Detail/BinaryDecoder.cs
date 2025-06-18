@@ -17,9 +17,9 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
-    protected override float InEnumeratorXPos => -32f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 32f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 
