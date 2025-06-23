@@ -20,6 +20,13 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps)
     {
         _adapters = tps.Select(tp => new StatefulAdapter(tp)).ToArray();
+
+        for (int i = 0; i < _adapters.Length; i++)
+        {
+            StatefulAdapter currentAdapter = _adapters[i];
+            currentAdapter.OnTypeChanged += type => OnTypeChanged?.Invoke(i, currentAdapter, type);
+            currentAdapter.OnBeforeTypeChange += type => OnBeforeTypeChange?.Invoke(i, currentAdapter, type);
+        }
     }
 
     ~TPEnumeratorToken()
@@ -131,6 +138,17 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
             return this.All(sf => sf.State.Equals(firstState));
         }
     }
+
+    /// <summary>
+    /// index / Updated Stateful / Updated Type
+    /// </summary>
+    public event Action<int, ITypeListenStateful, TransitionType> OnTypeChanged;
+
+    /// <summary>
+    /// index / Updated Stateful / Updated Type
+    /// </summary>
+    public event Action<int, ITypeListenStateful, TransitionType> OnBeforeTypeChange;
+
 
     public ITypeListenStateful[] GetNotNullArray()
     {
@@ -398,6 +416,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
         _disposed = true;
         GC.SuppressFinalize(this);
+
+        OnTypeChanged = null;
+        OnBeforeTypeChange = null;
 
         foreach (StatefulAdapter adapter in _adapters)
         {

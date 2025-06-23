@@ -57,10 +57,10 @@ public class Add : DynamicIONode, INodeAdditionalArgs<int>
             if (_contexts == null)
             {
                 _contexts = base.ContextElements;
-                _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> > In", () => SetInputType(TransitionType.Int)));
-                _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> > In", () => SetInputType(TransitionType.Float)));
-                _contexts.Add(new ContextElement($"Out > <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetOutputType(TransitionType.Int)));
-                _contexts.Add(new ContextElement($"Out > <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetOutputType(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> → In", () => SetInputType(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> → In", () => SetInputType(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"Out → <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetOutputType(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"Out → <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetOutputType(TransitionType.Float)));
             }
 
             return _contexts;

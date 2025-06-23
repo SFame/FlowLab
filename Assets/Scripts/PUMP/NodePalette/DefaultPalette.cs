@@ -55,6 +55,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Multiply), "Mul"},
                 { typeof(Divide), "Div" },
                 { typeof(Comparator), "Comparator" },
+                { typeof(NumericComparator), "Numeric Comparator"},
                 { typeof(Equal), "Equal" },
                 { typeof(Round), "Round" },
                 { typeof(BinaryDecoder), "Binary Decoder" },

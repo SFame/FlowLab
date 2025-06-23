@@ -29,17 +29,19 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
-    protected override float InEnumeratorXPos => -34f;
+    protected override float InEnumeratorXPos => -29f;
 
-    protected override float OutEnumeratorXPos => 34f;
+    protected override float OutEnumeratorXPos => 29f;
     
     protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(90f, 100f);
 
     protected override string NodeDisplayName => "S";
+
+    protected override float NameTextSize => 24f;
 
     protected override List<ContextElement> ContextElements
     {

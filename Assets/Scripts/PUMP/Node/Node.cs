@@ -366,9 +366,10 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     // Node property -----------------------------
     public virtual string NodePrefabPath { get; } = "PUMP/Prefab/NODE";
     [CanBeNull] protected virtual string SpritePath { get; } = null;
-    [CanBeNull] protected virtual Color? DefaultColor { get; } = null;
     protected virtual string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumIn";
     protected virtual string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/TPEnumOut";
+    [CanBeNull] protected virtual Color? DefaultColor { get; } = null;
+
 
     [CanBeNull] protected abstract string NodeDisplayName { get; }
     protected virtual float NameTextSize { get; } = 30f;

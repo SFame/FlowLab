@@ -13,19 +13,19 @@ public class Round : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
-    protected override float InEnumeratorXPos => -47f;
+    protected override float InEnumeratorXPos => -39f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 39f;
 
     protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(110f, 50f);
 
     protected override string NodeDisplayName => "Round";
 
-    protected override float NameTextSize => 24f;
+    protected override float NameTextSize => 16f;
 
     protected override List<ContextElement> ContextElements
     {
