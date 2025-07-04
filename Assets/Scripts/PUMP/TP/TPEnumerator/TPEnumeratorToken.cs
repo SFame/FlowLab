@@ -149,12 +149,6 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     /// </summary>
     public event Action<int, ITypeListenStateful, TransitionType> OnBeforeTypeChange;
 
-
-    public ITypeListenStateful[] GetNotNullArray()
-    {
-        return this.Where(sf => !sf.State.IsNull).ToArray();
-    }
-
     /// <summary>
     /// 첫번째 인덱스에 state를 적용합니다
     /// </summary>
@@ -335,6 +329,15 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public bool HasIndex(int index)
     {
         return index >= 0 && index < Count;
+    }
+
+    /// <summary>
+    /// IsNull이 False인 Stateful만 포함된 배열을 반환합니다
+    /// </summary>
+	/// <returns>Not null Stateful Array</returns>
+    public ITypeListenStateful[] GetNotNullArray()
+    {
+        return this.Where(sf => !sf.State.IsNull).ToArray();
     }
 
     /// <summary>
