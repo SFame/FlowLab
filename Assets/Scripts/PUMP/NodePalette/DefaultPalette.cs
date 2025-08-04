@@ -25,6 +25,7 @@ public class DefaultPalette : NodePalette
                 { typeof(ClickSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field"},
+                { typeof(KeyInput), "Key Input" },
                 { typeof(Display), "Display"},
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
