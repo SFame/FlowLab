@@ -47,6 +47,7 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
         "<=" => a <= b,
         ">=" => a >= b,
         "==" => a == b,
+        "!=" => a != b,
         _ => false
     };
 

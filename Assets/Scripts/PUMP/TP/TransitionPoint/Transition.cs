@@ -231,9 +231,9 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
     #endregion
 
     #region Backing fields
-    [OdinSerialize] public TransitionType _type;
-    [OdinSerialize] public TransitionValue _value;
-    [OdinSerialize] public bool _isNull;
+    [OdinSerialize] private TransitionType _type;
+    [OdinSerialize] private TransitionValue _value;
+    [OdinSerialize] private bool _isNull;
     #endregion
 
     #region Non Interface
@@ -357,7 +357,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         {
             throw new TransitionTypeCastException(t.Type, typeof(bool));
         }
-
+        
         return t.Value.BoolValue;
     }
 

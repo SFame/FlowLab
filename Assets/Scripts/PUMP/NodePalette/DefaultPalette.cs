@@ -74,6 +74,7 @@ public class DefaultPalette : NodePalette
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
                 { typeof(StringSplit), "String Split" },
+                { typeof(StringConcat), "String Concat" },
             }
         },
         {

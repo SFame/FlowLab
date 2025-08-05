@@ -9,7 +9,7 @@ public class ComparatorSupport : MonoBehaviour
     [SerializeField] private TMP_Dropdown m_OperatorDropdown;
     [SerializeField] private TMP_InputField m_CompareNumberInputField;
 
-    private readonly List<string> _operatorElement = new() { "<", ">", "<=", ">=", "==" };
+    private readonly List<string> _operatorElement = new() { "<", ">", "<=", ">=", "==", "!=" };
 
     public event Action<int> OnInputCountUpdated;
     public event Action<string> OnOperatorUpdated;
