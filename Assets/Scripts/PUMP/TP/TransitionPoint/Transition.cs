@@ -358,7 +358,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             throw new TransitionTypeCastException(t.Type, typeof(bool));
         }
         
-        return t.Value.BoolValue;
+        return t.IsNull ? false : t.Value.BoolValue;
     }
 
     // ---------- Int ----------
@@ -379,7 +379,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             throw new TransitionTypeCastException(t.Type, typeof(int));
         }
 
-        return t.Value.IntValue;
+        return t.IsNull ? 0 : t.Value.IntValue;
     }
 
     // ---------- Float ----------
@@ -400,7 +400,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             throw new TransitionTypeCastException(t.Type, typeof(float));
         }
 
-        return t.Value.FloatValue;
+        return t.IsNull ? 0.0f : t.Value.FloatValue;
     }
 
     // ---------- String ----------
@@ -426,7 +426,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             throw new TransitionTypeCastException(t.Type, typeof(string));
         }
 
-        return t.Value.StringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead"); ;
+        return t.IsNull ? string.Empty : t.Value.StringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead"); ;
     }
     #endregion
 

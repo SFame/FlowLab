@@ -66,12 +66,18 @@ public class StringConcat : DynamicIONode, INodeAdditionalArgs<int>
         {
             InputCount = count;
             ReportChanges();
-        } );
+        });
     }
 
     protected override void OnAfterRefreshInputToken()
     {
+        if (InputToken.HasOnlyNull)
+        {
+            OutputToken.PushAllAsNull();
+            return;
+        }
 
+        ConcatStrings();
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -82,12 +88,13 @@ public class StringConcat : DynamicIONode, INodeAdditionalArgs<int>
             return;
         }
 
-
+        ConcatStrings();
     }
 
     private void ConcatStrings()
     {
-        string result = InputToken.Select(stateful => (string)stateful.State).Aggregate()
+        Transition result = InputToken.Select(stateful => stateful.State).Aggregate((left, right) => left + right);
+        OutputToken.PushFirst(result);
     }
 
     public int AdditionalArgs
