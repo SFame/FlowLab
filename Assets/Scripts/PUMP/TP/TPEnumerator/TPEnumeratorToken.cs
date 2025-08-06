@@ -75,6 +75,10 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public Transition LastState => Last.State;
 
+    public TransitionType FirstType => First.Type;
+
+    public TransitionType LastType => Last.Type;
+
     public ITypeListenStateful First => this[0];
 
     public ITypeListenStateful Last => this[^1];
