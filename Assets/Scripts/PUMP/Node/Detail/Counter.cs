@@ -4,7 +4,7 @@ using UnityEngine;
 public class Counter : Node, INodeAdditionalArgs<int>
 {
     private int _count = 0;
-    protected override List<string> InputNames { get; } = new List<string> { "in", "rst" };
+    protected override List<string> InputNames { get; } = new List<string> { "add", "rst" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "cont" };
 
@@ -33,6 +33,11 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        if (!args.IsStateChange)
+        {
+            return;
+        }
+
         if (args.Index == 0 && args.State)
         {
             _count++;

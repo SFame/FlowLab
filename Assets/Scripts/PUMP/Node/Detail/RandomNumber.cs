@@ -40,8 +40,10 @@ public class RandomNumber : Node
             return;
         }
 
-        if (!args.State)
+        if (!args.IsStateChange || !args.State)
+        {
             return;
+        }
 
         OutputToken.PushFirst(GetRandomFloat());
     }

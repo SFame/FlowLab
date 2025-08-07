@@ -326,6 +326,17 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     }
 
     /// <summary>
+    /// 모든 인덱스에 해당 타입의 기본값을 적용합니다
+    /// </summary>
+    public void PushAllAsDefault()
+    {
+        foreach (StatefulAdapter sf in _adapters)
+        {
+            sf.State = sf.Type.Default();
+        }
+    }
+
+    /// <summary>
     /// 해당 인덱스를 가지고 있는지 조사합니다
     /// </summary>
     /// <param name="index">index</param>

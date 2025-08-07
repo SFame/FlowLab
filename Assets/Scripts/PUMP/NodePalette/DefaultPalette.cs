@@ -21,6 +21,12 @@ public class DefaultPalette : NodePalette
             }
         },
         {
+            "Flow", new Dictionary<Type, string>
+            {
+                { typeof(If), "If" },
+            }
+        },
+        {
             "I/O", new Dictionary<Type, string>
             {
                 { typeof(ClickSwitch), "On/Off Switch" },

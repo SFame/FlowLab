@@ -5,7 +5,7 @@ public class Sender : Node
 {
     private List<ContextElement> _contexts;
 
-    protected override List<string> InputNames { get; } = new List<string> { "in", "clk" };
+    protected override List<string> InputNames { get; } = new List<string> { "in", "Exec" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
@@ -51,6 +51,11 @@ public class Sender : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        if (!args.IsStateChange)
+        {
+            return;
+        }
+
         if (args.Index == 1 && args.State)
         {
             OutputToken.PushFirst(InputToken.FirstState);

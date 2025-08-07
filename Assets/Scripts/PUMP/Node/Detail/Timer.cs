@@ -11,7 +11,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 {
     public override string NodePrefabPath => "PUMP/Prefab/Node/TIMER";
 
-    protected override List<string> InputNames { get; } = new List<string> { "S", "R" };
+    protected override List<string> InputNames { get; } = new List<string> { "s", "rst" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
@@ -64,21 +64,18 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args != null)
+        if (args.State && args.IsStateChange)
         {
-            if (args.State && args.IsStateChange)
+            if (args.Index == 0) // Start 요청
             {
-                if (args.Index == 0) // Start 요청
+                if (!IsStarted) // 타이머 진행중이 아닐 때
                 {
-                    if (!IsStarted) // 타이머 진행중이 아닐 때
-                    {
-                        RestartTimer();
-                    }
+                    RestartTimer();
                 }
-                else if (args.Index == 1) // Reset 요청
-                {
-                    ResetTimer();
-                }
+            }
+            else if (args.Index == 1) // Reset 요청
+            {
+                ResetTimer();
             }
         }
     }
