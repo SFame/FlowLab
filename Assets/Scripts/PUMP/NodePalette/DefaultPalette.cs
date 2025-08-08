@@ -23,7 +23,7 @@ public class DefaultPalette : NodePalette
         {
             "Flow", new Dictionary<Type, string>
             {
-                { typeof(If), "If" },
+                { typeof(IfNode), "If" },
             }
         },
         {

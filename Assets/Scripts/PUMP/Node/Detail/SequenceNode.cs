@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Sequence : DynamicIONode
+public class SequenceNode : DynamicIONode
 {
     private bool _includeOffState = true;
     private int _currentIndex = -1;

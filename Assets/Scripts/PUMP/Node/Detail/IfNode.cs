@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class If : Node
+public class IfNode : Node
 {
     protected override string NodeDisplayName => "If";
 
