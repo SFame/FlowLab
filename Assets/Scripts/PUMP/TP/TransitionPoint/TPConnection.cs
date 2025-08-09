@@ -9,19 +9,45 @@ public class TPConnection : IStateful, IDisposable
     #region Static Privates
     private static float _waitTime = 0.5f;
     private const float MAX_WAIT_TIME = 10f;
+    private static bool _hasGetSetting = false;
 
-    private static UniTask GetStateUpdateTask(CancellationToken token) => AwaitType switch
+    private static UniTask GetStateUpdateTask(CancellationToken token)
     {
-        ConnectionAwait.Frame => UniTask.Yield(PlayerLoopTiming.Update, token),
-        ConnectionAwait.FixedTime => UniTask.WaitForSeconds
-        (
-            duration: WaitTime,
-            ignoreTimeScale: false,
-            delayTiming: PlayerLoopTiming.Update,
-            cancellationToken: token
-        ),
-        _ => UniTask.WaitForEndOfFrame(token),
-    };
+        if (!_hasGetSetting)
+        {
+            Setting.OnSettingUpdated += SetConnectionAwait;
+            SetConnectionAwait();
+            _hasGetSetting = true;
+        }
+
+        return AwaitType switch
+        {
+            ConnectionAwait.Frame => UniTask.Yield(PlayerLoopTiming.Update, token),
+            ConnectionAwait.FixedTime => UniTask.WaitForSeconds
+            (
+                duration: WaitTime,
+                ignoreTimeScale: false,
+                delayTiming: PlayerLoopTiming.Update,
+                cancellationToken: token
+            ),
+            ConnectionAwait.Immediately => UniTask.CompletedTask,
+            _ => UniTask.WaitForEndOfFrame(token),
+        };
+    }
+
+    private static void SetConnectionAwait()
+    {
+        float simulationSpeed = Setting.SimulationSpeed;
+        if (Mathf.Approximately(simulationSpeed, 0f))
+        {
+            AwaitType = ConnectionAwait.Frame;
+            _waitTime = Time.deltaTime;
+            return;
+        }
+
+        AwaitType = ConnectionAwait.FixedTime;
+        _waitTime = simulationSpeed;
+    }
     #endregion
 
     #region Static Interface
@@ -295,5 +321,6 @@ public class TPConnection : IStateful, IDisposable
 public enum ConnectionAwait
 {
     Frame,
-    FixedTime
+    FixedTime,
+    Immediately
 }

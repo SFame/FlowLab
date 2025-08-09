@@ -73,7 +73,7 @@ input_types: list = [bool, bool]
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_types: list = [float, float, bool, bool]
+output_types: list = [int, int, bool, bool]
 
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
@@ -166,12 +166,12 @@ def init(inputs: list) -> None:
     has_error = False
     is_data_receiving = False
     received_data = {
-        "data1": 0.0,
-        "data2": 0.0
+        "data1": 0,
+        "data2": 0
     }
     
     # 초기 출력 설정: [Data1, Data2, Connected, DataReceiving]
-    outputs = [0.0, 0.0, False, False]
+    outputs = [0, 0, False, False]
     output_applier.apply(outputs)
     
     printer.print(f"📡 Serial IN Node Ready - Port: {current_port}")
@@ -492,8 +492,8 @@ def process_received_data(data):
     try:
         if isinstance(data, dict):
             # 주요 데이터 2개만 추출 (다양한 필드명 지원)
-            received_data["data1"] = float(data.get("sensor1", data.get("data1", data.get("value1", 0.0))))
-            received_data["data2"] = float(data.get("sensor2", data.get("data2", data.get("value2", 0.0))))
+            received_data["data1"] = int(data.get("sensor1", data.get("data1", data.get("value1", 0.0))))
+            received_data["data2"] = int(data.get("sensor2", data.get("data2", data.get("value2", 0.0))))
             
             has_error = False
             

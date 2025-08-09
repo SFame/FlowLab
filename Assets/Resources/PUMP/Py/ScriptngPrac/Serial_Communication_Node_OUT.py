@@ -67,7 +67,7 @@ output_list: list = []
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float, str
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_types: list = [bool, bool, float, float]
+input_types: list = [bool, bool, int, int]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
@@ -164,18 +164,18 @@ def init(inputs: list) -> None:
         
         # 초기 입력값으로 데이터 설정 (안전하게)
         current_data = {
-            "data1": 0.0,
-            "data2": 0.0
+            "data1": 0,
+            "data2": 0
         }
         
         if inputs is not None and len(inputs) >= 4:
             try:
-                current_data["data1"] = float(inputs[2]) if inputs[2] is not None else 0.0
-                current_data["data2"] = float(inputs[3]) if inputs[3] is not None else 0.0
+                current_data["data1"] = int(inputs[2]) if inputs[2] is not None else 0
+                current_data["data2"] = int(inputs[3]) if inputs[3] is not None else 0
             except (ValueError, TypeError, IndexError):
                 # 타입 변환 실패 시 기본값 사용
-                current_data["data1"] = 0.0
-                current_data["data2"] = 0.0
+                current_data["data1"] = 0
+                current_data["data2"] = 0
                 printer.print("📤 ⚠️ Invalid input data types, using defaults")
         
         if printer is not None:
@@ -187,7 +187,7 @@ def init(inputs: list) -> None:
         if printer is not None:
             printer.print(f"📤 ✗ Init error: {str(e)}")
         # 에러 발생 시에도 기본값으로 초기화
-        current_data = {"data1": 0.0, "data2": 0.0}
+        current_data = {"data1": 0, "data2": 0}
         is_connected = False
         send_count = 0
         stop_sending = True
@@ -239,11 +239,11 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
         change_port()
         
     elif index == 2:  # Data1 입력 - 데이터만 업데이트 (전송은 별도)
-        current_data["data1"] = float(state) if state is not None else 0.0
+        current_data["data1"] = int(state) if state is not None else 0.0
         printer.print(f"📤 Data1 updated: {current_data['data1']:.2f}")
         
     elif index == 3:  # Data2 입력 - 데이터만 업데이트 (전송은 별도)
-        current_data["data2"] = float(state) if state is not None else 0.0
+        current_data["data2"] = int(state) if state is not None else 0.0
         printer.print(f"📤 Data2 updated: {current_data['data2']:.2f}")
 
     pass
