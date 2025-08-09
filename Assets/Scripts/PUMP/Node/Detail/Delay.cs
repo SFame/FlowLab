@@ -17,22 +17,22 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     private int _frameCount = 1;
     private DelayType _delayType = DelayType.FixedTime;
 
-    private float _delay = 0.5f;
-    private SignalDetectorSupport _detectorSupport;
+    private int _delay = 500;
+    private DelaySupport _delaySupport;
     private SafetyCancellationTokenSource _cts = new();
     private List<ContextElement> _contexts;
 
-    private SignalDetectorSupport DetectorSupport
+    private DelaySupport DelaySupport
     {
         get
         {
-            if (_detectorSupport is null)
+            if (_delaySupport is null)
             {
-                _detectorSupport = Support.GetComponent<SignalDetectorSupport>();
-                _detectorSupport.Initialize();
+                _delaySupport = Support.GetComponent<DelaySupport>();
+                _delaySupport.Initialize(_delayType,_delay);
             }
 
-            return _detectorSupport;
+            return _delaySupport;
         }
     }
 
@@ -40,7 +40,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
     protected override float NameTextSize => 18f;
 
-    public override string NodePrefabPath => "PUMP/Prefab/Node/SIGNAL_DETECTOR";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/DELAY";
 
     protected override List<string> InputNames => new List<string>() { "in" };
 
@@ -91,7 +91,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     {
         UpdateInputFieldByDelayType();
 
-        DetectorSupport.OnEndEdit += value =>
+        DelaySupport.OnValueChange += (_, value) =>
         {
             if (_delayType == DelayType.FixedTime)
             {
@@ -118,15 +118,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     protected override void StateUpdate(TransitionEventArgs args)
     {
         _cts = _cts.CancelAndDisposeAndGetNew();
-        //PushAsync(args.State, _cts.Token).Forget();
-        if (_delayType == DelayType.FixedTime)
-        {
-            PushAsyncWithTime(args.State, _cts.Token).Forget();
-        }
-        else
-        {
-            PushAsyncWithFrame(args.State, _cts.Token).Forget();
-        }
+        PushAsync(args.State, _cts.Token).Forget();
     }
 
     protected override void OnBeforeRemove()
@@ -138,35 +130,13 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     {
         try
         {
-            await UniTask.WaitForSeconds(_delay, cancellationToken: token, cancelImmediately: true);
-            OutputToken[0].State = state;
-        }
-        catch (OperationCanceledException)
-        {
-            OutputToken[0].State = state;
-        }
-    }
-    private async UniTaskVoid PushAsyncWithTime(Transition state, CancellationToken token)
-    {
-        try
-        {
-            await UniTask.WaitForSeconds(_delay, cancellationToken: token, cancelImmediately: true);
-            OutputToken[0].State = state;
-        }
-        catch (OperationCanceledException)
-        {
-            OutputToken[0].State = state;
-        }
-    }
-
-    private async UniTaskVoid PushAsyncWithFrame(Transition state, CancellationToken token)
-    {
-        try
-        {
-            for (int i = 0; i < _frameCount; i++)
+            UniTask uniTask = _delayType switch
             {
-                await UniTask.Yield(token, cancelImmediately: true);
-            }
+                DelayType.FixedTime => UniTask.WaitForSeconds(_delay * 0.001f, cancellationToken: token, cancelImmediately: true),
+                DelayType.Frame => UniTask.DelayFrame(_frameCount, cancellationToken: token, cancelImmediately: true),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            await uniTask;
             OutputToken[0].State = state;
         }
         catch (OperationCanceledException)
@@ -174,6 +144,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
             OutputToken[0].State = state;
         }
     }
+    
     private void SetType(TransitionType type)
     {
         _cts.CancelAndDispose();
@@ -203,14 +174,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
     private void UpdateInputFieldByDelayType()
     {
-        if (_delayType == DelayType.FixedTime)
-        {
-            DetectorSupport.Value = _delay;
-        }
-        else
-        {
-            DetectorSupport.Value = _frameCount;
-        }
+        DelaySupport.Set(_delayType, _delayType == DelayType.FixedTime ? _delay : _frameCount);
     }
    
     public DelaySerializeInfo AdditionalArgs
@@ -232,7 +196,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     [Serializable]
     public struct DelaySerializeInfo
     {
-        [OdinSerialize] public float _delay;
+        [OdinSerialize] public int _delay;
         [OdinSerialize] public int _frameCount;
         [OdinSerialize] public DelayType _delayType;
     }
