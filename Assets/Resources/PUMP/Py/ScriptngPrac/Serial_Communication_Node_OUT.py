@@ -295,7 +295,7 @@ def connect_serial():
         serial_port.BaudRate = current_baud_rate
         serial_port.Parity = 0  # None (패리티 없음)
         serial_port.DataBits = 8
-        serial_port.StopBits = 1  # One
+        serial_port.StopBits = StopBits.One
         serial_port.ReadTimeout = 1000
         serial_port.WriteTimeout = 1000
         
