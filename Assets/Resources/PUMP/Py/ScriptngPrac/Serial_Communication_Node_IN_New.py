@@ -398,7 +398,7 @@ def change_port():
     elif current_port == "COM4":
         current_port = "COM5"
     elif current_port == "COM5":
-        current_port = "COM6"
+        current_port = "COM12"
     else:
         current_port = "COM3"
     
