@@ -43,6 +43,7 @@ public class DefaultPalette : NodePalette
             {
                 { typeof(IsNull), "IsNull" },
                 { typeof(Splitter), "Split" },
+                { typeof(Merger), "Merger" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter" },
