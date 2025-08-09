@@ -5,7 +5,7 @@ public class Sender : Node
 {
     private List<ContextElement> _contexts;
 
-    protected override List<string> InputNames { get; } = new List<string> { "in", "Exec" };
+    protected override List<string> InputNames { get; } = new List<string> { "in", "exec" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 

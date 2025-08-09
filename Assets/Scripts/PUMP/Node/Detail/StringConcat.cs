@@ -18,8 +18,6 @@ public class StringConcat : DynamicIONode, INodeAdditionalArgs<int>
 
     private SplitterSupport _splitterSupport;
 
-    private int _inputCount = 2;
-
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
     protected override string NodeDisplayName => "Str\nConc";
@@ -62,7 +60,7 @@ public class StringConcat : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void OnAfterInit()
     {
-        SplitterSupport.Initialize(_inputCount, count =>
+        SplitterSupport.Initialize(InputCount, count =>
         {
             InputCount = count;
             ReportChanges();
@@ -99,7 +97,7 @@ public class StringConcat : DynamicIONode, INodeAdditionalArgs<int>
 
     public int AdditionalArgs
     {
-        get => _inputCount;
-        set => _inputCount = value;
+        get => InputCount;
+        set => InputCount = value;
     }
 }
