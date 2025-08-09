@@ -55,7 +55,7 @@ import time
 
 # 노드의 이름 정의
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-name: str = "Serial Communication Node (IN)"
+name: str = "Serial Communication Node (IN) - FAST"
 
 # 아래의 리스트를 설정하여 입력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
@@ -87,25 +87,7 @@ is_async: bool = True
 # 다음 변수들을 수정하지 마세요
 # 이 변수들은 시스템에 의해 자동으로 초기화 됩니다
 
-# 출력 포트를 제어하는 객체
-# <사용 가능한 API>
-#   output_applier.apply(values: list) -> None:
-#   output_applier.apply_at(index: int, value) -> None:
-#   output_applier.apply_to(name: str, value) -> None:
-# apply: 전체 출력 일괄 업데이트. 입력으로 output_types 배열과 일치하는 순서로 해당 타입 값의 리스트를 제공해야 합니다. ※이 리스트의 길이는 출력 포트 수와 일치해야 합니다
-# apply_at: index 위치의 출력 포트에 값을 할당합니다
-# apply_to: name 의 이름을 가진 출력 포트에 값을 할당합니다. ※출력 포트의 이름에 중복이 있는 경우 사용할 수 없습니다
-
-# ※모든 API의 value 입력에는 None을 할당할 수 있습니다. 이를 통해 해당 네트워크의 다음과 같이 신호를 소실시킬 수 있습니다
-# output_applier.apply([True, None, 3.14])  # 2번째 포트만 신호 소실
-# output_applier.apply_at(1, None)          # 1번 포트 신호 소실  
-# output_applier.apply_to('out 2', None)    # 'out 2' 포트 신호 소실
 output_applier: OutputApplier = None
-
-# 프린터 객체
-# <사용 가능한 API> 
-#   printer.print(value: str) -> None:
-# 노드의 디스플레이에 문자열 정보를 표시하는 데 사용됩니다
 printer: Printer = None
 # =====================================================
 
@@ -114,12 +96,6 @@ printer: Printer = None
 # <<유틸리티>>
 
 # JSON 유틸리티 객체
-# <사용 가능한 API>
-#   json_util.serialize(data, pretty: bool=False) -> str:
-#   json_util.deserialize(json_text: str) -> object:
-#   json_util.try_serialize(data, pretty: bool=False) -> (bool, str):
-#   json_util.try_deserialize(json_text: str) -> (bool, object):
-#   json_util.is_valid(json_text: str) -> bool:
 json_util: JsonUtil = JsonUtil()
 
 # <<전역 변수>>
@@ -148,7 +124,7 @@ last_error = ""
 # 데이터 수신 상태 (테스트용)
 is_data_receiving = False
 last_receive_time = 0
-receive_timeout = 2.0  # 2초간 데이터 없으면 False
+receive_timeout = 1.0  # 🚀 2초 → 1초로 단축
 
 # 수신 스레드 중지 플래그
 stop_receiving = False
@@ -174,13 +150,10 @@ def init(inputs: list) -> None:
     outputs = [0, 0, False, False]
     output_applier.apply(outputs)
     
-    printer.print(f"📡 Serial IN Node Ready - Port: {current_port}")
-    printer.print("Arduino → Unity data receiver")
-
-    pass
+    printer.print(f"🚀 FAST Serial IN Node Ready - Port: {current_port}")
+    printer.print("Arduino → Unity data receiver (OPTIMIZED)")
 
 def terminate() -> None:
-  
     """
     노드 종료 시 정리 작업
     """
@@ -192,12 +165,11 @@ def terminate() -> None:
     # 시리얼 포트 연결 해제
     disconnect_serial()
     
-    printer.print("📡 Serial IN Node terminated")
-    pass
+    printer.print("🚀 FAST Serial IN Node terminated")
 
 def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
-    입력 신호 처리
+    입력 신호 처리 - 즉각 반응 최적화
     """
     global current_port
     
@@ -209,35 +181,7 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
     if state is None:
         port_names = ['Connect', 'SetPort']
         if index < len(port_names):
-            printer.print(f"📡 {port_names[index]} signal lost")
-        return
-    
-    # 입력별 처리
-    if index == 0:  # Connect 신호 (True=연결, False=해제)
-        if state:
-            connect_serial()
-        else:
-            disconnect_serial()
-        
-    elif index == 1 and state:  # SetPort 신호 (포트 변경)
-        change_port()
-    pass
-
-def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
-    """
-    입력 신호 처리
-    """
-    global current_port
-    
-    # 변경이 없으면 무시
-    if not is_changed:
-        return
-    
-    # None 값 처리
-    if state is None:
-        port_names = ['Connect', 'SetPort']
-        if index < len(port_names):
-            printer.print(f"📡 {port_names[index]} signal lost")
+            printer.print(f"🚀 {port_names[index]} signal lost")
         return
     
     # 입력별 처리
@@ -252,27 +196,27 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
 
 def connect_serial():
     """
-    시리얼 포트 연결
+    시리얼 포트 연결 - 초고속 최적화
     """
     global serial_port, is_connected, is_connecting, has_error, stop_receiving
     
     if is_connected or is_connecting:
-        printer.print("📡 Already connected or connecting")
+        printer.print("🚀 Already connected or connecting")
         return
     
     try:
         is_connecting = True
-        printer.print(f"📡 Connecting to {current_port}...")
+        printer.print(f"🚀 Connecting to {current_port}...")
         
-        # 시리얼 포트 생성 및 설정
+        # 시리얼 포트 생성 및 설정 - 🚀 타임아웃 대폭 단축
         serial_port = SerialPort()
         serial_port.PortName = current_port
         serial_port.BaudRate = current_baud_rate
         serial_port.Parity = 0
         serial_port.DataBits = 8
         serial_port.StopBits = StopBits.One
-        serial_port.ReadTimeout = 1000
-        serial_port.WriteTimeout = 1000
+        serial_port.ReadTimeout = 50    # 🚀 1000ms → 50ms
+        serial_port.WriteTimeout = 50   # 🚀 1000ms → 50ms
         
         # 포트 열기
         serial_port.Open()
@@ -280,14 +224,13 @@ def connect_serial():
         if serial_port.IsOpen:
             is_connected = True
             has_error = False
-            printer.print(f"📡 ✓ Connected to {current_port}")
+            printer.print(f"🚀 ✓ Connected to {current_port} (FAST MODE)")
             
-            # 🔥 연결 직후 버퍼 클리어 (이전에 쌓인 오래된 데이터 제거)
-            time.sleep(0.1)  # 잠시 대기
+            # 🚀 버퍼 클리어 대기시간 최소화
             if serial_port.BytesToRead > 0:
                 discarded_bytes = serial_port.BytesToRead
                 serial_port.DiscardInBuffer()
-                printer.print(f"📡 🗑️ Cleared {discarded_bytes} bytes from buffer")
+                printer.print(f"🚀 🗑️ Cleared {discarded_bytes} bytes")
             
             # 📡 데이터 수신 시작 (별도 스레드에서)
             stop_receiving = False
@@ -302,7 +245,7 @@ def connect_serial():
         is_connected = False
         has_error = True
         error_msg = f"Connection failed: {str(e)}"
-        printer.print(f"📡 ✗ {error_msg}")
+        printer.print(f"🚀 ✗ {error_msg}")
         
         if serial_port is not None:
             try:
@@ -323,16 +266,16 @@ def start_receiving():
     thread_start = ThreadStart(receive_data_loop)
     receive_thread = Thread(thread_start)
     receive_thread.Start()
-    printer.print("📡 Data receiving started")
+    printer.print("🚀 Data receiving started (FAST MODE)")
 
 def disconnect_serial():
     """
-    시리얼 포트 연결 해제
+    시리얼 포트 연결 해제 - 즉시 실행
     """
     global serial_port, is_connected, stop_receiving, has_error
     
     if not is_connected:
-        printer.print("📡 Already disconnected")
+        printer.print("🚀 Already disconnected")
         return
     
     try:
@@ -347,30 +290,30 @@ def disconnect_serial():
         
         is_connected = False
         has_error = False
-        printer.print("📡 ✓ Disconnected")
+        printer.print("🚀 ✓ Disconnected (INSTANT)")
         
         # 출력 업데이트
         update_outputs()
         
     except Exception as e:
         has_error = True
-        printer.print(f"📡 ✗ Disconnect error: {str(e)}")
+        printer.print(f"🚀 ✗ Disconnect error: {str(e)}")
         update_outputs()
 
 def receive_data_loop():
     """
-    데이터 수신 루프 (별도 스레드에서 실행)
+    데이터 수신 루프 - 초고속 최적화
     """
     global serial_port, stop_receiving, received_data, has_error, is_data_receiving, last_receive_time
     
-    printer.print("📡 Receive loop started")
+    printer.print("🚀 Receive loop started (ULTRA-FAST)")
     
     while not stop_receiving and is_connected:
         try:
             if serial_port is not None and serial_port.IsOpen:
                 # 버퍼에 데이터가 있는지 확인
                 if serial_port.BytesToRead > 0:
-                    # 🔥 최신 데이터만 가져오기: 버퍼에 쌓인 모든 라인 읽기
+                    # 🚀 최신 데이터만 가져오기: 버퍼에 쌓인 모든 라인 읽기
                     lines = []
                     while serial_port.BytesToRead > 0:
                         try:
@@ -386,7 +329,7 @@ def receive_data_loop():
                         discarded_count = len(lines) - 1
                         
                         if discarded_count > 0:
-                            printer.print(f"📡 ⚡ Discarded {discarded_count} old data, processing latest")
+                            printer.print(f"🚀 ⚡ Discarded {discarded_count} old data, processing latest")
                         
                         # 데이터 수신 시간 업데이트
                         last_receive_time = time.time()
@@ -399,17 +342,17 @@ def receive_data_loop():
                             # 📡 JSON 데이터 처리 및 실시간 출력 갱신
                             process_received_data(parsed_data)
                         else:
-                            printer.print(f"📡 JSON parse error: {latest_line}")
+                            printer.print(f"🚀 JSON parse error: {latest_line}")
                 else:
                     # 데이터 수신 타임아웃 체크
                     if is_data_receiving and (time.time() - last_receive_time) > receive_timeout:
                         is_data_receiving = False
                         # 📡 타임아웃 시에도 출력 상태 갱신
                         update_outputs()
-                        printer.print("📡 ⚠️ Data receive timeout - no data for 2 seconds")
+                        printer.print("🚀 ⚠️ Data receive timeout - no data for 1 second")
                 
-                # 짧은 대기 (너무 빈번한 체크 방지)
-                time.sleep(0.01)  # 10ms 대기
+                # 🚀 대기시간 최소화 (더 빠른 반응)
+                time.sleep(0.001)  # 10ms → 1ms로 대폭 단축
                 
         except TimeoutException:
             # 타임아웃은 정상적인 상황
@@ -418,7 +361,7 @@ def receive_data_loop():
         except Exception as e:
             has_error = True
             is_data_receiving = False
-            printer.print(f"📡 Receive error: {str(e)}")
+            printer.print(f"🚀 Receive error: {str(e)}")
             # 📡 에러 발생 시에도 출력 상태 갱신
             update_outputs()
             break
@@ -426,66 +369,11 @@ def receive_data_loop():
     # 루프 종료 시 데이터 수신 상태 False
     is_data_receiving = False
     update_outputs()
-    printer.print("📡 Receive loop stopped")
-
-def receive_data_thread():
-    """
-    데이터 수신 스레드 (Arduino → Unity)
-    """
-    global serial_port, stop_thread, received_data, has_error, is_data_receiving, last_receive_time
-    
-    printer.print("📡 Receive thread started")
-    
-    while not stop_thread and is_connected:
-        try:
-            if serial_port is not None and serial_port.IsOpen:
-                # 데이터가 있는지 확인
-                if serial_port.BytesToRead > 0:
-                    # 한 줄 읽기
-                    line = serial_port.ReadLine().strip()
-                    
-                    if line:
-                        # 데이터 수신 시간 업데이트
-                        last_receive_time = time.time()
-                        is_data_receiving = True
-                        
-                        # JSON 파싱 시도
-                        success, parsed_data = json_util.try_deserialize(line)
-                        
-                        if success:
-                            # JSON 데이터 처리
-                            process_received_data(parsed_data)
-                        else:
-                            printer.print(f"📡 JSON parse error: {line}")
-                else:
-                    # 데이터 수신 타임아웃 체크
-                    if is_data_receiving and (time.time() - last_receive_time) > receive_timeout:
-                        is_data_receiving = False
-                        update_outputs()
-                        printer.print("📡 ⚠️ Data receive timeout - no data for 2 seconds")
-                
-                # 짧은 대기
-                time.sleep(0.01)  # 10ms 대기
-                
-        except TimeoutException:
-            # 타임아웃은 정상적인 상황
-            continue
-            
-        except Exception as e:
-            has_error = True
-            is_data_receiving = False
-            printer.print(f"📡 Receive error: {str(e)}")
-            update_outputs()
-            break
-    
-    # 스레드 종료 시 데이터 수신 상태 False
-    is_data_receiving = False
-    update_outputs()
-    printer.print("📡 Receive thread stopped")
+    printer.print("🚀 Receive loop stopped")
 
 def process_received_data(data):
     """
-    수신된 JSON 데이터 처리 (Arduino → Unity)
+    수신된 JSON 데이터 처리 - 즉시 처리
     """
     global received_data, has_error
     
@@ -497,20 +385,20 @@ def process_received_data(data):
             
             has_error = False
             
-            # 🔥 실시간 출력 업데이트 (메인 스레드에서 안전하게)
+            # 🚀 실시간 출력 업데이트 (즉시 반영)
             update_outputs()
             
-            # 수신 데이터 로그
-            printer.print(f"📡 RX: [{received_data['data1']:.2f}, {received_data['data2']:.2f}]")
+            # 수신 데이터 로그 (필요시 주석 처리로 더 빠르게)
+            printer.print(f"🚀 RX: [{received_data['data1']}, {received_data['data2']}]")
         
     except Exception as e:
         has_error = True
-        printer.print(f"📡 Data processing error: {str(e)}")
+        printer.print(f"🚀 Data processing error: {str(e)}")
         update_outputs()
 
 def update_outputs():
     """
-    출력 포트 업데이트
+    출력 포트 업데이트 - 즉시 반영
     """
     outputs = [
         received_data["data1"],
@@ -523,14 +411,14 @@ def update_outputs():
 
 def change_port():
     """
-    포트 변경 (COM3 -> COM4 -> COM5 -> COM6 -> COM3 순환)
+    포트 변경 - 🚀 즉시 변경 (대기시간 제거)
     """
     global current_port
     
-    # 연결 중이면 먼저 해제
+    # 연결 중이면 먼저 해제 (대기시간 없이)
     if is_connected:
         disconnect_serial()
-        time.sleep(0.5)  # 잠시 대기
+        # 🚀 대기시간 제거! (0.5초 → 0초)
     
     # 포트 순환
     if current_port == "COM3":
@@ -538,8 +426,8 @@ def change_port():
     elif current_port == "COM4":
         current_port = "COM5"
     elif current_port == "COM5":
-        current_port = "COM6"
+        current_port = "COM12"
     else:
         current_port = "COM3"
     
-    printer.print(f"📡 🔌 Port changed to: {current_port}")
+    printer.print(f"🚀 🔌 Port changed to: {current_port} (INSTANT)")
