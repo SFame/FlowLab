@@ -15,6 +15,15 @@ public class ClassedPalette : NodePalette
                 { typeof(NOT), "NOT" },
                 { typeof(XNOR), "XNOR" },
                 { typeof(XOR), "XOR" },
+                { typeof(Any), "Any" },
+                { typeof(All), "All" },
+                { typeof(Comparator), "Comparator" },
+            }
+        },
+        {
+            "Flow", new Dictionary<Type, string>
+            {
+                { typeof(IfNode), "If" },
             }
         },
         {
@@ -22,8 +31,9 @@ public class ClassedPalette : NodePalette
             {
                 { typeof(ClickSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
-                { typeof(InputField), "Input Field"},
-                { typeof(Display), "Display"},
+                { typeof(InputField), "Input Field" },
+                { typeof(KeyInput), "Key Input" },
+                { typeof(Display), "Display" },
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
             }
@@ -31,11 +41,14 @@ public class ClassedPalette : NodePalette
         {
             "Signal", new Dictionary<Type, string>
             {
+                { typeof(IsNull), "IsNull" },
                 { typeof(Splitter), "Split" },
+                { typeof(Merger), "Merger" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
-                { typeof(TypeConverter), "Type Converter"},
+                { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
+                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(Delay), "Delay" },
                 { typeof(Counter), "Counter" },
                 { typeof(Sender), "Sender" },
@@ -46,16 +59,27 @@ public class ClassedPalette : NodePalette
         {
             "Math", new Dictionary<Type, string>
             {
-                { typeof(Comparator), "Comparator" },
-                { typeof(Equal), "Equal" },
-                { typeof(Round), "Round" },
-                { typeof(BinaryDecoder), "Binary Decoder" },
-                { typeof(BinaryEncoder), "Binary Encoder" },
+                { typeof(Add), "Add" },
+                { typeof(Subtract), "Sub" },
+                { typeof(Multiply), "Mul" },
+                { typeof(Divide), "Div" },
+                { typeof(Pow), "Pow" },
+                { typeof(SquareRoot), "Square Root" },
                 { typeof(Lerp), "Lerp" },
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
-                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(MinMax), "MinMax" },
+                { typeof(Average), "Average" },
+                { typeof(StandardDeviation), "Standard Deviation" },
+                { typeof(NumericComparator), "Numeric Comparator" },
+                { typeof(Equal), "Equal" },
+                { typeof(Round), "Round" },
+                { typeof(Sin), "Sin" },
+                { typeof(Cos), "Cos" },
+                { typeof(Tan), "Tan" },
+                { typeof(BinaryDecoder), "Binary Decoder" },
+                { typeof(BinaryEncoder), "Binary Encoder" },
+                { typeof(RandomNumber), "Random" },
             }
         },
         {
@@ -65,13 +89,13 @@ public class ClassedPalette : NodePalette
                 { typeof(StringReplace), "String Replace" },
                 { typeof(StringContain), "String Contain" },
                 { typeof(StringSplit), "String Split" },
+                { typeof(StringConcat), "String Concat" },
             }
         },
         {
             "Advanced", new Dictionary<Type, string>
             {
                 { typeof(ScriptingNode), "Scripting" },
-                { typeof(ClassedNode), "Classed" },
             }
         },
     };
