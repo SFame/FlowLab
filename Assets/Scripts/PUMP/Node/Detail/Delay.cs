@@ -2,10 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using OdinSerializer;
 using UnityEngine;
+using static Delay;
 
-public class Delay : Node, INodeAdditionalArgs<float>
+public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 {
+    public enum DelayType
+    {
+        FixedTime,
+        Frame
+    }
+
+    private int _frameCount = 1;
+    private DelayType _delayType = DelayType.FixedTime;
+
     private float _delay = 0.5f;
     private SignalDetectorSupport _detectorSupport;
     private SafetyCancellationTokenSource _cts = new();
@@ -60,6 +71,16 @@ public class Delay : Node, INodeAdditionalArgs<float>
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
+
+                if (_delayType == DelayType.FixedTime)
+                {
+                    _contexts.Add(new ContextElement("Delay Type: Frame", () => SetDelayType(DelayType.Frame)));
+                }
+                else
+                {
+                    _contexts.Add(new ContextElement("Delay Type: Fixed Time", () => SetDelayType(DelayType.FixedTime)));
+                }
+
             }
 
             return _contexts;
@@ -68,13 +89,25 @@ public class Delay : Node, INodeAdditionalArgs<float>
 
     protected override void OnAfterInit()
     {
-        DetectorSupport.Value = _delay;
+        UpdateInputFieldByDelayType();
+
         DetectorSupport.OnEndEdit += value =>
         {
-            _delay = value;
+            if (_delayType == DelayType.FixedTime)
+            {
+                _delay = value;
+            }
+            else
+            {
+                _frameCount = Mathf.Max(1, (int)value);
+            }
             _cts.CancelAndDispose();
             ReportChanges();
         };
+    }
+    protected override void OnAfterSetAdditionalArgs()
+    {
+        UpdateInputFieldByDelayType();
     }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
@@ -85,7 +118,15 @@ public class Delay : Node, INodeAdditionalArgs<float>
     protected override void StateUpdate(TransitionEventArgs args)
     {
         _cts = _cts.CancelAndDisposeAndGetNew();
-        PushAsync(args.State, _cts.Token).Forget();
+        //PushAsync(args.State, _cts.Token).Forget();
+        if (_delayType == DelayType.FixedTime)
+        {
+            PushAsyncWithTime(args.State, _cts.Token).Forget();
+        }
+        else
+        {
+            PushAsyncWithFrame(args.State, _cts.Token).Forget();
+        }
     }
 
     protected override void OnBeforeRemove()
@@ -105,6 +146,34 @@ public class Delay : Node, INodeAdditionalArgs<float>
             OutputToken[0].State = state;
         }
     }
+    private async UniTaskVoid PushAsyncWithTime(Transition state, CancellationToken token)
+    {
+        try
+        {
+            await UniTask.WaitForSeconds(_delay, cancellationToken: token, cancelImmediately: true);
+            OutputToken[0].State = state;
+        }
+        catch (OperationCanceledException)
+        {
+            OutputToken[0].State = state;
+        }
+    }
+
+    private async UniTaskVoid PushAsyncWithFrame(Transition state, CancellationToken token)
+    {
+        try
+        {
+            for (int i = 0; i < _frameCount; i++)
+            {
+                await UniTask.Yield(token, cancelImmediately: true);
+            }
+            OutputToken[0].State = state;
+        }
+        catch (OperationCanceledException)
+        {
+            OutputToken[0].State = state;
+        }
+    }
     private void SetType(TransitionType type)
     {
         _cts.CancelAndDispose();
@@ -113,9 +182,58 @@ public class Delay : Node, INodeAdditionalArgs<float>
         ReportChanges();
     }
 
-    public float AdditionalArgs
+    private void SetDelayType(DelayType newDelayType)
     {
-        get => _delay;
-        set => _delay = value;
+        if (_delayType == newDelayType)
+            return;
+
+        // 기존 대기 작업 취소
+        _cts.CancelAndDispose();
+        
+        _delayType = newDelayType;
+        
+        // 컨텍스트 메뉴 갱신을 위해 캐시 초기화
+        _contexts = null;
+        
+        // 입력 필드 타입과 값 업데이트
+        UpdateInputFieldByDelayType();
+        
+        ReportChanges();
+    }
+
+    private void UpdateInputFieldByDelayType()
+    {
+        if (_delayType == DelayType.FixedTime)
+        {
+            DetectorSupport.Value = _delay;
+        }
+        else
+        {
+            DetectorSupport.Value = _frameCount;
+        }
+    }
+   
+    public DelaySerializeInfo AdditionalArgs
+    {
+        get => new DelaySerializeInfo
+        {
+            _delay = _delay,
+            _frameCount = _frameCount,
+            _delayType = _delayType
+        };
+        set
+        {
+            _delay = value._delay;
+            _frameCount = value._frameCount;
+            _delayType = value._delayType;
+        }
+    }
+
+    [Serializable]
+    public struct DelaySerializeInfo
+    {
+        [OdinSerialize] public float _delay;
+        [OdinSerialize] public int _frameCount;
+        [OdinSerialize] public DelayType _delayType;
     }
 }
