@@ -322,7 +322,7 @@ public class UI_Settings : MonoBehaviour
     {
         // 이벤트 구독 해제
         Setting.OnSettingUpdated -= OnSettingUpdated;
-        PUMPInputManager.Current.RemoveBlocker(blocker);
+        PUMPInputManager.Current?.RemoveBlocker(blocker);
     }
 
     //sound temp
