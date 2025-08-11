@@ -290,6 +290,13 @@ public static class ConnectionAwaitManager
 
     private static void SetConnectionAwait()
     {
+        if (Setting.IsImmediately)
+        {
+            AwaitType = ConnectionAwait.Immediately;
+            LoopThreshold = Setting.LoopThreshold;
+            return;
+        }
+
         float simulationSpeed = Setting.SimulationSpeed;
         if (Mathf.Approximately(simulationSpeed, 0f))
         {
