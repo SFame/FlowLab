@@ -13,7 +13,7 @@ public static class Setting
     public static float DefaultSoundVolume = 1.0f; // Default sound volume
     public static float DefaultVFXVolume = 1.0f; // Default VFX volume
     public static float DefaultSimulationSpeed = 0.0f; // Default simulation speed
-    public static int DefaultLoopThreshold = 10;
+    public static int DefaultLoopThreshold = 2; //min 2 max 20
     public static bool DefaultIsImmediately = false;
     // Default key map settings
     public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
@@ -157,7 +157,7 @@ public static class Setting
     }
     public static void SetTempLoopThreshold(int loopThreshold)
     {
-        _tempLoopThreshold = Mathf.Max(1, loopThreshold); // 최소값 1로 제한..
+        _tempLoopThreshold = Mathf.Clamp(loopThreshold, 2, 20); // 최소값 1로 제한..
     }
     #endregion
     public static void ResetTempToDefault()

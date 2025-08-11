@@ -74,6 +74,7 @@ public class UI_Settings : MonoBehaviour
         if (loopThresholdInputField != null)
         {
             loopThresholdInputField.onEndEdit.AddListener(OnLoopThresholdChanged);
+            loopThresholdInputField.characterLimit = 2;
         }
         // 버튼 이벤트
         if (applyButton != null)
@@ -175,7 +176,15 @@ public class UI_Settings : MonoBehaviour
     {
         if (int.TryParse(value, out int threshold))
         {
-            Setting.SetTempLoopThreshold(threshold);
+            // 2~20 범위로 제한
+            int clampedThreshold = Mathf.Clamp(threshold, 2, 20);
+            Setting.SetTempLoopThreshold(clampedThreshold);
+
+            // 범위를 벗어난 값이면 InputField에 제한된 값으로 표시
+            if (threshold != clampedThreshold)
+            {
+                loopThresholdInputField.SetTextWithoutNotify(clampedThreshold.ToString());
+            }
         }
         else
         {
