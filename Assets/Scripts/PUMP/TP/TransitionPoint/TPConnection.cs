@@ -220,8 +220,8 @@ public class TPConnection : IStateful, IDisposable
 
         try
         {
-            ConnectionAwaitToken awaitToken = ConnectionAwaitManager.GetAwaitToken(this, _pendingCts.Token);
-            await awaitToken.Task;
+            ConnectionAwaiter awaiter = ConnectionAwaitManager.GetAwaiter(this, _pendingCts.Token);
+            await awaiter.Task;
 
             if (TargetState is not null && !_pendingCts.Token.IsCancellationRequested)
             {
@@ -302,7 +302,7 @@ public static class ConnectionAwaitManager
         WaitTime = simulationSpeed;
     }
 
-    private static ConnectionAwaitToken GetImmediatelyAwaiter(TPConnection caller, CancellationToken token)
+    private static ConnectionAwaiter GetImmediatelyAwaiter(TPConnection caller, CancellationToken token)
     {
         if (!_propagateCountDict.TryAdd(caller, 1))
         {
@@ -314,15 +314,16 @@ public static class ConnectionAwaitManager
         if (_propagateCountDict[caller] >= LoopThreshold)
         {
             _propagateCountDict.Remove(caller);
-            return new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), true);
+            OnLoopDetected?.Invoke(caller);
+            return new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), true);
         }
 
-        return new ConnectionAwaitToken(UniTask.CompletedTask, false);
+        return new ConnectionAwaiter(UniTask.CompletedTask, false);
     }
     #endregion
 
-    #region Static Interface
-    public static ConnectionAwaitToken GetAwaitToken(TPConnection caller, CancellationToken token)
+    #region Interfaces
+    public static ConnectionAwaiter GetAwaiter(TPConnection caller, CancellationToken token)
     {
         if (!_hasGetSetting)
         {
@@ -333,8 +334,8 @@ public static class ConnectionAwaitManager
 
         return AwaitType switch
         {
-            ConnectionAwait.Frame => new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), false),
-            ConnectionAwait.FixedTime => new ConnectionAwaitToken(UniTask.WaitForSeconds
+            ConnectionAwait.Frame => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+            ConnectionAwait.FixedTime => new ConnectionAwaiter(UniTask.WaitForSeconds
             (
                 duration: WaitTime,
                 ignoreTimeScale: false,
@@ -342,9 +343,11 @@ public static class ConnectionAwaitManager
                 cancellationToken: token
             ), false),
             ConnectionAwait.Immediately => GetImmediatelyAwaiter(caller, token),
-            _ => new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+            _ => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false),
         };
     }
+
+    public static event Action<TPConnection> OnImmediatelyLoopDetected;
 
     public static float WaitTime
     {
@@ -362,9 +365,9 @@ public static class ConnectionAwaitManager
     #endregion
 }
 
-public struct ConnectionAwaitToken
+public struct ConnectionAwaiter
 {
-    public ConnectionAwaitToken(UniTask task, bool isLooped)
+    public ConnectionAwaiter(UniTask task, bool isLooped)
     {
         Task = task;
         IsLooped = isLooped;
