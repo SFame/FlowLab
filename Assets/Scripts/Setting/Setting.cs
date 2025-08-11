@@ -13,6 +13,8 @@ public static class Setting
     public static float DefaultSoundVolume = 1.0f; // Default sound volume
     public static float DefaultVFXVolume = 1.0f; // Default VFX volume
     public static float DefaultSimulationSpeed = 0.0f; // Default simulation speed
+    public static int DefaultLoopThreshold = 10;
+    public static bool DefaultIsImmediately = false;
     // Default key map settings
     public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
     {
@@ -68,6 +70,8 @@ public static class Setting
     // 현재 설정값 (UI에서 수정하는 임시값)
     private static float _tempVfxVolume = DefaultVFXVolume;
     private static float _tempSimulationSpeed = DefaultSimulationSpeed;
+    private static bool _tempIsImmediately = DefaultIsImmediately;
+    private static int _tempLoopThreshold = DefaultLoopThreshold;
     private static List<BackgroundActionKeyMap> _tempKeyMap = new List<BackgroundActionKeyMap>(DefaultKeyMap);
 
     // 실제 적용된 설정값
@@ -80,6 +84,23 @@ public static class Setting
     public static float VFXVolume => _currentSettings.vfxVolume;
     public static float SimulationSpeed => _currentSettings.simulationSpeed;
     public static List<BackgroundActionKeyMap> CurrentKeyMap => new List<BackgroundActionKeyMap>(_currentSettings.keyMapList);
+
+    public static bool IsImmediately => _currentSettings.isImmediately;
+    public static int LoopThreshold => _currentSettings.loopThreshold;
+
+    // ConnectionAwait 상태를 반환하는 프로퍼티
+    public static ConnectionAwait CurrentConnectionAwait
+    {
+        get
+        {
+            if (_currentSettings.isImmediately)
+                return ConnectionAwait.Immediately;
+            else if (_currentSettings.simulationSpeed < 0.001f)
+                return ConnectionAwait.Frame;
+            else
+                return ConnectionAwait.FixedTime;
+        }
+    }
     #endregion
 
     #region Events
@@ -126,9 +147,17 @@ public static class Setting
     {
         _tempSimulationSpeed = Mathf.Clamp(speed, 0f, 2.0f);
     }
-    public static void SetTempKeyMap(List<BackgroundActionKeyMap> keyMap) //apply 버튼을 누를시 UI의 목록을 가져와 다듬어 넣기..
+    public static void SetTempKeyMap(List<BackgroundActionKeyMap> keyMap)
     {
         _tempKeyMap = new List<BackgroundActionKeyMap>(keyMap);
+    }
+    public static void SetTempIsImmediately(bool isImmediately)
+    {
+        _tempIsImmediately = isImmediately;
+    }
+    public static void SetTempLoopThreshold(int loopThreshold)
+    {
+        _tempLoopThreshold = Mathf.Max(1, loopThreshold); // 최소값 1로 제한..
     }
     #endregion
     public static void ResetTempToDefault()
@@ -136,12 +165,16 @@ public static class Setting
         _tempVfxVolume = DefaultVFXVolume;
         _tempSimulationSpeed = DefaultSimulationSpeed;
         _tempKeyMap = new List<BackgroundActionKeyMap>(DefaultKeyMap);
+        _tempLoopThreshold = DefaultLoopThreshold;
+        _tempIsImmediately = DefaultIsImmediately;
     }
     public static void OnClickApplyButton()
     {
         // 임시 설정값을 현재 설정으로 복사
         _currentSettings.vfxVolume = _tempVfxVolume;
         _currentSettings.simulationSpeed = _tempSimulationSpeed;
+        _currentSettings.isImmediately = _tempIsImmediately;
+        _currentSettings.loopThreshold = _tempLoopThreshold;
         _currentSettings.keyMapList = new List<BackgroundActionKeyMap>(_tempKeyMap);
 
         // 설정 저장
@@ -158,18 +191,24 @@ public static class Setting
         [OdinSerialize] public float vfxVolume;
         [OdinSerialize] public float simulationSpeed;
         [OdinSerialize] public List<BackgroundActionKeyMap> keyMapList;
+        [OdinSerialize] public bool isImmediately;
+        [OdinSerialize] public int loopThreshold;
 
         public SettingData()
         {
             vfxVolume = DefaultVFXVolume;
             simulationSpeed = DefaultSimulationSpeed;
+            isImmediately = DefaultIsImmediately;
+            loopThreshold = DefaultLoopThreshold;
             keyMapList = new List<BackgroundActionKeyMap>(DefaultKeyMap);
         }
 
-        public SettingData( float vfx, float speed, List<BackgroundActionKeyMap> keyMap)
+        public SettingData( float vfx, float speed, bool immediately, int threshold, List<BackgroundActionKeyMap> keyMap)
         {
             vfxVolume = vfx;
             simulationSpeed = speed;
+            isImmediately = immediately;
+            loopThreshold = threshold;
             keyMapList = new List<BackgroundActionKeyMap>(keyMap);
         }
     }
@@ -200,6 +239,8 @@ public static class Setting
                 // 로드된 값으로 임시 설정값도 초기화
                 _tempVfxVolume = _currentSettings.vfxVolume;
                 _tempSimulationSpeed = _currentSettings.simulationSpeed;
+                _tempIsImmediately = _currentSettings.isImmediately;
+                _tempLoopThreshold = _currentSettings.loopThreshold;
                 _tempKeyMap = new List<BackgroundActionKeyMap>(_currentSettings.keyMapList);
 
                 Debug.Log("설정이 로드되었습니다.");
@@ -224,14 +265,15 @@ public static class Setting
 
 
     // 현재 임시 설정값 가져오기 (UI 표시용)
-    public static (float vfx, float speed, List<BackgroundActionKeyMap> keyMap) GetTempSettings()
+    public static (float vfx, float speed, bool immediately, int loopThreshold, List<BackgroundActionKeyMap> keyMap) GetTempSettings()
     {
-        return (_tempVfxVolume, _tempSimulationSpeed, new List<BackgroundActionKeyMap>(_tempKeyMap));
+        return (_tempVfxVolume, _tempSimulationSpeed, _tempIsImmediately, _tempLoopThreshold, new List<BackgroundActionKeyMap>(_tempKeyMap));
     }
+
     // 현재 설정값 가져오기 (시스템 적용용)
-    public static (float vfx, float speed, List<BackgroundActionKeyMap> keyMap) GetCurrentSettings()
+    public static (float vfx, float speed, bool immediately, int loopThreshold, List<BackgroundActionKeyMap> keyMap) GetCurrentSettings()
     {
-        return (_currentSettings.vfxVolume, _currentSettings.simulationSpeed, new List<BackgroundActionKeyMap>(_currentSettings.keyMapList));
+        return (_currentSettings.vfxVolume, _currentSettings.simulationSpeed, _currentSettings.isImmediately, _currentSettings.loopThreshold, new List<BackgroundActionKeyMap>(_currentSettings.keyMapList));
     }
 
     // ActionType에 해당하는 디폴트 키맵 가져오기

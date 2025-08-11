@@ -14,6 +14,9 @@ public class UI_Settings : MonoBehaviour
     [Header("Simulation Delay Settings")]
     [SerializeField] private Slider simulationSpeedSlider;
     [SerializeField] private TextMeshProUGUI simulationSpeedText;
+    [SerializeField] private Toggle immediatelyToggle;
+    [SerializeField] private TMP_InputField loopThresholdInputField;
+
 
     [Header("Buttons")]
     [SerializeField] private Button applyButton;
@@ -23,6 +26,8 @@ public class UI_Settings : MonoBehaviour
     [Header("KeyMap Settings")]
     [SerializeField] private Transform keyMapContent;
     [SerializeField] private GameObject keyMapItemPrefab;
+
+    private const float FRAME_MODE_THRESHOLD = 0.001f;
 
     private readonly object blocker = new object();
 
@@ -62,7 +67,14 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.onValueChanged.AddListener(OnSimulationSpeedChanged);
         }
-
+        if (immediatelyToggle != null)
+        {
+            immediatelyToggle.onValueChanged.AddListener(OnImmediatelyToggleChanged);
+        }
+        if (loopThresholdInputField != null)
+        {
+            loopThresholdInputField.onEndEdit.AddListener(OnLoopThresholdChanged);
+        }
         // 버튼 이벤트
         if (applyButton != null)
         {
@@ -84,7 +96,7 @@ public class UI_Settings : MonoBehaviour
     }
     private void RefreshUIFromTempSettings()
     {
-        var (vfx, speed, keyMap) = Setting.GetTempSettings();
+        var (vfx, speed, immediately, loopThreshold, keyMap) = Setting.GetTempSettings();
 
         if (vfxSlider != null)
         {
@@ -95,17 +107,25 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.SetValueWithoutNotify(speed);
         }
-        
-
+        if (immediatelyToggle != null)
+        {
+            immediatelyToggle.SetIsOnWithoutNotify(immediately);
+        }
+        if (loopThresholdInputField != null)
+        {
+            loopThresholdInputField.SetTextWithoutNotify(loopThreshold.ToString());
+        }
         // 텍스트 업데이트
         UpdateVFXVolumeText(vfx);
         UpdateSimulationSpeedText(speed);
+        UpdateSimulationSpeedInteractable(immediately);
+        UpdateLoopThresholdVisibility(immediately);
         // 키맵 UI 업데이트
         RefreshKeyMapUI(keyMap);
     }
     private void RefreshUIFromCurrentSettings()
     {
-        var (vfx, speed, keyMap) = Setting.GetCurrentSettings();
+        var (vfx, speed, immediately, loopThreshold, keyMap) = Setting.GetCurrentSettings();
 
         if (vfxSlider != null)
         {
@@ -115,9 +135,20 @@ public class UI_Settings : MonoBehaviour
         {
             simulationSpeedSlider.SetValueWithoutNotify(speed);
         }
+        if (immediatelyToggle != null)
+        {
+            immediatelyToggle.SetIsOnWithoutNotify(immediately);
+        }
+        if (loopThresholdInputField != null)
+        {
+            loopThresholdInputField.SetTextWithoutNotify(loopThreshold.ToString());
+        }
+
         // 텍스트 업데이트
         UpdateVFXVolumeText(vfx);
         UpdateSimulationSpeedText(speed);
+        UpdateSimulationSpeedInteractable(immediately);
+        UpdateLoopThresholdVisibility(immediately);
         // 키맵 UI 업데이트
         RefreshKeyMapUI(keyMap);
     }
@@ -133,6 +164,25 @@ public class UI_Settings : MonoBehaviour
     {
         Setting.SetTempSimulationSpeed(value);
         UpdateSimulationSpeedText(value);
+    }
+    private void OnImmediatelyToggleChanged(bool isOn)
+    {
+        Setting.SetTempIsImmediately(isOn);
+        UpdateSimulationSpeedInteractable(isOn);
+        UpdateLoopThresholdVisibility(isOn);
+    }
+    private void OnLoopThresholdChanged(string value)
+    {
+        if (int.TryParse(value, out int threshold))
+        {
+            Setting.SetTempLoopThreshold(threshold);
+        }
+        else
+        {
+            // 잘못된 값이면 현재 설정값으로 되돌리기
+            var (_, _, _, loopThreshold, _) = Setting.GetTempSettings();
+            loopThresholdInputField.SetTextWithoutNotify(loopThreshold.ToString());
+        }
     }
 
     private void OnApplyButtonClicked()
@@ -175,12 +225,55 @@ public class UI_Settings : MonoBehaviour
     {
         if (simulationSpeedText != null)
         {
-            if(speed < 0.1f) 
+            if(speed < FRAME_MODE_THRESHOLD) 
             {
                 simulationSpeedText.text = $"Frame";
                 return;
             }
-            simulationSpeedText.text = $"{speed:F1}";
+            simulationSpeedText.text = $"{speed:F2}";
+        }
+    }
+    private void UpdateSimulationSpeedInteractable(bool isImmediately)
+    {
+        // Immediately 토글이 체크되면 슬라이더와 텍스트를 비활성화
+        if (simulationSpeedSlider != null)
+        {
+            simulationSpeedSlider.interactable = !isImmediately;
+
+            // 슬라이더 Handle
+            var sliderColors = simulationSpeedSlider.colors;
+            sliderColors.normalColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : Color.white;
+            sliderColors.highlightedColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(0.9f, 0.9f, 0.9f, 1f);
+            sliderColors.selectedColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(0.9f, 0.9f, 0.9f, 1f);
+            sliderColors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            simulationSpeedSlider.colors = sliderColors;
+
+            // 슬라이더 Fill
+            var fillRect = simulationSpeedSlider.fillRect;
+            if (fillRect != null)
+            {
+                var fillImage = fillRect.GetComponent<Image>();
+                if (fillImage != null)
+                {
+                    Color fillColor = fillImage.color;
+                    fillImage.color = new Color(fillColor.r, fillColor.g, fillColor.b, isImmediately ? 0.3f : 1f);
+                }
+            }
+        }
+
+        if (simulationSpeedText != null)
+        {
+            // 현재 색상에서 투명도 조절
+            Color currentColor = simulationSpeedText.color;
+            simulationSpeedText.color = new Color(currentColor.r, currentColor.g, currentColor.b, isImmediately ? 0.5f : 1f);
+        }
+    }
+    private void UpdateLoopThresholdVisibility(bool isImmediately)
+    {
+        // Immediately 토글이 체크되면 LoopThreshold InputField를 보이게 하고, 아니면 숨김
+        if (loopThresholdInputField != null)
+        {
+            loopThresholdInputField.gameObject.SetActive(isImmediately);
         }
     }
     private void RefreshKeyMapUI(List<BackgroundActionKeyMap> keyMaps)
