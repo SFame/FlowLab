@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -293,7 +295,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         {
             if (pending[i] && outputTPs[i] is ITPOut tpOut)
             {
-                tpOut.PushToConnection();
+                tpOut.PushToConnection(UniTask.Yield(PlayerLoopTiming.EarlyUpdate, CancellationToken.None));
             }
         }
     }

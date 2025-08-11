@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -24,6 +26,20 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
         tpConnection.LineConnector = lineConnector;
         return tpConnection;
+    }
+
+    private async UniTaskVoid PushToConnectionAsync(UniTask task)
+    {
+        try
+        {
+            await task;
+
+            if (Connection != null)
+            {
+                Connection.State = State;
+            }
+        }
+        catch (OperationCanceledException) { }
     }
 
     private void OnNodeMove(LineConnector lineConnector)
@@ -67,7 +83,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
             value.ThrowIfTypeMismatch(Type);
 
             _state = value;
-            PushToConnection();
+            PushToConnection(UniTask.CompletedTask);
 
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
             ShowRadial(_state);
@@ -94,12 +110,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
     public bool IsStatePending => Connection?.IsFlushing ?? false;
 
-    public void PushToConnection()
+    public void PushToConnection(UniTask delayTask)
     {
-        if (Connection != null)
-        {
-            Connection.State = State;
-        }
+        PushToConnectionAsync(delayTask).Forget();
     }
 
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)

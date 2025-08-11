@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public interface INameable
@@ -83,5 +84,5 @@ public interface ITPIn : ITransitionPoint
 public interface ITPOut : ITransitionPoint
 {
     bool IsStatePending { get; }
-    void PushToConnection();
+    void PushToConnection(UniTask delayTask);
 }

@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Scripts/PUMP
   - Assets/Scripts/PUMP/Node
   - Assets/Scripts/PUMP/Node/Detail
   - Assets/TextMesh Pro/Examples & Extras/Scripts
@@ -33,4 +32,5 @@ MonoBehaviour:
   - Assets
   - Assets/Resources/PUMP/Py
   - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Scripts/PUMP/Node
   currentDirIndex: 19

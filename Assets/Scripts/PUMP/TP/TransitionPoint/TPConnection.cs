@@ -3,67 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Utils;
 
 public class TPConnection : IStateful, IDisposable
 {
-    #region Static Privates
-    private static float _waitTime = 0.5f;
-    private const float MAX_WAIT_TIME = 10f;
-    private static bool _hasGetSetting = false;
-
-    private static UniTask GetStateUpdateTask(CancellationToken token)
-    {
-        if (!_hasGetSetting)
-        {
-            Setting.OnSettingUpdated += SetConnectionAwait;
-            SetConnectionAwait();
-            _hasGetSetting = true;
-        }
-
-        return AwaitType switch
-        {
-            ConnectionAwait.Frame => UniTask.Yield(PlayerLoopTiming.Update, token),
-            ConnectionAwait.FixedTime => UniTask.WaitForSeconds
-            (
-                duration: WaitTime,
-                ignoreTimeScale: false,
-                delayTiming: PlayerLoopTiming.Update,
-                cancellationToken: token
-            ),
-            ConnectionAwait.Immediately => UniTask.CompletedTask,
-            _ => UniTask.WaitForEndOfFrame(token),
-        };
-    }
-
-    private static void SetConnectionAwait()
-    {
-        float simulationSpeed = Setting.SimulationSpeed;
-        if (Mathf.Approximately(simulationSpeed, 0f))
-        {
-            AwaitType = ConnectionAwait.Frame;
-            _waitTime = Time.deltaTime;
-            return;
-        }
-
-        AwaitType = ConnectionAwait.FixedTime;
-        _waitTime = simulationSpeed;
-    }
-    #endregion
-
-    #region Static Interface
-    public static float WaitTime
-    {
-        get => _waitTime;
-        set
-        {
-            float waitTime = Mathf.Clamp(value, Time.deltaTime, MAX_WAIT_TIME);
-            _waitTime = waitTime;
-        }
-    }
-
-    public static ConnectionAwait AwaitType { get; set; } = ConnectionAwait.Frame;
-    #endregion
-
     #region Privates
     private Transition _state;
     private Transition _stateCache;
@@ -277,7 +220,8 @@ public class TPConnection : IStateful, IDisposable
 
         try
         {
-            await GetStateUpdateTask(_pendingCts.Token);
+            ConnectionAwaitToken awaitToken = ConnectionAwaitManager.GetAwaitToken(this, _pendingCts.Token);
+            await awaitToken.Task;
 
             if (TargetState is not null && !_pendingCts.Token.IsCancellationRequested)
             {
@@ -316,6 +260,118 @@ public class TPConnection : IStateful, IDisposable
         }
     }
     #endregion
+}
+
+public static class ConnectionAwaitManager
+{
+    #region Privates
+    private const float MAX_WAIT_TIME = 10f;
+    private const int MAX_LOOP_THRESHOLD = 20;
+
+    private static float _waitTime = 0.5f;
+    private static int _loopThreshold = 2;
+    private static bool _hasGetSetting = false;
+    private static bool _clearRequested = false;
+
+    private static readonly Dictionary<TPConnection, int> _propagateCountDict = new();
+
+    private static async UniTaskVoid DelayClearDictionary()
+    {
+        if (_clearRequested)
+            return;
+
+        _clearRequested = true;
+
+        await UniTask.NextFrame(PlayerLoopTiming.EarlyUpdate);
+        _propagateCountDict.Clear();
+
+        _clearRequested = false;
+    }
+
+    private static void SetConnectionAwait()
+    {
+        float simulationSpeed = Setting.SimulationSpeed;
+        if (Mathf.Approximately(simulationSpeed, 0f))
+        {
+            AwaitType = ConnectionAwait.Frame;
+            WaitTime = Time.deltaTime;
+            return;
+        }
+
+        AwaitType = ConnectionAwait.FixedTime;
+        WaitTime = simulationSpeed;
+    }
+
+    private static ConnectionAwaitToken GetImmediatelyAwaiter(TPConnection caller, CancellationToken token)
+    {
+        if (!_propagateCountDict.TryAdd(caller, 1))
+        {
+            _propagateCountDict[caller]++;
+        }
+
+        DelayClearDictionary().Forget();
+
+        if (_propagateCountDict[caller] >= LoopThreshold)
+        {
+            _propagateCountDict.Remove(caller);
+            return new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), true);
+        }
+
+        return new ConnectionAwaitToken(UniTask.CompletedTask, false);
+    }
+    #endregion
+
+    #region Static Interface
+    public static ConnectionAwaitToken GetAwaitToken(TPConnection caller, CancellationToken token)
+    {
+        if (!_hasGetSetting)
+        {
+            Setting.OnSettingUpdated += SetConnectionAwait;
+            SetConnectionAwait();
+            _hasGetSetting = true;
+        }
+
+        return AwaitType switch
+        {
+            ConnectionAwait.Frame => new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+            ConnectionAwait.FixedTime => new ConnectionAwaitToken(UniTask.WaitForSeconds
+            (
+                duration: WaitTime,
+                ignoreTimeScale: false,
+                delayTiming: PlayerLoopTiming.Update,
+                cancellationToken: token
+            ), false),
+            ConnectionAwait.Immediately => GetImmediatelyAwaiter(caller, token),
+            _ => new ConnectionAwaitToken(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+        };
+    }
+
+    public static float WaitTime
+    {
+        get => _waitTime;
+        set => _waitTime = Mathf.Clamp(value, Time.deltaTime, MAX_WAIT_TIME);
+    }
+
+    public static int LoopThreshold
+    {
+        get => _loopThreshold;
+        set => _loopThreshold = value.Clamp(2, MAX_LOOP_THRESHOLD);
+    }
+
+    public static ConnectionAwait AwaitType { get; set; } = ConnectionAwait.Frame;
+    #endregion
+}
+
+public struct ConnectionAwaitToken
+{
+    public ConnectionAwaitToken(UniTask task, bool isLooped)
+    {
+        Task = task;
+        IsLooped = isLooped;
+    }
+
+    public UniTask Task;
+    public bool IsLooped;
 }
 
 public enum ConnectionAwait
