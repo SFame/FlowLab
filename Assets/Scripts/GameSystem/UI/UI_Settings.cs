@@ -251,10 +251,10 @@ public class UI_Settings : MonoBehaviour
 
             // 슬라이더 Handle
             var sliderColors = simulationSpeedSlider.colors;
-            sliderColors.normalColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : Color.white;
-            sliderColors.highlightedColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(0.9f, 0.9f, 0.9f, 1f);
-            sliderColors.selectedColor = isImmediately ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : new Color(0.9f, 0.9f, 0.9f, 1f);
-            sliderColors.disabledColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            sliderColors.normalColor = isImmediately ? new Color(0.2f, 0.2f, 0.2f, 0.2f) : Color.white;
+            sliderColors.highlightedColor = isImmediately ? new Color(0.2f, 0.2f, 0.2f, 0.2f) : new Color(0.9f, 0.9f, 0.9f, 1f);
+            sliderColors.selectedColor = isImmediately ? new Color(0.2f, 0.2f, 0.2f, 0.2f) : new Color(0.9f, 0.9f, 0.9f, 1f);
+            sliderColors.disabledColor = new Color(0.2f, 0.2f, 0.2f, 0.2f);
             simulationSpeedSlider.colors = sliderColors;
 
             // 슬라이더 Fill
@@ -274,7 +274,7 @@ public class UI_Settings : MonoBehaviour
         {
             // 현재 색상에서 투명도 조절
             Color currentColor = simulationSpeedText.color;
-            simulationSpeedText.color = new Color(currentColor.r, currentColor.g, currentColor.b, isImmediately ? 0.5f : 1f);
+            simulationSpeedText.color = new Color(currentColor.r, currentColor.g, currentColor.b, isImmediately ? 0.2f : 1f);
         }
     }
     private void UpdateLoopThresholdVisibility(bool isImmediately)
@@ -309,7 +309,6 @@ public class UI_Settings : MonoBehaviour
         RefreshUIFromCurrentSettings();
         // VFX 볼륨을 오디오 믹서에 적용
         ApplyVFXVolume(Setting.VFXVolume);
-        Debug.Log("UI_Settings: 설정이 적용되었습니다.");
     }
     private void OnEnable()
     {

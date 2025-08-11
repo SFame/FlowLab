@@ -218,7 +218,6 @@ public static class Setting
         try
         {
             Serializer.SaveData(SAVE_FILE_NAME, _currentSettings, format: DataFormat.Binary);
-            Debug.Log("설정이 저장되었습니다.");
         }
         catch (Exception e)
         {
@@ -242,15 +241,12 @@ public static class Setting
                 _tempIsImmediately = _currentSettings.isImmediately;
                 _tempLoopThreshold = _currentSettings.loopThreshold;
                 _tempKeyMap = new List<BackgroundActionKeyMap>(_currentSettings.keyMapList);
-
-                Debug.Log("설정이 로드되었습니다.");
             }
             else
             {
                 // 로드 실패시 기본값 사용
                 _currentSettings = new SettingData();
                 ResetTempToDefault();
-                Debug.Log("저장된 설정이 없습니다. 기본값을 사용하고 저장하겠습니다.");
                 SaveSettings(); // 기본값 저장
             }
         }
