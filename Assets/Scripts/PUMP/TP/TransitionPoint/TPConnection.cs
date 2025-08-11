@@ -314,7 +314,7 @@ public static class ConnectionAwaitManager
         if (_propagateCountDict[caller] >= LoopThreshold)
         {
             _propagateCountDict.Remove(caller);
-            OnLoopDetected?.Invoke(caller);
+            OnImmediatelyLoopDetected?.Invoke(caller);
             return new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), true);
         }
 
