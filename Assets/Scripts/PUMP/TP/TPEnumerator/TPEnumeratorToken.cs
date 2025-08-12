@@ -16,6 +16,8 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     private bool _isReadonly = false;
     private bool _isNameDuplicated = true;
     private bool _disposed = false;
+    private ITypeListenStateful _first = null;
+    private ITypeListenStateful _last = null;
 
     public TPEnumeratorToken(IEnumerable<ITransitionPoint> tps)
     {
@@ -79,9 +81,27 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
 
     public TransitionType LastType => Last.Type;
 
-    public ITypeListenStateful First => this[0];
+    public ITypeListenStateful First
+    {
+        get
+        {
+            if (Count <= 0)
+                return null;
 
-    public ITypeListenStateful Last => this[^1];
+            return _first ??= this[0];
+        }
+    }
+
+    public ITypeListenStateful Last
+    {
+        get
+        {
+            if (Count <= 0)
+                return null;
+
+            return _last ??= this[^1];
+        }
+    }
 
     public bool HasOnlyNull
     {
@@ -163,7 +183,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         if (Count <= 0)
             throw new IndexOutOfRangeException("Token has no elements. Cannot push to first index");
 
-        this[0].State = state;
+        First.State = state;
     }
 
     /// <summary>
@@ -189,7 +209,7 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         if (Count <= 0)
             return;
 
-        this[0].State = state;
+        First.State = state;
     }
 
     /// <summary>

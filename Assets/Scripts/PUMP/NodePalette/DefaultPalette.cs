@@ -49,11 +49,13 @@ public class DefaultPalette : NodePalette
                 { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
                 { typeof(Multiplexer), "Multiplexer" },
+                { typeof(OneShot), "One Shot" },
                 { typeof(Delay), "Delay" },
                 { typeof(Counter), "Counter" },
                 { typeof(Sender), "Sender" },
                 { typeof(SignalDetector), "Signal Detector" },
                 { typeof(Timer), "Timer" },
+                { typeof(FrequencyMeter), "Frequency Meter" },
             }
         },
         {
