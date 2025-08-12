@@ -9,8 +9,16 @@ using static SignalDetector;
 
 public class SignalDetector : Node, INodeAdditionalArgs<SignalDetectorSerializeInfo>
 {
+    public enum DelayType
+    {
+        FixedTime,
+        Frame
+    }
+
     private bool _onlyChange = false;
-    private float _duration = 0.1f;
+    private float _delay = 1f;
+    private int _frameCount = 60;
+    private DelayType _delayType = DelayType.FixedTime;
     private SignalDetectorSupport _detectorSupport;
     private SafetyCancellationTokenSource _cts = new();
 
@@ -63,16 +71,32 @@ public class SignalDetector : Node, INodeAdditionalArgs<SignalDetectorSerializeI
             newContext.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
             newContext.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
 
+            if (_delayType == DelayType.FixedTime)
+            {
+                newContext.Add(new ContextElement("Delay: Frame", () => SetDelayType(DelayType.Frame)));
+            }
+            else
+            {
+                newContext.Add(new ContextElement("Delay: Fixed Time", () => SetDelayType(DelayType.FixedTime)));
+            }
+
             return newContext;
         }
     }
 
     protected override void OnAfterInit()
     {
-        DetectorSupport.Value = _duration;
+        UpdateInputFieldByDelayType();
         DetectorSupport.OnEndEdit += value =>
         {
-            _duration = value;
+            if (_delayType == DelayType.FixedTime)
+            {
+                _delay = value;
+            }
+            else
+            {
+                _frameCount = Mathf.Max(1, (int)value);
+            }
             _cts.CancelAndDispose();
             ReportChanges();
         };
@@ -111,7 +135,15 @@ public class SignalDetector : Node, INodeAdditionalArgs<SignalDetectorSerializeI
         try
         {
             OutputToken[1].State = true;
-            await UniTask.WaitForSeconds(_duration, cancellationToken: token, cancelImmediately: true);
+
+            UniTask uniTask = _delayType switch
+            {
+                DelayType.FixedTime => UniTask.WaitForSeconds(_delay, cancellationToken: token, cancelImmediately: true),
+                DelayType.Frame => UniTask.DelayFrame(_frameCount, cancellationToken: token, cancelImmediately: true),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            await uniTask;
 
             if (!token.IsCancellationRequested)
             {
@@ -132,21 +164,51 @@ public class SignalDetector : Node, INodeAdditionalArgs<SignalDetectorSerializeI
     }
 
     private string OnlyChangeTextGetter() => _onlyChange ? "Detect only Change" : "Detect All";
-
-    public SignalDetectorSerializeInfo AdditionalArgs
+    private void SetDelayType(DelayType newDelayType)
     {
-        get => new SignalDetectorSerializeInfo() { _onlyChange = _onlyChange, _duration = _duration };
-        set
-        {
-            _onlyChange = value._onlyChange;
-            _duration = value._duration;
-        }
+        if (_delayType == newDelayType)
+            return;
+
+        // 기존 작업 취소
+        _cts.CancelAndDispose();
+
+        _delayType = newDelayType;
+
+        // 입력 필드 타입과 값 업데이트
+        UpdateInputFieldByDelayType();
+
+        ReportChanges();
+    }
+    private void UpdateInputFieldByDelayType()
+    {
+        DetectorSupport.Set(_delayType, _delayType == DelayType.FixedTime ? _delay : _frameCount);
     }
 
+    
     [Serializable]
     public struct SignalDetectorSerializeInfo
     {
         [OdinSerialize] public bool _onlyChange;
-        [OdinSerialize] public float _duration;
+        [OdinSerialize] public float _delay;
+        [OdinSerialize] public int _frameCount;
+        [OdinSerialize] public DelayType _delayType;
+    }
+
+    public SignalDetectorSerializeInfo AdditionalArgs
+    {
+        get => new SignalDetectorSerializeInfo()
+        {
+            _onlyChange = _onlyChange,
+            _delay = _delay,
+            _frameCount = _frameCount,
+            _delayType = _delayType
+        };
+        set
+        {
+            _onlyChange = value._onlyChange;
+            _delay = value._delay;
+            _frameCount = value._frameCount;
+            _delayType = value._delayType;
+        }
     }
 }
