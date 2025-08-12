@@ -157,9 +157,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<EdgeDetectorSerializeInfo>
             stateful.State = false;
         }
         catch (OperationCanceledException) 
-        {
-            stateful.State = false;
-        }
+        {}
     }
 
     private void SetDuration(float value)
