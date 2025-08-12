@@ -74,11 +74,11 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
                 if (_delayType == DelayType.FixedTime)
                 {
-                    _contexts.Add(new ContextElement("Delay Type: Frame", () => SetDelayType(DelayType.Frame)));
+                    _contexts.Add(new ContextElement("Delay: Frame", () => SetDelayType(DelayType.Frame)));
                 }
                 else
                 {
-                    _contexts.Add(new ContextElement("Delay Type: Fixed Time", () => SetDelayType(DelayType.FixedTime)));
+                    _contexts.Add(new ContextElement("Delay: Fixed Time", () => SetDelayType(DelayType.FixedTime)));
                 }
 
             }
