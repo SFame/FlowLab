@@ -192,7 +192,6 @@ def init(inputs: list) -> None:
         send_count = 0
         stop_sending = True
 
-    pass
 
 def terminate() -> None:
   
@@ -208,8 +207,6 @@ def terminate() -> None:
     disconnect_serial()
     
     printer.print("📤 Serial OUT Node terminated")
-
-    pass
 
 def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
     """
@@ -246,34 +243,6 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
         current_data["data2"] = int(state) if state is not None else 0.0
         printer.print(f"📤 Data2 updated: {current_data['data2']:.2f}")
 
-    pass
-
-# def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
-#     """
-#     입력 신호 처리
-#     """
-#     global current_port
-    
-#     # 변경이 없으면 무시
-#     if not is_changed:
-#         return
-    
-#     # None 값 처리
-#     if state is None:
-#         port_names = ['Connect', 'SetPort']
-#         if index < len(port_names):
-#             printer.print(f"📡 {port_names[index]} signal lost")
-#         return
-    
-#     # 입력별 처리
-#     if index == 0:  # Connect 신호 (True=연결, False=해제)
-#         if state:
-#             connect_serial()
-#         else:
-#             disconnect_serial()
-        
-#     elif index == 1 and state:  # SetPort 신호 (포트 변경)
-#         change_port()
 
 def connect_serial():
     """
@@ -335,6 +304,7 @@ def connect_serial():
     finally:
         is_connecting = False
 
+
 def disconnect_serial():
     """
     시리얼 포트 연결 해제
@@ -361,6 +331,7 @@ def disconnect_serial():
     except Exception as e:
         printer.print(f"📤 ✗ Disconnect error: {str(e)}")
 
+
 def start_continuous_sending():
     """
     주기적 전송 시작 (별도 스레드에서 실행)
@@ -369,6 +340,7 @@ def start_continuous_sending():
     send_thread = Thread(thread_start)
     send_thread.Start()
     printer.print(f"📤 📡 Continuous sending started (every {send_interval*1000:.0f}ms)")
+
 
 def continuous_send_loop():
     """
@@ -395,6 +367,7 @@ def continuous_send_loop():
             break
     
     printer.print("📤 📡 Send loop stopped")
+
 
 def send_data_to_arduino():
     """
@@ -429,6 +402,7 @@ def send_data_to_arduino():
         if send_count % 50 == 0:
             printer.print(json_string)
             #printer.print(f"📤 📡 TX #{send_count}: [{current_data['data1']:.2f}, {current_data['data2']:.2f}] (every {send_interval*1000:.0f}ms)")
+
         
     except Exception as e:
         printer.print(f"📤 Send error: {str(e)}")
