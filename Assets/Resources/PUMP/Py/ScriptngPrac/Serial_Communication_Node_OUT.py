@@ -143,7 +143,7 @@ received_data = {
 # 전송 통계 및 주기적 전송 관리
 send_count = 0
 last_send_time = 0
-stop_sending = True  # 초기에는 전송 중지
+stop_sending = False  # 초기에는 전송 중지
 send_interval = 0.1  # 100ms 간격으로 전송
 
 
@@ -160,7 +160,7 @@ def init(inputs: list) -> None:
         is_connected = False
         send_count = 0
         last_send_time = 0
-        stop_sending = True  # 초기에는 전송 중지 상태
+        stop_sending = False      # 초기에는 전송 중지 상태
         
         # 초기 입력값으로 데이터 설정 (안전하게)
         current_data = {
@@ -248,32 +248,32 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
 
     pass
 
-def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
-    """
-    입력 신호 처리
-    """
-    global current_port
+# def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
+#     """
+#     입력 신호 처리
+#     """
+#     global current_port
     
-    # 변경이 없으면 무시
-    if not is_changed:
-        return
+#     # 변경이 없으면 무시
+#     if not is_changed:
+#         return
     
-    # None 값 처리
-    if state is None:
-        port_names = ['Connect', 'SetPort']
-        if index < len(port_names):
-            printer.print(f"📡 {port_names[index]} signal lost")
-        return
+#     # None 값 처리
+#     if state is None:
+#         port_names = ['Connect', 'SetPort']
+#         if index < len(port_names):
+#             printer.print(f"📡 {port_names[index]} signal lost")
+#         return
     
-    # 입력별 처리
-    if index == 0:  # Connect 신호 (True=연결, False=해제)
-        if state:
-            connect_serial()
-        else:
-            disconnect_serial()
+#     # 입력별 처리
+#     if index == 0:  # Connect 신호 (True=연결, False=해제)
+#         if state:
+#             connect_serial()
+#         else:
+#             disconnect_serial()
         
-    elif index == 1 and state:  # SetPort 신호 (포트 변경)
-        change_port()
+#     elif index == 1 and state:  # SetPort 신호 (포트 변경)
+#         change_port()
 
 def connect_serial():
     """
@@ -409,10 +409,10 @@ def send_data_to_arduino():
     try:
         # JSON 형태로 데이터 생성
         json_data = {
-            "cmd1": current_data["data1"],
-            "cmd2": current_data["data2"],
-            "seq": send_count,
-            "time": int(time.time() * 1000)
+            "speedL": current_data["data1"],
+            "speedR": current_data["data2"],
+            #"seq": send_count,
+            #"time": int(time.time() * 1000)
         }
         
         # JSON 문자열로 변환 및 전송
@@ -427,7 +427,8 @@ def send_data_to_arduino():
         
         # 전송 로그 (50회마다 출력으로 스팸 방지)
         if send_count % 50 == 0:
-            printer.print(f"📤 📡 TX #{send_count}: [{current_data['data1']:.2f}, {current_data['data2']:.2f}] (every {send_interval*1000:.0f}ms)")
+            printer.print(json_string)
+            #printer.print(f"📤 📡 TX #{send_count}: [{current_data['data1']:.2f}, {current_data['data2']:.2f}] (every {send_interval*1000:.0f}ms)")
         
     except Exception as e:
         printer.print(f"📤 Send error: {str(e)}")
@@ -449,9 +450,9 @@ def change_port():
     if current_port == "COM3":
         current_port = "COM4"
     elif current_port == "COM4":
-        current_port = "COM5"
-    elif current_port == "COM5":
         current_port = "COM6"
+    elif current_port == "COM6":
+        current_port = "COM12"
     else:
         current_port = "COM3"
     
