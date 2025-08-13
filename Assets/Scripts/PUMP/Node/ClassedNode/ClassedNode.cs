@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
@@ -216,7 +215,6 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public Node GetNode() => this;
     public Task WaitForDeserializationComplete() => UniTask.WaitUntil(() => !OnDeserializing).AsTask();
-
     #endregion
 
     #region SerializeData

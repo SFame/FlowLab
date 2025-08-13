@@ -14,9 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryHistory:
   - Assets/Scenes
-  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
-  - Assets
-  - Assets/Scenes
   - Assets
   - Assets/Scripts
   - Assets/Scripts/PUMP
@@ -33,4 +30,7 @@ MonoBehaviour:
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Py
   - Assets/Resources/PUMP/Py/ScriptngPrac
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   currentDirIndex: 19

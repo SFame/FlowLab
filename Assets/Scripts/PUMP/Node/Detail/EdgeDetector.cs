@@ -69,7 +69,7 @@ public class EdgeDetector : Node, INodeAdditionalArgs<EdgeDetectorSerializeInfo>
             {
                 _contexts = base.ContextElements;
 
-                // ´ë±â Å¸ÀÔ ÀüÈ¯ ¸Ş´º - ÇöÀç¿Í ¹İ´ëµÇ´Â ¿É¼Ç¸¸ Ç¥½Ã
+                // ëŒ€ê¸° íƒ€ì… ì „í™˜ ë©”ë‰´ - í˜„ì¬ì™€ ë°˜ëŒ€ë˜ëŠ” ì˜µì…˜ë§Œ í‘œì‹œ
                 if (_delayType == DelayType.FixedTime)
                 {
                     _contexts.Add(new ContextElement("Delay: Frame", () => SetDelayType(DelayType.Frame)));
@@ -177,16 +177,16 @@ public class EdgeDetector : Node, INodeAdditionalArgs<EdgeDetectorSerializeInfo>
         if (_delayType == newDelayType)
             return;
 
-        // ±âÁ¸ ÀÛ¾÷ Ãë¼Ò
+        // ê¸°ì¡´ ì‘ì—… ì·¨ì†Œ
         _rCts?.Cancel();
         _fCts?.Cancel();
 
         _delayType = newDelayType;
 
-        // ÄÁÅØ½ºÆ® ¸Ş´º °»½ÅÀ» À§ÇØ Ä³½Ã ÃÊ±âÈ­
+        // ì»¨í…ìŠ¤íŠ¸ ë©”ë‰´ ê°±ì‹ ì„ ìœ„í•´ ìºì‹œ ì´ˆê¸°í™”
         _contexts = null;
 
-        // ÀÔ·Â ÇÊµå Å¸ÀÔ°ú °ª ¾÷µ¥ÀÌÆ®
+        // ì…ë ¥ í•„ë“œ íƒ€ì…ê³¼ ê°’ ì—…ë°ì´íŠ¸
         UpdateInputFieldByDelayType();
 
         ReportChanges();

@@ -42,6 +42,5 @@ public class XOR : Node
         }
 
         OutputToken[0].State = InputToken[0].State != InputToken[1].State;
-
     }
 }
