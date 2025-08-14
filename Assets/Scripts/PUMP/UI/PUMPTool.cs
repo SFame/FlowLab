@@ -16,7 +16,7 @@ public class PUMPTool : MonoBehaviour
     [SerializeField] private float m_DetectionAreaHeightOffset = 100f;
 
     [SerializeField] private SaveLoadUiController m_SaveLoadUiController;
-    [SerializeField] private NodePalette m_nodePalette;
+    [SerializeField] private NodePalette m_NodePalette;
     [SerializeField] private Image m_HandleImage;
     [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private Button m_NodePaletteButton;
@@ -30,16 +30,16 @@ public class PUMPTool : MonoBehaviour
     private float _minY;
     private float _maxY;
 
-    public void SetButtonCallbacks()
+    private void SetButtonCallbacks()
     {
-        if (m_SaveLoadButton == null || m_SaveLoadUiController == null || m_NodePaletteButton == null || m_nodePalette == null)
+        if (m_SaveLoadButton == null || m_SaveLoadUiController == null || m_NodePaletteButton == null || m_NodePalette == null)
         {
             Debug.LogError("PUMPTool: Inspector 확인");
             return;
         }
 
-        m_SaveLoadButton.onClick.AddListener(() => m_SaveLoadUiController.SetActive(true, 0.2f).Forget());
-        m_NodePaletteButton.onClick.AddListener(m_nodePalette.Open);
+        m_SaveLoadButton.onClick.AddListener(OpenSaveLoadPanel);
+        m_NodePaletteButton.onClick.AddListener(OpenPalette);
     }
 
     private void Awake()
@@ -147,5 +147,25 @@ public class PUMPTool : MonoBehaviour
         m_HandleImage.DOKill();
         m_HandleImage.DOFade(0f, 0f);
         m_HandleImage.DOFade(1f, m_HandleFadeDuration).SetDelay(m_SlideDuration).SetEase(Ease.Linear);
+    }
+
+    public void OpenPalette()
+    {
+        m_NodePalette.SetActive(true);
+    }
+
+    public void OpenSaveLoadPanel()
+    {
+        m_SaveLoadUiController.SetActive(true);
+    }
+
+    public void TogglePalette()
+    {
+        m_NodePalette.IsActive = !m_NodePalette.IsActive;
+    }
+
+    public void ToggleSaveLoadPanel()
+    {
+        m_SaveLoadUiController.IsActive = !m_SaveLoadUiController.IsActive;
     }
 }

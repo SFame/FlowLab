@@ -590,7 +590,7 @@ MonoBehaviour:
   m_DetectionAreaWidth: 250
   m_DetectionAreaHeightOffset: 100
   m_SaveLoadUiController: {fileID: 0}
-  m_nodePalette: {fileID: 0}
+  m_NodePalette: {fileID: 0}
   m_HandleImage: {fileID: 0}
   m_SaveLoadButton: {fileID: 0}
   m_NodePaletteButton: {fileID: 0}
@@ -1262,7 +1262,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ClosablePanel: {fileID: 0}
+  m_CloseablePanel: {fileID: 0}
+  m_FadeDuration: 0.1
 --- !u!225 &1032690064302687543
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3187,6 +3188,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 564596771827280715}
     m_Modifications:
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: m_PumpTool
+      value: 
+      objectReference: {fileID: 2137772022379205379}
     - target: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_Name
       value: PUMP_Background

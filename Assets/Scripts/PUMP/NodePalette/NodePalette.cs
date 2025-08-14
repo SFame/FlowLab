@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
-using Utils;
 
 public abstract class NodePalette : MonoBehaviour
 {
@@ -22,14 +22,17 @@ public abstract class NodePalette : MonoBehaviour
         SetContentAsync().Forget();
     }
 
-    public void Open()
+    public void SetActive(bool isActive)
     {
-        gameObject.SetActive(true);
+        m_CanvasGroup.alpha = 1f;
+        _isActive = isActive;
+        gameObject.SetActive(isActive);
     }
 
-    public void Close()
+    public bool IsActive
     {
-        gameObject.SetActive(false);
+        get => _isActive;
+        set => SetActive(value);
     }
 
     public bool IsVisible
@@ -38,26 +41,22 @@ public abstract class NodePalette : MonoBehaviour
         set
         {
             _isVisible = value;
-            _cts = _cts.CancelAndDisposeAndGetNew();
-            Other.LerpAction
-            (
-                m_FadeDuration,
-                lerp =>
-                {
-                    float calc = value ? lerp : 1f - lerp;
-                    m_CanvasGroup.alpha = calc;
-                },
-                null,
-                _cts!.Token
-            ).Forget();
+
+            if (!_isActive)
+            {
+                return;
+            }
+
+            m_CanvasGroup.DOKill();
+            m_CanvasGroup.DOFade(_isVisible ? 1 : 0, m_FadeDuration);
         }
     }
     #endregion
 
     #region Privates
     private GameObject _elementPrefab;
+    private bool _isActive = false;
     private bool _isVisible = false;
-    private SafetyCancellationTokenSource _cts = new();
 
     private const string ELEMENT_PREFAB_PATH = "PUMP/Prefab/NodePalette/PaletteElem";
 

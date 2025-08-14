@@ -238,6 +238,10 @@ PrefabInstance:
       value: -100
       objectReference: {fileID: 0}
     - target: {fileID: 8275841901262682426, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_NodePalette
+      value: 
+      objectReference: {fileID: 9117271392543816093}
+    - target: {fileID: 8275841901262682426, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_nodePalette
       value: 
       objectReference: {fileID: 9117271392543816093}

@@ -14,17 +14,21 @@ using Debug = UnityEngine.Debug;
 public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorable, ICreationAwaitable
 {
     #region On Inspector
+    [Header("<Component>"), Space(5)]
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
-    [SerializeField] private Vector2 m_GatewayStartPositionRatio = new(0.055f, 0.5f);
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
+    [SerializeField] private PUMPTool m_PumpTool;
 
-    [Space(10)] 
+    [Space(10)]
 
+    [Header("<External Gate>"), Space(5)]
     [SerializeField] private bool m_VisibleExternal = true;
+    [SerializeField] private Vector2 m_ExternalStartPositionRatio = new(0.02f, 0.5f);
     [SerializeField] private int m_DefaultExternalInputCount = 2;
     [SerializeField] private int m_DefaultExternalOutputCount = 2;
+
     [field: Space(10)]
 
     [field: SerializeField] public bool RecordOnInitialize { get; set; } = true;
@@ -41,6 +45,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private bool _initialized = false;
     private bool _canInteractive = true;
     private bool _destroyed = false;
+    private PUMPComponentGetter _componentGetter;
     private HashSet<object> _isOnChangeBlocker = new();
     private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
@@ -225,7 +230,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     _externalInputAdapter.UpdateReference(newExternalInput);
                     isInputRefUpdated = true;
                 }
-                newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_GatewayStartPositionRatio);
+                newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_ExternalStartPositionRatio);
             }
 
             if (outputNodes.Count > 1)
@@ -253,7 +258,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     _externalOutputAdapter.UpdateReference(newExternalOutput);
                     isOutputRefUpdated = true;
                 }
-                newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_GatewayStartPositionRatio);
+                newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_ExternalStartPositionRatio);
             }
 
             if (newInputCount != -1 && !isInputRefUpdated)
@@ -359,8 +364,25 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     {
         get
         {
-            _lineConnectManager ??= GetComponentInChildren<LineConnectManager>();
+            if (_lineConnectManager == null)
+            {
+                _lineConnectManager = GetComponentInChildren<LineConnectManager>();
+            }
+
             return _lineConnectManager;
+        }
+    }
+
+    public PUMPComponentGetter ComponentGetter
+    {
+        get
+        {
+            if (_componentGetter == null)
+            {
+                _componentGetter = GetComponentInParent<PUMPComponentGetter>();
+            }
+
+            return _componentGetter;
         }
     }
 

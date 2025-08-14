@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using OdinSerializer;
-using Utils;
 using System.Text;
 
 /// <summary>
@@ -110,6 +109,8 @@ public enum BackgroundActionType
     NoAction,
     Undo,
     Redo,
+    OpenPalette,
+    OpenSaveLoadPanel,
     SelectAll,
     SelectDelete,
     SelectDisconnect,
@@ -289,7 +290,9 @@ public static class BackgroundActionMapper
     {
         BackgroundActionType.Undo => UndoAction,
         BackgroundActionType.Redo => RedoAction,
-        BackgroundActionType.SelectAll => SelectAll,
+        BackgroundActionType.OpenPalette => OpenPaletteAction,
+        BackgroundActionType.OpenSaveLoadPanel => OpenSaveLoadPanelAction,
+        BackgroundActionType.SelectAll => SelectAllAction,
         BackgroundActionType.SelectDelete => SelectDeleteAction,
         BackgroundActionType.SelectDisconnect => SelectDisconnectAction,
         BackgroundActionType.NoAction => null,
@@ -307,7 +310,17 @@ public static class BackgroundActionMapper
         PUMPBackground.Current?.Redo();
     }
 
-    private static void SelectAll()
+    private static void OpenPaletteAction()
+    {
+        PUMPBackground.Current?.ComponentGetter?.PumpTool?.TogglePalette();
+    }
+
+    private static void OpenSaveLoadPanelAction()
+    {
+        PUMPBackground.Current?.ComponentGetter?.PumpTool?.ToggleSaveLoadPanel();
+    }
+
+    private static void SelectAllAction()
     {
         PUMPBackground.Current?.SelectAll();
     }

@@ -1,9 +1,10 @@
-using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 
 public class SaveLoadUiController : MonoBehaviour
 {
     [SerializeField] private CloseablePanel m_CloseablePanel;
+    [SerializeField] private float m_FadeDuration = 0.1f;
 
     private CanvasGroup CanvasGroup
     {
@@ -16,24 +17,32 @@ public class SaveLoadUiController : MonoBehaviour
 
     private CanvasGroup _canvasGroup;
     private bool _initialized = false;
+    private bool _isActive = false;
 
-    public async UniTaskVoid SetActive(bool active, float fadeDuration = 0.2f)
+    public void SetActive(bool active)
     {
         Initialize();
 
+        CanvasGroup.DOKill();
+        _isActive = active;
+
         if (active)
         {
-            CanvasGroup.alpha = 0f;
             gameObject.SetActive(true);
+            CanvasGroup.DOFade(1f, m_FadeDuration);
+            return;
         }
-        else
-            CanvasGroup.alpha = 1f;
 
-        float targetAlpha = active ? 1f : 0f;
-        await Fade(targetAlpha, fadeDuration);
-
-        if (!active)
+        CanvasGroup.DOFade(0f, m_FadeDuration).OnComplete(() =>
+        {
             gameObject.SetActive(false);
+        });
+    }
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetActive(value);
     }
 
     private void Initialize()
@@ -50,25 +59,6 @@ public class SaveLoadUiController : MonoBehaviour
         }
 
         m_CloseablePanel.ControlActive = false;
-        m_CloseablePanel.OnClose += () => SetActive(false, 0.2f).Forget();
-    }
-
-    private async UniTask Fade(float targetAlpha, float duration)
-    {
-        float startAlpha = CanvasGroup.alpha;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            float normalizedTime = elapsed / duration;
-
-            float t = normalizedTime * normalizedTime * (3f - 2f * normalizedTime); // y = 3x^2 - 2x^3
-            CanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, t);
-
-            elapsed += Time.deltaTime;
-            await UniTask.Yield(PlayerLoopTiming.Update);
-        }
-
-        CanvasGroup.alpha = targetAlpha;
+        m_CloseablePanel.OnClose += () => SetActive(false);
     }
 }

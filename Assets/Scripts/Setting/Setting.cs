@@ -47,6 +47,18 @@ public static class Setting
 #endif
         new BackgroundActionKeyMap
         {
+            m_ActionType = BackgroundActionType.OpenPalette,
+            m_Modifiers = new List<KeyCode>() { },
+            m_ActionKeys = new List<KeyCode>() { KeyCode.Tab }
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.OpenSaveLoadPanel,
+            m_Modifiers = new List<KeyCode>() { },
+            m_ActionKeys = new List<KeyCode>() { KeyCode.S }
+        },
+        new BackgroundActionKeyMap
+        {
             m_ActionType = BackgroundActionType.SelectAll,
             m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
             m_ActionKeys = new List<KeyCode> { KeyCode.A }
@@ -54,13 +66,13 @@ public static class Setting
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDelete,
-            m_Modifiers = new List<KeyCode> {},
+            m_Modifiers = new List<KeyCode> { },
             m_ActionKeys = new List<KeyCode> { KeyCode.Delete }
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDisconnect,
-            m_Modifiers = new List<KeyCode> {},
+            m_Modifiers = new List<KeyCode> { },
             m_ActionKeys = new List<KeyCode> { KeyCode.Backspace }
         }
     };

@@ -156,7 +156,7 @@ MonoBehaviour:
   m_DetectionAreaWidth: 250
   m_DetectionAreaHeightOffset: 100
   m_SaveLoadUiController: {fileID: 6571601858316905617}
-  m_nodePalette: {fileID: 293374970319892040}
+  m_NodePalette: {fileID: 293374970319892040}
   m_HandleImage: {fileID: 0}
   m_SaveLoadButton: {fileID: 6235242466791751689}
   m_NodePaletteButton: {fileID: 5617080288532410750}
@@ -430,7 +430,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 66baab37df91ef04c80eaedb66f94bca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ClosablePanel: {fileID: 4436507436041778673}
+  m_CloseablePanel: {fileID: 0}
+  m_FadeDuration: 0.1
 --- !u!114 &4436507436041778673
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,6 +445,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ControlActive: 0
+  m_OnClose:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1994186793939296769
 GameObject:
   m_ObjectHideFlags: 0
@@ -2020,6 +2024,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ControlActive: 1
+  m_OnClose:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &293374970319892040
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2043,6 +2050,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8195304597147997309}
     m_Modifications:
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: m_PumpTool
+      value: 
+      objectReference: {fileID: 4139003424626904309}
     - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_DefaultExternalInputCount
       value: 2

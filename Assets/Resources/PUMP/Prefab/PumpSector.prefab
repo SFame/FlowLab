@@ -66,7 +66,7 @@ MonoBehaviour:
   m_DetectionAreaWidth: 250
   m_DetectionAreaHeightOffset: 100
   m_SaveLoadUiController: {fileID: 6642009566779663506}
-  m_nodePalette: {fileID: 1161433330203840441}
+  m_NodePalette: {fileID: 1161433330203840441}
   m_HandleImage: {fileID: 5410554143696325480}
   m_SaveLoadButton: {fileID: 1607819105995262996}
   m_NodePaletteButton: {fileID: 6713486618887478160}
@@ -193,6 +193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CloseablePanel: {fileID: 8765489774307047756}
+  m_FadeDuration: 0.1
 --- !u!114 &8765489774307047756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,10 +219,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4691106581429301388}
+  - component: {fileID: 2931497904960431691}
   - component: {fileID: 6310688627850453173}
   - component: {fileID: 7973034616062062785}
   - component: {fileID: 1249412674276274451}
   - component: {fileID: 9054245740632942581}
+  - component: {fileID: 8485349427737927848}
   m_Layer: 5
   m_Name: PumpSector
   m_TagString: Untagged
@@ -252,6 +255,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2931497904960431691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510068913751018988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b2313dde78bc694f8768515401d7911, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PumpTool: {fileID: 8275841901262682426}
 --- !u!114 &6310688627850453173
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,6 +314,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1510068913751018988}
   m_CullTransparentMesh: 1
+--- !u!114 &8485349427737927848
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1510068913751018988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b2313dde78bc694f8768515401d7911, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PumpTool: {fileID: 8275841901262682426}
 --- !u!1 &1800470323001121840
 GameObject:
   m_ObjectHideFlags: 0
@@ -1193,10 +1222,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 161b6e473a15714469968f02cc75e37b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ControlActive: 1
+  m_ControlActive: 0
   m_OnClose:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1161433330203840441}
+        m_TargetAssemblyTypeName: NodePalette, Assembly-CSharp
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &6151003974654542711
 GameObject:
   m_ObjectHideFlags: 0
@@ -2329,12 +2370,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 2592999621388892361}
     m_Modifications:
     - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: m_PumpTool
+      value: 
+      objectReference: {fileID: 8275841901262682426}
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_VisibleExternal
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_DefaultExternalInputCount
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2128914228309382544, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
+      propertyPath: <RecordOnInitialize>k__BackingField
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2619789075046056597, guid: 9d733294fe7fc684493fdbc32a6385eb, type: 3}
       propertyPath: m_Name
