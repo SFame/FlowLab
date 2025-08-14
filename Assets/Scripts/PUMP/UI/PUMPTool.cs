@@ -66,7 +66,7 @@ public class PUMPTool : MonoBehaviour
 
     private async UniTask InitializePositions()
     {
-        await UniTask.Yield();
+        await UniTask.NextFrame(PlayerLoopTiming.LastPostLateUpdate);
 
         _hiddenPosition = _rectTransform.anchoredPosition;
         _visiblePosition = new Vector2(_hiddenPosition.x + _rectTransform.rect.width, _hiddenPosition.y);
