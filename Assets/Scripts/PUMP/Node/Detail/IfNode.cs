@@ -1,8 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IfNode : Node
+public class IfNode : Node, INodeAdditionalArgs<bool>
 {
+    private bool _skipFalse = false;
+
+    protected override List<ContextElement> ContextElements
+    {
+        get
+        {
+            List<ContextElement> @base = base.ContextElements;
+            @base.Add(new ContextElement($"Skip False => {!_skipFalse}", () =>
+            {
+                _skipFalse = !_skipFalse;
+                ReportChanges();
+            }));
+
+            return @base;
+        }
+    }
+
     protected override string NodeDisplayName => "If";
 
     protected override List<string> InputNames => new() { "exec", "?" };
@@ -48,17 +65,36 @@ public class IfNode : Node
             return;
         }
 
-        if (!args.IsStateChange)
+        if (!args.IsStateChange && !_skipFalse)
         {
             return;
         }
 
         if (!args.State)
         {
-            OutputToken.PushAllAsDefault();
+            if (!_skipFalse)
+            {
+                OutputToken.PushAllAsDefault();
+            }
+
             return;
         }
 
-        OutputToken[InputToken.LastState ? 0 : 1].State = true;
+        if (InputToken.LastState)
+        {
+            OutputToken[1].State = false;
+            OutputToken[0].State = true;
+        }
+        else
+        {
+            OutputToken[0].State = false;
+            OutputToken[1].State = true;
+        }
+    }
+
+    public bool AdditionalArgs
+    {
+        get => _skipFalse;
+        set => _skipFalse = value;
     }
 }

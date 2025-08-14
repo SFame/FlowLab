@@ -540,6 +540,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             {
                 Debug.LogError($"Failed to convert SerializableArgs {nodeType}: {e.Message}");
             }
+            catch (NullReferenceException nullEx)
+            {
+                Debug.LogWarning("Saved information has changed");
+            }
         }
 
         if (node is INodeLifecycleCallable callable)
