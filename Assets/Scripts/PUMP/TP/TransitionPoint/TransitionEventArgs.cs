@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 public class TransitionEventArgs : EventArgs
 {
@@ -40,7 +41,7 @@ public class TransitionEventArgs : EventArgs
     private static readonly Pool<TransitionEventArgs> _pool = new
     (
         createFunc: () => new(),
-        initSize: 10,
+        initSize: 100,
         maxSize: 50000,
         actionOnGet:ResetArgs,
         actionOnRelease: ResetArgs
