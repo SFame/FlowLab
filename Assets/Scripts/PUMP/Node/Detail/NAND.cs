@@ -3,6 +3,16 @@ using UnityEngine;
 
 public class NAND : Node
 {
+    protected override string SpritePath => "PUMP/Sprite/ingame/LogicSymbols/NAND";
+
+    protected override string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/Logic/LogicTPEnumIn";
+
+    protected override string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/Logic/LogicTPEnumOut";
+
+    protected override Vector2 NameTextOffset => new Vector2(0f, -3f);
+
+    protected override Vector2 TPSize => new Vector2(25f, 25f);
+
     protected override List<string> InputNames { get; } = new List<string> { "A1", "A2" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
@@ -11,19 +21,19 @@ public class NAND : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -34f;
+    protected override float InEnumeratorXPos => -35f;
 
-    protected override float OutEnumeratorXPos => 34f;
+    protected override float OutEnumeratorXPos => 43f;
 
-    protected override float EnumeratorSpacing => 3f;
+    protected override float EnumeratorSpacing => 8f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 60f);
 
-    protected override string NodeDisplayName => "NA\nND";
+    protected override string NodeDisplayName => "NAND";
 
-    protected override float NameTextSize => 22f;
+    protected override float NameTextSize => 16f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

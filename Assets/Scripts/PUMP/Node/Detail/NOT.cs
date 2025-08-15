@@ -3,6 +3,16 @@ using UnityEngine;
 
 public class NOT : Node
 {
+    protected override string SpritePath => "PUMP/Sprite/ingame/LogicSymbols/NOT";
+
+    protected override string InputEnumeratorPrefabPath { get; } = "PUMP/Prefab/TP/Logic/LogicTPEnumIn";
+
+    protected override string OutputEnumeratorOutPrefabPath { get; } = "PUMP/Prefab/TP/Logic/LogicTPEnumOut";
+
+    protected override Vector2 NameTextOffset => new Vector2(-13f, -3f);
+
+    protected override Vector2 TPSize => new Vector2(25f, 25f);
+
     protected override List<string> InputNames { get; } = new List<string> { "A" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "Y" };
@@ -11,19 +21,19 @@ public class NOT : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -34f;
+    protected override float InEnumeratorXPos => -46f;
 
-    protected override float OutEnumeratorXPos => 34f;
+    protected override float OutEnumeratorXPos => 31f;
 
-    protected override float EnumeratorSpacing => 3f;
+    protected override float EnumeratorSpacing => 8f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(75f, 60f);
 
     protected override string NodeDisplayName => "NOT";
 
-    protected override float NameTextSize => 20f;
+    protected override float NameTextSize => 16f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
