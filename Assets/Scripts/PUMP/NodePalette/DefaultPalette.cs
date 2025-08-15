@@ -45,6 +45,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Splitter), "Split" },
                 { typeof(Merger), "Merger" },
                 { typeof(Switch), "Switch" },
+                { typeof(OneHot), "One Hot" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
