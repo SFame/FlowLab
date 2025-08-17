@@ -6,7 +6,8 @@ using static LineConnector;
 
 
 [RequireComponent(typeof(RectTransform), typeof(Image))]
-public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IDragSelectable, IHighlightable
+public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, 
+                        IPointerClickHandler, IDragSelectable, IHighlightable, ISortingPositionGettable, ISortingPositionSettable
 {
     [SerializeField] private Image m_RingImage;
 
@@ -47,8 +48,8 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public bool FreezeAttributes { get; set; }
 
-    public event Action OnDragging;
-    public event Action OnDragEnd;
+    public event Action<PointerEventData> OnDragging;
+    public event Action<PointerEventData> OnDragEnd;
     public event Action<PointerEventData> OnRightClick;
 
     public void SetPosition(Vector2 pos)
@@ -56,11 +57,16 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         Rect.position = pos;
     }
 
+    public void SetLinePosition(Vector2 pos)
+    {
+        StartArg.Line.SetEndPoint(pos);
+        EndArg.Line.SetStartPoint(pos);
+    }
+
     public void SetPositionWithLine(Vector2 pos)
     {
         SetPosition(pos);
-        StartArg.Line.SetEndPoint(pos);
-        EndArg.Line.SetStartPoint(pos);
+        SetLinePosition(pos);
     }
 
     public void MovePositionWithLine(Vector2 direction)
@@ -135,6 +141,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
         _isRemoved = true;
 
+        OnGettableRemove?.Invoke();
         RemoveThisRequest?.Invoke(this);
         RemoveAllOnSelectedRequest?.Invoke();
 
@@ -147,17 +154,31 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     public void OnDrag(PointerEventData eventData)
     {
         if (IsSelected)
+        {
             OnSelectedMove?.Invoke(null, eventData.delta);  // null을 할당하면 관리자에서 드래깅 이벤트로 이 객체까지 움직여줌.
-                                                            // => 기본적으로 delta를 통해 움직이도록 되어있지만 이 객체는 계속적으로 현재 마우스 position을 기준으로 움직이기 때문에 움직임이 이상하게 안맞아서 이렇게 함.
+                                                            // => 기본적으로 delta를 통해 움직이도록 되어있지만 이 객체는 계속적으로
+                                                            // 현재 마우스 position을 기준으로 움직이기 때문에 움직임이 이상하게 안맞아서 이렇게 함.
+        }
         else
-            SetPositionWithLine(eventData.position);
+        {
+            Vector2 mousePosition = eventData.position;
+            bool isStick = false;
 
-        OnDragging?.Invoke();
+            OnSettableDrag?.Invoke(this, mousePosition, out isStick);
+
+            if (!isStick)
+            {
+                SetPositionWithLine(mousePosition);
+            }
+        }
+
+        OnDragging?.Invoke(eventData);
     }
     
     public void OnEndDrag(PointerEventData eventData)
     {
-        OnDragEnd?.Invoke();
+        OnSettableDragEnd?.Invoke();
+        OnDragEnd?.Invoke(eventData);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -271,6 +292,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
         _isRemoved = true;
 
+        OnGettableRemove?.Invoke();
         RemoveThisRequest?.Invoke(this);
         RemoveAllOnSelectedRequest?.Invoke();
     }
@@ -279,6 +301,25 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     {
         RemoveAllOnSelectedRequest?.Invoke();
         IsSelected = false;
+    }
+    #endregion
+
+    #region Sorting
+    public event SettableEventHandler OnSettableDrag;
+
+    public event Action OnSettableDragEnd;
+
+    public event Action OnGettableRemove;
+    public bool IsActive => gameObject.activeInHierarchy;
+
+    public Vector2 GetPosition()
+    {
+        return Rect.position;
+    }
+
+    void ISortingPositionSettable.SetPosition(Vector2 position)
+    {
+        SetPositionWithLine(position);
     }
     #endregion
 }

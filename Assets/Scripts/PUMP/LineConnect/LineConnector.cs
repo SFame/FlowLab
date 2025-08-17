@@ -112,6 +112,7 @@ public class LineConnector : MonoBehaviour
     private bool _freezeLinesAttributes;
     private Color? _edgeRingColor = null;
     private bool _isRemoved = false;
+    private readonly LineDragSettableTemp _lineDragSettableTemp = new();
 
     private List<LineArg> LineArgs { get; set; } = new();
     private List<LineEdge> Edges { get; set; } = new();
@@ -152,6 +153,8 @@ public class LineConnector : MonoBehaviour
             }
         }
     }
+
+    public ISortingPositionSettable SettableTemp => _lineDragSettableTemp;
 
 
     public void Initialize(Vector2 start, Vector2 end)
@@ -354,11 +357,7 @@ public class LineConnector : MonoBehaviour
         lineArg.Line.OnDragStart += eventData =>
         {
             isDragging = true;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                transform as RectTransform,
-                eventData.position,
-                eventData.pressEventCamera,
-                out Vector2 dragStartPosition);
+            Vector2 dragStartPosition = eventData.position;
 
             AddArgToNext(lineArg, dragStartPosition, lineArg.End);
             lineArg.Line.SetEndPoint(dragStartPosition);
@@ -368,27 +367,41 @@ public class LineConnector : MonoBehaviour
 
         lineArg.Line.OnDragging += eventData =>
         {
-            if (!isDragging) return;
+            if (!isDragging)
+            {
+                return;
+            }
 
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                transform as RectTransform,
-                eventData.position,
-                eventData.pressEventCamera,
-                out Vector2 currentPosition);
+            Vector2 currentPosition = eventData.position;
 
             int index = LineArgs.IndexOf(lineArg);
             if (index != -1 && index < LineArgs.Count - 1)
             {
-                lineArg.Line.SetEndPoint(currentPosition);
-                LineArgs[index + 1].Line.SetStartPoint(currentPosition);
-                LineUpdated?.Invoke();
+                
+                _lineDragSettableTemp.SubscribeSetPosition(position =>
+                {
+                    lineArg.Line.SetEndPoint(position);
+                    LineArgs[index + 1].Line.SetStartPoint(position);
+                    LineUpdated?.Invoke();
+                    SetDraggingEdgePosition(position);
+                });
 
-                SetDraggingEdgePosition(currentPosition);
+                _lineDragSettableTemp.InvokeOnSettableDrag(currentPosition, out bool isStick);
+
+                if (!isStick)
+                {
+                    lineArg.Line.SetEndPoint(currentPosition);
+                    LineArgs[index + 1].Line.SetStartPoint(currentPosition);
+                    LineUpdated?.Invoke();
+
+                    SetDraggingEdgePosition(currentPosition);
+                }
             }
         };
 
         lineArg.Line.OnDragEnd += _ =>
         {
+            _lineDragSettableTemp.InvokeOnSettableDragEnd();
             SetEdges();
             DisableDraggingEdge();
             OnDragEnd?.Invoke();
@@ -439,9 +452,9 @@ public class LineConnector : MonoBehaviour
     private LineEdge GetNewEdge()
     {
         LineEdge edge = InstantiateNewEdge();
-        edge.OnDragEnd += () => OnDragEnd?.Invoke();
-        edge.OnDragEnd += () => LineUpdated?.Invoke();
-        edge.OnDragging += () => LineUpdated?.Invoke();
+        edge.OnDragEnd += _ => OnDragEnd?.Invoke();
+        edge.OnDragEnd += _ => LineUpdated?.Invoke();
+        edge.OnDragging += _ => LineUpdated?.Invoke();
         edge.OnRightClick += eventData => ShowEdgeContext(eventData, edge);
         OnEdgeAdded?.Invoke(edge);
         return edge;
@@ -550,6 +563,53 @@ public class LineConnector : MonoBehaviour
         {
             GameObject lineOjb = Line.gameObject;
             Destroy(lineOjb);
+        }
+    }
+
+    private class LineDragSettableTemp : ISortingPositionSettable
+    {
+        private SettableEventHandler _onSettableDrag;
+        private Action _onSettableDragEnd;
+        private Action<Vector2> _onSetPosition;
+
+        event SettableEventHandler ISortingPositionSettable.OnSettableDrag
+        {
+            add => _onSettableDrag += value;
+            remove => _onSettableDrag -= value;
+        }
+
+        event Action ISortingPositionSettable.OnSettableDragEnd
+        {
+            add => _onSettableDragEnd += value;
+            remove => _onSettableDragEnd -= value;
+        }
+
+        void ISortingPositionSettable.SetPosition(Vector2 position)
+        {
+            _onSetPosition?.Invoke(position);
+        }
+
+        private void Clear()
+        {
+            _onSetPosition = null;
+        }
+
+        public void SubscribeSetPosition(Action<Vector2> action)
+        {
+            Clear();
+            _onSetPosition += action;
+        }
+
+        public void InvokeOnSettableDrag(Vector2 position, out bool isStick)
+        {
+            isStick = false;
+            _onSettableDrag?.Invoke(this, position, out isStick);
+        }
+
+        public void InvokeOnSettableDragEnd()
+        {
+            _onSettableDragEnd?.Invoke();
+            Clear();
         }
     }
 }

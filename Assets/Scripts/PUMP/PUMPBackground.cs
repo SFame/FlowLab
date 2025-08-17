@@ -19,7 +19,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
-    [SerializeField] private PUMPTool m_PumpTool;
+    [SerializeField] private LineConnectManager m_LineConnectManager;
+    [SerializeField] private LineEdgeSortingManager m_LineEdgeSortingManager;
 
     [Space(10)]
 
@@ -47,7 +48,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private bool _destroyed = false;
     private PUMPComponentGetter _componentGetter;
     private HashSet<object> _isOnChangeBlocker = new();
-    private LineConnectManager _lineConnectManager;
     private RectTransform _rect;
     private Canvas _rootCanvas;
     private CanvasGroup _canvasGroup;
@@ -359,19 +359,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             return _rect;
         }
     }
-    
-    public LineConnectManager LineConnectManager
-    {
-        get
-        {
-            if (_lineConnectManager == null)
-            {
-                _lineConnectManager = GetComponentInChildren<LineConnectManager>();
-            }
 
-            return _lineConnectManager;
-        }
-    }
+    public LineConnectManager LineConnectManager => m_LineConnectManager;
+
+    public LineEdgeSortingManager LineEdgeSortingManager => m_LineEdgeSortingManager;
 
     public PUMPComponentGetter ComponentGetter
     {
@@ -542,7 +533,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             }
             catch (NullReferenceException nullEx)
             {
-                Debug.LogWarning("Saved information has changed");
+                Debug.LogWarning($"Saved information has changed {nodeType}: {nullEx.Message}");
             }
         }
 

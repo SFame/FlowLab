@@ -248,6 +248,11 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             }
 
             Handles.Add(handle);
+
+            if (handle.TP is ISortingPositionGettable gettable)
+            {
+                Node.Background.LineEdgeSortingManager.AddGettable(gettable);
+            }
         }
 
         _hasSet = true;

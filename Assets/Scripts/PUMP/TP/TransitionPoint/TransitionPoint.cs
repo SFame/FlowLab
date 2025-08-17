@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using Utils;
 
 public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointerEnterHandler, IMoveable, 
-                                        IGameObject, IPointerExitHandler, IPointerClickHandler
+                                        IGameObject, IPointerExitHandler, IPointerClickHandler, ISortingPositionGettable
 {
     #region On Inspacetor
     [Header("Options")]
@@ -45,6 +45,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     private void OnDestroy()
     {
+        OnGettableRemove?.Invoke();
         Connection?.Dispose();
         _radialCts.CancelAndDispose();
         _stateDisplayCts.CancelAndDispose();
@@ -369,6 +370,17 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
             }
         }
         catch (OperationCanceledException) { }
+    }
+    #endregion
+
+    #region EdgeSorting
+    public event Action OnGettableRemove;
+
+    public bool IsActive => gameObject.activeInHierarchy;
+
+    public Vector2 GetPosition()
+    {
+        return WorldPosition;
     }
     #endregion
 }

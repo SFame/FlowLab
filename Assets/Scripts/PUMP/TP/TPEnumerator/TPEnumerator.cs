@@ -126,7 +126,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
         {
             throw new ArgumentNullException("'types' Cannot be null");
         }
-
+        
         for (int i = 0; i < types.Length; i++)
         {
             GameObject TPObj = InstantiateTP();
@@ -141,6 +141,11 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
             TPObj.transform.SetParent(m_Layout.transform);
 
             TPs.Add(tp);
+
+            if (tp is ISortingPositionGettable gettable)
+            {
+                Node.Background.LineEdgeSortingManager.AddGettable(gettable);
+            }
         }
 
         SizeUpdate();
@@ -230,6 +235,7 @@ public class TPEnumerator : MonoBehaviour, ITPEnumerator
                 Destroy(gameObject.GameObject);
             }
         }
+
         TPs.Clear();
     }
     #endregion
