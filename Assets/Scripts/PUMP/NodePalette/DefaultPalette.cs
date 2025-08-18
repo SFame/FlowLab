@@ -30,7 +30,7 @@ public class DefaultPalette : NodePalette
             "I/O", new Dictionary<Type, string>
             {
                 { typeof(Trigger), "Trigger" },
-                { typeof(ClickSwitch), "On/Off Switch" },
+                { typeof(OnOffSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field" },
                 { typeof(KeyInput), "Key Input" },
@@ -57,6 +57,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Counter), "Counter" },
                 { typeof(Sender), "Sender" },
                 { typeof(SignalDetector), "Signal Detector" },
+                { typeof(TFlipFlop), "T Flip-Flop" },
                 { typeof(Timer), "Timer" },
                 { typeof(FrequencyMeter), "Frequency Meter" },
             }

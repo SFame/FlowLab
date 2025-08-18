@@ -179,6 +179,11 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                     SetType(TransitionType.String);
                     Node.ReportChanges();
                 }, text: $"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>"));
+                context.Add(new ContextElement(clickAction: () =>
+                {
+                    SetType(TransitionType.Pulse);
+                    Node.ReportChanges();
+                }, text: $"Type: <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>"));
             }
 
             return context;

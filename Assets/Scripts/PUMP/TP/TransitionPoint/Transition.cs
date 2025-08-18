@@ -980,7 +980,7 @@ public static class TransitionUtil
         TransitionType.Int => new Color(0f, 1f, 0f),
         TransitionType.Float => new Color(0.94f, 0.69f, 0f),
         TransitionType.String => new Color(0.94f, 0.34f, 1f),
-        TransitionType.Pulse => new Color(1.0f, 1.0f, 1.0f),
+        TransitionType.Pulse => new Color(0.7f, 0.7f, 0.7f),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => Color.black,
     };

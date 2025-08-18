@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class ClickSwitch : Node, INodeAdditionalArgs<bool>
+public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
     private ClickSwitchSupport _clickSwitchSupport;
@@ -23,7 +23,7 @@ public class ClickSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
 
-    public override string NodePrefabPath => "PUMP/Prefab/Node/CLICK_SWITCH";
+    public override string NodePrefabPath => "PUMP/Prefab/Node/ON_OFF_SWITCH";
 
     protected override string NodeDisplayName => "On/Off";
 

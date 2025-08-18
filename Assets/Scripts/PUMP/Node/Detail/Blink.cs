@@ -31,16 +31,15 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
         }
     }
 
-
     protected override string NodeDisplayName => "Blnk";
 
     protected override List<string> InputNames => new List<string>() { "on", "rst" };
 
-    protected override List<string> OutputNames => new List<string>() { "Q" };
+    protected override List<string> OutputNames => new List<string>() { "q" };
 
-    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool, TransitionType.Bool };
+    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool, TransitionType.Pulse };
 
-    protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Pulse };
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/BLINK";
 
@@ -93,21 +92,19 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
             return;
         }
 
-
         if (args.Index == 1)
         {
-            if (args.State)
+            if (args.IsNull)
             {
-                Reset();
-                if (InputToken.FirstState.IsNull)
-                {
-                    OutputToken.PushAllAsNull();
-                }
-                else
-                {
-                    OutputToken.PushFirst(false);
-                }
+                return;
             }
+
+            Reset();
+            if (InputToken.FirstState.IsNull)
+            {
+                OutputToken.PushAllAsNull();
+            }
+
             return;
         }
 
@@ -116,12 +113,6 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
         if (args.State)
         {
             BlinkAsync().Forget();
-            return;
-        }
-
-        if (!args.State && args.BeforeState.IsNull)
-        {
-            OutputToken.PushFirst(false);
         }
     }
 
@@ -135,13 +126,13 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
         try
         {
             _isRunning = true;
-            _frameCount = 0;
+            _frameCount = _perFrame;
 
             while (!_cts.Token.IsCancellationRequested)
             {
                 if (_frameCount++ >= _perFrame)
                 {
-                    OutputToken[0].State = !OutputToken[0].State;
+                    OutputToken[0].State = Transition.Pulse();
                     _frameCount = 0;
                 }
 

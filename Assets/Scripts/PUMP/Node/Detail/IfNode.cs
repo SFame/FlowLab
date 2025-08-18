@@ -1,34 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IfNode : Node, INodeAdditionalArgs<bool>
+public class IfNode : Node
 {
-    private bool _skipFalse = false;
-
-    protected override List<ContextElement> ContextElements
-    {
-        get
-        {
-            List<ContextElement> @base = base.ContextElements;
-            @base.Add(new ContextElement($"Skip False => {!_skipFalse}", () =>
-            {
-                _skipFalse = !_skipFalse;
-                ReportChanges();
-            }));
-
-            return @base;
-        }
-    }
-
     protected override string NodeDisplayName => "If";
 
     protected override List<string> InputNames => new() { "exec", "?" };
 
     protected override List<string> OutputNames => new() { "then", "else" };
 
-    protected override List<TransitionType> InputTypes => new() { TransitionType.Bool, TransitionType.Bool };
+    protected override List<TransitionType> InputTypes => new() { TransitionType.Pulse, TransitionType.Bool };
 
-    protected override List<TransitionType> OutputTypes => new() { TransitionType.Bool, TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes => new() { TransitionType.Pulse, TransitionType.Pulse };
 
     protected override float InEnumeratorXPos => -34f;
 
@@ -49,52 +32,29 @@ public class IfNode : Node, INodeAdditionalArgs<bool>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (InputToken.HasAnyNull)
-        {
-            OutputToken.PushAllAsNull();
-            return;
-        }
-
-        if (args.BeforeState.IsNull)
-        {
-            OutputToken.PushAllAsDefault();
-        }
-
         if (args.Index != 0)
         {
             return;
         }
 
-        if (!args.IsStateChange && !_skipFalse)
+        if (args.IsNull)
         {
+            OutputToken.PushAllAsNull();
             return;
         }
 
-        if (!args.State)
+        if (InputToken.LastState.IsNull)
         {
-            if (!_skipFalse)
-            {
-                OutputToken.PushAllAsDefault();
-            }
-
             return;
         }
 
         if (InputToken.LastState)
         {
-            OutputToken[1].State = false;
-            OutputToken[0].State = true;
+            OutputToken[0].State = Transition.Pulse();
         }
         else
         {
-            OutputToken[0].State = false;
-            OutputToken[1].State = true;
+            OutputToken[1].State = Transition.Pulse();
         }
-    }
-
-    public bool AdditionalArgs
-    {
-        get => _skipFalse;
-        set => _skipFalse = value;
     }
 }

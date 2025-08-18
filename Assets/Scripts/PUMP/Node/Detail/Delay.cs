@@ -158,15 +158,15 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
         if (_delayType == newDelayType)
             return;
 
-        // ±âÁ¸ ´ë±â ÀÛ¾÷ Ãë¼Ò
+        // ê¸°ì¡´ ëŒ€ê¸° ì‘ì—… ì·¨ì†Œ
         _cts.CancelAndDispose();
         
         _delayType = newDelayType;
         
-        // ÄÁÅØ½ºÆ® ¸Ş´º °»½ÅÀ» À§ÇØ Ä³½Ã ÃÊ±âÈ­
+        // ì»¨í…ìŠ¤íŠ¸ ë©”ë‰´ ê°±ì‹ ì„ ìœ„í•´ ìºì‹œ ì´ˆê¸°í™”
         _contexts = null;
         
-        // ÀÔ·Â ÇÊµå Å¸ÀÔ°ú °ª ¾÷µ¥ÀÌÆ®
+        // ì…ë ¥ í•„ë“œ íƒ€ì…ê³¼ ê°’ ì—…ë°ì´íŠ¸
         UpdateInputFieldByDelayType();
         
         ReportChanges();

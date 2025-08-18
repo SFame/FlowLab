@@ -1,13 +1,9 @@
-using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class OneShot : Node, INodeAdditionalArgs<bool>
+public class OneShot : Node
 {
     private List<ContextElement> _contexts;
-    private readonly SafetyCancellationTokenSource _cts = new();
-    private bool _isBlink = false;
 
     protected override List<ContextElement> ContextElements
     {
@@ -20,7 +16,6 @@ public class OneShot : Node, INodeAdditionalArgs<bool>
                 _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> → In", () => SetInputType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> → In", () => SetInputType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color> → In", () => SetInputType(TransitionType.String)));
-
             }
 
             return _contexts;
@@ -41,7 +36,7 @@ public class OneShot : Node, INodeAdditionalArgs<bool>
 
     protected override List<TransitionType> InputTypes => new() { TransitionType.Bool };
 
-    protected override List<TransitionType> OutputTypes => new() { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes => new() { TransitionType.Pulse };
 
     protected override float InEnumeratorXPos => -34f;
 
@@ -60,45 +55,8 @@ public class OneShot : Node, INodeAdditionalArgs<bool>
         return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
-    protected override void OnBeforeReplayPending(bool[] pendings)
-    {
-        if (_isBlink && OutputToken.FirstState)
-        {
-            DelayOffAsync().Forget();
-        }
-    }
-
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        Blink();
-    }
-
-    protected override void OnBeforeRemove()
-    {
-        _cts.CancelAndDispose();
-    }
-
-    private void Blink()
-    {
-        OutputToken.PushFirst(true);
-        DelayOffAsync().Forget();
-    }
-
-    private async UniTaskVoid DelayOffAsync()
-    {
-        try
-        {
-            _isBlink = true;
-            await UniTask.NextFrame(PlayerLoopTiming.LastUpdate, _cts.Token, true);
-            OutputToken.PushFirst(false);
-            _isBlink = false;
-        }
-        catch (OperationCanceledException) { }
-    }
-
-    public bool AdditionalArgs
-    {
-        get => _isBlink;
-        set => _isBlink = value;
+        OutputToken.PushFirst(Transition.Pulse());
     }
 }

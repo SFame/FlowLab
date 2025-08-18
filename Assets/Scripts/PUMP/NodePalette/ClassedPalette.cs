@@ -29,7 +29,7 @@ public class ClassedPalette : NodePalette
         {
             "I/O", new Dictionary<Type, string>
             {
-                { typeof(ClickSwitch), "On/Off Switch" },
+                { typeof(OnOffSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field" },
                 { typeof(KeyInput), "Key Input" },
