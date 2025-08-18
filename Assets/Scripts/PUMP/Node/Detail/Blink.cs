@@ -80,18 +80,6 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (!args.IsStateChange)
-        {
-            return;
-        }
-
-        if (InputToken.FirstState.IsNull)
-        {
-            Reset();
-            OutputToken.PushAllAsNull();
-            return;
-        }
-
         if (args.Index == 1)
         {
             if (args.IsNull)
@@ -108,11 +96,20 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
             return;
         }
 
-        Reset();
-
-        if (args.State)
+        if (args.Index == 0)
         {
-            BlinkAsync().Forget();
+            Reset();
+
+            if (args.IsNull)
+            {
+                OutputToken.PushAllAsNull();
+                return;
+            }
+
+            if (args.State)
+            {
+                BlinkAsync().Forget();
+            }
         }
     }
 

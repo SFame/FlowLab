@@ -32,27 +32,20 @@ public class TFlipFlop : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args.Index == 0 && args.IsNull)
+        switch (args.Index)
         {
-            OutputToken.PushAllAsNull();
-            return;
-        }
-
-        if (args.Index == 0 && args.BeforeState.IsNull)
-        {
-            OutputToken.PushFirst(true);
-            return;
-        }
-
-        if (args.Index == 1 && !args.IsNull)
-        {
-            OutputToken.PushFirst(false);
-            return;
-        }
-
-        if (args.Index == 0)
-        {
-            OutputToken.PushFirst(!OutputToken.FirstState);
+            case 0 when args.IsNull:
+                OutputToken.PushAllAsNull();
+                return;
+            case 0 when args.BeforeState.IsNull:
+                OutputToken.PushFirst(true);
+                return;
+            case 0:
+                OutputToken.PushFirst(!OutputToken.FirstState);
+                return;
+            case 1 when !args.IsNull:
+                OutputToken.PushFirst(false);
+                break;
         }
     }
 }

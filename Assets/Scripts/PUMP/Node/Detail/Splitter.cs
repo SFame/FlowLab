@@ -76,7 +76,9 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
     protected override void StateUpdate(TransitionEventArgs args)
     {
         foreach (ITypeListenStateful sf in OutputToken)
+        {
             sf.State = args.State;
+        }
     }
 
     protected override void OnAfterInit()

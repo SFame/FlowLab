@@ -12,6 +12,7 @@ public class FrequencyMeter : Node
     private readonly SafetyCancellationTokenSource _cts = new();
 
     private const float WINDOW_SIZE = 1.0f;
+    private const float TARGET_PERIOD = 1.0f;
 
     protected override List<ContextElement> ContextElements
     {
@@ -24,6 +25,7 @@ public class FrequencyMeter : Node
                 _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> → In", () => SetInputType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> → In", () => SetInputType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color> → In", () => SetInputType(TransitionType.String)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color> → In", () => SetInputType(TransitionType.Pulse)));
 
             }
 
@@ -43,9 +45,9 @@ public class FrequencyMeter : Node
 
     protected override List<string> OutputNames => new() { "hz" };
 
-    protected override List<TransitionType> InputTypes => new() { TransitionType.Bool };
+    protected override List<TransitionType> InputTypes => new() { TransitionType.Pulse };
 
-    protected override List<TransitionType> OutputTypes => new() { TransitionType.Int };
+    protected override List<TransitionType> OutputTypes => new() { TransitionType.Float };
 
     protected override float InEnumeratorXPos => -34f;
 
@@ -96,12 +98,11 @@ public class FrequencyMeter : Node
 
                 while (!token.IsCancellationRequested && _signalWindow.Count > 0 && currentTime - _signalWindow.Peek() > WINDOW_SIZE)
                 {
-                    Debug.Log("AA");
                     _signalWindow.Dequeue();
                 }
 
-                Debug.Log("DD");
-                OutputToken.PushFirst(_signalWindow.Count);
+                float frequency = _signalWindow.Count / WINDOW_SIZE * TARGET_PERIOD;
+                OutputToken.PushFirst(frequency);
                 await UniTask.Yield(PlayerLoopTiming.Update, token, true);
             }
         }

@@ -71,6 +71,8 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>", () => SetType(TransitionType.Pulse)));
+
 
                 if (_delayType == DelayType.FixedTime)
                 {
@@ -101,13 +103,10 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
             {
                 _frameCount = Mathf.Max(1, (int)value);
             }
+
             _cts.CancelAndDispose();
             ReportChanges();
         };
-    }
-    protected override void OnAfterSetAdditionalArgs()
-    {
-        UpdateInputFieldByDelayType();
     }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
@@ -117,6 +116,11 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
+        if (InputToken.FirstType != OutputToken.FirstType)
+        {
+            return;
+        }
+
         _cts = _cts.CancelAndDisposeAndGetNew();
         PushAsync(args.State, _cts.Token).Forget();
     }
@@ -148,8 +152,8 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
     private void SetType(TransitionType type)
     {
         _cts.CancelAndDispose();
-        InputToken.SetTypeAll(type);
         OutputToken.SetTypeAll(type);
+        InputToken.SetTypeAll(type);
         ReportChanges();
     }
 

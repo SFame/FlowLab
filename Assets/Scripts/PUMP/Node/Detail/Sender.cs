@@ -9,23 +9,23 @@ public class Sender : Node
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
-    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Int, TransitionType.Bool };
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Int, TransitionType.Pulse };
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
-    protected override float InEnumeratorXPos => -38f;
+    protected override float InEnumeratorXPos => -34f;
 
-    protected override float OutEnumeratorXPos => 38f;
+    protected override float OutEnumeratorXPos => 34f;
 
     protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(110f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
     protected override string NodeDisplayName => "Send";
 
-    protected override float NameTextSize => 18f;
+    protected override float NameTextSize => 16f;
 
     protected override List<ContextElement> ContextElements
     {
@@ -38,6 +38,7 @@ public class Sender : Node
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>", () => SetType(TransitionType.Pulse)));
             }
 
             return _contexts;
@@ -51,15 +52,12 @@ public class Sender : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (!args.IsStateChange)
+        if (args.Index != 1 || args.IsNull)
         {
             return;
         }
 
-        if (args.Index == 1 && args.State)
-        {
-            OutputToken.PushFirst(InputToken.FirstState);
-        }
+        OutputToken.PushFirst(InputToken.FirstState);
     }
 
     private void SetType(TransitionType type)

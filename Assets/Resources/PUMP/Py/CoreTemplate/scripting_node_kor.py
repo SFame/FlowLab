@@ -200,6 +200,5 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
             ※이전 상태가 연결이 해제된 상태였거나, 신호가 소실된 네트워크 였던 경우 None이 입력될 수 있습니다
 
         is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
-            ※단, 소실되지 않은 (None이 아닌) Pulse 신호는 항상 True로 입력됩니다
     """
     pass

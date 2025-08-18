@@ -200,6 +200,5 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
             ※None may be input if the previous state was disconnected or the network had lost signals
 
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
-            ※However, valid (non-None) Pulse signals are always input as True
     """
     pass

@@ -8,7 +8,7 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override List<string> OutputNames { get; } = new List<string> { "cont" };
 
-    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Pulse, TransitionType.Pulse };
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
@@ -33,24 +33,21 @@ public class Counter : Node, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (!args.IsStateChange)
+        if (args.IsNull)
         {
             return;
         }
 
-        if (args.Index == 0 && args.State)
+        if (args.Index == 0)
         {
             _count++;
-            OutputToken.PushFirst(_count);
-            return;
         }
-
-        if (args.Index == 1 && args.State)
+        else
         {
             _count = 0;
-            OutputToken.PushFirst(_count);
-            return;
         }
+
+        OutputToken.PushFirst(_count);
     }
 
     public int AdditionalArgs

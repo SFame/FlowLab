@@ -15,9 +15,9 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
-    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool };
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Pulse, TransitionType.Pulse };
 
-    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Pulse };
 
     protected override float InEnumeratorXPos => -50f;
 
@@ -31,11 +31,11 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override string NodeDisplayName => "Timer";
 
-    protected override float NameTextSize => 25f;
+    protected override float NameTextSize => 20f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { Transition.False };
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void OnAfterInit()
@@ -57,14 +57,13 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         if (IsDeserialized && _arg._isStarted)
         {
             _cts?.Cancel();
-            OutputToken[0].State = false;
             _timerTask = TimerStart(GetCancellationToken(), _currentTime);
         }
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args.State && args.IsStateChange)
+        if (!args.IsNull)
         {
             if (args.Index == 0) // Start 요청
             {
@@ -145,7 +144,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
             _currentTime = 0f;
             TimerSupport.SliderUpdate(0f);
-            OutputToken[0].State = true;
+            OutputToken[0].State = Transition.Pulse();
         }
         catch (OperationCanceledException)
         {
@@ -153,7 +152,6 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
                 return;
 
             TimerSupport?.SliderUpdate(1f);
-            OutputToken[0].State = false;
         }
     }
 
@@ -177,7 +175,6 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
     {
         _cts?.Cancel();
         TimerSupport.SliderUpdate(1f);
-        OutputToken[0].State = false;
     }
 
     private CancellationToken GetCancellationToken()
