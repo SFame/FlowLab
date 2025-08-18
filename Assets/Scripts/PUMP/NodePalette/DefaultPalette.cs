@@ -29,6 +29,7 @@ public class DefaultPalette : NodePalette
         {
             "I/O", new Dictionary<Type, string>
             {
+                { typeof(Trigger), "Trigger" },
                 { typeof(ClickSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field" },
