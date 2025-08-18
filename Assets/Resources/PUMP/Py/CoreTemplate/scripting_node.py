@@ -42,6 +42,40 @@
 
 
 
+# ========================== Type Guide =========================
+# The following types can be used in the input_types and output_types lists.
+
+# 1. bool
+#    - Represents a logical 'State' of true or false.
+#    - e.g., output_applier.apply([True, True, False])
+
+# 2. int
+#    - Represents an integer value.
+#    - e.g., output_applier.apply([10, 20, 0])
+
+# 3. float
+#    - Represents a floating-point number.
+#    - e.g., output_applier.apply([10.9, 0.12, 0.0])
+
+# 4. str
+#    - Represents a string (text) value.
+#    - e.g., output_applier.apply(['Hello', "World"])
+
+# 5. Pulse
+#    - A type representing an 'execution signal (Event)' that triggers a node's action.
+#      It is distinct from a bool, which represents a 'State'.
+#    - Used for execution ports such as ▶ Exec, ▶ Then, ▶ Loop, etc.
+#    - [Output] To fire a signal from an output port of type Pulse, you must create and pass a Pulse() instance.
+#      # e.g., output_applier.apply([Pulse(), Pulse()])
+
+# ※Warning:
+# Do not declare the class yourself within the script, such as 'class Pulse:'.
+# The Pulse class is predefined and provided by the system.
+# Declaring it yourself may cause the script to malfunction or result in unexpected errors.
+# ===============================================================
+
+
+
 # Scripting Node must include the following members
 # ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -60,12 +94,12 @@ input_list: list = ['in 1', 'in 2']
 output_list: list = ['out 1']
 
 # Set the types of ports with the list below. Must match the length of input_list
-# Available types: bool, int, float, str
+# Available types: bool, int, float, str, Pulse
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 input_types: list = [bool, bool]
 
 # Set the types of ports with the list below. Must match the length of output_list
-# Available types: bool, int, float
+# Available types: bool, int, float, Pulse
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 output_types: list = [bool]
 
@@ -94,6 +128,9 @@ is_async: bool = False
 # output_applier.apply([True, None, 3.14])  # Signal loss on 2nd port only
 # output_applier.apply_at(1, None)          # Signal loss on port 1  
 # output_applier.apply_to('out 2', None)    # Signal loss on 'out 2' port
+
+# To assign a signal of type Pulse, create and use a Pulse instance
+# output_applier.apply([Pulse(), True, False])
 output_applier: OutputApplier = None
 
 # Printer object

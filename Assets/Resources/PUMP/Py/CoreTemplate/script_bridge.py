@@ -10,6 +10,19 @@ def add_reference(reference: str) -> None:
             reference_ex_logger(reference)
 
 
+class Pulse:
+    """A marker class to identify Pulse-type execution ports."""
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+        
+        return cls._instance
+
+def get_pulse_instance():
+    return Pulse()
+
+
 class OutputApplier:
     def __init__(self):
         self.callback_apply = None

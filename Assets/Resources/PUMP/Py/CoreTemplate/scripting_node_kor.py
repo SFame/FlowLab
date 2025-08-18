@@ -42,6 +42,40 @@
 
 
 
+# ========================== 타입 가이드 =========================
+# input_types와 output_types 리스트에 사용할 수 있는 타입들은 다음과 같습니다.
+
+# 1. bool
+#    - 참(True) 또는 거짓(False)의 논리적 '상태(State)'를 나타냅니다.
+#    - 예: output_applier.apply([True, True, False])
+
+# 2. int
+#    - 정수 값을 나타냅니다.
+#    - 예: output_applier.apply([10, 20, 0])
+
+# 3. float
+#    - 소수점을 포함한 숫자 값을 나타냅니다.
+#    - 예: output_applier.apply([10.9, 0.12, 0.0])
+
+# 4. str
+#    - 문자열(텍스트) 값을 나타냅니다.
+#    - 예: output_applier.apply(['Hello', "World"])
+
+# 5. Pulse
+#    - 노드의 동작을 유발하는 '실행 신호(Event)'를 나타내는 타입입니다.
+#      '상태(State)'를 나타내는 bool과 구분되어 사용됩니다.
+#    - ▶ Exec, ▶ Then, ▶ Loop 등과 같은 실행 포트에 사용됩니다.
+#    - [출력] Pulse 타입의 출력 포트에서 신호를 발생시키려면, Pulse() 인스턴스를 생성하여 전달해야 합니다.
+#      # 예: output_applier.apply([Pulse(), Pulse()])
+
+# ※주의사항:
+# 스크립트 내에서 직접 'class Pulse:' 와 같이 클래스를 선언하지 마십시오.
+# Pulse 클래스는 시스템에 의해 미리 정의되어 제공되므로,
+# 직접 선언하면 스크립트가 올바르게 작동하지 않거나 예상치 못한 오류가 발생할 수 있습니다.
+# ===============================================================
+
+
+
 # Scripting Node는 아래의 멤버를 반드시 포함해야 합니다
 # ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 
@@ -60,12 +94,12 @@ input_list: list = ['in 1', 'in 2']
 output_list: list = ['out 1']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
-# 사용 가능한 타입: bool, int, float, str
+# 사용 가능한 타입: bool, int, float, str, Pulse
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 input_types: list = [bool, bool]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
-# 사용 가능한 타입: bool, int, float
+# 사용 가능한 타입: bool, int, float, Pulse
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 output_types: list = [bool]
 
@@ -94,6 +128,9 @@ is_async: bool = False
 # output_applier.apply([True, None, 3.14])  # 2번째 포트만 신호 소실
 # output_applier.apply_at(1, None)          # 1번 포트 신호 소실  
 # output_applier.apply_to('out 2', None)    # 'out 2' 포트 신호 소실
+
+# Pulse 타입의 신호를 할당하려면 Pulse 인스턴스를 생성하여 사용하십시오
+# output_applier.apply([Pulse(), True, False])
 output_applier: OutputApplier = None
 
 # 프린터 객체

@@ -71,6 +71,7 @@ printer = Printer()";
     private Action<List<dynamic>> _initAction;
     private Action _terminateAction;
     private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
+    private Func<dynamic> _pulseInstanceGetter;
     private SafetyCancellationTokenSource _asyncModeCts;
     private bool _isAsync = false;
     private bool _isSetAsync = false;
@@ -188,6 +189,7 @@ printer = Printer()";
             }
 
             Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
+            _pulseInstanceGetter = Scope.GetVariable("get_pulse_instance");
             EssentialMembers["output_applier"] = Scope.GetVariable("output_applier");
             EssentialMembers["printer"] = Scope.GetVariable("printer");
 
@@ -229,7 +231,18 @@ printer = Printer()";
     /// </summary>
     public void InvokeInit(List<Transition> inputTokenState)
     {
-        List<dynamic> dynamicStateList = inputTokenState.Select(state => state.GetValueAsDynamic()).ToList();
+        List<dynamic> dynamicStateList = inputTokenState.Select(state =>
+        {
+            dynamic dynamicState = state.GetValueAsDynamic();
+
+            if (dynamicState is Pulse)
+            {
+                return _pulseInstanceGetter();
+            }
+
+            return dynamicState;
+        }).ToList();
+
 
         if (IsAsync)
         {
@@ -294,9 +307,22 @@ printer = Printer()";
         // Create Arguments
         int index = args.Index;
         dynamic state = args.State.GetValueAsDynamic();
+        state = state is Pulse ? _pulseInstanceGetter() : state;
         dynamic beforeState = args.BeforeState.GetValueAsDynamic();
+        beforeState = beforeState is Pulse ? _pulseInstanceGetter : beforeState;
         bool isStateChange = args.IsStateChange;
-        List<dynamic> dynamicStateList = inputTokenState.Select(inputState => inputState.GetValueAsDynamic()).ToList();
+
+        List<dynamic> dynamicStateList = inputTokenState.Select(state =>
+        {
+            dynamic dynamicState = state.GetValueAsDynamic();
+
+            if (dynamicState is Pulse)
+            {
+                return _pulseInstanceGetter();
+            }
+
+            return dynamicState;
+        }).ToList();
 
         if (IsAsync)
         {
@@ -395,10 +421,8 @@ printer = Printer()";
             _stateUpdateAction = (inputs, index, state, isChanged, isDisconnected) =>
                 stateUpdateFunc(inputs, index, state, isChanged, isDisconnected);
 
-            var typeTuple = TypeCheck(EssentialMembers["input_list"], EssentialMembers["output_list"],
+            (IList<Type>, IList<Type>) typeTuple = TypeCheck(EssentialMembers["input_list"], EssentialMembers["output_list"],
                 EssentialMembers["input_types"], EssentialMembers["output_types"]);
-
-
 
             ScriptFieldInfo = new ScriptFieldInfo
             (
@@ -437,12 +461,18 @@ printer = Printer()";
             throw new ArgumentException("output_list와 output_types의 길이가 일치하지 않습니다");
         }
 
-
+        Type pulseType = typeof(Pulse);
         List<Type> inTypes = new();
         foreach (object obj in inputTypes)
         {
             if (obj is PythonType pyType)
             {
+                if (PythonType.Get__name__(pyType) == nameof(Pulse))
+                {
+                    inTypes.Add(pulseType);
+                    continue;
+                }
+
                 Type type = pyType.__clrtype__();
 
                 if (!_availableType.Contains(type))
@@ -463,6 +493,12 @@ printer = Printer()";
         {
             if (obj is PythonType pyType)
             {
+                if (PythonType.Get__name__(pyType) == nameof(Pulse))
+                {
+                    outTypes.Add(pulseType);
+                    continue;
+                }
+
                 Type type = pyType.__clrtype__();
 
                 if (!_availableType.Contains(type))

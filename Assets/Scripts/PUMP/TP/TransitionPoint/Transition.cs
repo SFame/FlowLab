@@ -13,6 +13,17 @@ public enum TransitionType
     Int,
     Float,
     String,
+    Pulse,
+}
+
+public readonly struct Pulse
+{
+    public Pulse(bool isNull = false)
+    {
+        IsNull = isNull;
+    }
+
+    public bool IsNull { get; }
 }
 
 [Serializable]
@@ -36,8 +47,11 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         TransitionType.Int => Transition.Zero,
         TransitionType.Float => Transition.FloatZero,
         TransitionType.String => Transition.Empty,
+        TransitionType.Pulse => Pulse(),
         _ => throw new ArgumentOutOfRangeException(nameof(transitionType), $"Unsupported transition type: {transitionType}")
     };
+
+    public static Transition Pulse() => new Transition(TransitionType.Pulse, TransitionValue.Default(), false);
 
     // ---- Bool constants ----
     public static Transition True => true;
@@ -98,10 +112,12 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             { Type: TransitionType.Int, IsNull: false } => (int)this,
             { Type: TransitionType.Float, IsNull: false } => (float)this,
             { Type: TransitionType.String, IsNull: false } => (string)this,
+            { Type: TransitionType.Pulse, IsNull: false} => (Pulse)this,
             { Type: TransitionType.Bool, IsNull: true } => null,
             { Type: TransitionType.Int, IsNull: true } => null,
             { Type: TransitionType.Float, IsNull: true } => null,
             { Type: TransitionType.String, IsNull: true } => null,
+            { Type: TransitionType.Pulse, IsNull: true } => null,
             _ => null
         };
 
@@ -122,6 +138,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             TransitionType.Int => IsNull ? "Null" : Value.IntValue.ToString(),
             TransitionType.Float => IsNull ? "Null" : Value.FloatValue.ToString("0.0###"),
             TransitionType.String => IsNull ? "Null" : Value.StringValue ?? string.Empty,
+            TransitionType.Pulse => IsNull ? "Null" : "Pulse",
             _ => "Unknown Type"
         };
     }
@@ -150,6 +167,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             TransitionType.Int => Value.IntValue == other.Value.IntValue,
             TransitionType.Float => Value.FloatValue.Equals(other.Value.FloatValue),
             TransitionType.String => string.Equals(Value.StringValue, other.Value.StringValue, StringComparison.Ordinal),
+            TransitionType.Pulse => true,
             _ => false
         };
     }
@@ -187,6 +205,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             TransitionType.Int => ((int)this).CompareTo((int)other),
             TransitionType.Float => ((float)this).CompareTo((float)other),
             TransitionType.String => string.Compare(((string)this), (string)other, StringComparison.Ordinal),
+            TransitionType.Pulse => 0,
             _ => throw new TransitionTypeArgumentOutOfRangeException(Type)
         };
     }
@@ -205,7 +224,8 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             TransitionType.Int => HashCode.Combine(Type, Value.IntValue),
             TransitionType.Float => HashCode.Combine(Type, Value.FloatValue),
             TransitionType.String => HashCode.Combine(Type, Value.StringValue ?? string.Empty),
-            _ => 0
+            TransitionType.Pulse => HashCode.Combine(Type, true),
+            _ => throw new TransitionTypeArgumentOutOfRangeException(Type)
         };
     }
 
@@ -223,6 +243,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
             TransitionType.Int => IsNull ? "Null" : Value.IntValue.ToString(),
             TransitionType.Float => IsNull ? "Null" : Value.FloatValue.ToString(),
             TransitionType.String => IsNull ? "Null" : Value.StringValue ?? string.Empty,
+            TransitionType.Pulse => IsNull ? "Null" : "Pulse",
             _ => "Unknown Type"
         };
 
@@ -282,6 +303,13 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         _isNull = isNull;
     }
 
+    public Transition(Pulse pulse, bool isNull = false)
+    {
+        _type = TransitionType.Pulse;
+        _value = TransitionValue.Default();
+        _isNull = isNull;
+    }
+
     public Transition(dynamic value, bool isNull = false)
     {
         if (value is bool b)
@@ -326,6 +354,12 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         {
             _type = TransitionType.String;
             _value = new TransitionValue(stringValue: s);
+            _isNull = isNull;
+        }
+        else if (value is Pulse p)
+        {
+            _type = TransitionType.Pulse;
+            _value = TransitionValue.Default();
             _isNull = isNull;
         }
         else if (value == null)
@@ -427,6 +461,27 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
         }
 
         return t.IsNull ? string.Empty : t.Value.StringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead"); ;
+    }
+
+    // ---------- Pulse ----------
+    public static implicit operator Transition(Pulse p)
+    {
+        return new Transition(TransitionType.Pulse, TransitionValue.Default());
+    }
+
+    public static implicit operator Pulse(Transition t)
+    {
+        if (t.Type == TransitionType.None)
+        {
+            throw new TransitionNoneTypeException();
+        }
+
+        if (t.Type != TransitionType.Pulse)
+        {
+            throw new TransitionTypeCastException(t.Type, typeof(string));
+        }
+
+        return t.IsNull ? new Pulse(true) : new Pulse();
     }
     #endregion
 
@@ -610,6 +665,7 @@ public static class TransitionUtil
         TransitionType.Int => typeof(int),
         TransitionType.Float => typeof(float),
         TransitionType.String => typeof(string),
+        TransitionType.Pulse => typeof(Pulse),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionTypeArgumentOutOfRangeException(transitionType)
     };
@@ -621,6 +677,7 @@ public static class TransitionUtil
         Type t when t == typeof(int) => TransitionType.Int,
         Type t when t == typeof(float) => TransitionType.Float,
         Type t when t == typeof(string) => TransitionType.String,
+        Type t when t == typeof(Pulse) => TransitionType.Pulse,
         _ => throw new TransitionTypeArgumentOutOfRangeException(type)
     };
 
@@ -678,6 +735,8 @@ public static class TransitionUtil
                             return RefiningNull(new Transition(false, fromTransition.IsNull));
                         }
                         throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
+                    case (TransitionType.Pulse):
+                        throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
@@ -695,6 +754,8 @@ public static class TransitionUtil
                         if (!int.TryParse(fromTransition, out int intValue3))
                             throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
                         return RefiningNull(new Transition(intValue3, fromTransition.IsNull));
+                    case (TransitionType.Pulse):
+                        throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
@@ -711,12 +772,17 @@ public static class TransitionUtil
                         if (!float.TryParse(fromTransition, out float floatValue2))
                             throw new TransitionStringConversionException(fromTransition.Type, toType, fromTransition);
                         return RefiningNull(new Transition(floatValue2, fromTransition.IsNull));
+                    case (TransitionType.Pulse):
+                        throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
                     default:
                         throw new TransitionTypeArgumentOutOfRangeException(fromTransition.Type);
                 }
 
             case TransitionType.String:
                 return RefiningNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
+
+            case TransitionType.Pulse:
+                throw new TransitionIncompatibleTypeException(fromTransition.Type, toType);
 
             default:
                 throw new TransitionTypeArgumentOutOfRangeException(toType);
@@ -757,6 +823,8 @@ public static class TransitionUtil
                         bool boolValue = (int)fromTransition != 0;
                         result = RefiningNull(new Transition(boolValue, fromTransition.IsNull));
                         return true;
+                    case (TransitionType.Float):
+                        return false;
                     case (TransitionType.String):
                         string fromString = fromTransition;
                         if (fromString is "True" or "true")
@@ -777,6 +845,8 @@ public static class TransitionUtil
                             return true;
                         }
 
+                        return false;
+                    case (TransitionType.Pulse):
                         return false;
                     default:
                         return false;
@@ -806,6 +876,8 @@ public static class TransitionUtil
                         }
                         result = RefiningNull(new Transition(intValue3, fromTransition.IsNull));
                         return true;
+                    case (TransitionType.Pulse):
+                        return false;
                     default:
                         return false;
                 }
@@ -832,13 +904,24 @@ public static class TransitionUtil
                         }
                         result = RefiningNull(new Transition(floatValue2, fromTransition.IsNull));
                         return true;
+                    case (TransitionType.Pulse):
+                        return false;
                     default:
                         return false;
                 }
 
             case TransitionType.String:
-                result = RefiningNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
-                return true;
+                switch (fromTransition.Type)
+                {
+                    case (TransitionType.Pulse):
+                        return false;
+                    default:
+                        result = RefiningNull(new Transition(fromTransition.GetValueString(), fromTransition.IsNull));
+                        return true;
+                }
+
+            case (TransitionType.Pulse):
+                return false;
 
             default:
                 return false;
@@ -897,6 +980,7 @@ public static class TransitionUtil
         TransitionType.Int => new Color(0f, 1f, 0f),
         TransitionType.Float => new Color(0.94f, 0.69f, 0f),
         TransitionType.String => new Color(0.94f, 0.34f, 1f),
+        TransitionType.Pulse => new Color(1.0f, 1.0f, 1.0f),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => Color.black,
     };

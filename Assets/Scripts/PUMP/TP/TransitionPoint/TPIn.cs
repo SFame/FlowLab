@@ -67,7 +67,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
             value.ThrowIfTypeMismatch(Type);
 
             Transition beforeState = _state;
-            bool isStateChange = !beforeState.Equals(value);
+            bool isStateChange = value is { Type: TransitionType.Pulse, IsNull: false } || !beforeState.Equals(value);
             _state = value;
 
             SetImageColor(_state.IsNull ? m_DefaultColor: m_StateActiveColor);
