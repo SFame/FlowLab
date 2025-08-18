@@ -478,7 +478,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
 
         if (t.Type != TransitionType.Pulse)
         {
-            throw new TransitionTypeCastException(t.Type, typeof(string));
+            throw new TransitionTypeCastException(t.Type, typeof(Pulse));
         }
 
         return t.IsNull ? new Pulse(true) : new Pulse();

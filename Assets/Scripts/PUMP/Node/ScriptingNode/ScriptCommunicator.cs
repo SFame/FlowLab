@@ -1,13 +1,14 @@
+using Cysharp.Threading.Tasks;
+using IronPython.Hosting;
+using IronPython.Runtime.Types;
+using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.Scripting;
+using Microsoft.Scripting.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using Cysharp.Threading.Tasks;
-using IronPython.Hosting;
-using IronPython.Runtime.Types;
-using Microsoft.Scripting;
-using Microsoft.Scripting.Hosting;
 using UnityEngine;
 
 public class ScriptCommunicator : IDisposable
@@ -73,6 +74,7 @@ printer = Printer()";
     private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
     private Func<dynamic> _pulseInstanceGetter;
     private SafetyCancellationTokenSource _asyncModeCts;
+    private readonly string _pulseInstanceId;
     private bool _isAsync = false;
     private bool _isSetAsync = false;
     private bool _disposed = false;
@@ -133,6 +135,7 @@ printer = Printer()";
             Scope.SetVariable("reference_ex_logger", new Action<string>(LoggingMissingReference));
             _logger = logger;
             _exLogger = exLogger;
+            _pulseInstanceId = Guid.NewGuid().ToString();
         }
         catch (Exception e)
         {
@@ -190,6 +193,7 @@ printer = Printer()";
 
             Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
             _pulseInstanceGetter = Scope.GetVariable("get_pulse_instance");
+            _pulseInstanceGetter()._set_instance_id(_pulseInstanceId);
             EssentialMembers["output_applier"] = Scope.GetVariable("output_applier");
             EssentialMembers["printer"] = Scope.GetVariable("printer");
 
@@ -516,239 +520,171 @@ printer = Printer()";
         return (inTypes, outTypes);
     }
 
-    private void InvokeApplyOutput(IList<dynamic> values)
+    private void InvokeActionOnMainThread(Action action, bool dispatchMainThread)
     {
-        if (IsAsync)
+        if (dispatchMainThread)
         {
-            UniTask.Post(() =>
-            {
-                try
-                {
-                    List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
-                    {
-                        if (value == null)
-                            return null;
-
-                        return new Transition(value);
-                    }).ToList();
-
-                    OnOutputApply?.Invoke(transitions);
-                }
-                catch (TransitionException tEx)
-                {
-                    _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다\n{tEx.Message}");
-                    _exLogger?.Invoke(tEx);
-                }
-                catch (ArgumentException e)
-                {
-                    _logger?.Invoke($"output_applier.apply()의 outputs의 길이가 노드의 출력과 다릅니다. outputs length: {values.Count}");
-                    _exLogger?.Invoke(e);
-                }
-                catch (Exception e)
-                {
-                    _logger?.Invoke("output_applier.apply() 도중 문제가 발생했습니다");
-                    _exLogger?.Invoke(e);
-                }
-            });
-
+            UniTask.Post(action);
             return;
         }
 
-        try
+        action?.Invoke();
+    }
+
+    private void InvokeApplyOutput(IList<dynamic> values)
+    {
+        Action applyAction = () =>
         {
-            List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
+            try
             {
-                if (value == null)
-                    return null;
+                List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
+                {
+                    if (value == null)
+                        return null;
 
-                return new Transition(value);
-            }).ToList();
+                    try
+                    {
+                        if (value._get_instance_id() == _pulseInstanceId)
+                        {
+                            return Transition.Pulse();
+                        }
+                    }
+                    catch (RuntimeBinderException) { }
 
-            OnOutputApply?.Invoke(transitions);
-        }
-        catch (TransitionException tEx)
-        {
-            _logger?.Invoke("출력의 타입이 다르거나 Null을 할당하였습니다");
-            _exLogger?.Invoke(tEx);
-        }
-        catch (ArgumentException e)
-        {
-            _logger?.Invoke($"output_applier.apply()의 outputs의 길이가 노드의 출력과 다릅니다. outputs length: {values.Count}");
-            _exLogger?.Invoke(e);
-        }
-        catch (Exception e)
-        {
-            _logger?.Invoke("output_applier.apply() 도중 문제가 발생했습니다");
-            _exLogger?.Invoke(e);
-        }
+                    return new Transition(value);
+                }).ToList();
+
+                OnOutputApply?.Invoke(transitions);
+            }
+            catch (TransitionException tEx)
+            {
+                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다\n{tEx.Message}");
+                _exLogger?.Invoke(tEx);
+            }
+            catch (ArgumentException e)
+            {
+                _logger?.Invoke($"output_applier.apply()의 outputs의 길이가 노드의 출력과 다릅니다. outputs length: {values.Count}");
+                _exLogger?.Invoke(e);
+            }
+            catch (Exception e)
+            {
+                _logger?.Invoke("output_applier.apply() 도중 문제가 발생했습니다");
+                _exLogger?.Invoke(e);
+            }
+        };
+
+        InvokeActionOnMainThread(applyAction, IsAsync);
     }
 
     private void InvokeApplyOutputAt(int index, dynamic value)
     {
-        if (IsAsync)
+        Action applyAction = () =>
         {
-            UniTask.Post(() =>
+            try
             {
+                if (value == null)
+                {
+                    OnOutputApplyAt?.Invoke(index, null);
+                    return;
+                }
+
                 try
                 {
-                    if (value == null)
+                    if (value._get_instance_id() == _pulseInstanceId)
                     {
-                        OnOutputApplyAt?.Invoke(index, null);
+                        OnOutputApplyAt?.Invoke(index, Transition.Pulse());
                         return;
                     }
+                }
+                catch (RuntimeBinderException) { }
 
-                    OnOutputApplyAt?.Invoke(index, new Transition(value));
-                }
-                catch (TransitionException tEx)
-                {
-                    _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
-                    _exLogger?.Invoke(tEx);
-                }
-                catch (IndexOutOfRangeException ie)
-                {
-                    _logger?.Invoke($"output_applier.apply_at()의 설정 인덱스가 범위를 벗어났습니다: index: ({index})");
-                    _exLogger?.Invoke(ie);
-                }
-                catch (Exception e)
-                {
-                    _logger?.Invoke("output_applier.apply_at() 도중 문제가 발생했습니다");
-                    _exLogger?.Invoke(e);
-                }
-            });
-
-            return;
-        }
-
-        try
-        {
-            if (value == null)
-            {
-                OnOutputApplyAt?.Invoke(index, null);
-                return;
+                OnOutputApplyAt?.Invoke(index, new Transition(value));
             }
+            catch (TransitionException tEx)
+            {
+                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
+                _exLogger?.Invoke(tEx);
+            }
+            catch (IndexOutOfRangeException ie)
+            {
+                _logger?.Invoke($"output_applier.apply_at()의 설정 인덱스가 범위를 벗어났습니다: index: ({index})");
+                _exLogger?.Invoke(ie);
+            }
+            catch (Exception e)
+            {
+                _logger?.Invoke("output_applier.apply_at() 도중 문제가 발생했습니다");
+                _exLogger?.Invoke(e);
+            }
+        };
 
-            OnOutputApplyAt?.Invoke(index, new Transition(value));
-        }
-        catch (TransitionException tEx)
-        {
-            _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
-            _exLogger?.Invoke(tEx);
-        }
-        catch (IndexOutOfRangeException ie)
-        {
-            _logger?.Invoke($"output_applier.apply_at()의 설정 인덱스가 범위를 벗어났습니다: index: ({index})");
-            _exLogger?.Invoke(ie);
-        }
-        catch (Exception e)
-        {
-            _logger?.Invoke($"output_applier.apply_at() 도중 문제가 발생했습니다");
-            _exLogger?.Invoke(e);
-        }
+        InvokeActionOnMainThread(applyAction, IsAsync);
     }
-
 
     private void InvokeApplyOutputTo(string name, dynamic value)
     {
-        if (IsAsync)
+        Action applyAction = () =>
         {
-            UniTask.Post(() =>
+            try
             {
+                if (value == null)
+                {
+                    OnOutputApplyTo?.Invoke(name, null);
+                    return;
+                }
+
                 try
                 {
-                    if (value == null)
+                    if (value._get_instance_id() == _pulseInstanceId)
                     {
-                        OnOutputApplyTo?.Invoke(name, null);
+                        OnOutputApplyTo?.Invoke(name, Transition.Pulse());
                         return;
                     }
+                }
+                catch (RuntimeBinderException) { }
 
-                    OnOutputApplyTo?.Invoke(name, new Transition(value));
-                }
-                catch (TransitionException tEx)
-                {
-                    _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
-                    _exLogger?.Invoke(tEx);
-                }
-                catch (KeyNotFoundException ke)
-                {
-                    _logger?.Invoke($"출력을 찾을 수 없습니다: name: ({name})");
-                    _exLogger?.Invoke(ke);
-                }
-                catch (AmbiguousMatchException ae)
-                {
-                    _logger?.Invoke($"중복되는 output_list 요소가 존재하면 output_applier.apply_to()를 사용할 수 없습니다: name: ({name})");
-                    _exLogger?.Invoke(ae);
-                }
-                catch (Exception e)
-                {
-                    _logger?.Invoke($"output_applier.apply_to() 도중 문제가 발생했습니다");
-                    _exLogger?.Invoke(e);
-                }
-            });
-
-            return;
-        }
-
-        try
-        {
-            if (value == null)
-            {
-                OnOutputApplyTo?.Invoke(name, null);
-                return;
+                OnOutputApplyTo?.Invoke(name, new Transition(value));
             }
+            catch (TransitionException tEx)
+            {
+                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
+                _exLogger?.Invoke(tEx);
+            }
+            catch (KeyNotFoundException ke)
+            {
+                _logger?.Invoke($"출력을 찾을 수 없습니다: name: ({name})");
+                _exLogger?.Invoke(ke);
+            }
+            catch (AmbiguousMatchException ae)
+            {
+                _logger?.Invoke($"중복되는 output_list 요소가 존재하면 output_applier.apply_to()를 사용할 수 없습니다: name: ({name})");
+                _exLogger?.Invoke(ae);
+            }
+            catch (Exception e)
+            {
+                _logger?.Invoke($"output_applier.apply_to() 도중 문제가 발생했습니다");
+                _exLogger?.Invoke(e);
+            }
+        };
 
-            OnOutputApplyTo?.Invoke(name, new Transition(value));
-        }
-        catch (TransitionException tEx)
-        {
-            _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
-            _exLogger?.Invoke(tEx);
-        }
-        catch (KeyNotFoundException ke)
-        {
-            _logger?.Invoke($"출력을 찾을 수 없습니다: name: ({name})");
-            _exLogger?.Invoke(ke);
-        }
-        catch (AmbiguousMatchException ae)
-        {
-            _logger?.Invoke($"중복되는 output_list 요소가 존재하면 output_applier.apply_to()를 사용할 수 없습니다: name: ({name})");
-            _exLogger?.Invoke(ae);
-        }
-        catch (Exception e)
-        {
-            _logger?.Invoke("output_applier.apply_to() 도중 문제가 발생했습니다");
-            _exLogger?.Invoke(e);
-        }
+        InvokeActionOnMainThread(applyAction, IsAsync);
     }
 
     private void InvokePrint(object value)
     {
-        if (IsAsync)
+        Action printAction = () =>
         {
-            UniTask.Post(() =>
+            try
             {
-                try
-                {
-                    OnPrint?.Invoke(value.ToString());
-                }
-                catch (Exception e)
-                {
-                    _logger?.Invoke("print 도중 문제가 발생했습니다");
-                    _exLogger?.Invoke(e);
-                }
-            });
+                OnPrint?.Invoke(value.ToString());
+            }
+            catch (Exception e)
+            {
+                _logger?.Invoke("print 도중 문제가 발생했습니다");
+                _exLogger?.Invoke(e);
+            }
+        };
 
-            return;
-        }
-
-        try
-        {
-            OnPrint?.Invoke(value.ToString());
-        }
-        catch (Exception e)
-        {
-            _logger?.Invoke("print 도중 문제가 발생했습니다");
-            _exLogger?.Invoke(e);
-        }
+        InvokeActionOnMainThread(printAction, IsAsync);
     }
 
     private void LoggingMissingReference(string assembly)
