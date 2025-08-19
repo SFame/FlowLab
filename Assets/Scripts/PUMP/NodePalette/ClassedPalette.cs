@@ -29,6 +29,7 @@ public class ClassedPalette : NodePalette
         {
             "I/O", new Dictionary<Type, string>
             {
+                { typeof(Trigger), "Trigger" },
                 { typeof(OnOffSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
                 { typeof(InputField), "Input Field" },
@@ -45,6 +46,7 @@ public class ClassedPalette : NodePalette
                 { typeof(Splitter), "Split" },
                 { typeof(Merger), "Merger" },
                 { typeof(Switch), "Switch" },
+                { typeof(OneHot), "One Hot" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
@@ -55,8 +57,10 @@ public class ClassedPalette : NodePalette
                 { typeof(Counter), "Counter" },
                 { typeof(Sender), "Sender" },
                 { typeof(SignalDetector), "Signal Detector" },
+                { typeof(TFlipFlop), "T Flip-Flop" },
                 { typeof(Timer), "Timer" },
                 { typeof(FrequencyMeter), "Frequency Meter" },
+                { typeof(ClockGate), "ClockGate" },
             }
         },
         {

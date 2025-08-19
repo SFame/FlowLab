@@ -92,6 +92,11 @@ public class Merger : DynamicIONode, INodeAdditionalArgs<int>
         });
     }
 
+    protected override void OnBeforeAutoConnect()
+    {
+        _currentType = InputToken[0].Type;
+    }
+
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (!InputToken.AllSameType)

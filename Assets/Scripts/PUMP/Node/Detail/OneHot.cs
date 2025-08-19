@@ -5,6 +5,7 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 {
     private SplitterSupport _splitterSupport;
     private bool _onlyTriggingRisingEdge = false;
+    private TransitionType _currentType = TransitionType.Bool;
     private SplitterSupport SplitterSupport
     {
         get
@@ -57,9 +58,9 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override string DefineOutputName(int tpIndex) => $"O{tpIndex}";
 
-    protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
+    protected override TransitionType DefineInputType(int tpIndex) => _currentType;
 
-    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => _currentType;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -79,6 +80,11 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
             InputCount = value;
             ReportChanges();
         });
+    }
+
+    protected override void OnBeforeAutoConnect()
+    {
+        _currentType = InputToken[0].Type;
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -113,6 +119,7 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 
     private void SetInputType(TransitionType type)
     {
+        _currentType = type;
         InputToken.SetTypeAll(type);
         ReportChanges();
     }
