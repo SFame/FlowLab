@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
 {
     private bool _state = false;
-    private ClickSwitchSupport _clickSwitchSupport;
+    private OnOffSwitchSupport _offSwitchSupport;
 
     protected override List<string> InputNames { get; } = new List<string>();
 
@@ -29,17 +29,17 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override float NameTextSize => 25f;
 
-    private ClickSwitchSupport ClickSwitchSupport
+    private OnOffSwitchSupport OffSwitchSupport
     {
         get
         {
-            if (_clickSwitchSupport == null)
+            if (_offSwitchSupport == null)
             {
-                _clickSwitchSupport = Support.GetComponent<ClickSwitchSupport>();
-                _clickSwitchSupport.Initialize();
+                _offSwitchSupport = Support.GetComponent<OnOffSwitchSupport>();
+                _offSwitchSupport.Initialize();
             }
             
-            return _clickSwitchSupport;
+            return _offSwitchSupport;
         }
     }
 
@@ -75,7 +75,7 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
         set
         {
             _state = value;
-            ClickSwitchSupport.SetShadow(_state);
+            OffSwitchSupport.SetShadow(_state);
         }
     }
 }

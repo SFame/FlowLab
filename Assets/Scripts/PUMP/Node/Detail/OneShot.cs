@@ -16,6 +16,9 @@ public class OneShot : Node
                 _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> → In", () => SetInputType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> → In", () => SetInputType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"<color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color> → In", () => SetInputType(TransitionType.String)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color> → In", () => SetInputType(TransitionType.Pulse)));
+                _contexts.Add(new ContextElement($"Out → <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => SetOutputType(TransitionType.Bool)));
+                _contexts.Add(new ContextElement($"Out → <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>", () => SetOutputType(TransitionType.Pulse)));
             }
 
             return _contexts;
@@ -25,6 +28,12 @@ public class OneShot : Node
     private void SetInputType(TransitionType type)
     {
         InputToken.SetTypeAll(type);
+        ReportChanges();
+    }
+
+    private void SetOutputType(TransitionType type)
+    {
+        OutputToken.SetTypeAll(type);
         ReportChanges();
     }
 
@@ -57,6 +66,7 @@ public class OneShot : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OutputToken.PushFirst(Transition.Pulse());
+        Transition push = OutputToken.FirstType == TransitionType.Pulse ? Transition.Pulse() : true;
+        OutputToken.PushFirst(push);
     }
 }

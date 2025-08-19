@@ -21,7 +21,9 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
         get
         {
             List<ContextElement> @base = base.ContextElements;
-            @base.Add(new ContextElement($"Only trig edge => {!_onlyTriggingRisingEdge}", () =>
+            @base.Add(new ContextElement($"<color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color> → In", () => SetInputType(TransitionType.Bool)));
+            @base.Add(new ContextElement($"<color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color> → In", () => SetInputType(TransitionType.Pulse)));
+            @base.Add(new ContextElement($"Only change => {!_onlyTriggingRisingEdge}", () =>
             {
                 _onlyTriggingRisingEdge = !_onlyTriggingRisingEdge;
                 ReportChanges();
@@ -33,7 +35,7 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
-    protected override string NodeDisplayName => "OHot";
+    protected override string NodeDisplayName => "O\nHot";
 
     protected override float InEnumeratorXPos => -29f;
 
@@ -81,12 +83,17 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (!args.State)
+        if (args.IsNull)
         {
             return;
         }
 
-        if (_onlyTriggingRisingEdge && !args.IsStateChange)
+        if (args.Type != TransitionType.Pulse && !args.State)
+        {
+            return;
+        }
+
+        if (args.Type != TransitionType.Pulse && _onlyTriggingRisingEdge && !args.IsStateChange)
         {
             return;
         }
@@ -102,6 +109,12 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
         }
 
         OutputToken[args.Index].State = true;
+    }
+
+    private void SetInputType(TransitionType type)
+    {
+        InputToken.SetTypeAll(type);
+        ReportChanges();
     }
 
     public int AdditionalArgs

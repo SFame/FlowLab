@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ClickSwitchSupport : MonoBehaviour
+public class OnOffSwitchSupport : MonoBehaviour
 {
     [SerializeField] private Image m_ShadowImage;
     [SerializeField] private float m_ShadowAlpha = 0.35f;
