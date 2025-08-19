@@ -69,8 +69,7 @@ public class UiMouseListener : MonoBehaviour, IPointerClickHandler, IPointerEnte
     }
     #endregion
     
-    [Obsolete("직접 호출 금지", true)]
-    public void OnPointerClick(PointerEventData eventData)
+    void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left || _clickCooldownTask.Status == UniTaskStatus.Pending)
             return;
@@ -100,14 +99,12 @@ public class UiMouseListener : MonoBehaviour, IPointerClickHandler, IPointerEnte
         _lastClickTask = CheckDoubleClickTime(eventData, _cts.Token);
     }
 
-    [Obsolete("직접 호출 금지", true)]
-    public void OnPointerEnter(PointerEventData eventData)
+    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         m_OnPointerEnter?.Invoke(eventData);
     }
 
-    [Obsolete("직접 호출 금지", true)]
-    public void OnPointerExit(PointerEventData eventData)
+    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         m_OnPointerExit?.Invoke(eventData);
     }
