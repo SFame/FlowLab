@@ -27,7 +27,7 @@ public readonly struct Pulse
 }
 
 [Serializable]
-public struct Transition : IComparable<Transition>, IEquatable<Transition>
+public readonly struct Transition : IComparable<Transition>, IEquatable<Transition>
 {
     #region Static Interface
     public static Transition Null(TransitionType transitionType)
@@ -69,7 +69,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
     // ---- Float constants ----
     public static Transition FloatZero => 0.0f;
     public static Transition FloatOne => 1.0f;
-    public static Transition Pi => (float)Math.PI;
+    public static Transition PI => (float)Math.PI;
     public static Transition E => (float)Math.E;
     public static Transition NaN => float.NaN;
     public static Transition PositiveInfinity => float.PositiveInfinity;
@@ -252,9 +252,9 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
     #endregion
 
     #region Backing fields
-    [OdinSerialize] private TransitionType _type;
-    [OdinSerialize] private TransitionValue _value;
-    [OdinSerialize] private bool _isNull;
+    [OdinSerialize] private readonly TransitionType _type;
+    [OdinSerialize] private readonly TransitionValue _value;
+    [OdinSerialize] private readonly bool _isNull;
     #endregion
 
     #region Non Interface
@@ -622,7 +622,7 @@ public struct Transition : IComparable<Transition>, IEquatable<Transition>
     #endregion
 }
 
-public struct TransitionValue
+public readonly struct TransitionValue
 {
     public static TransitionValue Default()
     {
@@ -640,20 +640,13 @@ public struct TransitionValue
     public bool BoolValue => _boolValue;
     public int IntValue => _intValue;
     public float FloatValue => _floatValue;
-    public string StringValue
-    {
-        get
-        {
-            _stringValue ??= string.Empty;
-            return _stringValue;
-        }
-    }
+    public string StringValue => _stringValue ?? string.Empty;
 
     #region Backing fields
-    [OdinSerialize] private bool _boolValue;
-    [OdinSerialize] private int _intValue;
-    [OdinSerialize] private float _floatValue;
-    [OdinSerialize] private string _stringValue;
+    [OdinSerialize] private readonly bool _boolValue;
+    [OdinSerialize] private readonly int _intValue;
+    [OdinSerialize] private readonly float _floatValue;
+    [OdinSerialize] private readonly string _stringValue;
     #endregion
 }
 

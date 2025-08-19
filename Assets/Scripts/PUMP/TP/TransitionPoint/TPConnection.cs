@@ -146,7 +146,7 @@ public class TPConnection : IStateful, IDisposable
         }
         set
         {
-            if (value is null)
+            if (value == null)
             {
                 Debug.LogError($"{GetType().Name}: edges are null");
                 return;
