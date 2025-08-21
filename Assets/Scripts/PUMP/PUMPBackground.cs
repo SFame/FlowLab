@@ -15,6 +15,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 {
     #region On Inspector
     [Header("<Component>"), Space(5)]
+    [SerializeField] private RectTransform m_UiRectTransform;
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
@@ -46,6 +47,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private bool _initialized = false;
     private bool _canInteractive = true;
     private bool _destroyed = false;
+    private Transform _uiDefaultParent;
     private PUMPComponentGetter _componentGetter;
     private HashSet<object> _isOnChangeBlocker = new();
     private RectTransform _rect;
@@ -97,6 +99,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         SetGateway();
         SetSelectionAreaController();
+
+        _uiDefaultParent = m_UiRectTransform.parent;
 
         if (RecordOnInitialize)
             RecordHistory();
@@ -401,6 +405,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         gameObject.SetActive(true);
         Current = this;
         Initialize();
+        PUMPUiManager.Instance.Render(m_UiRectTransform, 0, rect =>
+        {
+            rect.SetParent(_uiDefaultParent);
+            rect.gameObject.SetActive(false);
+        });
     }
 
     public void Close()
