@@ -23,7 +23,9 @@ public class BinaryEncoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override int DefaultOutputCount => 4;
 
-    protected override string NodeDisplayName => "E";
+    protected override string NodeDisplayName => "BinE";
+
+    protected override float NameTextSize => 16f;
 
     protected override float InEnumeratorXPos => -34f;
 

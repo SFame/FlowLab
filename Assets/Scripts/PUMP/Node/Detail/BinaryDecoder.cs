@@ -27,7 +27,9 @@ public class BinaryDecoder : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
-    protected override string NodeDisplayName => "D";
+    protected override string NodeDisplayName => "BinD";
+
+    protected override float NameTextSize => 16f;
 
     protected override int DefaultInputCount => 4;
 
