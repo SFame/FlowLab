@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -1299,6 +1298,19 @@ namespace Utils
 
             Vector3 worldPos = anchoredRect.TransformPoint(new Vector3(localPosition.x, localPosition.y, 0));
             return new Vector2(worldPos.x, worldPos.y);
+        }
+
+        public static Vector2 ScreenToWorldPoint(this Vector2 screenPos)
+        {
+            RectTransformUtility.ScreenPointToWorldPointInRectangle
+            (
+                rect: WorldCanvasGetter.RootCanvasRect,
+                screenPoint: screenPos,
+                cam: MainCameraGetter.GetMainCam(),
+                worldPoint: out Vector3 worldPoint
+            );
+
+            return worldPoint;
         }
 
         public static void PositionRectTransformByRatio([NotNull] this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)

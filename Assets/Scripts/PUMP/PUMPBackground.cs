@@ -364,6 +364,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
     }
 
+    public RectTransform UiRectTransform
+    {
+        get => m_UiRectTransform;
+        set => m_UiRectTransform = value;
+    }
+
     public LineConnectManager LineConnectManager => m_LineConnectManager;
 
     public LineEdgeSortingManager LineEdgeSortingManager => m_LineEdgeSortingManager;
@@ -405,7 +411,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         gameObject.SetActive(true);
         Current = this;
         Initialize();
-        PUMPUiManager.Instance.Render(m_UiRectTransform, 0, rect =>
+        PUMPUiManager.Render(m_UiRectTransform, 0,
+        rect =>
+        {
+            rect.SetRectFull();
+            rect.gameObject.SetActive(true);
+        },
+        rect =>
         {
             rect.SetParent(_uiDefaultParent);
             rect.gameObject.SetActive(false);

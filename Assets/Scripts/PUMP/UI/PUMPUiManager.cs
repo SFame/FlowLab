@@ -8,42 +8,65 @@ public class PUMPUiManager : MonoBehaviour
     #region Inspector
     [SerializeField] private Canvas m_RootCanvas;
     [SerializeField] private GameObject m_LayerPrefab;
+    [SerializeField] private Transform m_LayerParent;
     #endregion
 
     #region Interface
-    public static PUMPUiManager Instance { get; private set; }
+    public static Canvas RootCanvas => Instance.m_RootCanvas;
 
-    public Canvas RootCanvas => m_RootCanvas;
-
-    public void Render(RectTransform ui, int layerIndex, Action<RectTransform> returner, Action<RectTransform> onRender = null)
+    public static void Render(RectTransform ui, int layerIndex, Action<RectTransform> onRender, Action<RectTransform> onReturn)
     {
-        AddLayer(layerIndex);
-        CallReturner(layerIndex);
-        ui.SetParent(_layerList[layerIndex]);
-        ui.gameObject.SetActive(true);
+        Instance.AddLayer(layerIndex);
+        Instance.CallReturner(layerIndex);
+        ui.SetParent(Instance._layerList[layerIndex]);
         onRender?.Invoke(ui);
-        _returners[layerIndex] = () => returner?.Invoke(ui);
+        Instance._returners[layerIndex] = () => onReturn?.Invoke(ui);
     }
 
-    public void Discard(int layerIndex)
+    public static void Discard(int layerIndex)
     {
-        CallReturner(layerIndex);
+        Instance.CallReturner(layerIndex);
     }
     #endregion
 
     #region Privates
     private readonly List<RectTransform> _layerList = new();
     private readonly Dictionary<int, Action> _returners = new();
+    private const string UI_PREFAB_PATH = "PUMP/Prefab/UI/PumpUiCanvas";
+    private static GameObject _uiPrefab;
+    private static PUMPUiManager _instance;
+
+    private static PUMPUiManager Instance
+    {
+        get
+        {
+            InstanceCheck();
+            return _instance;
+        }
+    }
+
+    private static GameObject UiPrefab
+    {
+        get
+        {
+            if (_uiPrefab == null)
+            {
+                _uiPrefab = Resources.Load<GameObject>(UI_PREFAB_PATH);
+            }
+
+            return _uiPrefab;
+        }
+    }
 
     private void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
             return;
         }
 
-        if (Instance != this)
+        if (_instance != this)
         {
             Destroy(gameObject);
         }
@@ -51,9 +74,18 @@ public class PUMPUiManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if (_instance == this)
         {
-            Instance = null;
+            _instance = null;
+        }
+    }
+
+    private static void InstanceCheck()
+    {
+        if (_instance == null)
+        {
+            GameObject newObject = Instantiate(UiPrefab);
+            _instance = newObject.GetComponent<PUMPUiManager>();
         }
     }
 
@@ -94,7 +126,7 @@ public class PUMPUiManager : MonoBehaviour
 
     private void SetRectProperty(RectTransform rect)
     {
-        rect.SetParent(transform);
+        rect.SetParent(m_LayerParent);
         rect.SetRectFull();
     }
     #endregion

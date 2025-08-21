@@ -226,7 +226,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
             }
             else
             {
-                targetPoint = eventData.position;
+                targetPoint = eventData.position.ScreenToWorldPoint();
                 if (_hideTargetTpCache != null)
                 {
                     _hideTargetTpCache.SubHider(_hider);

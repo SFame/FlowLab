@@ -224,7 +224,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
-            Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
+            Utils.ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, ContextElements.ToArray());
     }
     #endregion
 

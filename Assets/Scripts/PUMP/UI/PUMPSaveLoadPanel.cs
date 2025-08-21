@@ -244,7 +244,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
                     }
                 )
             };
-            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, contextElements);
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, contextElements);
         };
     }
     #endregion

@@ -354,10 +354,10 @@ public class LineConnector : MonoBehaviour
     {
         bool isDragging = false;
 
-        lineArg.Line.OnDragStart += eventData =>
+        lineArg.Line.OnDragStart += positionInfo =>
         {
             isDragging = true;
-            Vector2 dragStartPosition = eventData.position;
+            Vector2 dragStartPosition = positionInfo.ClickWorldPos;
 
             AddArgToNext(lineArg, dragStartPosition, lineArg.End);
             lineArg.Line.SetEndPoint(dragStartPosition);
@@ -365,14 +365,14 @@ public class LineConnector : MonoBehaviour
             LineUpdated?.Invoke();
         };
 
-        lineArg.Line.OnDragging += eventData =>
+        lineArg.Line.OnDragging += positionInfo =>
         {
             if (!isDragging)
             {
                 return;
             }
 
-            Vector2 currentPosition = eventData.position;
+            Vector2 currentPosition = positionInfo.ClickWorldPos;
 
             int index = LineArgs.IndexOf(lineArg);
             if (index != -1 && index < LineArgs.Count - 1)
@@ -455,7 +455,7 @@ public class LineConnector : MonoBehaviour
         edge.OnDragEnd += _ => OnDragEnd?.Invoke();
         edge.OnDragEnd += _ => LineUpdated?.Invoke();
         edge.OnDragging += _ => LineUpdated?.Invoke();
-        edge.OnRightClick += eventData => ShowEdgeContext(eventData, edge);
+        edge.OnRightClick += posInfo => ShowEdgeContext(posInfo, edge);
         OnEdgeAdded?.Invoke(edge);
         return edge;
     }
@@ -498,15 +498,15 @@ public class LineConnector : MonoBehaviour
         DraggingEdge.gameObject.SetActive(false);
     }
 
-    private void ShowLineContext(PointerEventData eventData)
+    private void ShowLineContext(PositionInfo positionInfo)
     {
         if (ContextElements != null && ContextElements.Count > 0)
         {
-            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, positionInfo.ClickScreenPos, ContextElements.ToArray());
         }
     }
 
-    private void ShowEdgeContext(PointerEventData eventData, LineEdge edge)
+    private void ShowEdgeContext(PositionInfo positionInfo, LineEdge edge)
     {
         ContextElement[] element = new ContextElement[] { new("Remove Vertex", () => RemoveEdge(edge)) };
         if (ContextElements is { Count: > 0 })
@@ -514,7 +514,7 @@ public class LineConnector : MonoBehaviour
             element = ContextElements.Concat(element).ToArray();
         }
 
-        ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, element);
+        ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, positionInfo.ClickScreenPos, element);
     }
 
     private void RemoveEdge(LineEdge edge)

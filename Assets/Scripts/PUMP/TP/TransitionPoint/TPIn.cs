@@ -215,7 +215,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
             }
             else
             {
-                targetPoint = eventData.position;
+                targetPoint = eventData.position.ScreenToWorldPoint();
                 if (_hideTargetTpCache != null)
                 {
                     _hideTargetTpCache.SubHider(_hider);

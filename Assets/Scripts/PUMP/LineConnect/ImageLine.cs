@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
 [RequireComponent(typeof(RectTransform), typeof(Image))]
 public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IHighlightable
@@ -28,6 +29,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     
     private Vector2 _startPoint;
     private Vector2 _endPoint;
+    private Vector2 _dragStartOffset;
     private Image _image;
     private RectTransform _rect;
     private Color _defaultColor;
@@ -48,10 +50,10 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     public Vector2 EndPoint => _endPoint;
     public float Thickness { get; private set; }
 
-    public event Action<PointerEventData> OnDragStart;
-    public event Action<PointerEventData> OnDragging;
-    public event Action<PointerEventData> OnDragEnd;
-    public event Action<PointerEventData> OnRightClick;
+    public event Action<PositionInfo> OnDragStart;
+    public event Action<PositionInfo> OnDragging;
+    public event Action<PositionInfo> OnDragEnd;
+    public event Action<PositionInfo> OnRightClick;
 
     public bool FreezeAttributes { get; set; }
 
@@ -131,7 +133,9 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        OnDragStart?.Invoke(eventData);
+        Vector2 clickPos = eventData.position.ScreenToWorldPoint();
+        OnDragStart?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, Vector2.zero));
+        _dragStartOffset = (Vector2)Rect.position - clickPos;
         SetHighlight(false);
         SetThickness(_defaultThickness);
         _isDragging = true;
@@ -139,12 +143,16 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
 
     public void OnDrag(PointerEventData eventData)
     {
-        OnDragging?.Invoke(eventData);
+        Vector2 clickPos = eventData.position.ScreenToWorldPoint();
+        Vector2 beforePosition = Rect.position;
+        Vector2 newPosition = clickPos + _dragStartOffset;
+        Vector2 actualDelta = newPosition - beforePosition;
+        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta));
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        OnDragEnd?.Invoke(eventData);
+        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
         _isDragging = false;
     }
 
@@ -167,7 +175,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke(eventData);
+            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utils;
 
 public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDraggable
 {
@@ -38,13 +39,13 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
-        OnMouseDown?.Invoke(eventData.position);
+        OnMouseDown?.Invoke(eventData.position.ScreenToWorldPoint());
     }
 
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
         OnMouseBeginDrag?.Invoke();
-        _selectStartPos = eventData.position;
+        _selectStartPos = eventData.position.ScreenToWorldPoint();
         SelectingRangeRect.gameObject.SetActive(true);
         SelectingRangeRect.sizeDelta = Vector2.zero;
     }
@@ -52,7 +53,7 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
     void IDragHandler.OnDrag(PointerEventData eventData)
     {
         OnMouseDrag?.Invoke();
-        Vector2 currentPos = eventData.position;
+        Vector2 currentPos = eventData.position.ScreenToWorldPoint();
 
         float pivotX = currentPos.x < _selectStartPos.x ? 1 : 0;
         float pivotY = currentPos.y < _selectStartPos.y ? 1 : 0;
@@ -68,6 +69,6 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
         SelectingRangeRect.gameObject.SetActive(false);
-        OnMouseEndDrag?.Invoke(_selectStartPos, eventData.position);
+        OnMouseEndDrag?.Invoke(_selectStartPos, eventData.position.ScreenToWorldPoint());
     }
 }

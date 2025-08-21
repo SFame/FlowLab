@@ -8,6 +8,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 {
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
+    [SerializeField] private RectTransform m_uiRectTransform;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] public string defaultSaveName = string.Empty;
 
@@ -220,6 +221,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
                     backgroundObject.name = "ClassedPairBackground";
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
                     background.RecordOnInitialize = false;
+                    background.UiRectTransform = m_uiRectTransform;
                     ((ISeparatorSectorable)background).SetSeparator(((ISeparatorSectorable)this).GetSeparator());
                     background.Open();
                     Other.InvokeActionDelay(_baseBackground.Open).Forget();

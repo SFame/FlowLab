@@ -173,7 +173,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
             throw new MissingComponentException("NodeSelectingHandler: Missing Node CanvasGroup");
         }
 
-        m_NodeSuppoet.OnDragging += (pointerEventArgs, _) => _onSelectedMove?.Invoke(this, pointerEventArgs.delta);
+        m_NodeSuppoet.OnDragging += posInfo => _onSelectedMove?.Invoke(this, posInfo.Delta);
         m_NodeSuppoet.Node.OnDisconnect += _ => SelectedRemoveRequestInvoke();
         m_NodeSuppoet.Node.OnRemove += _ =>
         {
@@ -211,7 +211,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
             List<ContextElement> currentContextElements = _selectedContextElementsGetter?.Invoke();
 
             if (currentContextElements != null)
-                ContextMenuManager.ShowContextMenu(m_NodeSuppoet.RootCanvas, eventData.position, currentContextElements.ToArray());
+                ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, currentContextElements.ToArray());
         }
     }
 }

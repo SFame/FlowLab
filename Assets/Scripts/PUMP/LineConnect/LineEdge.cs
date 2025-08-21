@@ -2,11 +2,12 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 using static LineConnector;
 
 
 [RequireComponent(typeof(RectTransform), typeof(Image))]
-public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, 
+public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, 
                         IPointerClickHandler, IDragSelectable, IHighlightable, ISortingPositionGettable, ISortingPositionSettable
 {
     [SerializeField] private Image m_RingImage;
@@ -22,6 +23,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     private bool _isSetDefaultColor = false;
     private bool _isSelected = false;
     private bool _isRemoved = false;
+    private Vector2 _offset;
     private UILineRenderer _lineRenderer;
     
     private RectTransform Rect
@@ -48,9 +50,9 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
 
     public bool FreezeAttributes { get; set; }
 
-    public event Action<PointerEventData> OnDragging;
-    public event Action<PointerEventData> OnDragEnd;
-    public event Action<PointerEventData> OnRightClick;
+    public event Action<PositionInfo> OnDragging;
+    public event Action<PositionInfo> OnDragEnd;
+    public event Action<PositionInfo> OnRightClick;
 
     public void SetPosition(Vector2 pos)
     {
@@ -151,34 +153,43 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
         }
     }
 
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        _offset = (Vector2)Rect.position - eventData.position.ScreenToWorldPoint();
+    }
+
     public void OnDrag(PointerEventData eventData)
     {
+        Vector2 beforePosition = Rect.position;
+        Vector2 clickPos = eventData.position.ScreenToWorldPoint();
+        Vector2 newPosition = clickPos + _offset;
+        Vector2 actualDelta = (Vector2)Rect.position - beforePosition;
+
         if (IsSelected)
         {
-            OnSelectedMove?.Invoke(null, eventData.delta);  // null을 할당하면 관리자에서 드래깅 이벤트로 이 객체까지 움직여줌.
+            OnSelectedMove?.Invoke(null, actualDelta);  // null을 할당하면 관리자에서 드래깅 이벤트로 이 객체까지 움직여줌.
                                                             // => 기본적으로 delta를 통해 움직이도록 되어있지만 이 객체는 계속적으로
                                                             // 현재 마우스 position을 기준으로 움직이기 때문에 움직임이 이상하게 안맞아서 이렇게 함.
         }
         else
         {
-            Vector2 mousePosition = eventData.position;
             bool isStick = false;
 
-            OnSettableDrag?.Invoke(this, mousePosition, out isStick);
+            OnSettableDrag?.Invoke(this, newPosition, out isStick);
 
             if (!isStick)
             {
-                SetPositionWithLine(mousePosition);
+                SetPositionWithLine(newPosition);
             }
         }
 
-        OnDragging?.Invoke(eventData);
+        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta));
     }
     
     public void OnEndDrag(PointerEventData eventData)
     {
         OnSettableDragEnd?.Invoke();
-        OnDragEnd?.Invoke(eventData);
+        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -201,7 +212,7 @@ public class LineEdge : MonoBehaviour, IDragHandler, IEndDragHandler, IPointerEn
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke(eventData);
+            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
         }
     }
 
