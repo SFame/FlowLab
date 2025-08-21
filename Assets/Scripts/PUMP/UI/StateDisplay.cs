@@ -5,9 +5,9 @@ using UnityEngine;
 public class StateDisplay : MonoBehaviour
 {
     #region Interface
-    public static void Render(Transition state, Vector2 worldPos, Canvas rootCanvas)
+    public static void Render(Transition state, Vector2 screenPos, Canvas rootCanvas)
     {
-        Instance.InternalRender(state, worldPos, rootCanvas.transform);
+        Instance.InternalRender(state, screenPos, rootCanvas.transform);
     }
 
     public static void Update(Transition state)
@@ -51,12 +51,12 @@ public class StateDisplay : MonoBehaviour
     [SerializeField] private float m_OtherTypeWidth = 100f;
     #endregion
 
-    private void InternalRender(Transition transition, Vector2 worldPos, Transform parent)
+    private void InternalRender(Transition transition, Vector2 screenPos, Transform parent)
     {
         m_Rect.SetParent(parent);
         gameObject.SetActive(true);
         InternalUpdate(transition);
-        SetPosition(worldPos);
+        SetPosition(screenPos);
         m_CanvasGroup.DOKill();
         m_CanvasGroup.alpha = 1f;
     }
@@ -80,18 +80,18 @@ public class StateDisplay : MonoBehaviour
         });
     }
 
-    private void SetPosition(Vector2 position)
+    private void SetPosition(Vector2 screenPos)
     {
         Vector2 screenSize = new Vector2(Screen.width, Screen.height);
         Vector2 contextSize = m_Rect.sizeDelta;
 
-        float xPos = position.x;
+        float xPos = screenPos.x;
         if (xPos - contextSize.x < 0)
             xPos = contextSize.x;
         if (xPos > screenSize.x)
             xPos = screenSize.x;
 
-        float yPos = position.y;
+        float yPos = screenPos.y;
         if (yPos - contextSize.y < 0)
             yPos = contextSize.y;
         if (yPos > screenSize.y)

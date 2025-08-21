@@ -1,13 +1,14 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class MainCameraGetter : MonoBehaviour
 {
     #region Privates
     [SerializeField] private Camera m_MainCamera;
-    [SerializeField] private MainCameraController m_MainCameraController;
+    [FormerlySerializedAs("m_MainCameraController")] [SerializeField] private CameraController m_CameraController;
 
     private static Camera _main;
-    private static MainCameraController _mainCameraController;
+    private static CameraController _cameraController;
 
     private void Awake()
     {
@@ -17,19 +18,19 @@ public class MainCameraGetter : MonoBehaviour
             return;
         }
 
-        if (m_MainCameraController == null)
+        if (m_CameraController == null)
         {
             Debug.LogError($"{GetType().Name}: MainCameraController must be assigned");
             return;
         }
 
         _main = m_MainCamera;
-        _mainCameraController = m_MainCameraController;
+        _cameraController = m_CameraController;
     }
     #endregion
 
     #region Interface
     public static Camera GetMainCam() => _main;
-    public static MainCameraController GetController() => _mainCameraController;
+    public static CameraController GetController() => _cameraController;
     #endregion
 }

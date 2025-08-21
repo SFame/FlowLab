@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420033}
   - component: {fileID: 519420034}
+  - component: {fileID: 519420035}
   - component: {fileID: 519420029}
   m_Layer: 0
   m_Name: Main Camera
@@ -226,7 +227,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MainCamera: {fileID: 519420031}
-  m_MainCameraController: {fileID: 519420034}
+  m_CameraController: {fileID: 519420034}
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,6 +240,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5ecebae3f023e148b876b7b289d6afa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Camera: {fileID: 519420031}
+  m_CameraMaxSize: 3000
+  m_CameraMinSize: 100
+  m_ZoomScale: 50
+  m_MoveScale: 20
+--- !u!114 &519420035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1e22e8e2a1b5134c832894027c63d3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_CameraController: {fileID: 519420034}
+  m_KeyMaps:
+  - ActionType: 0
+    KeyCode: 273
+    Always: 0
+  - ActionType: 1
+    KeyCode: 274
+    Always: 0
+  - ActionType: 2
+    KeyCode: 276
+    Always: 0
+  - ActionType: 3
+    KeyCode: 275
+    Always: 0
+  - ActionType: 4
+    KeyCode: 324
+    Always: 0
+  - ActionType: 5
+    KeyCode: 306
+    Always: 0
+  - ActionType: 6
+    KeyCode: 304
+    Always: 0
+  - ActionType: 7
+    KeyCode: 0
+    Always: 1
 --- !u!224 &589080010 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4030015093839860039, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}

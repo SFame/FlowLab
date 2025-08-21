@@ -155,15 +155,25 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         _offset = (Vector2)Rect.position - eventData.position.ScreenToWorldPoint();
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         Vector2 beforePosition = Rect.position;
         Vector2 clickPos = eventData.position.ScreenToWorldPoint();
         Vector2 newPosition = clickPos + _offset;
-        Vector2 actualDelta = (Vector2)Rect.position - beforePosition;
+        Vector2 actualDelta = newPosition - beforePosition;
 
         if (IsSelected)
         {
@@ -188,6 +198,11 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnSettableDragEnd?.Invoke();
         OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
     }

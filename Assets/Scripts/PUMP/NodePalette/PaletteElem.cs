@@ -44,6 +44,11 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         _caughtException = false;
         _background = null;
         _newNode = null;
@@ -52,11 +57,21 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         FindPumpBackground(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnDragEnd?.Invoke();
         
         

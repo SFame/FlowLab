@@ -22,7 +22,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #endregion
 
     #region Don't use
-    private Canvas _rootCanvas;
     private SoundEventHandler _onSounded;
     private List<Color> _imageGroupDefaultColors;
     private readonly HashSet<object> _mouseEventBlockers = new();
@@ -139,15 +138,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public ITPEnumerator OutputEnumerator { get; private set; }
     public Image Image => m_Image;
     public TextMeshProUGUI NameText => m_NameTmp;
-
-    public Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= Rect.GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     public Color DefaultColor
     {

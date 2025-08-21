@@ -98,7 +98,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     {
         if (DataManager.GetCurrent().IsChanged)
         {
-            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
+            MessageBoxManager.ShowYesNo(PUMPUiManager.RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
             return;
         }
 
@@ -116,7 +116,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: RootCanvas,
+            rootCanvas: WorldCanvasGetter.RootCanvas,
             callback: DataManager.Push,
             titleString: "Save Name",
             inputString: defaultSaveName,
@@ -135,7 +135,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: RootCanvas,
+            rootCanvas: WorldCanvasGetter.RootCanvas,
             callback: saveName =>
             {
                 DataManager.Push(saveName);
@@ -236,19 +236,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     #region Privates
     private PUMPBackground _baseBackground;
     private IClassedNodeDataManager _dataManager;
-    private Canvas _rootCanvas;
     private bool _isInputSliderValueChangingBySystem = false;
     private bool _isOutputSliderValueChangingBySystem = false;
     private PUMPSeparator _separator;
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     private void SetActive(bool active)
     {

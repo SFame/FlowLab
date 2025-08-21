@@ -76,6 +76,11 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (BlockedMove)
             return;
 
@@ -87,6 +92,11 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 
     void IDragHandler.OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (BlockedMove)
             return;
 
@@ -100,6 +110,11 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (BlockedMove)
             return;
 

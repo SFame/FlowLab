@@ -86,22 +86,10 @@ public class LineConnector : MonoBehaviour
         }
     }
 
-    private Canvas RootCanvas
-    {
-        get
-        {
-            if (_rootCanvas == null)
-                _rootCanvas = GetComponentInParent<Canvas>().rootCanvas;
-
-            return _rootCanvas;
-        }
-    }
-
     private GameObject _imageLine;
     private GameObject _lineEdgePrefab;
     private Vector2 _startSidePoint;
     private Vector2 _endSidePoint;
-    private Canvas _rootCanvas;
     private RectTransform _startEdgePoint;
     private RectTransform _endEdgePoint;
     private Image _startSidePointImage;

@@ -51,7 +51,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private PUMPComponentGetter _componentGetter;
     private HashSet<object> _isOnChangeBlocker = new();
     private RectTransform _rect;
-    private Canvas _rootCanvas;
     private CanvasGroup _canvasGroup;
     private ExternalInputAdapter _externalInputAdapter = new();
     private ExternalOutputAdapter _externalOutputAdapter = new();
@@ -63,15 +62,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     /// All Nodes
     /// </summary>
     private List<Node> Nodes { get; } = new();
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     private CanvasGroup CanvasGroup
     {

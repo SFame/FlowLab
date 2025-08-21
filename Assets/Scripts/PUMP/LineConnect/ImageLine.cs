@@ -133,6 +133,11 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         Vector2 clickPos = eventData.position.ScreenToWorldPoint();
         OnDragStart?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, Vector2.zero));
         _dragStartOffset = (Vector2)Rect.position - clickPos;
@@ -143,6 +148,11 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         Vector2 clickPos = eventData.position.ScreenToWorldPoint();
         Vector2 beforePosition = Rect.position;
         Vector2 newPosition = clickPos + _dragStartOffset;
@@ -152,6 +162,11 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
         _isDragging = false;
     }

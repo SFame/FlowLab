@@ -184,6 +184,11 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
     #region MouseEvent
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
             _lineConnector.Remove();
 
@@ -198,6 +203,11 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
 
     void IDragHandler.OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
         {
             Vector2 targetPoint;
@@ -230,6 +240,11 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
         {
             _lineConnector.Remove();

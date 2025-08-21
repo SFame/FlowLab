@@ -39,11 +39,21 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnMouseDown?.Invoke(eventData.position.ScreenToWorldPoint());
     }
 
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnMouseBeginDrag?.Invoke();
         _selectStartPos = eventData.position.ScreenToWorldPoint();
         SelectingRangeRect.gameObject.SetActive(true);
@@ -52,6 +62,11 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
 
     void IDragHandler.OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnMouseDrag?.Invoke();
         Vector2 currentPos = eventData.position.ScreenToWorldPoint();
 
@@ -68,6 +83,11 @@ public class SelectionAreaController : MonoBehaviour, IPointerDownHandler, IDrag
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         SelectingRangeRect.gameObject.SetActive(false);
         OnMouseEndDrag?.Invoke(_selectStartPos, eventData.position.ScreenToWorldPoint());
     }
