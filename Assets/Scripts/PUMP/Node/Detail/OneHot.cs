@@ -60,7 +60,7 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override TransitionType DefineInputType(int tpIndex) => _currentType;
 
-    protected override TransitionType DefineOutputType(int tpIndex) => _currentType;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -98,7 +98,7 @@ public class OneHot : DynamicIONode, INodeAdditionalArgs<int>
         {
             return;
         }
-
+        
         if (args.Type != TransitionType.Pulse && _onlyTriggingRisingEdge && !args.IsStateChange)
         {
             return;
