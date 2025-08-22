@@ -30,6 +30,10 @@ PrefabInstance:
       propertyPath: m_DefaultColor.r
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_IncludeMinimap
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3521182047487203236, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Name
       value: EXTERNAL_GATE

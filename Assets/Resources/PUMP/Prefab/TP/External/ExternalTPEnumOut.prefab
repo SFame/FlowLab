@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5920717805278564127}
   - component: {fileID: 3595185622086612698}
   - component: {fileID: 8419458289024636998}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: PointImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 5148673359502748616}
   - component: {fileID: 3237987017032104070}
   - component: {fileID: 3431646701220377544}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TPOut
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -343,7 +343,7 @@ GameObject:
   - component: {fileID: 1168662489528269426}
   - component: {fileID: 6351243818671606506}
   - component: {fileID: 7073750197297610766}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HandleTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -436,7 +436,7 @@ GameObject:
   - component: {fileID: 1439143044828051328}
   - component: {fileID: 5039222081255940512}
   - component: {fileID: 7231299407808022595}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: OnPointerHighlighter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -511,7 +511,7 @@ GameObject:
   - component: {fileID: 577798743846859659}
   - component: {fileID: 964876897761072917}
   - component: {fileID: 696502101659203245}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: NameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5547,7 +5547,7 @@ GameObject:
   - component: {fileID: 5153831225875744345}
   - component: {fileID: 6888016956894285594}
   - component: {fileID: 7335718261043509002}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ArrowImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5620,7 +5620,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8467034155219656358}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TpSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5657,7 +5657,7 @@ GameObject:
   - component: {fileID: 6879206584215470767}
   - component: {fileID: 3810831627836649895}
   - component: {fileID: 2692880510210265840}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ExternalTPEnumOut
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5718,7 +5718,7 @@ GameObject:
   - component: {fileID: 127617262930963465}
   - component: {fileID: 6306487496833050823}
   - component: {fileID: 4601374733661858662}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TypeRing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5793,7 +5793,7 @@ GameObject:
   - component: {fileID: 820572389312724603}
   - component: {fileID: 8306654738752357291}
   - component: {fileID: 9134873276803098333}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: RadialShadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5869,7 +5869,7 @@ GameObject:
   - component: {fileID: 8119020656139422572}
   - component: {fileID: 4458835961507791902}
   - component: {fileID: 5269958478206427571}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ConnectionParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}

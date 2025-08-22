@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1658928680729546102}
   - component: {fileID: 4340408601070930391}
   - component: {fileID: 8416068413667491443}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: InputCable
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 1100574747819272922}
   - component: {fileID: 1645768385222234232}
   - component: {fileID: 5797006142811038769}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: OutputCable
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -161,7 +161,7 @@ GameObject:
   - component: {fileID: 4914639199483158724}
   - component: {fileID: 7320990726485535196}
   - component: {fileID: 7978654788697447442}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: InputPort
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -236,7 +236,7 @@ GameObject:
   - component: {fileID: 1380982631631806938}
   - component: {fileID: 7460577235002457469}
   - component: {fileID: 7323992941593057945}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: OutputPort
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -311,7 +311,7 @@ GameObject:
   - component: {fileID: 7702121636520800223}
   - component: {fileID: 6426383339342342342}
   - component: {fileID: 3646028480716167374}
-  m_Layer: 5
+  m_Layer: 7
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -444,6 +444,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1889366659289021684, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 1953344865619092123, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_text
       value: 

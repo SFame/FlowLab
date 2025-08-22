@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4030015093839860039}
   - component: {fileID: 8857023425992388975}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: PumpSeparator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -65,7 +65,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7224458180368314344}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Over
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2523212980000112720}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Base
   m_TagString: Untagged
   m_Icon: {fileID: 0}

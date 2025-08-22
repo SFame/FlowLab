@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1479229023168842179}
   - component: {fileID: 1881835294362635123}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64,7 +64,7 @@ GameObject:
   - component: {fileID: 2066145910799154706}
   - component: {fileID: 4299427649542437859}
   - component: {fileID: 274036585954054935}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -242,7 +242,7 @@ GameObject:
   - component: {fileID: 1776870104626075681}
   - component: {fileID: 187103179184975439}
   - component: {fileID: 9110950192602216850}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -378,7 +378,7 @@ GameObject:
   - component: {fileID: 8044160596863182206}
   - component: {fileID: 136399399227382574}
   - component: {fileID: 1266705694676069319}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: GraphicTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -454,7 +454,7 @@ GameObject:
   - component: {fileID: 3131673742590053760}
   - component: {fileID: 5214808803656038759}
   - component: {fileID: 5551557890861932497}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Placeholder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

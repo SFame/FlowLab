@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 853529380183789126}
   - component: {fileID: 3875895492558115}
   - component: {fileID: 8599598582859980043}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: DraggingRange
   m_TagString: Untagged
   m_Icon: {fileID: 0}

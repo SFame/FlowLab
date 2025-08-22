@@ -114,6 +114,7 @@ public enum BackgroundActionType
     SelectAll,
     SelectDelete,
     SelectDisconnect,
+    MinimapToggle,
 }
 
 /// <summary>
@@ -295,6 +296,7 @@ public static class BackgroundActionMapper
         BackgroundActionType.SelectAll => SelectAllAction,
         BackgroundActionType.SelectDelete => SelectDeleteAction,
         BackgroundActionType.SelectDisconnect => SelectDisconnectAction,
+        BackgroundActionType.MinimapToggle => MinimapToggleAction,
         BackgroundActionType.NoAction => null,
         _ => null
     };
@@ -333,6 +335,11 @@ public static class BackgroundActionMapper
     private static void SelectDisconnectAction()
     {
         PUMPBackground.Current?.DisconnectSelected();
+    }
+
+    private static void MinimapToggleAction()
+    {
+        PUMPBackground.Current?.ComponentGetter?.PumpTool?.ToggleMinimap();
     }
     #endregion
 }

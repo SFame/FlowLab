@@ -50,5 +50,37 @@ public class WorldCanvasGetter : MonoBehaviour
 
         return new Bounds(center, size);
     }
+
+    public static Vector2 WorldPositionToRatio(Vector2 worldPosition, bool clamp05 = true)
+    {
+        Bounds bounds = GetBounds();
+
+        Vector2 localPosition = worldPosition - (Vector2)bounds.center;
+
+        Vector2 ratio = new Vector2(
+            localPosition.x / bounds.size.x,
+            localPosition.y / bounds.size.y
+        );
+
+        if (clamp05)
+        {
+            ratio.x = Mathf.Clamp(ratio.x, -0.5f, 0.5f);
+            ratio.y = Mathf.Clamp(ratio.y, -0.5f, 0.5f);
+        }
+
+        return ratio;
+    }
+
+    public static Vector2 RatioToWorldPosition(Vector2 ratio)
+    {
+        Bounds bounds = GetBounds();
+
+        Vector2 localPosition = new Vector2(
+            ratio.x * bounds.size.x,
+            ratio.y * bounds.size.y
+        );
+
+        return (Vector2)bounds.center + localPosition;
+    }
     #endregion
 }

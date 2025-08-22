@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(RectTransform))]
-public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IMinimapProxyClient
 {
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
@@ -19,6 +19,12 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     [SerializeField] private List<Graphic> m_ImageGroup;
     [SerializeField] private Color m_DefaultColor = Color.white;
     [SerializeField] private Color m_HighlightedColor = Color.green;
+
+    [Space(10)]
+
+    [SerializeField] private bool m_IncludeMinimap = true;
+    [SerializeField] private Sprite m_MinimapSprite;
+    [SerializeField] private Color m_MinimapColor;
     #endregion
 
     #region Don't use
@@ -49,7 +55,18 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             return;
 
         _isDestroyed = true;
+        OnClientDestroy?.Invoke();
         Node.Remove();
+    }
+
+    private void OnEnable()
+    {
+        OnActiveStateChanged?.Invoke(true);
+    }
+
+    private void OnDisable()
+    {
+        OnActiveStateChanged?.Invoke(false);
     }
 
     private void ComponentNullCheck()
@@ -128,6 +145,13 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         _nameTextRect = m_NameTmp.GetComponent<RectTransform>();
         _defaultNameTextPosition = _nameTextRect.anchoredPosition;
         _imageGroupDefaultColors = m_ImageGroup?.Select(graphic => graphic.color).ToList();
+        OnPositionUpdate += posInfo => OnClientMove?.Invoke(posInfo.WorldPos);
+
+        if (m_IncludeMinimap)
+        {
+            MinimapProxy.Register(this);
+        }
+
         _initialized = true;
     }
     #endregion
@@ -348,6 +372,15 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
 
         Destroy(gameObject);
     }
+    #endregion
+
+    #region Minimap
+    public Vector2 CurrentWorldPosition => Rect.position;
+    public event Action<Vector2> OnClientMove;
+    public event Action OnClientDestroy;
+    public event Action<bool> OnActiveStateChanged;
+    public Sprite Sprite => m_MinimapSprite;
+    public Color SpriteColor => m_MinimapColor;
     #endregion
 }
 

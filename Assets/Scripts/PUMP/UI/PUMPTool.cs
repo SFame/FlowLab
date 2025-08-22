@@ -20,11 +20,14 @@ public class PUMPTool : MonoBehaviour
     [SerializeField] private Image m_HandleImage;
     [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private Button m_NodePaletteButton;
+
+    [SerializeField] private MinimapController m_MinimapController;
     #endregion
 
     private Vector2 _hiddenPosition;
     private Vector2 _visiblePosition;
     private bool _isVisible = false;
+    private bool _minimapActive = false;
     private SafetyCancellationTokenSource _cts;
     private RectTransform _rectTransform;
     private float _minY;
@@ -183,5 +186,10 @@ public class PUMPTool : MonoBehaviour
     public void ToggleSaveLoadPanel()
     {
         m_SaveLoadUiController.IsActive = !m_SaveLoadUiController.IsActive;
+    }
+
+    public void ToggleMinimap()
+    {
+        m_MinimapController.ToggleMinimap();
     }
 }

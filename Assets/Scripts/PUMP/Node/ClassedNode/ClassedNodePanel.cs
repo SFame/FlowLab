@@ -116,7 +116,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: WorldCanvasGetter.RootCanvas,
+            rootCanvas: PUMPUiManager.RootCanvas,
             callback: DataManager.Push,
             titleString: "Save Name",
             inputString: defaultSaveName,
@@ -135,7 +135,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: WorldCanvasGetter.RootCanvas,
+            rootCanvas: PUMPUiManager.RootCanvas,
             callback: saveName =>
             {
                 DataManager.Push(saveName);

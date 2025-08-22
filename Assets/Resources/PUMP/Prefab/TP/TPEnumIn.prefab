@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8473150351941781619}
   - component: {fileID: 1589405465554585361}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TPGrid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 7128002330339703196}
   - component: {fileID: 4177138425497590341}
   - component: {fileID: 3804067718947813658}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TPEnumIn
   m_TagString: Untagged
   m_Icon: {fileID: 0}

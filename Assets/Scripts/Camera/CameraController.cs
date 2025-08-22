@@ -134,8 +134,19 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        // 카메라 절대 위치 설정
         m_Camera.transform.position = new Vector3(position.x, position.y, m_Camera.transform.position.z);
+        SetCameraPositionInBounds();
+    }
+
+    public void SetPositionAsRatio(Vector2 ratio)
+    {
+        if (m_Camera == null)
+        {
+            return;
+        }
+
+        Vector2 newPos = WorldCanvasGetter.RatioToWorldPosition(ratio);
+        m_Camera.transform.position = new Vector3(newPos.x, newPos.y, m_Camera.transform.position.z);
         SetCameraPositionInBounds();
     }
 }

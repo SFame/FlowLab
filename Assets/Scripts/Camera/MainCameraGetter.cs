@@ -1,11 +1,10 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class MainCameraGetter : MonoBehaviour
 {
     #region Privates
     [SerializeField] private Camera m_MainCamera;
-    [FormerlySerializedAs("m_MainCameraController")] [SerializeField] private CameraController m_CameraController;
+    [SerializeField] private CameraController m_CameraController;
 
     private static Camera _main;
     private static CameraController _cameraController;
