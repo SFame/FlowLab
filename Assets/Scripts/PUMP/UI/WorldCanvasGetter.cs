@@ -82,5 +82,40 @@ public class WorldCanvasGetter : MonoBehaviour
 
         return (Vector2)bounds.center + localPosition;
     }
+
+    public static Vector2 WorldSizeToRatio(Vector2 worldSize, bool clamp01 = true)
+    {
+        Bounds bounds = GetBounds();
+
+        if (bounds.size.x == 0 || bounds.size.y == 0)
+        {
+            return Vector2.zero;
+        }
+
+        Vector2 ratio = new Vector2
+        (
+            worldSize.x / bounds.size.x,
+            worldSize.y / bounds.size.y
+        );
+
+        if (clamp01)
+        {
+            ratio.x = Mathf.Clamp(ratio.x, 0f, 1f);
+            ratio.y = Mathf.Clamp(ratio.y, 0f, 1f);
+        }
+
+        return ratio;
+    }
+
+    public static Vector2 RatioToWorldSize(Vector2 ratio)
+    {
+        Bounds bounds = GetBounds();
+
+        return new Vector2
+        (
+            ratio.x * bounds.size.x,
+            ratio.y * bounds.size.y
+        );
+    }
     #endregion
 }

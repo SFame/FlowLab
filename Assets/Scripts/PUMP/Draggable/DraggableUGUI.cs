@@ -53,6 +53,8 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         {
             SetPosition(currentPosition);
         }
+
+        OnSizeUpdate?.Invoke(new Vector2(Rect.rect.width, Rect.rect.height));
     }
 
     public void PositionUpdateForceInvoke()
@@ -69,6 +71,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
     public event Action<PositionInfo> OnDragStart;
     public event Action<PositionInfo> OnDragging;
     public event Action<PositionInfo> OnDragEnd;
+    public event Action<Vector2> OnSizeUpdate;
     #endregion
 
     #region Privates

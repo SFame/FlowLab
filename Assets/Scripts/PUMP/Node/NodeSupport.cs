@@ -146,6 +146,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         _defaultNameTextPosition = _nameTextRect.anchoredPosition;
         _imageGroupDefaultColors = m_ImageGroup?.Select(graphic => graphic.color).ToList();
         OnPositionUpdate += posInfo => OnClientMove?.Invoke(posInfo.WorldPos);
+        OnSizeUpdate += size => OnClientSizeUpdate?.Invoke(size);
 
         if (m_IncludeMinimap)
         {
@@ -377,10 +378,13 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #region Minimap
     public Vector2 CurrentWorldPosition => Rect.position;
     public event Action<Vector2> OnClientMove;
+    public event Action<Vector2> OnClientSizeUpdate;
     public event Action OnClientDestroy;
     public event Action<bool> OnActiveStateChanged;
     public Sprite Sprite => m_MinimapSprite;
     public Color SpriteColor => m_MinimapColor;
+    public Vector2 Size => new Vector2(Rect.rect.x, Rect.rect.y);
+
     #endregion
 }
 

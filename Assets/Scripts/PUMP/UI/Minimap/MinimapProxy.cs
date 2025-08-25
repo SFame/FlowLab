@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class MinimapProxy : MonoBehaviour
 {
@@ -68,41 +69,41 @@ public class MinimapProxy : MonoBehaviour
     [SerializeField] private SpriteRenderer m_BackgroundRenderer;
     [SerializeField] private Sprite m_ClientMirrorDefaultSprite;
 
-    private Pool<Transform> _clientMirrorPool;
+    private Pool<TransformSpriteRendererPair> _clientMirrorPool;
 
-    private Pool<Transform> ClientMirrorPool
+    private Pool<TransformSpriteRendererPair> ClientMirrorPool
     {
         get
         {
-            return _clientMirrorPool ??= new Pool<Transform>
+            return _clientMirrorPool ??= new Pool<TransformSpriteRendererPair>
             (
                 createFunc: () =>
                 {
                     GameObject newGo = Instantiate(m_ClientMirrorTemplate, m_ClientMirrorPool, true);
                     newGo.SetActive(false);
-                    return newGo.transform;
+                    return new TransformSpriteRendererPair(newGo);
                 },
                 initSize: 50,
                 maxSize: 2000,
-                actionOnGet: t =>
+                actionOnGet: tsp =>
                 {
-                    t.SetParent(m_ClientMirrorParent);
-                    t.gameObject.SetActive(true);
+                    tsp.Transform.SetParent(m_ClientMirrorParent);
+                    tsp.Transform.gameObject.SetActive(true);
                 },
-                actionOnRelease: t =>
+                actionOnRelease: tsp =>
                 {
-                    t.SetParent(m_ClientMirrorPool);
-                    t.gameObject.SetActive(false);
+                    tsp.Transform.SetParent(m_ClientMirrorPool);
+                    tsp.Transform.gameObject.SetActive(false);
                 },
-                actionOnDestroy: t =>
+                actionOnDestroy: tsp =>
                 {
-                    Destroy(t.gameObject);
+                    Destroy(tsp.Transform.gameObject);
                 }
             );
         }
     }
 
-    private static void PlaceTransformAtRatio(Transform transform, Vector2 ratio)
+    private static void PlaceTransformAtRatio(TransformSpriteRendererPair tsp, Vector2 ratio)
     {
         Bounds backgroundBounds = Instance.m_BackgroundRenderer.bounds;
 
@@ -113,24 +114,72 @@ public class MinimapProxy : MonoBehaviour
             backgroundBounds.center.z
         );
 
-        transform.position = worldPosition;
+        tsp.Transform.position = worldPosition;
+    }
+
+    private static void SetTransformSizeAtRatio(TransformSpriteRendererPair tsp, Vector2 ratio)
+    {
+        if (Instance.m_BackgroundRenderer == null || Instance.m_BackgroundRenderer.sprite == null)
+        {
+            return;
+        }
+
+        Vector3 backgroundOriginalSize = Instance.m_BackgroundRenderer.sprite.bounds.size;
+
+        Vector3 targetRelativeSize = new Vector3
+        (
+            backgroundOriginalSize.x * ratio.x,
+            backgroundOriginalSize.y * ratio.y,
+            1.0f
+        );
+
+        SpriteRenderer spriteRenderer = tsp.Renderer;
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning("SpriteRenderer가 없어 크기를 조절할 수 없습니다.", tsp.Transform);
+            return;
+        }
+
+        if (spriteRenderer.sprite == null)
+        {
+            spriteRenderer.sprite = Instance.m_ClientMirrorDefaultSprite;
+        }
+
+        Vector3 iconOriginalSize = spriteRenderer.sprite.bounds.size;
+
+        if (iconOriginalSize.x == 0 || iconOriginalSize.y == 0) return;
+
+        float scaleX = targetRelativeSize.x / iconOriginalSize.x;
+        float scaleY = targetRelativeSize.y / iconOriginalSize.y;
+
+        tsp.Transform.localScale = new Vector3(scaleX, scaleY, 1f);
     }
 
     public static void Register(IMinimapProxyClient client)
     {
-        Transform mirrorTransform = Instance.ClientMirrorPool.Get();
+        TransformSpriteRendererPair pair = Instance.ClientMirrorPool.Get();
 
-        SpriteRenderer spriteRenderer = mirrorTransform.GetComponent<SpriteRenderer>();
+        Transform mirrorTransform = pair.Transform;
+        SpriteRenderer spriteRenderer = pair.Renderer;
         spriteRenderer.sprite = client.Sprite ?? Instance.m_ClientMirrorDefaultSprite;
         spriteRenderer.color = client.SpriteColor;
 
         Vector2 clientRatio = WorldCanvasGetter.WorldPositionToRatio(client.CurrentWorldPosition, true);
-        PlaceTransformAtRatio(mirrorTransform, clientRatio);
+        PlaceTransformAtRatio(pair, clientRatio);
+
+        Vector2 clientSizeRatio = WorldCanvasGetter.WorldSizeToRatio(client.Size, true);
+        SetTransformSizeAtRatio(pair, clientSizeRatio);
 
         client.OnClientMove += movePos =>
         {
             Vector2 ratio = WorldCanvasGetter.WorldPositionToRatio(movePos, true);
-            PlaceTransformAtRatio(mirrorTransform, ratio);
+            PlaceTransformAtRatio(pair, ratio);
+        };
+
+        client.OnClientSizeUpdate += size =>
+        {
+            Vector2 sizeRatio = WorldCanvasGetter.WorldSizeToRatio(size, true);
+            SetTransformSizeAtRatio(pair, sizeRatio);
         };
 
         client.OnActiveStateChanged += isActive =>
@@ -140,7 +189,24 @@ public class MinimapProxy : MonoBehaviour
 
         client.OnClientDestroy += () =>
         {
-            Instance.ClientMirrorPool.Release(mirrorTransform);
+            Instance.ClientMirrorPool.Release(pair);
         };
+    }
+
+    private class TransformSpriteRendererPair
+    {
+        public TransformSpriteRendererPair(GameObject gameObject)
+        {
+            Transform = gameObject.transform;
+            Renderer = gameObject.GetComponent<SpriteRenderer>();
+        }
+
+        public Transform Transform { get; }
+        public SpriteRenderer Renderer { get; }
+
+        public void Destroy()
+        {
+            Object.Destroy(Transform.gameObject);
+        }
     }
 }
