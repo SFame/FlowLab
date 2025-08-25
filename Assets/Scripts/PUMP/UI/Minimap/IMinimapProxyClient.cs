@@ -29,6 +29,11 @@ public interface IMinimapProxyClient
     Vector2 CurrentWorldPosition { get; }
 
     /// <summary>
+    /// 레이어 Order-Z
+    /// </summary>
+    float OrderZ { get; }
+
+    /// <summary>
     /// new Vector2(Rect.rect.width, Rect.rect.height) 반환
     /// </summary>
     Vector2 Size { get; }

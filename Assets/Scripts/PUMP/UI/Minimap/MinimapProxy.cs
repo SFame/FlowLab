@@ -132,7 +132,7 @@ public class MinimapProxy : MonoBehaviour
         (
             backgroundBounds.center.x + ratio.x * backgroundBounds.size.x,
             backgroundBounds.center.y + ratio.y * backgroundBounds.size.y,
-            backgroundBounds.center.z
+            tsp.Transform.position.z
         );
 
         tsp.Transform.position = worldPosition;
@@ -182,6 +182,10 @@ public class MinimapProxy : MonoBehaviour
 
         Transform mirrorTransform = pair.Transform;
         SpriteRenderer spriteRenderer = pair.Renderer;
+
+        Vector3 mirrorTransformPosition = mirrorTransform.position;
+        mirrorTransform.position = new Vector3(mirrorTransformPosition.x, mirrorTransformPosition.y, client.OrderZ);
+
         spriteRenderer.sprite = client.Sprite ?? Instance.m_ClientMirrorDefaultSprite;
         spriteRenderer.color = client.SpriteColor;
 

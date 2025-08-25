@@ -1,7 +1,6 @@
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class CameraMinimapClient : MonoBehaviour, IMinimapProxyClient
 {
@@ -16,6 +15,7 @@ public class CameraMinimapClient : MonoBehaviour, IMinimapProxyClient
     public event Action OnClientDestroy;
     public event Action<bool> OnActiveStateChanged;
     public Vector2 CurrentWorldPosition => m_Controller.GetCameraPosition();
+    public float OrderZ => -1.0f;
     public Vector2 Size => m_Controller.GetCameraSize();
     public Sprite Sprite => m_MinimapSprite;
     public Color SpriteColor => m_MinimapColor;

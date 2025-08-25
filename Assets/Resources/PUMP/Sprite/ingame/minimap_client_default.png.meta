@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5540970ec0e4adf479b6c5c76b4bc8d8
+guid: 8c6f125ca148d124897d85aa4de83041
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 5363951426819608731
-    second: mimimap_bounds_0
+      213: 1771352180646307525
+    second: minimap_client_default_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mimimap_bounds_0
+      name: minimap_client_default_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 150
-        height: 150
+        width: 50
+        height: 50
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 2, y: 2, z: 2, w: 2}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b90580c3765907a40800000000000000
-      internalID: 5363951426819608731
+      spriteID: 5c6698b5c6b159810800000000000000
+      internalID: 1771352180646307525
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 32330108240c53b4c8a84883360cc367
+    spriteID: cdd69246ca2023643ac15ead759ba306
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mimimap_bounds_0: 5363951426819608731
+      minimap_client_default_0: 1771352180646307525
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

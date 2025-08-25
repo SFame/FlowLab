@@ -257,7 +257,7 @@ MonoBehaviour:
   m_ClientMirrorParent: {fileID: 7668391918406207881}
   m_ClientMirrorPool: {fileID: 2144715370152833726}
   m_BackgroundRenderer: {fileID: 4582178822874741091}
-  m_ClientMirrorDefaultSprite: {fileID: 9027232783355870048, guid: b3dc5857bb06520468b3f7a8c1eca520, type: 3}
+  m_ClientMirrorDefaultSprite: {fileID: 1771352180646307525, guid: 8c6f125ca148d124897d85aa4de83041, type: 3}
 --- !u!1 &3906837588626186600
 GameObject:
   m_ObjectHideFlags: 0
