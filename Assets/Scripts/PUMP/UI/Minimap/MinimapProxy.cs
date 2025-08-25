@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class MinimapProxy : MonoBehaviour
 {
@@ -60,6 +59,8 @@ public class MinimapProxy : MonoBehaviour
         {
             _instance = null;
         }
+
+        _clientMirrorPool?.Dispose();
     }
     #endregion
 
@@ -79,6 +80,11 @@ public class MinimapProxy : MonoBehaviour
             (
                 createFunc: () =>
                 {
+                    if (gameObject == null)
+                    {
+                        return null;
+                    }
+
                     GameObject newGo = Instantiate(m_ClientMirrorTemplate, m_ClientMirrorPool, true);
                     newGo.SetActive(false);
                     return new TransformSpriteRendererPair(newGo);
@@ -92,12 +98,22 @@ public class MinimapProxy : MonoBehaviour
                 },
                 actionOnRelease: tsp =>
                 {
+                    if (tsp.IsDestroyed)
+                    {
+                        return;
+                    }
+
                     tsp.Transform.SetParent(m_ClientMirrorPool);
                     tsp.Transform.gameObject.SetActive(false);
                 },
                 actionOnDestroy: tsp =>
                 {
-                    Destroy(tsp.Transform.gameObject);
+                    if (tsp.IsDestroyed)
+                    {
+                        return;
+                    }
+
+                    tsp.Destroy();
                 }
             );
         }
@@ -105,6 +121,11 @@ public class MinimapProxy : MonoBehaviour
 
     private static void PlaceTransformAtRatio(TransformSpriteRendererPair tsp, Vector2 ratio)
     {
+        if (tsp.IsDestroyed)
+        {
+            return;
+        }
+
         Bounds backgroundBounds = Instance.m_BackgroundRenderer.bounds;
 
         Vector3 worldPosition = new Vector3
@@ -119,18 +140,17 @@ public class MinimapProxy : MonoBehaviour
 
     private static void SetTransformSizeAtRatio(TransformSpriteRendererPair tsp, Vector2 ratio)
     {
-        if (Instance.m_BackgroundRenderer == null || Instance.m_BackgroundRenderer.sprite == null)
+        if (tsp.IsDestroyed || Instance.m_BackgroundRenderer == null || Instance.m_BackgroundRenderer.sprite == null)
         {
             return;
         }
 
         Vector3 backgroundOriginalSize = Instance.m_BackgroundRenderer.sprite.bounds.size;
 
-        Vector3 targetRelativeSize = new Vector3
+        Vector2 targetSize = new Vector2
         (
             backgroundOriginalSize.x * ratio.x,
-            backgroundOriginalSize.y * ratio.y,
-            1.0f
+            backgroundOriginalSize.y * ratio.y
         );
 
         SpriteRenderer spriteRenderer = tsp.Renderer;
@@ -145,18 +165,19 @@ public class MinimapProxy : MonoBehaviour
             spriteRenderer.sprite = Instance.m_ClientMirrorDefaultSprite;
         }
 
-        Vector3 iconOriginalSize = spriteRenderer.sprite.bounds.size;
+        spriteRenderer.size = targetSize;
 
-        if (iconOriginalSize.x == 0 || iconOriginalSize.y == 0) return;
-
-        float scaleX = targetRelativeSize.x / iconOriginalSize.x;
-        float scaleY = targetRelativeSize.y / iconOriginalSize.y;
-
-        tsp.Transform.localScale = new Vector3(scaleX, scaleY, 1f);
+        tsp.Transform.localScale = Vector3.one;
     }
 
     public static void Register(IMinimapProxyClient client)
     {
+        if (client == null)
+        {
+            Debug.LogError($"{Instance.GetType().Name}.Register: Null was assigned");
+            return;
+        }
+
         TransformSpriteRendererPair pair = Instance.ClientMirrorPool.Get();
 
         Transform mirrorTransform = pair.Transform;
@@ -172,18 +193,33 @@ public class MinimapProxy : MonoBehaviour
 
         client.OnClientMove += movePos =>
         {
+            if (pair.IsDestroyed)
+            {
+                return;
+            }
+
             Vector2 ratio = WorldCanvasGetter.WorldPositionToRatio(movePos, true);
             PlaceTransformAtRatio(pair, ratio);
         };
 
         client.OnClientSizeUpdate += size =>
         {
+            if (pair.IsDestroyed)
+            {
+                return;
+            }
+
             Vector2 sizeRatio = WorldCanvasGetter.WorldSizeToRatio(size, true);
             SetTransformSizeAtRatio(pair, sizeRatio);
         };
 
         client.OnActiveStateChanged += isActive =>
         {
+            if (pair.IsDestroyed)
+            {
+                return;
+            }
+
             mirrorTransform.gameObject.SetActive(isActive);
         };
 
@@ -203,6 +239,8 @@ public class MinimapProxy : MonoBehaviour
 
         public Transform Transform { get; }
         public SpriteRenderer Renderer { get; }
+
+        public bool IsDestroyed => Transform == null;
 
         public void Destroy()
         {

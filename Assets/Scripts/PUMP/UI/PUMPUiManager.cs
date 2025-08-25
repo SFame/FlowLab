@@ -13,6 +13,7 @@ public class PUMPUiManager : MonoBehaviour
 
     #region Interface
     public static Canvas RootCanvas => Instance.m_RootCanvas;
+    public static RectTransform RootCanvasRect => Instance.CanvasRect;
 
     public static void Render(RectTransform ui, int layerIndex, Action<RectTransform> onRender, Action<RectTransform> onReturn)
     {
@@ -32,6 +33,8 @@ public class PUMPUiManager : MonoBehaviour
     #region Privates
     private readonly List<RectTransform> _layerList = new();
     private readonly Dictionary<int, Action> _returners = new();
+    private RectTransform _canvasRect;
+
     private const string UI_PREFAB_PATH = "PUMP/Prefab/UI/PumpUiCanvas";
     private static GameObject _uiPrefab;
     private static PUMPUiManager _instance;
@@ -55,6 +58,19 @@ public class PUMPUiManager : MonoBehaviour
             }
 
             return _uiPrefab;
+        }
+    }
+
+    private RectTransform CanvasRect
+    {
+        get
+        {
+            if (_canvasRect == null)
+            {
+                _canvasRect = m_RootCanvas.GetComponent<RectTransform>();
+            }
+
+            return _canvasRect;
         }
     }
 

@@ -238,7 +238,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     public void OpenLoggingPanel()
     {
         m_LogPanel.gameObject.SetActive(true);
-        m_LogPanel.SetParent(WorldCanvasGetter.RootCanvasRect);
+        m_LogPanel.SetParent(PUMPUiManager.RootCanvasRect);
         m_LogPanel.SetRectFull();
         RecyclableScrollRect.ReloadData();
     }

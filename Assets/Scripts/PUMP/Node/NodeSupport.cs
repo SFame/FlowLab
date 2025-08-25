@@ -384,7 +384,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public Sprite Sprite => m_MinimapSprite;
     public Color SpriteColor => m_MinimapColor;
     public Vector2 Size => new Vector2(Rect.rect.x, Rect.rect.y);
-
     #endregion
 }
 

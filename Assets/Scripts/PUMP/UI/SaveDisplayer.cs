@@ -70,6 +70,6 @@ public class SaveDisplayer : MonoBehaviour, IDisposable
 
     public void Dispose()
     {
-        NodeCellPool.Dispose();
+        _nodeCellPool?.Dispose();
     }
 }

@@ -247,7 +247,7 @@ MonoBehaviour:
   m_DefaultColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
   m_HighlightedColor: {r: 0, g: 0.754717, b: 0, a: 1}
   m_IncludeMinimap: 1
-  m_MinimapSprite: {fileID: 2188659656609629457, guid: 6ae7cfa3b1c08f24fb0acd56b9bb74d5, type: 3}
+  m_MinimapSprite: {fileID: 9027232783355870048, guid: b3dc5857bb06520468b3f7a8c1eca520, type: 3}
   m_MinimapColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
 --- !u!114 &6368112864780920419
 MonoBehaviour:

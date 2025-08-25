@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 519420031}
   - component: {fileID: 519420033}
   - component: {fileID: 519420034}
+  - component: {fileID: 519420036}
   - component: {fileID: 519420035}
   - component: {fileID: 519420029}
   m_Layer: 0
@@ -283,6 +284,21 @@ MonoBehaviour:
   - ActionType: 7
     KeyCode: 0
     Always: 1
+--- !u!114 &519420036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f05e91e6803de124597186eb9e386b52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Controller: {fileID: 519420034}
+  m_MinimapSprite: {fileID: 5363951426819608731, guid: 5540970ec0e4adf479b6c5c76b4bc8d8, type: 3}
+  m_MinimapColor: {r: 0.07450981, g: 0.20000002, b: 0.2901961, a: 1}
 --- !u!224 &589080010 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4030015093839860039, guid: 08057d90a8b4c7348b2ed6f6fcaff2e1, type: 3}

@@ -27,7 +27,7 @@ public class PUMPTool : MonoBehaviour
     private Vector2 _hiddenPosition;
     private Vector2 _visiblePosition;
     private bool _isVisible = false;
-    private bool _minimapActive = false;
+    private bool _initialized = false;
     private SafetyCancellationTokenSource _cts;
     private RectTransform _rectTransform;
     private float _minY;
@@ -81,6 +81,7 @@ public class PUMPTool : MonoBehaviour
         float halfHeightOffset = m_DetectionAreaHeightOffset * 0.5f;
         _minY = corners[0].y - halfHeightOffset;
         _maxY = corners[1].y + halfHeightOffset;
+        _initialized = true;
     }
 
     private void StartPollingTask()
@@ -100,6 +101,8 @@ public class PUMPTool : MonoBehaviour
     {
         try
         {
+            await UniTask.WaitUntil(() => _initialized, cancellationToken: cancellationToken);
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 UpdateScreenResolution();
