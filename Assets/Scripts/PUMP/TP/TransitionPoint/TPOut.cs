@@ -195,6 +195,11 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
     #region MouseEvent
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
             _lineConnector.Remove();
 
@@ -209,6 +214,11 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
     void IDragHandler.OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
         {
             Vector2 targetPoint;
@@ -226,7 +236,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
             }
             else
             {
-                targetPoint = eventData.position;
+                targetPoint = eventData.position.ScreenToWorldPoint();
                 if (_hideTargetTpCache != null)
                 {
                     _hideTargetTpCache.SubHider(_hider);
@@ -241,6 +251,11 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         if (_lineConnector != null)
         {
             _lineConnector.Remove();

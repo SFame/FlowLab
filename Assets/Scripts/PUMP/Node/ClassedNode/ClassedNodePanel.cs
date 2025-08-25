@@ -8,6 +8,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 {
     #region On Inspector
     [SerializeField] private RectTransform pumpBackgroundParent;
+    [SerializeField] private RectTransform m_uiRectTransform;
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] public string defaultSaveName = string.Empty;
 
@@ -97,7 +98,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     {
         if (DataManager.GetCurrent().IsChanged)
         {
-            MessageBoxManager.ShowYesNo(RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
+            MessageBoxManager.ShowYesNo(PUMPUiManager.RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
             return;
         }
 
@@ -115,7 +116,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: RootCanvas,
+            rootCanvas: PUMPUiManager.RootCanvas,
             callback: DataManager.Push,
             titleString: "Save Name",
             inputString: defaultSaveName,
@@ -134,7 +135,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
 
         TextGetterManager.Set
         (
-            rootCanvas: RootCanvas,
+            rootCanvas: PUMPUiManager.RootCanvas,
             callback: saveName =>
             {
                 DataManager.Push(saveName);
@@ -220,6 +221,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
                     backgroundObject.name = "ClassedPairBackground";
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
                     background.RecordOnInitialize = false;
+                    background.UiRectTransform = m_uiRectTransform;
                     ((ISeparatorSectorable)background).SetSeparator(((ISeparatorSectorable)this).GetSeparator());
                     background.Open();
                     Other.InvokeActionDelay(_baseBackground.Open).Forget();
@@ -234,19 +236,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     #region Privates
     private PUMPBackground _baseBackground;
     private IClassedNodeDataManager _dataManager;
-    private Canvas _rootCanvas;
     private bool _isInputSliderValueChangingBySystem = false;
     private bool _isOutputSliderValueChangingBySystem = false;
     private PUMPSeparator _separator;
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     private void SetActive(bool active)
     {

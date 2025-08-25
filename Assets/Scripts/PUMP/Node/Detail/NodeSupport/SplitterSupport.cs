@@ -13,7 +13,7 @@ public class SplitterSupport : MonoBehaviour
         set => m_CountDropdown.value = value - 1;
     }
 
-    public void Initialize(int defaultCount, Action<int> onCountUpdate, int maxCount = 18)
+    public void Initialize(int defaultCount, Action<int> onCountUpdate, int maxCount = 64)
     {
         if (m_CountDropdown == null)
         {

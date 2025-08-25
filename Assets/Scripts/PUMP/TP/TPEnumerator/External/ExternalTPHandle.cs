@@ -66,11 +66,21 @@ public class ExternalTPHandle : MonoBehaviour, IDragHandler, IPointerEnterHandle
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnDragging?.Invoke(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnDragEnd?.Invoke(eventData);
     }
 

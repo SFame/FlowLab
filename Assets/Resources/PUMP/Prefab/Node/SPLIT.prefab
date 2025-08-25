@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 9018247851167648944}
   - component: {fileID: 3747468635197713672}
   - component: {fileID: 2307491242806501683}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Item Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 6167730209766554042}
   - component: {fileID: 2302421538518127420}
   - component: {fileID: 5978389560601918252}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Template
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -192,7 +192,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1017888967115061714}
   - component: {fileID: 9198463540027023272}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Item
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -280,7 +280,7 @@ GameObject:
   - component: {fileID: 5202697276682593383}
   - component: {fileID: 2688780276463795558}
   - component: {fileID: 4348690133695451282}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Item Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -414,7 +414,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3058059426625334532}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Content
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 5863436955305136999}
   - component: {fileID: 9017963240452733828}
   - component: {fileID: 1272066331039066030}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: CountDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -589,7 +589,7 @@ GameObject:
   - component: {fileID: 9064825765704700626}
   - component: {fileID: 3496427904160115408}
   - component: {fileID: 8229906268852599091}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Viewport
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -678,7 +678,7 @@ GameObject:
   - component: {fileID: 5079968870785666995}
   - component: {fileID: 3449608892297281711}
   - component: {fileID: 309070535367854190}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -814,7 +814,7 @@ GameObject:
   - component: {fileID: 2033751946137205715}
   - component: {fileID: 6069430150661931962}
   - component: {fileID: 4727436461937580905}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Item Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}

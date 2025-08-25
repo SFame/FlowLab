@@ -32,7 +32,7 @@ public class LoggingElem : MonoBehaviour, ICell, IPointerClickHandler
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements);
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, ContextElements);
         }
     }
     #endregion

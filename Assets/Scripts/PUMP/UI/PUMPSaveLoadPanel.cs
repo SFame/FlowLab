@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
@@ -29,18 +28,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     #region Privates
     private SaveLoadUiController _uiController;
     private RecyclableScrollRect _scrollRect;
-    private Canvas _rootCanvas;
     private List<PUMPSaveDataStructure> _saveDatas;
     private bool _initialized = false;
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     private SaveLoadUiController UiController
     {
@@ -118,7 +107,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
 
             TextGetterManager.Set
             (
-                rootCanvas: RootCanvas,
+                rootCanvas: PUMPUiManager.RootCanvas,
                 callback: newName =>
                 {
                     AddNewSave(newName).Forget();
@@ -227,7 +216,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
 
                         TextGetterManager.Set
                         (
-                            rootCanvas: RootCanvas,
+                            rootCanvas: PUMPUiManager.RootCanvas,
                             callback: newName =>
                             {
                                 if (data.Name != newName)
@@ -244,7 +233,7 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
                     }
                 )
             };
-            ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, contextElements);
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, contextElements);
         };
     }
     #endregion

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8237929459029892467}
   - component: {fileID: 816611797571955032}
   - component: {fileID: 1953344865619092123}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: NodeName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -152,7 +152,7 @@ GameObject:
   - component: {fileID: 6368112864780920419}
   - component: {fileID: 298567353741124581}
   - component: {fileID: 8840853647835918640}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: NODE
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -246,6 +246,9 @@ MonoBehaviour:
   m_ImageGroup: []
   m_DefaultColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
   m_HighlightedColor: {r: 0, g: 0.754717, b: 0, a: 1}
+  m_IncludeMinimap: 1
+  m_MinimapSprite: {fileID: 2188659656609629457, guid: 6ae7cfa3b1c08f24fb0acd56b9bb74d5, type: 3}
+  m_MinimapColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
 --- !u!114 &6368112864780920419
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -74,7 +74,13 @@ public static class Setting
             m_ActionType = BackgroundActionType.SelectDisconnect,
             m_Modifiers = new List<KeyCode> { },
             m_ActionKeys = new List<KeyCode> { KeyCode.Backspace }
-        }
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.MinimapToggle,
+            m_Modifiers = new List<KeyCode> { },
+            m_ActionKeys = new List<KeyCode> { KeyCode.M }
+        },
     };
 
 #endregion

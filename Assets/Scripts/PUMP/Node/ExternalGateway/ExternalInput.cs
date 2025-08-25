@@ -105,7 +105,6 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     }
     protected override void OnAfterInit()
     {
-        Support.BlockedMove = true;
         InEnumActive = false;
 
         if (_handleRatios != null && GateCount == _handleRatios.Count)
@@ -113,7 +112,12 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
             (Support.OutputEnumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
         }
     }
-    
+
+    protected override void OnBeforeAutoConnect()
+    {
+        Support.BlockedMove = true;
+    }
+
     private void SetHighlight(bool highlighted)
     {
         if (Support is { OutputEnumerator: IHighlightable highlightable })

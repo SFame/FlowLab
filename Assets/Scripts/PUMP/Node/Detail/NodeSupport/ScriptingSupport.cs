@@ -25,27 +25,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     private const string NULL_FILE_NAME = "----------";
     private readonly int _maxLogCapacity = 50;
     private readonly List<string> _logQueue = new();
-    private Canvas _rootCanvas;
-    private RectTransform _rootCanvasRect;
     private bool _scrollRectInit;
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= GetComponent<RectTransform>().GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
-
-    private RectTransform RootCanvasRect
-    {
-        get
-        {
-            _rootCanvasRect ??= RootCanvas.GetComponent<RectTransform>();
-            return _rootCanvasRect;
-        }
-    }
 
     private RecyclableScrollRect RecyclableScrollRect
     {
@@ -189,7 +169,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     {
         if (cell is LoggingElem loggingElem)
         {
-            loggingElem.RootCanvas = RootCanvas;
+            loggingElem.RootCanvas = WorldCanvasGetter.RootCanvas;
             loggingElem.Index = index;
             loggingElem.Text = _logQueue[index];
         }
@@ -258,7 +238,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     public void OpenLoggingPanel()
     {
         m_LogPanel.gameObject.SetActive(true);
-        m_LogPanel.SetParent(RootCanvasRect);
+        m_LogPanel.SetParent(WorldCanvasGetter.RootCanvasRect);
         m_LogPanel.SetRectFull();
         RecyclableScrollRect.ReloadData();
     }

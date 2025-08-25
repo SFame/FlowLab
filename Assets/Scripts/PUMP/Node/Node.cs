@@ -39,7 +39,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         if (eventData.button == PointerEventData.InputButton.Right)
         {
             List<ContextElement> currentContextElements = ContextElements;
-            ContextMenuManager.ShowContextMenu(Support.RootCanvas, eventData.position, currentContextElements.ToArray());
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, currentContextElements.ToArray());
         }
     }
     #endregion
@@ -453,7 +453,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         if (DefaultColor != null)
             Support.DefaultColor = DefaultColor.Value;
 
-        Support.OnDragEnd += (_, _) => ReportChanges();
+        Support.OnDragEnd += _ => ReportChanges();
         Support.OnClick += ShowContext;
         Support.SetName(NodeDisplayName);
         Support.SetNameFontSize(NameTextSize);

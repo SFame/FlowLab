@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1688440299655111370}
   - component: {fileID: 3872128747061345372}
   - component: {fileID: 2196282153981526028}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: PointImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 5414449457321273900}
   - component: {fileID: 8271908648223308541}
   - component: {fileID: 8198674790679510066}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TPIn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -342,7 +342,7 @@ GameObject:
   - component: {fileID: 4158014108509714610}
   - component: {fileID: 1643544739675324842}
   - component: {fileID: 341547541646630560}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ArrowImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -415,7 +415,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2642755086707628586}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TpSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 1711703261890965869}
   - component: {fileID: 5769221636496823007}
   - component: {fileID: 2284181248005208124}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ConnectionParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -550,7 +550,7 @@ GameObject:
   - component: {fileID: 7987478933186573518}
   - component: {fileID: 1630567461467708090}
   - component: {fileID: 3758198967552047682}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: OnPointerHighlighter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -625,7 +625,7 @@ GameObject:
   - component: {fileID: 7672351565047527214}
   - component: {fileID: 2115755770492303261}
   - component: {fileID: 8983395456293199534}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ExternalTPEnumIn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -687,7 +687,7 @@ GameObject:
   - component: {fileID: 9010331017861981747}
   - component: {fileID: 3389432041224715785}
   - component: {fileID: 7145839437948716083}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: HandleTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -780,7 +780,7 @@ GameObject:
   - component: {fileID: 4385411264038218372}
   - component: {fileID: 3081821457206979928}
   - component: {fileID: 6745802132127538417}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: TypeRing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -855,7 +855,7 @@ GameObject:
   - component: {fileID: 3583316673293697180}
   - component: {fileID: 2882713648124783536}
   - component: {fileID: 5404864105308337560}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: NameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -991,7 +991,7 @@ GameObject:
   - component: {fileID: 7170797740931585496}
   - component: {fileID: 4433468553319802993}
   - component: {fileID: 2222386989165121382}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: RadialShadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}

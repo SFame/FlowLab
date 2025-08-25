@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3602728201522986483}
   - component: {fileID: 8634306645962555783}
   - component: {fileID: 2909348705715570017}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: RaycastTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 8440757631299434766}
   - component: {fileID: 4348142884285732257}
   - component: {fileID: 836456236987199243}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Input
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -234,7 +234,7 @@ GameObject:
   - component: {fileID: 3816582841601610665}
   - component: {fileID: 130052299866639821}
   - component: {fileID: 2482292822840140119}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ShadowPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -310,7 +310,7 @@ GameObject:
   - component: {fileID: 3170233039485485476}
   - component: {fileID: 6330488924456384422}
   - component: {fileID: 2559026935468368121}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: InputPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -398,7 +398,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2656605227198553516}
   - component: {fileID: 7640424873365670465}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -452,7 +452,7 @@ GameObject:
   - component: {fileID: 8618341037182204960}
   - component: {fileID: 4486075328769960875}
   - component: {fileID: 7077453652592165186}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Placeholder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -608,7 +608,7 @@ GameObject:
   - component: {fileID: 2100995989442657449}
   - component: {fileID: 1055349370686085776}
   - component: {fileID: 2142626975939845707}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: GraphicTarget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -683,7 +683,7 @@ GameObject:
   - component: {fileID: 6551791147274448731}
   - component: {fileID: 1651998469469946111}
   - component: {fileID: 5293738808318160996}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -816,6 +816,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1889366659289021684, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Layer
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1953344865619092123, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_text
       value: Input
@@ -823,6 +827,10 @@ PrefabInstance:
     - target: {fileID: 3521182047487203236, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Name
       value: INPUT_SWITCH
+      objectReference: {fileID: 0}
+    - target: {fileID: 3521182047487203236, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Layer
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5483115683594355173, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Pivot.x
@@ -911,6 +919,10 @@ PrefabInstance:
     - target: {fileID: 8237929459029892467, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8791066824284802987, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_Layer
+      value: 7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

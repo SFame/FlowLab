@@ -23,7 +23,7 @@ public class UI_MainMenu : MonoBehaviour
 
         if (_codexPalette == null)
         {
-            GameObject temp = Instantiate(m_codexPrefab, transform.parent, false);
+            GameObject temp = Instantiate(m_codexPrefab, transform, false);
             temp.GetComponent<RectTransform>().SetOffset(Vector2.zero, Vector2.zero);
             _codexPalette = temp.GetComponent<CodexPalette>();
             temp.SetActive(false);
@@ -31,7 +31,7 @@ public class UI_MainMenu : MonoBehaviour
 
         if (_settingsUI == null)
         {
-            GameObject temp = Instantiate(m_SettingUIPrefab, transform.parent, false);
+            GameObject temp = Instantiate(m_SettingUIPrefab, transform, false);
             _settingsUI = temp.GetComponent<UI_Settings>();
             temp.SetActive(false);
         }

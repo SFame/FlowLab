@@ -15,6 +15,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 {
     #region On Inspector
     [Header("<Component>"), Space(5)]
+    [SerializeField] private RectTransform m_UiRectTransform;
     [SerializeField] private RectTransform m_NodeParent;
     [SerializeField] private RectTransform m_DraggingZone;
     [SerializeField] private RectTransform m_ChildZone;
@@ -46,13 +47,13 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private bool _initialized = false;
     private bool _canInteractive = true;
     private bool _destroyed = false;
+    private Transform _uiDefaultParent;
     private PUMPComponentGetter _componentGetter;
-    private HashSet<object> _isOnChangeBlocker = new();
+    private readonly HashSet<object> _isOnChangeBlocker = new();
     private RectTransform _rect;
-    private Canvas _rootCanvas;
     private CanvasGroup _canvasGroup;
-    private ExternalInputAdapter _externalInputAdapter = new();
-    private ExternalOutputAdapter _externalOutputAdapter = new();
+    private readonly ExternalInputAdapter _externalInputAdapter = new();
+    private readonly ExternalOutputAdapter _externalOutputAdapter = new();
     private PUMPSeparator _separator;
     private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
     private UniTask _changeInvokeTask = UniTask.CompletedTask;
@@ -61,15 +62,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     /// All Nodes
     /// </summary>
     private List<Node> Nodes { get; } = new();
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= ((RectTransform)transform).GetRootCanvas();
-            return _rootCanvas;
-        }
-    }
 
     private CanvasGroup CanvasGroup
     {
@@ -97,6 +89,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         SetGateway();
         SetSelectionAreaController();
+
+        _uiDefaultParent = m_UiRectTransform.parent;
 
         if (RecordOnInitialize)
             RecordHistory();
@@ -360,6 +354,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
     }
 
+    public RectTransform UiRectTransform
+    {
+        get => m_UiRectTransform;
+        set => m_UiRectTransform = value;
+    }
+
     public LineConnectManager LineConnectManager => m_LineConnectManager;
 
     public LineEdgeSortingManager LineEdgeSortingManager => m_LineEdgeSortingManager;
@@ -401,6 +401,17 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         gameObject.SetActive(true);
         Current = this;
         Initialize();
+        PUMPUiManager.Render(m_UiRectTransform, 0,
+        rect =>
+        {
+            rect.SetRectFull();
+            rect.gameObject.SetActive(true);
+        },
+        rect =>
+        {
+            rect.SetParent(_uiDefaultParent);
+            rect.gameObject.SetActive(false);
+        });
     }
 
     public void Close()
@@ -670,7 +681,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 // Set node position ---------
                 Vector2 normalizeValue = info.NodePosition;
                 Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
-                newNode.Support.Rect.position = ConvertLocalToWorldPosition(localPosition, Rect);
+                newNode.Support.SetPosition(ConvertLocalToWorldPosition(localPosition, Rect));
 
                 // Set Transition Point types --------
                 newNode.SetTPElements(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8789803699243898992}
   - component: {fileID: 6377672116815052793}
   - component: {fileID: 6686969752087407422}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ShadowPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -89,7 +89,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3521182047487203236, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Name
-      value: CLICK_SWITCH
+      value: ON_OFF_SWITCH
       objectReference: {fileID: 0}
     - target: {fileID: 5483115683594355173, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Pivot.x

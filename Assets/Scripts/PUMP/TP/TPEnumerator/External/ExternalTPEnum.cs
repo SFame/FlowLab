@@ -15,7 +15,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
     private bool _hasSet = false;
     private Node _node;
     private RectTransform _rect;
-    private Canvas _canvas;
     private float _minHeight;
     private void Awake()
     {
@@ -30,15 +29,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         {
             _rect ??= GetComponent<RectTransform>();
             return _rect;
-        }
-    }
-
-    private Canvas RootCanvas
-    {
-        get
-        {
-            _canvas ??= GetComponentInParent<Canvas>().rootCanvas;
-            return _canvas;
         }
     }
     #endregion
@@ -102,7 +92,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         (
             _tpSlider,
             eventData.position,
-            RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : RootCanvas.worldCamera,
+            WorldCanvasGetter.RootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : WorldCanvasGetter.RootCanvas.worldCamera,
             out Vector2 mouseLocalPos
         );
 

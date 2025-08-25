@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8789803699243898992}
   - component: {fileID: 6377672116815052793}
   - component: {fileID: 6686969752087407422}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ShadowPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}

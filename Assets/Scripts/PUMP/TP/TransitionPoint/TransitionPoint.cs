@@ -40,7 +40,6 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private RectTransform _imageRect;
     private string _name;
     private Node _node;
-    private Canvas _rootCanvas;
 
 
     private void OnDestroy()
@@ -60,14 +59,6 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
         {
             _imageRect ??= m_Image?.GetComponent<RectTransform>();
             return _imageRect;
-        }
-    }
-    protected Canvas RootCanvas
-    {
-        get
-        {
-            _rootCanvas ??= GetComponentInParent<Canvas>().rootCanvas;
-            return _rootCanvas;
         }
     }
     #endregion
@@ -224,7 +215,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
-            Utils.ContextMenuManager.ShowContextMenu(RootCanvas, eventData.position, ContextElements.ToArray());
+            Utils.ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, ContextElements.ToArray());
     }
     #endregion
 
@@ -353,7 +344,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
                     {
                         isShow = true;
                         stateCache = State;
-                        StateDisplay.Render(stateCache, WorldPosition, RootCanvas);
+                        StateDisplay.Render(stateCache, MainCameraGetter.GetMainCam().WorldToScreenPoint(WorldPosition), PUMPUiManager.RootCanvas);
                     }
                     else
                     {

@@ -48,12 +48,12 @@ public class InputField : Node, INodeAdditionalArgs<string>
                 Support.OnMouseEnter += _ => _inputFieldSupport.OpenInputPanel();
                 Support.OnMouseExit += _ => _inputFieldSupport.CloseInputPanel();
                 Support.OnMouseEventBlocked += () => _inputFieldSupport.CloseInputPanel();
-                Support.OnDragStart += (_, _) =>
+                Support.OnDragStart += _ =>
                 {
                     _inputFieldSupport.CloseInputPanel();
                     _inputFieldSupport.BlockOpenPanel = true;
                 };
-                Support.OnDragEnd += (_, _) => _inputFieldSupport.BlockOpenPanel = false;
+                Support.OnDragEnd += _ => _inputFieldSupport.BlockOpenPanel = false;
 
                 _inputFieldSupport.OnEndEdit += value =>
                 {

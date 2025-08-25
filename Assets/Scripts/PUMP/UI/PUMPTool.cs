@@ -20,15 +20,20 @@ public class PUMPTool : MonoBehaviour
     [SerializeField] private Image m_HandleImage;
     [SerializeField] private Button m_SaveLoadButton;
     [SerializeField] private Button m_NodePaletteButton;
+
+    [SerializeField] private MinimapController m_MinimapController;
     #endregion
 
     private Vector2 _hiddenPosition;
     private Vector2 _visiblePosition;
     private bool _isVisible = false;
+    private bool _minimapActive = false;
     private SafetyCancellationTokenSource _cts;
     private RectTransform _rectTransform;
     private float _minY;
     private float _maxY;
+    private int _screenWidth;
+    private int _screenHeight;
 
     private void SetButtonCallbacks()
     {
@@ -46,7 +51,7 @@ public class PUMPTool : MonoBehaviour
     {
         _rectTransform = GetComponent<RectTransform>();
         SetButtonCallbacks();
-        InitializePositions().Forget();
+        InitializePositions(UniTask.NextFrame(PlayerLoopTiming.LastPostLateUpdate)).Forget();
     }
 
     private void OnEnable()
@@ -64,9 +69,9 @@ public class PUMPTool : MonoBehaviour
         StopPollingTask();
     }
 
-    private async UniTask InitializePositions()
+    private async UniTask InitializePositions(UniTask task)
     {
-        await UniTask.NextFrame(PlayerLoopTiming.LastPostLateUpdate);
+        await task;
 
         _hiddenPosition = _rectTransform.anchoredPosition;
         _visiblePosition = new Vector2(_hiddenPosition.x + _rectTransform.rect.width, _hiddenPosition.y);
@@ -97,6 +102,7 @@ public class PUMPTool : MonoBehaviour
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                UpdateScreenResolution();
                 CheckMousePosition();
                 await UniTask.Delay(TimeSpan.FromSeconds(m_PollingRate), cancellationToken: cancellationToken);
             }
@@ -149,6 +155,19 @@ public class PUMPTool : MonoBehaviour
         m_HandleImage.DOFade(1f, m_HandleFadeDuration).SetDelay(m_SlideDuration).SetEase(Ease.Linear);
     }
 
+    private void UpdateScreenResolution()
+    {
+        if (Screen.width == _screenWidth && Screen.height == _screenHeight)
+        {
+            return;
+        }
+
+        _screenWidth = Screen.width;
+        _screenHeight = Screen.height;
+        InitializePositions(UniTask.CompletedTask).Forget();
+    }
+
+
     public void OpenPalette()
     {
         m_NodePalette.SetActive(true);
@@ -167,5 +186,10 @@ public class PUMPTool : MonoBehaviour
     public void ToggleSaveLoadPanel()
     {
         m_SaveLoadUiController.IsActive = !m_SaveLoadUiController.IsActive;
+    }
+
+    public void ToggleMinimap()
+    {
+        m_MinimapController.ToggleMinimap();
     }
 }

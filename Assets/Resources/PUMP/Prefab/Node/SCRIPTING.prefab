@@ -147,7 +147,7 @@ GameObject:
   - component: {fileID: 8718140953912749322}
   - component: {fileID: 3129898766883638999}
   - component: {fileID: 7466337271583480500}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: CableImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -222,7 +222,7 @@ GameObject:
   - component: {fileID: 7338871195910439208}
   - component: {fileID: 8904204301443420230}
   - component: {fileID: 1852092664013699496}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: FileNameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -358,7 +358,7 @@ GameObject:
   - component: {fileID: 4438535241914054377}
   - component: {fileID: 7585160048822306882}
   - component: {fileID: 1848743911804064424}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: DisplayPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -434,7 +434,7 @@ GameObject:
   - component: {fileID: 124903346102159182}
   - component: {fileID: 8282262821550786115}
   - component: {fileID: 8855502650111668120}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: PrintText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -798,7 +798,7 @@ GameObject:
   - component: {fileID: 6847657798296406109}
   - component: {fileID: 8194178564774815527}
   - component: {fileID: 1315307341833616890}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: PythonLogo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1314,7 +1314,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7548933799169661840}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Layout
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1353,7 +1353,7 @@ GameObject:
   - component: {fileID: 1902455883508884845}
   - component: {fileID: 5785895287832091861}
   - component: {fileID: 6309913325720062575}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: FileNameBackground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1430,7 +1430,7 @@ GameObject:
   - component: {fileID: 863106317953576863}
   - component: {fileID: 7593292029033248489}
   - component: {fileID: 5405248203758205490}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: LogText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1735,7 +1735,7 @@ GameObject:
   - component: {fileID: 878425485804368205}
   - component: {fileID: 3036769115772437180}
   - component: {fileID: 5773158372164791588}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: ScriptingImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -4,8 +4,9 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Utils;
 
-public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
+public class PaletteElem : MonoBehaviour, IDraggable
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI m_Text;
@@ -43,6 +44,11 @@ public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         _caughtException = false;
         _background = null;
         _newNode = null;
@@ -51,11 +57,21 @@ public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         FindPumpBackground(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
         OnDragEnd?.Invoke();
         
         
@@ -95,7 +111,7 @@ public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
             if (_background is null)
                 return;
 
-            _newNode.Support.SetPosition(eventData.position);
+            _newNode.Support.SetPosition(eventData.position.ScreenToWorldPoint());
         }
         catch (Exception e)
         {
@@ -109,10 +125,5 @@ public class PaletteElem : MonoBehaviour, IDraggable, IPointerClickHandler
             Debug.LogError("<color=red><b>[NODE INSTANTIATE ERROR]</b></color>");
             Debug.LogException(e);
         }
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-
     }
 }
