@@ -56,16 +56,4 @@ public class LoggingElem : MonoBehaviour, ICell, IPointerClickHandler
             m_IndexText.text = $"[{_index.ToString()}]";
         }
     }
-
-    public Canvas RootCanvas
-    {
-        get => _rootCanvas;
-        set
-        {
-            if (_rootCanvas == null)
-            {
-                _rootCanvas = value;
-            }
-        }
-    }
 }

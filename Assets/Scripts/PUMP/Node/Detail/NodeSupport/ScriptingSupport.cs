@@ -169,7 +169,6 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     {
         if (cell is LoggingElem loggingElem)
         {
-            loggingElem.RootCanvas = WorldCanvasGetter.RootCanvas;
             loggingElem.Index = index;
             loggingElem.Text = _logQueue[index];
         }
@@ -182,7 +181,6 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     #endregion
 
     #region Interface
-
     public void Initialize()
     {
         RemoveFileName();

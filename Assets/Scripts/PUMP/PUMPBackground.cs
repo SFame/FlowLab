@@ -77,12 +77,19 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private void Initialize(int inputCount = -1, int outputCount = -1)
     {
         if (_initialized)
+        {
             return;
+        }
 
         if (inputCount >= 0)
+        {
             m_DefaultExternalInputCount = inputCount;
+        }
+
         if (outputCount >= 0)
+        {
             m_DefaultExternalOutputCount = outputCount;
+        }
 
         OnChanged -= RecordHistory;
         OnChanged += RecordHistory;
@@ -93,7 +100,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         _uiDefaultParent = m_UiRectTransform.parent;
 
         if (RecordOnInitialize)
+        {
             RecordHistory();
+        }
 
         _initialized = true;
     }
@@ -134,7 +143,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             int tpIndex = Nodes[i].GetTPIndex(findTp);
 
             if (tpIndex != -1)
+            {
                 return (i, tpIndex);
+            }
         }
         return (-1, -1);
     }
@@ -204,7 +215,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 foreach (Node duplicateInput in inputNodes.Skip(1))
                 {
                     if (duplicateInput.Support)
+                    {
                         duplicateInput.Remove();
+                    }
                 }
                 newInputCount = currentInput.GateCount;
             }
@@ -232,7 +245,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 foreach (Node duplicateOutput in outputNodes.Skip(1))
                 {
                     if (duplicateOutput.Support)
+                    {
                         duplicateOutput.Remove();
+                    }
                 }
                 newOutputCount = currentOutput.GateCount;
             }
@@ -283,7 +298,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         ClearSelected();
 
         foreach (Node node in Nodes.ToList())
+        {
             node?.Remove();
+        }
         
         Nodes.Clear();
     }
@@ -295,10 +312,14 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     void IChangeObserver.ReportChanges()
     {
         if (IsOnChangeBlocked)
+        {
             return;
+        }
 
         if (_changeInvokeTask.Status == UniTaskStatus.Succeeded)
+        {
             _changeInvokeTask = ReportChangesEndFrameAsync();
+        }
     }
 
     private async UniTask ReportChangesEndFrameAsync()
@@ -589,7 +610,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #endregion
 
     #region Serialization
-
     public List<SerializeNodeInfo> GetInfos()
     {
         object blocker = new();
@@ -711,7 +731,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             for (int i = 0; i < Nodes.Count; i++)
             {
                 if (Nodes[i] == null)
+                {
                     continue;
+                }
 
                 TPConnectionIndexInfo[] inConnectionTargetInfos = infos[i].InConnectionTargets;  // i번째 노드 커넥션 index 정보들
                 TPConnectionIndexInfo[] outConnectionTargetInfos = infos[i].OutConnectionTargets;
@@ -727,8 +749,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 // In connection's target (target is TPOut) ---------
                 for (int j = 0; j < inCount; j++)
                 {
-                    if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex || inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
+                    if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex ||
+                        inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
+                    {
                         continue;
+                    }
 
                     // Find target node ---------
                     Node targetNode = Nodes[inConnectionTargetInfos[j].NodeIndex];
@@ -740,12 +765,16 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     int targetTpIndex = inConnectionTargetInfos[j].TpIndex;
 
                     if (targetTpIndex <= -1 || targetOutTps.Length <= targetTpIndex)
+                    {
                         continue;
+                    }
 
                     // Match index to TP ---------
                     ITransitionPoint targetInTp = targetOutTps[targetTpIndex];
                     if (targetInTp == null)
+                    {
                         continue;
+                    }
 
                     // Apply to array ---------
                     inConnectionTargets[j] = targetInTp;
@@ -758,8 +787,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 // Out connection's target (target is TPIn)
                 for (int j = 0; j < outCount; j++)
                 {
-                    if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex || outConnectionTargetInfos[j].NodeIndex <= -1)
+                    if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex ||
+                        outConnectionTargetInfos[j].NodeIndex <= -1)
+                    {
                         continue;
+                    }
 
                     // Find target node ---------
                     Node targetNode = Nodes[outConnectionTargetInfos[j].NodeIndex];
@@ -771,12 +803,16 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     int targetTpIndex = outConnectionTargetInfos[j].TpIndex;
 
                     if (targetTpIndex <= -1 || targetInTps.Length <= targetTpIndex)
+                    {
                         continue;
+                    }
 
                     // Match index to TP ---------
                     ITransitionPoint targetOutTp = targetInTps[targetTpIndex];
                     if (targetOutTp == null)
+                    {
                         continue;
+                    }
 
                     // Apply to array ---------
                     outConnectionTargets[j] = targetOutTp;
@@ -810,7 +846,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             completeReceiver.Invoke();
 
             if (invokeOnChange)
+            {
                 OnChanged?.Invoke();
+            }
         }
         catch (Exception e)
         {
@@ -935,7 +973,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         foreach (IDragSelectable draggable in _selected.ToList())
         {
             if (draggable.CanDestroy)
+            {
                 draggable.ObjectDestroy();
+            }
         }
 
         ClearSelected();
@@ -947,7 +987,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         foreach (IDragSelectable draggable in _selected.ToList())
         {
             if (draggable.CanDisconnect)
+            {
                 draggable.ObjectDisconnect();
+            }
         }
         ((IChangeObserver)this).ReportChanges();
     }
@@ -1124,7 +1166,9 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
         get
         {
             if (ObjectIsNull)
+            {
                 return false;
+            }
 
             return _reference.IsVisible;
         }
@@ -1132,7 +1176,9 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
         set
         {
             if (ObjectIsNull)
+            {
                 return;
+            }
 
             _reference.IsVisible = value;
         }
@@ -1183,7 +1229,9 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
     public void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference == externalGateway)
+        {
             return;
+        }
 
         if (_reference != null)
         {
@@ -1251,7 +1299,9 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
     private void CheckNullAndThrowNullException()
     {
         if (ObjectIsNull)
+        {
             throw new NullReferenceException();
+        }
     }
     #endregion
 }
@@ -1274,7 +1324,9 @@ public class ExternalOutputAdapter : IExternalOutput, IDisposable
         get
         {
             if (ObjectIsNull)
+            {
                 return false;
+            }
 
             return _reference.IsVisible;
         }
@@ -1282,7 +1334,9 @@ public class ExternalOutputAdapter : IExternalOutput, IDisposable
         set
         {
             if (ObjectIsNull)
+            {
                 return;
+            }
 
             _reference.IsVisible = value;
         }
@@ -1329,7 +1383,9 @@ public class ExternalOutputAdapter : IExternalOutput, IDisposable
     public void UpdateReference(IExternalGateway externalGateway)
     {
         if (_reference == externalGateway)
+        {
             return;
+        }
 
         if (_reference != null)
         {
@@ -1435,7 +1491,9 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
         set
         {
             if (_disposed)
+            {
                 return;
+            }
 
             value.ThrowIfTypeMismatch(Type);
 
@@ -1457,7 +1515,9 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     public void Dispose()
     {
         if (_disposed)
+        {
             return;
+        }
 
         _typeChangeCts.CancelAndDispose();
         _waitTaskGetter = null;
@@ -1490,7 +1550,9 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     private void InvokeOnBeforeTypeChange(TransitionType type)
     {
         if (_disposed)
+        {
             return;
+        }
 
         OnBeforeTypeChange?.Invoke(type);
     }
@@ -1544,7 +1606,9 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     public void Dispose()
     {
         if (_disposed)
+        {
             return;
+        }
 
         Stateful.OnTypeChanged -= InvokeOnTypeChanged;
         Stateful.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;
@@ -1555,7 +1619,9 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     private void InvokeOnTypeChanged(TransitionType type)
     {
         if (_disposed)
+        {
             return;
+        }
 
         OnTypeChanged?.Invoke(type);
     }
@@ -1563,7 +1629,9 @@ public class ExternalOutputStatesAdapter : ITypeListenStateful, IDisposable
     private void InvokeOnBeforeTypeChange(TransitionType type)
     {
         if (_disposed)
+        {
             return;
+        }
 
         OnBeforeTypeChange?.Invoke(type);
     }
