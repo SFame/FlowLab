@@ -62,7 +62,7 @@ input_list: list = ['Connect', 'SetPort', 'Motor1', 'Motor2']
 
 # 아래의 리스트를 설정하여 출력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_list: list = ['Sensor1', 'Sensor2', 'Connected', 'DataReceiving']
+output_list: list = ['Sensor1', 'Sensor2', 'Connected', 'DataReceiving','check']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float, str
@@ -72,7 +72,7 @@ input_types: list = [bool, bool, int, int]
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_types: list = [int, int, bool, bool]
+output_types: list = [int, int, bool, bool,int]
 
 # True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
@@ -127,7 +127,7 @@ json_util: JsonUtil = JsonUtil()
 serial_port = None
 
 # 현재 포트 설정
-current_port = "COM12"
+current_port = "COM6"
 current_baud_rate = 9600
 
 # 연결 상태
@@ -137,7 +137,8 @@ is_connecting = False
 # 📡 Arduino에서 받은 센서 데이터 (수신)
 sensor_data = {
     "sensor1": 0,
-    "sensor2": 0
+    "sensor2": 0,
+    "check": 0
 }
 
 # 📤 Arduino로 보낼 모터 제어 데이터 (송신)
@@ -153,13 +154,16 @@ last_error = ""
 # 데이터 수신 상태 (테스트용)
 is_data_receiving = False
 last_receive_time = 0
-receive_timeout = 1.0  # 2초간 데이터 없으면 False
-
+receive_timeout = 0.1
+# 이전 유효한 센서값 저장
+last_valid_sensor1 = 0
+last_valid_sensor2 = 0
+last_valid_check = 0
 # 수신/송신 스레드 중지 플래그
 stop_receiving = False
 stop_sending = False
 # 전송 설정
-send_interval = 0.1  # 100ms 간격으로 전송
+send_interval = 0.02  # 20ms 간격으로 전송
 send_count = 0
 
 # <<노드 생명주기 메서드>>
@@ -181,7 +185,8 @@ def init(inputs: list) -> None:
         # 센서 데이터 초기화
         sensor_data = {
             "sensor1": 0,
-            "sensor2": 0
+            "sensor2": 0,
+            "check": 0
         }
         
         # 모터 데이터 초기화 (입력값 반영)
@@ -201,7 +206,7 @@ def init(inputs: list) -> None:
                     printer.print("🔄 ⚠️ Invalid input data types, using defaults")
         
         # 초기 출력 설정: [Sensor1, Sensor2, Connected, DataReceiving]
-        outputs = [0, 0, False, False]
+        outputs = [0, 0, False, False,0]
         output_applier.apply(outputs)
         
         if printer is not None:
@@ -213,7 +218,7 @@ def init(inputs: list) -> None:
         if printer is not None:
             printer.print(f"🔄 ✗ Init error: {str(e)}")
         # 에러 발생 시에도 기본값으로 초기화
-        sensor_data = {"sensor1": 0, "sensor2": 0}
+        sensor_data = {"sensor1": 0, "sensor2": 0, "check": 0}
         motor_data = {"motor1": 0, "motor2": 0}
         is_connected = False
         stop_receiving = False
@@ -299,7 +304,7 @@ def connect_serial():
         serial_port.Parity = 0  # None (패리티 없음)
         serial_port.DataBits = 8
         serial_port.StopBits = StopBits.One
-        serial_port.ReadTimeout = 100   # 매우 짧은 타임아웃
+        serial_port.ReadTimeout = 100
         serial_port.WriteTimeout = 100
         
         # 포트 열기
@@ -420,7 +425,6 @@ def receive_data_loop():
     while not stop_receiving and is_connected:
         try:
             if serial_port is not None and serial_port.IsOpen:
-                # 🚀 연속으로 데이터 읽기 시도
                 try:
                     line = serial_port.ReadLine().strip()
                     
@@ -435,17 +439,13 @@ def receive_data_loop():
                         if success:
                             # 📡 JSON 데이터 처리 및 실시간 출력 갱신
                             process_received_data(parsed_data)
-                        else:
-                            if printer is not None:
-                                printer.print(f"🔄 JSON parse error: {line}")
+                        #else:
+                            #if printer is not None:
+                                #printer.print(f"🔄 JSON parse error: {line}")
                             
                 except TimeoutException:
                     # 타임아웃 발생 시 데이터 수신 상태 체크
-                    if is_data_receiving and (time.time() - last_receive_time) > receive_timeout:
-                        is_data_receiving = False
-                        update_outputs()
-                        if printer is not None:
-                            printer.print("🔄 ⚠️ Data stream timeout")
+                    
                     continue
                     
         except Exception as e:
@@ -492,31 +492,26 @@ def send_data_loop():
         printer.print("🔄 📤 Send loop stopped")
 
 def process_received_data(data):
-    """
-    수신된 JSON 데이터 처리 (Arduino → Unity)
-    """
-    global sensor_data, has_error
+    global sensor_data, has_error, last_valid_sensor1, last_valid_sensor2, last_valid_check
     
     try:
         if isinstance(data, dict):
-            # 주요 데이터 2개만 추출 (다양한 필드명 지원)
-            sensor_data["sensor1"] = int(data.get("sensor1", data.get("data1", data.get("value1", 0))))
-            sensor_data["sensor2"] = int(data.get("sensor2", data.get("data2", data.get("value2", 0))))
+            new_sensor1 = int(data.get("sensor1", last_valid_sensor1))
+            new_sensor2 = int(data.get("sensor2", last_valid_sensor2))
+            new_check = int(data.get("check", last_valid_check))
             
-            has_error = False
+            # 유효한 값만 업데이트
+            sensor_data["sensor1"] = new_sensor1
+            sensor_data["sensor2"] = new_sensor2
+            sensor_data["check"] = new_check
+            last_valid_sensor1 = new_sensor1
+            last_valid_sensor2 = new_sensor2
+            last_valid_check = new_check
             
-            # 🔥 실시간 출력 업데이트 (즉시 반영)
             update_outputs()
-            
-            # 수신 데이터 로그
-            if printer is not None:
-                printer.print(f"🔄 📡 RX: [{sensor_data['sensor1']}, {sensor_data['sensor2']}]")
-        
     except Exception as e:
-        has_error = True
-        if printer is not None:
-            printer.print(f"🔄 Data processing error: {str(e)}")
-        update_outputs()
+        # 에러 발생 시 이전값 유지 (업데이트 안함)
+        pass
 
 def send_data_to_arduino():
     """
@@ -565,7 +560,8 @@ def update_outputs():
         sensor_data["sensor1"],
         sensor_data["sensor2"],
         is_connected,          # 테스트용: 연결 상태
-        is_data_receiving      # 테스트용: 데이터 수신 중인지 상태
+        is_data_receiving,      # 테스트용: 데이터 수신 중인지 상태
+        sensor_data["check"]
     ]
     
     output_applier.apply(outputs)
@@ -587,7 +583,7 @@ def change_port():
     elif current_port == "COM3":
         current_port = "COM4"
     elif current_port == "COM4":
-        current_port = "COM5"
+        current_port = "COM6"
     else:
         current_port = "COM12"
     
