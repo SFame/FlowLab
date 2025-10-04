@@ -4,6 +4,7 @@ public class MinimapProxy : MonoBehaviour
 {
     #region Singleton_Private
     private const string PREFAB_PATH = "PUMP/Minimap/MinimapProxy";
+    private const string DEFAULT_NAME = "PooledMirrorObject";
     private static MinimapProxy _instance;
 
     private static MinimapProxy Instance
@@ -86,6 +87,7 @@ public class MinimapProxy : MonoBehaviour
                     }
 
                     GameObject newGo = Instantiate(m_ClientMirrorTemplate, m_ClientMirrorPool, true);
+                    newGo.name = DEFAULT_NAME;
                     newGo.SetActive(false);
                     return new TransformSpriteRendererPair(newGo);
                 },
@@ -103,6 +105,7 @@ public class MinimapProxy : MonoBehaviour
                         return;
                     }
 
+                    tsp.ObjectName = DEFAULT_NAME;
                     tsp.Transform.SetParent(m_ClientMirrorPool);
                     tsp.Transform.gameObject.SetActive(false);
                 },
@@ -183,6 +186,8 @@ public class MinimapProxy : MonoBehaviour
         Transform mirrorTransform = pair.Transform;
         SpriteRenderer spriteRenderer = pair.Renderer;
 
+        pair.ObjectName = $"<MIRROR> {client.MirrorName}";
+
         Vector3 mirrorTransformPosition = mirrorTransform.position;
         mirrorTransform.position = new Vector3(mirrorTransformPosition.x, mirrorTransformPosition.y, client.OrderZ);
 
@@ -243,6 +248,12 @@ public class MinimapProxy : MonoBehaviour
 
         public Transform Transform { get; }
         public SpriteRenderer Renderer { get; }
+
+        public string ObjectName
+        {
+            get => Transform.gameObject.name;
+            set => Transform.gameObject.name = value;
+        }
 
         public bool IsDestroyed => Transform == null;
 

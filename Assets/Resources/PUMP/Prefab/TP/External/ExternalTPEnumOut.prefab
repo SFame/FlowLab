@@ -5467,7 +5467,7 @@ ParticleSystemRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4065250504768868588}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -5707,6 +5707,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _handleTemplate: {fileID: 2237754025153313297}
   _tpSlider: {fileID: 8467034155219656358}
+  m_Spacing: 30
+  m_HandleMargin: 50
 --- !u!1 &8059218886728326332
 GameObject:
   m_ObjectHideFlags: 0

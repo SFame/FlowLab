@@ -15,22 +15,22 @@ MonoBehaviour:
   directoryHistory:
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/ClassedNode
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab/ClassedNode
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/UI
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Minimap
-  - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/UI
-  - Assets/Scripts/PUMP/UI/Minimap
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Minimap
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
   currentDirIndex: 19

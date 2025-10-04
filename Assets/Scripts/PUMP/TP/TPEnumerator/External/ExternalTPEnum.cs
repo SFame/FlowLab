@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -8,14 +9,23 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
 {
     [SerializeField]
     private GameObject _handleTemplate;
+
     [SerializeField]
     private RectTransform _tpSlider;
+
+    [SerializeField]
+    private float m_Spacing = 10f;
+
+    [SerializeField]
+    private float m_HandleMargin = 10f;
 
     #region Privates
     private bool _hasSet = false;
     private Node _node;
     private RectTransform _rect;
     private float _minHeight;
+    private bool _hasHandleSizeSet = false;
+    private Vector2 _handleSize = Vector2.zero;
     private void Awake()
     {
         _handleTemplate?.SetActive(false);
@@ -37,6 +47,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
     public List<ExternalTPHandle> Handles { get; private set; } = new();
 
     public List<float> GetHandlesRatio() => Handles.Select(GetPositionRatio).ToList();
+
     public void SetHandlePositionsToRatio(List<float> ratios)
     {
         if (Handles.Count != ratios.Count)
@@ -47,41 +58,57 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
 
         for (int i = 0; i < ratios.Count; i++)
         {
-            SetPositionToRatio(Handles[i], ratios[i]);
+            SetPositionToRatio(Handles[i], ratios[i], m_HandleMargin);
         }
     }
     #endregion
 
+    private Vector2 HandleSize
+    {
+        get
+        {
+            if (_hasHandleSizeSet)
+            {
+                return _handleSize;
+            }
+
+            RectTransform handlePrefabRect = _handleTemplate.GetComponent<RectTransform>();
+            Vector2 size = new Vector2(handlePrefabRect.rect.width, handlePrefabRect.rect.height);
+            _handleSize = size;
+            return _handleSize;
+        }
+    }
+
     private float GetPositionRatio(ExternalTPHandle handle)
     {
-        float parentHeight = _tpSlider.rect.height;
-        float parentMaxY = _tpSlider.rect.max.y;
+        float sliderHeight = _tpSlider.rect.height;
+        float sliderTopPositionY = _tpSlider.rect.max.y;
         float handleHeight = handle.Rect.rect.height;
+        float handlePivotY = handle.Rect.pivot.y;
 
         Vector3 handleLocalPos = _tpSlider.InverseTransformPoint(handle.Rect.position);
         float handleY = handleLocalPos.y;
-        float handlePivotY = handle.Rect.pivot.y;
 
-        float handleBottomY = handleY - handleHeight * handlePivotY;
-        float handleTopY = handleBottomY + handleHeight;
+        float pivotOffset = handleHeight * (handlePivotY - 0.5f);
+        float adjustedHandleY = handleY - pivotOffset;
 
-        float ratio = (parentMaxY - handleTopY) / (parentHeight - handleHeight);
+        float ratio = 1f - (adjustedHandleY - (sliderTopPositionY - m_HandleMargin)) / -(sliderHeight - m_HandleMargin * 2);
 
         return ratio;
     }
 
-    private void SetPositionToRatio(ExternalTPHandle handle, float ratio)
+    private void SetPositionToRatio(ExternalTPHandle handle, float ratio, float margin)
     {
-        float parentHeight = _tpSlider.rect.height;
-        float parentMaxY = _tpSlider.rect.max.y;
+        float sliderHeight = _tpSlider.rect.height;
+        float sliderTopPositionY = _tpSlider.rect.max.y;
         float handleHeight = handle.Rect.rect.height;
         float handlePivotY = handle.Rect.pivot.y;
 
-        float handleTopY = parentMaxY - (ratio * (parentHeight - handleHeight));
-        float handleY = handleTopY - (handleHeight * (1 - handlePivotY));
+        float pivotOffset = handleHeight * (handlePivotY - 0.5f);
+        float yPosition = (sliderTopPositionY - margin) - (sliderHeight - margin * 2) * (1f - ratio) + pivotOffset;
 
         Vector3 currentLocalPos = handle.Rect.localPosition;
-        Vector3 newLocalPos = new Vector3(currentLocalPos.x, handleY, currentLocalPos.z);
+        Vector3 newLocalPos = new Vector3(currentLocalPos.x, yPosition, currentLocalPos.z);
 
         handle.Rect.localPosition = newLocalPos;
     }
@@ -100,6 +127,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         handle.Rect.localPosition = new Vector2(0f, mouseLocalPos.y);
 
         float ratio = GetPositionRatio(handle);
+
         if (ratio < 0 || ratio > 1)
             handle.Rect.localPosition = new Vector2(0f, currentYPos);
 
@@ -132,6 +160,48 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         return null;
     }
 
+    private void SizeUpdate(int count, Vector2 handleSize, float spacing)
+    {
+        if (count == 0)
+        {
+            Vector2 zeroSize = new Vector2(handleSize.x, 0f);
+            Rect.sizeDelta = zeroSize;
+            OnSizeUpdatedWhenTPChange?.Invoke(zeroSize);
+            return;
+        }
+
+        float height = handleSize.y * count + spacing * (count + 1);
+
+        height = Mathf.Max(height, MinHeight);
+
+        Vector2 size = new Vector2(handleSize.x, height);
+        Rect.sizeDelta = size;
+        OnSizeUpdatedWhenTPChange?.Invoke(size);
+    }
+
+    private void SetPositionToPixel(ExternalTPHandle handle, int index, int totalCount, float spacing)
+    {
+        float sliderHeight = _tpSlider.rect.height;
+        float sliderTopPositionY = _tpSlider.rect.max.y;
+        float handleHeight = handle.Rect.rect.height;
+        float handlePivotY = handle.Rect.pivot.y;
+
+        float totalHandlesHeight = handleHeight * totalCount + spacing * (totalCount - 1);
+
+        float startY = (sliderHeight - totalHandlesHeight) / 2;
+
+        float firstHandleCenter = sliderTopPositionY - startY - handleHeight / 2;
+
+        float yPosition = firstHandleCenter - index * (handleHeight + spacing);
+
+        float pivotOffset = handleHeight * (handlePivotY - 0.5f);
+        yPosition += pivotOffset;
+
+        Vector3 currentLocalPos = handle.Rect.localPosition;
+        Vector3 newLocalPos = new Vector3(currentLocalPos.x, yPosition, currentLocalPos.z);
+        handle.Rect.localPosition = newLocalPos;
+    }
+
     #region TP_Enumerator
     private Vector2 TpSize { get; set; }
 
@@ -155,7 +225,6 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         }
     }
 
-    // External은 TP Count 변경에 의한 Size 변동이 없으므로 호출하지 않음
     public event Action<Vector2> OnSizeUpdatedWhenTPChange;
 
     public TPEnumeratorToken GetToken()
@@ -218,7 +287,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
         Handles.Clear();
 
         int count = types.Length;
-        float interval = 1f / (count + 1);
+        SizeUpdate(count, HandleSize, m_Spacing);
 
         for (int i = 0; i < count; i++)
         {
@@ -227,8 +296,7 @@ public class ExternalTPEnum : MonoBehaviour, ITPEnumerator, IHighlightable
             if (handle is null)
                 return this;
 
-            float ratio = (i + 1) * interval;
-            SetPositionToRatio(handle, ratio);
+            SetPositionToPixel(handle, i, count, m_Spacing);
 
             if (handle.TP != null)
             {

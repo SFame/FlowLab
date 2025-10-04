@@ -237,7 +237,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     _externalInputAdapter.UpdateReference(newExternalInput);
                     isInputRefUpdated = true;
                 }
-                newNode.Support.Rect.PositionRectTransformByRatio(Rect, m_ExternalStartPositionRatio);
+
+                Vector2 worldPosition = newNode.Support.Rect.GetRectTransformWorldPositionByRatio(Rect, m_ExternalStartPositionRatio);
+                newNode.Support.SetPosition(worldPosition);
             }
 
             if (outputNodes.Count > 1)
@@ -267,7 +269,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     _externalOutputAdapter.UpdateReference(newExternalOutput);
                     isOutputRefUpdated = true;
                 }
-                newNode.Support.Rect.PositionRectTransformByRatio(Rect, Vector2.one - m_ExternalStartPositionRatio);
+
+                Vector2 worldPosition = newNode.Support.Rect.GetRectTransformWorldPositionByRatio(Rect, Vector2.one - m_ExternalStartPositionRatio);
+                newNode.Support.SetPosition(worldPosition);
             }
 
             if (newInputCount != -1 && !isInputRefUpdated)

@@ -675,6 +675,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _handleTemplate: {fileID: 5924629068667208667}
   _tpSlider: {fileID: 2642755086707628586}
+  m_Spacing: 30
+  m_HandleMargin: 50
 --- !u!1 &5924629068667208667
 GameObject:
   m_ObjectHideFlags: 0

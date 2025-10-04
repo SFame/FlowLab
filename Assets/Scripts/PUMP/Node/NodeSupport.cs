@@ -380,11 +380,12 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public event Action<Vector2> OnClientSizeUpdate;
     public event Action OnClientDestroy;
     public event Action<bool> OnActiveStateChanged;
-    public Vector2 CurrentWorldPosition => Rect.position;
-    public float OrderZ => 0.0f;
-    public Sprite Sprite => m_MinimapSprite;
-    public Color SpriteColor => m_MinimapColor;
-    public Vector2 Size => new Vector2(Rect.rect.x, Rect.rect.y);
+    string IMinimapProxyClient.MirrorName => Node.GetType().Name;
+    Vector2 IMinimapProxyClient.CurrentWorldPosition => Rect.position;
+    float IMinimapProxyClient.OrderZ => 0.0f;
+    Sprite IMinimapProxyClient.Sprite => m_MinimapSprite;
+    Color IMinimapProxyClient.SpriteColor => m_MinimapColor;
+    Vector2 IMinimapProxyClient.Size => new Vector2(Rect.rect.x, Rect.rect.y);
     #endregion
 }
 

@@ -36,15 +36,14 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     #endregion
 
-    protected override string SpritePath => "PUMP/Sprite/ingame/external_node";
-    public override string NodePrefabPath => "PUMP/Prefab/Node/EXTERNAL_GATE";
+    protected override string SpritePath => string.Empty;
+    public override string NodePrefabPath => "PUMP/Prefab/Node/EXTERNAL_IN_GATE";
     protected override string OutputEnumeratorOutPrefabPath => "PUMP/Prefab/TP/External/ExternalTPEnumOut";
     protected override string NodeDisplayName => "";
     protected override float InEnumeratorXPos => 0f;
     protected override float OutEnumeratorXPos => 0f;
     protected override float EnumeratorSpacing => 0f;
-    protected override Vector2 DefaultNodeSize => new Vector2(6f, Background.Rect.rect.height);
-    protected override bool SizeFreeze => true;
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 120f);
     protected override int DefaultInputCount => 0;
     protected override int DefaultOutputCount => 2;
     protected override List<ContextElement> ContextElements
@@ -111,11 +110,6 @@ public class ExternalInput : DynamicIONode, IExternalInput, INodeAdditionalArgs<
         {
             (Support.OutputEnumerator as ExternalTPEnum)?.SetHandlePositionsToRatio(_handleRatios);
         }
-    }
-
-    protected override void OnBeforeAutoConnect()
-    {
-        Support.BlockedMove = true;
     }
 
     private void SetHighlight(bool highlighted)

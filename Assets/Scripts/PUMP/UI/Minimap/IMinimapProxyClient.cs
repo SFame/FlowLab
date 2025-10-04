@@ -24,6 +24,11 @@ public interface IMinimapProxyClient
     event Action<bool> OnActiveStateChanged;
 
     /// <summary>
+    /// 미러링 객체에 표시될 이름
+    /// </summary>
+    string MirrorName { get; }
+
+    /// <summary>
     /// Rect.Position 반환
     /// </summary>
     Vector2 CurrentWorldPosition { get; }

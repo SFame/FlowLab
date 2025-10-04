@@ -1329,6 +1329,43 @@ namespace Utils
             }
         }
 
+        public static Vector2 GetRectTransformLocalPositionByRatio([NotNull] this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
+        {
+            if (rectTransform != null && parentRect != null)
+            {
+                Vector2 parentSize = parentRect.rect.size;
+
+                Vector2 localPosition = new Vector2
+                (
+                    parentSize.x * positionRatio.x - parentSize.x * 0.5f,
+                    parentSize.y * positionRatio.y - parentSize.y * 0.5f
+                );
+
+                return localPosition;
+            }
+
+            return Vector2.zero;
+        }
+
+        public static Vector2 GetRectTransformWorldPositionByRatio([NotNull] this RectTransform rectTransform, RectTransform parentRect, Vector2 positionRatio)
+        {
+            if (rectTransform != null && parentRect != null)
+            {
+                Vector2 parentSize = parentRect.rect.size;
+
+                Vector2 localPosition = new Vector2
+                (
+                    parentSize.x * positionRatio.x - parentSize.x * 0.5f,
+                    parentSize.y * positionRatio.y - parentSize.y * 0.5f
+                );
+
+                return parentRect.TransformPoint(localPosition);
+            }
+
+            return Vector2.zero;
+
+        }
+
         public static Canvas GetRootCanvas([NotNull]this RectTransform rectTransform) => rectTransform.GetComponentInParent<Canvas>().rootCanvas;
         
         public static RectTransform GetRootCanvasRect([NotNull] this RectTransform rectTransform)

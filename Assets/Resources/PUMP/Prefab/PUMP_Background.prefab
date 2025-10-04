@@ -105,7 +105,7 @@ MonoBehaviour:
   m_LineConnectManager: {fileID: 5056244059888882983}
   m_LineEdgeSortingManager: {fileID: 6833917123823583454}
   m_VisibleExternal: 1
-  m_ExternalStartPositionRatio: {x: 0.02, y: 0.5}
+  m_ExternalStartPositionRatio: {x: 0.49, y: 0.5}
   m_DefaultExternalInputCount: 2
   m_DefaultExternalOutputCount: 2
   <RecordOnInitialize>k__BackingField: 1
