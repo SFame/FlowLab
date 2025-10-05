@@ -128,7 +128,7 @@ public class MinimapProxy : MonoBehaviour
         {
             return;
         }
-
+        
         Bounds backgroundBounds = Instance.m_BackgroundRenderer.bounds;
 
         Vector3 worldPosition = new Vector3
@@ -155,7 +155,7 @@ public class MinimapProxy : MonoBehaviour
             backgroundOriginalSize.x * ratio.x,
             backgroundOriginalSize.y * ratio.y
         );
-
+        
         SpriteRenderer spriteRenderer = tsp.Renderer;
         if (spriteRenderer == null)
         {
@@ -206,7 +206,7 @@ public class MinimapProxy : MonoBehaviour
             {
                 return;
             }
-
+            
             Vector2 ratio = WorldCanvasGetter.WorldPositionToRatio(movePos, true);
             PlaceTransformAtRatio(pair, ratio);
         };
