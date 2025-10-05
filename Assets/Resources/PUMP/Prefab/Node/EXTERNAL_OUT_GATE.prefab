@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
+  m_Color: {r: 1, g: 0.38039216, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -99,18 +99,30 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_DefaultColor.b
-      value: 0.5058824
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_DefaultColor.g
-      value: 0.34509805
+      value: 0.38039216
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_DefaultColor.r
-      value: 0.13333334
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_IncludeMinimap
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapColor.g
+      value: 0.38039216
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapColor.r
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
