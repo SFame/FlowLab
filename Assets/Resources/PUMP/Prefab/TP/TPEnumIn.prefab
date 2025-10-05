@@ -71,6 +71,8 @@ GameObject:
   - component: {fileID: 7128002330339703196}
   - component: {fileID: 4177138425497590341}
   - component: {fileID: 3804067718947813658}
+  - component: {fileID: 5988355431637819847}
+  - component: {fileID: 7984720219542453108}
   m_Layer: 0
   m_Name: TPEnumIn
   m_TagString: Untagged
@@ -120,3 +122,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TpPrefab: {fileID: 443387568451980873, guid: 4dee1a0ac9625eb41900cc9b77ec40e3, type: 3}
   m_Layout: {fileID: 1589405465554585361}
+--- !u!114 &5988355431637819847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4746322430038601625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f91d327f9ad445e4bb51e51714b786c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NodeSelectingDragIgnoreTarget
+--- !u!225 &7984720219542453108
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4746322430038601625}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

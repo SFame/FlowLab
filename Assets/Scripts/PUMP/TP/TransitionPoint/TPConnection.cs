@@ -131,15 +131,9 @@ public class TPConnection : IStateful, IDisposable
     {
         get
         {
-            if (_lineEdges is null) // 라인 간선 추가하지 않으면 양 노드 WorldPosition 직선으로 이을 수 있도록
+            if (_lineEdges == null || _lineEdges.Count < 2) // 라인 간선 추가하지 않으면 양 노드 WorldPosition 직선으로 이을 수 있도록
             {
-                return new() { SourceState.WorldPosition, TargetState.WorldPosition };
-            }
-            
-            if (_lineEdges.Count < 2) // Invalid
-            {
-                _lineEdges = null;
-                return new() { SourceState.WorldPosition, TargetState.WorldPosition };
+                _lineEdges = new() { SourceState.WorldPosition, TargetState.WorldPosition };
             }
 
             return _lineEdges;

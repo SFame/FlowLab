@@ -13,15 +13,40 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     #endregion
 
     private readonly object _supportMouseBlocker = new();
+    private readonly HashSet<NodeSelectingDragIgnoreTarget> _dragIgnoreTargets = new();
     private bool _isSelected = false;
     private bool _isRemoved = false;
     private Func<List<ContextElement>> _selectedContextElementsGetter;
     private OnSelectedMoveHandler _onSelectedMove;
     private Action _selectRemoveRequest;
+    private Action<IDragSelectable> _removeThisRequest;
     private RectTransform _rect;
 
     private RectTransform Rect => _rect ??= GetComponent<RectTransform>();
 
+    #region NodeSelectingDragIgnoreTarget
+    public void AddIgnoreTarget(NodeSelectingDragIgnoreTarget target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        _dragIgnoreTargets.Add(target);
+    }
+
+    public void RemoveIgnoreTarget(NodeSelectingDragIgnoreTarget target)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        _dragIgnoreTargets.Remove(target);
+    }
+    #endregion
+
+    #region IDragSelectable
     bool IDragSelectable.IsSelected
     {
         get => _isSelected;
@@ -29,6 +54,8 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
         {
             _isSelected = value;
             m_NodeSuppoet.SetHighlight(_isSelected);
+            SetIgnoreTarget(_isSelected);
+
             if (_isSelected)
             {
                 m_NodeSuppoet.AddMouseEventBlocker(_supportMouseBlocker);
@@ -60,12 +87,21 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
         remove => _selectRemoveRequest -= value;
     }
 
-    void IDragSelectable.SetAlpha(float alpha)
+        event Action<IDragSelectable> IDragSelectable.RemoveThisRequest
     {
-        m_NodeCanvasGroup.alpha = alpha;
+        add => _removeThisRequest += value;
+        remove => _removeThisRequest -= value;
     }
 
-    public bool IsInsideInArea(Vector2 startPos, Vector2 endPos)
+    void IDragSelectable.MoveSelected(Vector2 direction) => m_NodeSuppoet.MovePosition(direction);
+
+    void IDragSelectable.ObjectDestroy() => m_NodeSuppoet.Node.Remove();
+
+    void IDragSelectable.ObjectDisconnect() => m_NodeSuppoet.Node.Disconnect();
+
+    void IDragSelectable.SetAlpha(float alpha) => m_NodeCanvasGroup.alpha = alpha;
+
+    bool IDragSelectable.IsInsideInArea(Vector2 startPos, Vector2 endPos)
     {
         float areaMinX = Mathf.Min(startPos.x, endPos.x);
         float areaMaxX = Mathf.Max(startPos.x, endPos.x);
@@ -80,14 +116,16 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
             foreach (var detectingRect in m_DetectingGroup)
             {
                 if (detectingRect != null && IsRectInArea(detectingRect, areaMinX, areaMaxX, areaMinY, areaMaxY))
+                {
                     return true;
+                }
             }
         }
 
         return false;
     }
 
-    public bool IsUnderPoint(Vector2 point)
+    bool IDragSelectable.IsUnderPoint(Vector2 point)
     {
         if (IsPointInRect(Rect, point))
             return true;
@@ -103,6 +141,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 
         return false;
     }
+    #endregion
 
     private bool IsRectInArea(RectTransform rectTransform, float areaMinX, float areaMaxX, float areaMinY, float areaMaxY)
     {
@@ -148,18 +187,27 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
                point.y >= rectMinY && point.y <= rectMaxY;
     }
 
-    public event Action<IDragSelectable> RemoveThisRequest;
-
-    void IDragSelectable.MoveSelected(Vector2 direction) => m_NodeSuppoet.MovePosition(direction);
-
-    void IDragSelectable.ObjectDestroy() => m_NodeSuppoet.Node.Remove();
-
-    void IDragSelectable.ObjectDisconnect() => m_NodeSuppoet.Node.Disconnect();
-
     /// <summary>
     /// Selected 관리자에게 선택 객체들 해제 요청
     /// </summary>
     private void SelectedRemoveRequestInvoke() => _selectRemoveRequest?.Invoke();
+
+    private void SetIgnoreTarget(bool ignoreRaycast)
+    {
+        if (_dragIgnoreTargets.Count == 0)
+        {
+            return;
+        }
+
+        RemoveDestroyedDragIgnoreTarget();
+
+        foreach (NodeSelectingDragIgnoreTarget target in _dragIgnoreTargets)
+        {
+            target.IgnoreRaycast = ignoreRaycast;
+        }
+    }
+
+    private void RemoveDestroyedDragIgnoreTarget() => _dragIgnoreTargets.RemoveWhere(target => target == null);
 
     private void Start()
     {
@@ -182,7 +230,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 
             _isRemoved = true;
 
-            RemoveThisRequest?.Invoke(this);
+            _removeThisRequest?.Invoke(this);
             SelectedRemoveRequestInvoke();
         };
     }
@@ -195,7 +243,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
         _isRemoved = true;
 
         SelectedRemoveRequestInvoke();
-        RemoveThisRequest?.Invoke(this);
+        _removeThisRequest?.Invoke(this);
     }
 
     private void OnDisable()

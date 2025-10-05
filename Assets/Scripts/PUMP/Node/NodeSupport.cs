@@ -25,6 +25,10 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     [SerializeField] private bool m_IncludeMinimap = true;
     [SerializeField] private Sprite m_MinimapSprite;
     [SerializeField] private Color m_MinimapColor;
+    [SerializeField] private bool m_MinimapColorUpdate = true;
+    [SerializeField] private float m_MinimapRotationZ = 0f;
+    [SerializeField] private Vector2 m_MinimapScale = Vector2.one;
+    [SerializeField] private Vector2 m_MinimapOffset = Vector2.zero;
     #endregion
 
     #region Don't use
@@ -80,9 +84,12 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     private void RevertToDefaultColor()
     {
         Image.color = DefaultColor;
+        OnClientColorUpdate?.Invoke(m_MinimapColor);
 
         if (m_ImageGroup == null || _imageGroupDefaultColors == null || m_ImageGroup.Count != _imageGroupDefaultColors.Count)
+        {
             return;
+        }
 
         for (int i = 0; i < m_ImageGroup.Count; i++)
         {
@@ -146,7 +153,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         _defaultNameTextPosition = _nameTextRect.anchoredPosition;
         _imageGroupDefaultColors = m_ImageGroup?.Select(graphic => graphic.color).ToList();
         OnPositionUpdate += posInfo => OnClientMove?.Invoke(posInfo.WorldPos);
-        OnSizeUpdate += size => OnClientSizeUpdate?.Invoke(size);
+        OnSizeUpdate += size => OnClientSizeUpdate?.Invoke(size * m_MinimapScale + m_MinimapOffset);
 
         if (m_IncludeMinimap)
         {
@@ -343,8 +350,15 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     {
         Image.color = color;
 
+        if (m_MinimapColorUpdate)
+        {
+            OnClientColorUpdate?.Invoke(color);
+        }
+
         if (m_ImageGroup == null)
+        {
             return;
+        }
 
         foreach (Graphic graphic in m_ImageGroup)
         {
@@ -378,14 +392,16 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #region Minimap
     public event Action<Vector2> OnClientMove;
     public event Action<Vector2> OnClientSizeUpdate;
+    public event Action<Color> OnClientColorUpdate;
     public event Action OnClientDestroy;
     public event Action<bool> OnActiveStateChanged;
     string IMinimapProxyClient.MirrorName => Node.GetType().Name;
     Vector2 IMinimapProxyClient.CurrentWorldPosition => Rect.position;
     float IMinimapProxyClient.OrderZ => 0.0f;
+    float IMinimapProxyClient.RotationZ => m_MinimapRotationZ;
     Sprite IMinimapProxyClient.Sprite => m_MinimapSprite;
-    Color IMinimapProxyClient.SpriteColor => m_MinimapColor;
-    Vector2 IMinimapProxyClient.Size => new Vector2(Rect.rect.x, Rect.rect.y);
+    Color IMinimapProxyClient.SpriteDefaultColor => m_MinimapColor;
+    Vector2 IMinimapProxyClient.DefaultSize => new Vector2(Rect.rect.width, Rect.rect.height) * m_MinimapScale + m_MinimapOffset;
     #endregion
 }
 

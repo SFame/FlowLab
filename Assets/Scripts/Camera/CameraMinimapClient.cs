@@ -12,14 +12,16 @@ public class CameraMinimapClient : MonoBehaviour, IMinimapProxyClient
 
     public event Action<Vector2> OnClientMove;
     public event Action<Vector2> OnClientSizeUpdate;
+    public event Action<Color> OnClientColorUpdate;
     public event Action OnClientDestroy;
     public event Action<bool> OnActiveStateChanged;
     string IMinimapProxyClient.MirrorName => "Camera";
     Vector2 IMinimapProxyClient.CurrentWorldPosition => m_Controller.GetCameraPosition();
     float IMinimapProxyClient.OrderZ => -1.0f;
-    Vector2 IMinimapProxyClient.Size => m_Controller.GetCameraSize();
+    float IMinimapProxyClient.RotationZ => 0f;
+    Vector2 IMinimapProxyClient.DefaultSize => m_Controller.GetCameraSize();
     Sprite IMinimapProxyClient.Sprite => m_MinimapSprite;
-    Color IMinimapProxyClient. SpriteColor => m_MinimapColor;
+    Color IMinimapProxyClient. SpriteDefaultColor => m_MinimapColor;
 
     #region Privates
     private void Awake()

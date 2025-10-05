@@ -190,14 +190,15 @@ public class MinimapProxy : MonoBehaviour
 
         Vector3 mirrorTransformPosition = mirrorTransform.position;
         mirrorTransform.position = new Vector3(mirrorTransformPosition.x, mirrorTransformPosition.y, client.OrderZ);
+        mirrorTransform.rotation = Quaternion.Euler(0f, 0f, client.RotationZ);
 
         spriteRenderer.sprite = client.Sprite ?? Instance.m_ClientMirrorDefaultSprite;
-        spriteRenderer.color = client.SpriteColor;
+        spriteRenderer.color = client.SpriteDefaultColor;
 
         Vector2 clientRatio = WorldCanvasGetter.WorldPositionToRatio(client.CurrentWorldPosition, true);
         PlaceTransformAtRatio(pair, clientRatio);
 
-        Vector2 clientSizeRatio = WorldCanvasGetter.WorldSizeToRatio(client.Size, true);
+        Vector2 clientSizeRatio = WorldCanvasGetter.WorldSizeToRatio(client.DefaultSize, true);
         SetTransformSizeAtRatio(pair, clientSizeRatio);
 
         client.OnClientMove += movePos =>
@@ -220,6 +221,16 @@ public class MinimapProxy : MonoBehaviour
 
             Vector2 sizeRatio = WorldCanvasGetter.WorldSizeToRatio(size, true);
             SetTransformSizeAtRatio(pair, sizeRatio);
+        };
+
+        client.OnClientColorUpdate += color =>
+        {
+            if (pair.IsDestroyed)
+            {
+                return;
+            }
+
+            spriteRenderer.color = color;
         };
 
         client.OnActiveStateChanged += isActive =>

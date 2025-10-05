@@ -94,6 +94,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 7522918921265288319}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapScale
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapSprite
+      value: 
+      objectReference: {fileID: 1192127463295610534, guid: 74f75eb76d610aa42bb2e6ad373b6dc6, type: 3}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_DefaultColor.a
       value: 1
       objectReference: {fileID: 0}
@@ -124,6 +132,18 @@ PrefabInstance:
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_MinimapColor.r
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapOffset.x
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_MinimapOffset.y
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 3407088412786012311, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_ImageGroup.Array.size

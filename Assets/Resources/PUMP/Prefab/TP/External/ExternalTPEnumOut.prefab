@@ -5480,6 +5480,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5501,6 +5503,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -5657,6 +5660,8 @@ GameObject:
   - component: {fileID: 6879206584215470767}
   - component: {fileID: 3810831627836649895}
   - component: {fileID: 2692880510210265840}
+  - component: {fileID: 4498156598401208060}
+  - component: {fileID: 3555227150761822140}
   m_Layer: 0
   m_Name: ExternalTPEnumOut
   m_TagString: Untagged
@@ -5709,6 +5714,30 @@ MonoBehaviour:
   _tpSlider: {fileID: 8467034155219656358}
   m_Spacing: 30
   m_HandleMargin: 50
+--- !u!114 &4498156598401208060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7417648992702812223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f91d327f9ad445e4bb51e51714b786c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NodeSelectingDragIgnoreTarget
+--- !u!225 &3555227150761822140
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7417648992702812223}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8059218886728326332
 GameObject:
   m_ObjectHideFlags: 0
