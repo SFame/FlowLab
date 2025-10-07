@@ -13,7 +13,7 @@ public class RandomNumber : Node
 
     protected override List<string> OutputNames => new() { "rnd" };
 
-    protected override List<TransitionType> InputTypes => new() { TransitionType.Bool };
+    protected override List<TransitionType> InputTypes => new() { TransitionType.Pulse };
 
     protected override List<TransitionType> OutputTypes => new() { TransitionType.Float };
 
@@ -37,11 +37,6 @@ public class RandomNumber : Node
         if (args.IsNull)
         {
             OutputToken.PushAllAsNull();
-            return;
-        }
-
-        if (!args.IsStateChange || !args.State)
-        {
             return;
         }
 

@@ -594,8 +594,15 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     }
     #endregion
 
-    #region  Other (ToString()..)
+    #region  Other
     public override string ToString() => $"Type: {GetType().Name}, DisplayName: {NodeDisplayName ?? "Null"}";
+
+    // ReSharper disable once InconsistentNaming
+    protected static T print<T>(T target)
+    {
+        Debug.Log(target);
+        return target;
+    }
     #endregion
 
     #region Lifecycle Callable

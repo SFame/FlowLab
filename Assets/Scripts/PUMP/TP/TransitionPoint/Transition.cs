@@ -167,7 +167,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
             TransitionType.Int => Value.IntValue == other.Value.IntValue,
             TransitionType.Float => Value.FloatValue.Equals(other.Value.FloatValue),
             TransitionType.String => string.Equals(Value.StringValue, other.Value.StringValue, StringComparison.Ordinal),
-            TransitionType.Pulse => true,
+            TransitionType.Pulse => false,
             _ => false
         };
     }

@@ -45,7 +45,7 @@ public class Debouncer : Node, INodeAdditionalArgs<float>
     // 변경사항 ---
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return new[] { (Transition)false };
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool };
