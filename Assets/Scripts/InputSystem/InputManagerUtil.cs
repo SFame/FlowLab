@@ -40,6 +40,12 @@ public static class InputManagerUtil
 
     private static Predicate<InputKeyCode> GetKeyPredicate(InputKeyCode target, Predicate<KeyCode> defaultInputPredicate, bool wheelDetect = true)
     {
+        return target switch
+        {
+            InputKeyCode.MouseWheelUp or InputKeyCode.MouseWheelDown => wheelChecker,
+            _ => inputKeyCode => defaultInputPredicate?.Invoke(AsUnityKeyCode(inputKeyCode)) ?? false
+        };
+
         bool wheelChecker(InputKeyCode inputKeyCode)
         {
             if (!wheelDetect)
@@ -55,17 +61,6 @@ public static class InputManagerUtil
                 _ => false
             };
         }
-
-        switch (target)
-        {
-            case InputKeyCode.MouseWheelUp:
-            case InputKeyCode.MouseWheelDown:
-                return wheelChecker;
-            default:
-                return inputKeyCode => defaultInputPredicate?.Invoke(AsUnityKeyCode(inputKeyCode)) ?? false;
-        }
-
-        throw new NotSupportedException($"InputKeyCode.{target} is not supported by InputKeyCode.");
     }
     #endregion
 }

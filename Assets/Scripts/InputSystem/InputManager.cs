@@ -1,80 +1,78 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 
 public static class InputManager
 {
-    public static List<InputKeyMap> inputKeyMap { get; } = new();
-    private static void Init()
-    {
-        //keyDetector
-        _allKeys = (InputKeyCode[])Enum.GetValues(typeof(InputKeyCode));
-        //Subscribe(Setting.CurrentKeyMap);
+    private static readonly Dictionary<InputKeyMap, Action> _keyMaps = new();
+    private static SafetyCancellationTokenSource _loopCts = new();
+    private static UniTask _loopTask = UniTask.CompletedTask;
 
-        Setting.OnSettingUpdated += () =>
+    public static bool Subscribe(InputKeyMap keyMap, Action callback)
+    {
+        if (_keyMaps.TryAdd(keyMap, callback))
         {
-            UnSubscribe(inputKeyMap);
-            //Subscribe(Setting.CurrentKeyMap);
-        };
+            return true;
+        }
+
+        KeyValuePair<InputKeyMap, Action> actualKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
+        if (actualKvp.Key.Immutable)
+        {
+            return false;
+        }
+
+        Unsubscribe(actualKvp.Key);
+        bool result = _keyMaps.TryAdd(keyMap, callback);
+        LoopCheck();
+        return result;
     }
 
-    public static void SortKeyMap()
+    public static bool Unsubscribe(InputKeyMap keyMap)
     {
-        inputKeyMap.Sort((a, b) =>
+        if (!_keyMaps.ContainsKey(keyMap))
         {
-            if (a.ModifierKeys == null && b.ModifierKeys == null)
-                return 0;
-
-            if (a.ModifierKeys == null)
-                return 1;
-
-            if (b.ModifierKeys == null)
-                return -1;
-
-            if (a.ModifierKeys.Count < b.ModifierKeys.Count)
-                return 1;
-
-            if (a.ModifierKeys.Count > b.ModifierKeys.Count)
-                return -1;
-
-            return 0;
-        });
-    }
-
-
-    private static bool Subscribe(List<InputKeyMap> inputKeyMaps)
-    {
-        // ¡ﬂ∫πµ» KeyMap¿Ã ¿÷¿ª ∞ÊøÏ, ±∏µ∂«œ¡ˆ æ ¿Ω
-        foreach (var keyMap in inputKeyMaps)
-        {
-            if (inputKeyMaps.Contains(keyMap))
-            {
-                Debug.Log($"[InputManager] KeyMap {keyMap} is already subscribed.");
-                return false;
-            }
+            return false;
         }
-        inputKeyMap.AddRange(inputKeyMaps);
-        SortKeyMap();
-        return true;
-    }
-    private static bool UnSubscribe(List<InputKeyMap> inputKeyMaps)
-    {
-        foreach (var keyMap in inputKeyMaps)
-        {
-            if (!inputKeyMaps.Contains(keyMap))
-            {
-                Debug.Log($"[InputManager] KeyMap {keyMap} is not subscribed.");
-                return false;
-            }
-        }
-        foreach (var keyMap in inputKeyMaps)
-        {
-            inputKeyMap.Remove(keyMap);
-        }
+
+        KeyValuePair<InputKeyMap, Action> removeKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
+        InputKeyMap.IKeyMapRemovable removable = removeKvp.Key;
+        removable.Remove();
+        _keyMaps.Remove(removeKvp.Key);
+        LoopCheck();
         return true;
     }
 
-    #region KeyMapDetect
-    private static InputKeyCode[] _allKeys;
-    #endregion
+    private static void LoopCheck()
+    {
+        if (_keyMaps.Count <= 0)
+        {
+            _loopCts.CancelAndDispose();
+            return;
+        }
+
+        if (_loopTask.Status != UniTaskStatus.Pending)
+        {
+            _loopTask = KeyCheckLoopAsync(_loopCts.CancelAndDisposeAndGetNewToken(out _loopCts));
+        }
+    }
+
+    private static async UniTask KeyCheckLoopAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                KeyCheck();
+                await UniTask.Yield(token, cancelImmediately: true);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private static void KeyCheck()
+    {
+        // Íµ¨ÌòÑ ÏòàÏ†ï
+    }
 }
