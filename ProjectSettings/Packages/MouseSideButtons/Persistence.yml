@@ -13,14 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Scripts/Camera
-  - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/PUMP/Sprite/ingame
@@ -33,4 +25,12 @@ MonoBehaviour:
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/Prefab/UI
+  - Assets/Resources/PUMP
+  - Assets/Scenes
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Scenes
+  - Assets/Resources/Prefab/UI
+  - Assets/Scenes
   currentDirIndex: 19
