@@ -3,34 +3,50 @@ using UnityEngine;
 
 public static class InputManagerUtil
 {
+    #region Interface
     public static bool GetKeyDown(this InputKeyCode find)
     {
-        throw new Exception();
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
     }
 
     public static bool GetKeyUp(this InputKeyCode find)
     {
-        throw new Exception();
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp, false));
     }
 
     public static bool GetKey(this InputKeyCode find)
     {
-        throw new Exception();
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
     }
 
-    public static bool InModifierKey(this InputKeyCode target)
+    public static bool InModifierKey(this InputKeyCode target) => target switch
     {
-        throw new Exception();
-    }
+        InputKeyCode.LeftShift or
+        InputKeyCode.RightShift or
+        InputKeyCode.LeftControl or
+        InputKeyCode.RightControl or
+        InputKeyCode.LeftAlt or
+        InputKeyCode.RightAlt or
+        InputKeyCode.LeftWindows or
+        InputKeyCode.RightWindows => true,
+        _ => false
+    };
 
     public static KeyCode AsUnityKeyCode(this InputKeyCode target) => (KeyCode)(int)target;
+    #endregion
 
+    #region Privates
     private static bool GetKeyState(InputKeyCode target, Predicate<InputKeyCode> predicate) => predicate?.Invoke(target) ?? false;
 
-    private static Predicate<InputKeyCode> GetKeyPredicate(InputKeyCode target, Predicate<InputKeyCode> defaultPredicate)
+    private static Predicate<InputKeyCode> GetKeyPredicate(InputKeyCode target, Predicate<KeyCode> defaultInputPredicate, bool wheelDetect = true)
     {
-        bool WheelChecker(InputKeyCode inputKeyCode)
+        bool wheelChecker(InputKeyCode inputKeyCode)
         {
+            if (!wheelDetect)
+            {
+                return false;
+            }
+
             float scrollY = Input.mouseScrollDelta.y;
             return inputKeyCode switch
             {
@@ -44,17 +60,12 @@ public static class InputManagerUtil
         {
             case InputKeyCode.MouseWheelUp:
             case InputKeyCode.MouseWheelDown:
-                return WheelChecker;
-                break;
+                return wheelChecker;
             default:
-                return inputKeyCode => Input.GetKeyDown(AsUnityKeyCode(inputKeyCode));
+                return inputKeyCode => defaultInputPredicate?.Invoke(AsUnityKeyCode(inputKeyCode)) ?? false;
         }
 
         throw new NotSupportedException($"InputKeyCode.{target} is not supported by InputKeyCode.");
     }
-
-    private static Func<bool> GetKeyUpPredicate(InputKeyCode target)
-    {
-        throw new Exception();
-    }
+    #endregion
 }
