@@ -1,9 +1,13 @@
+using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEngine;
 using static InputKeyMap;
 
-public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable
+[Serializable]
+public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, IModifierRemovable
 {
     #region Non Interfece
     public interface IKeyMapRemovable
@@ -11,38 +15,46 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable
         void Remove();
     }
 
+    public interface IModifierRemovable
+    {
+        bool RemoveModifier(InputKeyCode target);
+    }
+
     void IKeyMapRemovable.Remove()
     {
         _onRemove?.Invoke();
-
-        for (int i = 0; i < _actionKeys.Length; i++)
-        {
-            _actionKeys[i] = InputKeyCode.None;
-        }
-
-        for (int i = 0; i < _modifierKeys.Length; i++)
-        {
-            _modifierKeys[i] = InputKeyCode.None;
-        }
     }
 
-    private readonly InputKeyCode[] _actionKeys;
-    private readonly InputKeyCode[] _modifierKeys;
+    bool IModifierRemovable.RemoveModifier(InputKeyCode target)
+    {
+        return _modifiers.Remove(target);
+    }
+
+    [SerializeField, OdinSerialize]
+    private readonly InputKeyCode _actionKey;
+
+    [SerializeField, OdinSerialize]
+    private readonly List<InputKeyCode> _modifiers;
+
+    [SerializeField, OdinSerialize]
+    private readonly bool _immutable;
+
+    [NonSerialized]
     private readonly Action _onRemove;
 
-    public InputKeyMap(HashSet<InputKeyCode> actionKeys, HashSet<InputKeyCode> modifierKeys = null, bool immutable = false, Action onRemove = null)
+    private InputKeyMap(InputKeyCode actionKey, List<InputKeyCode> modifierKeys, bool immutable, Action onRemove)
     {
-        _actionKeys = actionKeys != null ? actionKeys.ToArray() : Array.Empty<InputKeyCode>();
-        _modifierKeys = modifierKeys != null ? modifierKeys.ToArray() : Array.Empty<InputKeyCode>();
-        Immutable = immutable;
+        _actionKey = actionKey;
+        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<InputKeyCode>();
+        _immutable = immutable;
         _onRemove = onRemove;
     }
 
     public override int GetHashCode()
     {
         return HashCode.Combine(
-            _actionKeys.Aggregate(0, (hash, key) => hash ^ key.GetHashCode()),
-            _modifierKeys.Aggregate(0, (hash, key) => hash ^ key.GetHashCode())
+            _actionKey.GetHashCode(),
+            _modifiers.Aggregate(0, (hash, key) => hash ^ key.GetHashCode())
         );
     }
 
@@ -58,18 +70,38 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable
 
     public bool Equals(InputKeyMap other)
     {
-        return _actionKeys.Length == other._actionKeys.Length &&
-               _modifierKeys.Length == other._modifierKeys.Length &&
-               _actionKeys.OrderBy(x => x).SequenceEqual(other._actionKeys.OrderBy(x => x)) &&
-               _modifierKeys.OrderBy(x => x).SequenceEqual(other._modifierKeys.OrderBy(x => x));
+        return _actionKey == other._actionKey &&
+               _modifiers.Count == other._modifiers.Count &&
+               _modifiers.OrderBy(x => x).SequenceEqual(other._modifiers.OrderBy(x => x));
+    }
+
+    public InputKeyMap Copy()
+    {
+        return new InputKeyMap(_actionKey, _modifiers, Immutable, _onRemove);
     }
     #endregion
 
     #region Interface
-    public IReadOnlyList<InputKeyCode> ActionKeys => _actionKeys;
+    public InputKeyMap(InputKeyCode actionKey, HashSet<InputKeyCode> modifierKeys = null, bool immutable = false, Action onRemove = null)
+    {
+        _actionKey = actionKey;
+        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<InputKeyCode>();
+        _immutable = immutable;
+        _onRemove = onRemove;
+    }
 
-    public IReadOnlyList<InputKeyCode> ModifierKeys => _modifierKeys;
+    private InputKeyMap(InputKeyCode actionKey, bool immutable)
+    {
+        _actionKey = actionKey;
+        _modifiers = new List<InputKeyCode>();
+        _immutable = immutable;
+        _onRemove = null;
+    }
 
-    public bool Immutable { get; }
+    public InputKeyCode ActionKey => _actionKey;
+
+    public IReadOnlyList<InputKeyCode> Modifiers => _modifiers;
+
+    public bool Immutable => _immutable;
     #endregion
 }

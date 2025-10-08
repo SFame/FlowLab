@@ -19,6 +19,30 @@ public static class InputManagerUtil
         return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
     }
 
+    public static bool AnyKeyDown()
+    {
+        bool anyKeyDown = Input.anyKeyDown;
+
+        if (!anyKeyDown)
+        {
+            anyKeyDown = InputKeyCode.MouseWheelDown.GetKeyDown() || InputKeyCode.MouseWheelUp.GetKeyDown();
+        }
+
+        return anyKeyDown;
+    }
+
+    public static bool AnyKey()
+    {
+        bool anyKey = Input.anyKey;
+
+        if (!anyKey)
+        {
+            anyKey = InputKeyCode.MouseWheelDown.GetKey() || InputKeyCode.MouseWheelUp.GetKey();
+        }
+
+        return anyKey;
+    }
+
     public static bool InModifierKey(this InputKeyCode target) => target switch
     {
         InputKeyCode.LeftShift or
@@ -31,6 +55,17 @@ public static class InputManagerUtil
         InputKeyCode.RightWindows => true,
         _ => false
     };
+
+    public static InputKeyCode[] GetAllModifier()
+    {
+        return _allModifier ??= new[]
+        {
+            InputKeyCode.LeftShift, InputKeyCode.RightShift,
+            InputKeyCode.LeftControl, InputKeyCode.RightControl,
+            InputKeyCode.LeftAlt, InputKeyCode.RightAlt,
+            InputKeyCode.LeftWindows, InputKeyCode.RightWindows
+        };
+    }
 
     public static KeyCode AsUnityKeyCode(this InputKeyCode target) => (KeyCode)(int)target;
     #endregion
@@ -63,4 +98,6 @@ public static class InputManagerUtil
         }
     }
     #endregion
+
+    private static InputKeyCode[] _allModifier;
 }

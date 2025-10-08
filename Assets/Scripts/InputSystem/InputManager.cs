@@ -1,8 +1,9 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Cysharp.Threading.Tasks;
+using static InputKeyMap;
 
 public static class InputManager
 {
@@ -14,6 +15,7 @@ public static class InputManager
     {
         if (_keyMaps.TryAdd(keyMap, callback))
         {
+            LoopCheck();
             return true;
         }
 
@@ -37,7 +39,7 @@ public static class InputManager
         }
 
         KeyValuePair<InputKeyMap, Action> removeKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
-        InputKeyMap.IKeyMapRemovable removable = removeKvp.Key;
+        IKeyMapRemovable removable = removeKvp.Key;
         removable.Remove();
         _keyMaps.Remove(removeKvp.Key);
         LoopCheck();
@@ -73,6 +75,44 @@ public static class InputManager
 
     private static void KeyCheck()
     {
-        // 구현 예정
+        KeyValuePair<InputKeyMap, Action>[] sortedKeyMaps = _keyMaps.OrderByDescending(kvp => kvp.Key.Modifiers.Count).ToArray();
+
+        foreach (var kvp in sortedKeyMaps)
+        {
+            InputKeyMap keyMap = kvp.Key;
+            Action action = kvp.Value;
+
+            bool matched = false;
+
+            if (keyMap.Modifiers.Count == 0)
+            {
+                bool noModifiersPressed = InputManagerUtil.GetAllModifier().All(mod => !mod.GetKey());
+
+                if (noModifiersPressed && keyMap.ActionKey.GetKeyDown())
+                {
+                    action?.Invoke();
+                    matched = true;
+                }
+            }
+            else
+            {
+                bool allRequiredPressed = keyMap.Modifiers.All(mod => mod.GetKey());
+                bool actionKeyPressed = keyMap.ActionKey.GetKeyDown();
+
+                IEnumerable<InputKeyCode> otherModifiers = InputManagerUtil.GetAllModifier().Except(keyMap.Modifiers);
+                bool noOtherModifiers = otherModifiers.All(mod => !mod.GetKey());
+
+                if (allRequiredPressed && actionKeyPressed && noOtherModifiers)
+                {
+                    action?.Invoke();
+                    matched = true;
+                }
+            }
+
+            if (matched)
+            {
+                break;
+            }
+        }
     }
 }
