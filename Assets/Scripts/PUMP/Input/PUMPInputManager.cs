@@ -27,30 +27,20 @@ public class PUMPInputManager : MonoBehaviour
 
     public bool Enable { get; set; } = true;
 
-    public void AddBlocker(object blocker) => _blocker.Add(blocker);
+    public void AddBlocker(object blocker) => InputManager.AddBlocker(blocker);
 
-    public void RemoveBlocker(object blocker) => _blocker.Remove(blocker);
+    public void RemoveBlocker(object blocker) => InputManager.RemoveBlocker(blocker);
 
-    
+
     #endregion
 
     #region Privates / Protected
     protected virtual void Initialize() { }
     protected virtual void Terminate() { }
 
-    private readonly HashSet<object> _blocker = new();
     private static PUMPInputManager _current;
 
-    private void Update()
-    {
-        if (!Enable)
-            return;
-
-        if (_blocker.Count > 0)
-            return;
-
-        
-    }
+    
 
     private void Awake()
     {
@@ -62,6 +52,7 @@ public class PUMPInputManager : MonoBehaviour
         Current = this;
 
         Initialize();
+
     }
 
     private void OnDestroy()
@@ -103,13 +94,7 @@ public class BackgroundActionKeyMap
     [SerializeField, OdinSerialize, Tooltip("Key Map")] public InputKeyMap m_KeyMap;
     #endregion
 
-    #region Interface
     
-    #endregion
-
-    #region Privates
-    
-    #endregion
 }
 
 /// <summary>
