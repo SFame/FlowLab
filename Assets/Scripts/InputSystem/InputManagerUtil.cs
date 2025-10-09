@@ -1,38 +1,22 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class InputManagerUtil
 {
     #region Interface
-    public static bool GetKeyDown(this ActionKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
-    }
+    public static bool GetKeyDown(this ActionKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
 
-    public static bool GetKeyUp(this ActionKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp, false));
-    }
+    public static bool GetKeyUp(this ActionKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp, false));
 
-    public static bool GetKey(this ActionKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
-    }
+    public static bool GetKey(this ActionKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
 
-    public static bool GetKeyDown(this ModifierKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
-    }
+    public static bool GetKeyDown(this ModifierKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
 
-    public static bool GetKeyUp(this ModifierKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp));
-    }
+    public static bool GetKeyUp(this ModifierKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp));
 
-    public static bool GetKey(this ModifierKeyCode find)
-    {
-        return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
-    }
+    public static bool GetKey(this ModifierKeyCode find) => GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
 
     public static bool AnyKeyDown()
     {
@@ -58,19 +42,41 @@ public static class InputManagerUtil
         return anyKey;
     }
 
-    public static ModifierKeyCode[] GetAllModifier()
-    {
-        return _allModifier ??= new[]
-        {
-            ModifierKeyCode.LeftShift, ModifierKeyCode.RightShift,
-            ModifierKeyCode.LeftControl, ModifierKeyCode.RightControl,
-            ModifierKeyCode.LeftAlt, ModifierKeyCode.RightAlt,
-            ModifierKeyCode.LeftWindows, ModifierKeyCode.RightWindows
-        };
-    }
+    public static ModifierKeyCode[] GetAllModifiers() => _allModifiers ??= (ModifierKeyCode[])Enum.GetValues(typeof(ModifierKeyCode));
+    public static ActionKeyCode[] GetAllActionKeys() => _allActionKeys ??= (ActionKeyCode[])Enum.GetValues(typeof(ActionKeyCode));
+    public static KeyCode[] GetAllKeys() => _allKeys ??= GetAllModifiers().Select(key => (int)key).Concat(GetAllActionKeys().Select(key => (int)key)).Select(intKey => (KeyCode)intKey).ToArray();
+
+    public static int[] GetAllModifiersInt() => _allModifiersInt ??= GetAllModifiers().Select(key => (int)key).ToArray();
+    public static int[] GetAllActionKeysInt() => _allActionKeysInt ??= GetAllActionKeys().Select(key => (int)key).ToArray();
+    public static int[] GetAllKeysInt() => _allKeysInt ??= GetAllKeys().Select(key => (int)key).ToArray();
 
     public static KeyCode AsUnityKeyCode(this ActionKeyCode target) => (KeyCode)(int)target;
     public static KeyCode AsUnityKeyCode(this ModifierKeyCode target) => (KeyCode)(int)target;
+
+    public static bool TryConvertActionKey(this KeyCode original, out ActionKeyCode converted)
+    {
+        converted = default;
+        if (GetAllActionKeysInt().Contains((int)original))
+        {
+            converted = (ActionKeyCode)original;
+            return true;
+        }
+        return false;
+    }
+
+    public static bool TryConvertModifier(this KeyCode original, out ModifierKeyCode converted)
+    {
+        converted = default;
+        if (GetAllModifiersInt().Contains((int)original))
+        {
+            converted = (ModifierKeyCode)original;
+            return true;
+        }
+        return false;
+    }
+
+    public static bool IsActionKey(this KeyCode key) => GetAllActionKeysInt().Contains((int)key);
+    public static bool IsModifier(this KeyCode key) => GetAllModifiersInt().Contains((int)key);
     #endregion
 
     #region Privates
@@ -109,5 +115,10 @@ public static class InputManagerUtil
     }
     #endregion
 
-    private static ModifierKeyCode[] _allModifier;
+    private static ModifierKeyCode[] _allModifiers;
+    private static ActionKeyCode[] _allActionKeys;
+    private static KeyCode[] _allKeys;
+    private static int[] _allModifiersInt;
+    private static int[] _allActionKeysInt;
+    private static int[] _allKeysInt;
 }
