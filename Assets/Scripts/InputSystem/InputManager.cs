@@ -8,6 +8,7 @@ using static InputKeyMap;
 public static class InputManager
 {
     private static readonly Dictionary<InputKeyMap, Action> _keyMaps = new();
+    private static KeyValuePair<InputKeyMap, Action>[] _sortedKeyMaps;
     private static SafetyCancellationTokenSource _loopCts = new();
     private static UniTask _loopTask = UniTask.CompletedTask;
 
@@ -15,6 +16,7 @@ public static class InputManager
     {
         if (_keyMaps.TryAdd(keyMap, callback))
         {
+            SortKeyMap();
             LoopCheck();
             return true;
         }
@@ -27,6 +29,7 @@ public static class InputManager
 
         Unsubscribe(actualKvp.Key);
         bool result = _keyMaps.TryAdd(keyMap, callback);
+        SortKeyMap();
         LoopCheck();
         return result;
     }
@@ -42,8 +45,14 @@ public static class InputManager
         IKeyMapRemovable removable = removeKvp.Key;
         removable.Remove();
         _keyMaps.Remove(removeKvp.Key);
+        SortKeyMap();
         LoopCheck();
         return true;
+    }
+
+    private static void SortKeyMap()
+    {
+        _sortedKeyMaps = _keyMaps.OrderByDescending(kvp => kvp.Key.Modifiers.Count).ToArray();
     }
 
     private static void LoopCheck()
@@ -75,13 +84,13 @@ public static class InputManager
 
     private static void KeyCheck()
     {
-        KeyValuePair<InputKeyMap, Action>[] sortedKeyMaps = _keyMaps.OrderByDescending(kvp => kvp.Key.Modifiers.Count).ToArray();
-
-        foreach (var kvp in sortedKeyMaps)
+        if (_sortedKeyMaps == null)
         {
-            InputKeyMap keyMap = kvp.Key;
-            Action action = kvp.Value;
+            SortKeyMap();
+        }
 
+        foreach ((InputKeyMap keyMap, Action action) in _sortedKeyMaps!)
+        {
             bool matched = false;
 
             if (keyMap.Modifiers.Count == 0)
@@ -99,7 +108,7 @@ public static class InputManager
                 bool allRequiredPressed = keyMap.Modifiers.All(mod => mod.GetKey());
                 bool actionKeyPressed = keyMap.ActionKey.GetKeyDown();
 
-                IEnumerable<InputKeyCode> otherModifiers = InputManagerUtil.GetAllModifier().Except(keyMap.Modifiers);
+                IEnumerable<ModifierKeyCode> otherModifiers = InputManagerUtil.GetAllModifier().Except(keyMap.Modifiers);
                 bool noOtherModifiers = otherModifiers.All(mod => !mod.GetKey());
 
                 if (allRequiredPressed && actionKeyPressed && noOtherModifiers)

@@ -4,17 +4,32 @@ using UnityEngine;
 public static class InputManagerUtil
 {
     #region Interface
-    public static bool GetKeyDown(this InputKeyCode find)
+    public static bool GetKeyDown(this ActionKeyCode find)
     {
         return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
     }
 
-    public static bool GetKeyUp(this InputKeyCode find)
+    public static bool GetKeyUp(this ActionKeyCode find)
     {
         return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp, false));
     }
 
-    public static bool GetKey(this InputKeyCode find)
+    public static bool GetKey(this ActionKeyCode find)
+    {
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
+    }
+
+    public static bool GetKeyDown(this ModifierKeyCode find)
+    {
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyDown));
+    }
+
+    public static bool GetKeyUp(this ModifierKeyCode find)
+    {
+        return GetKeyState(find, GetKeyPredicate(find, Input.GetKeyUp));
+    }
+
+    public static bool GetKey(this ModifierKeyCode find)
     {
         return GetKeyState(find, GetKeyPredicate(find, Input.GetKey));
     }
@@ -25,7 +40,7 @@ public static class InputManagerUtil
 
         if (!anyKeyDown)
         {
-            anyKeyDown = InputKeyCode.MouseWheelDown.GetKeyDown() || InputKeyCode.MouseWheelUp.GetKeyDown();
+            anyKeyDown = ActionKeyCode.MouseWheelDown.GetKeyDown() || ActionKeyCode.MouseWheelUp.GetKeyDown();
         }
 
         return anyKeyDown;
@@ -37,51 +52,41 @@ public static class InputManagerUtil
 
         if (!anyKey)
         {
-            anyKey = InputKeyCode.MouseWheelDown.GetKey() || InputKeyCode.MouseWheelUp.GetKey();
+            anyKey = ActionKeyCode.MouseWheelDown.GetKey() || ActionKeyCode.MouseWheelUp.GetKey();
         }
 
         return anyKey;
     }
 
-    public static bool InModifierKey(this InputKeyCode target) => target switch
-    {
-        InputKeyCode.LeftShift or
-        InputKeyCode.RightShift or
-        InputKeyCode.LeftControl or
-        InputKeyCode.RightControl or
-        InputKeyCode.LeftAlt or
-        InputKeyCode.RightAlt or
-        InputKeyCode.LeftWindows or
-        InputKeyCode.RightWindows => true,
-        _ => false
-    };
-
-    public static InputKeyCode[] GetAllModifier()
+    public static ModifierKeyCode[] GetAllModifier()
     {
         return _allModifier ??= new[]
         {
-            InputKeyCode.LeftShift, InputKeyCode.RightShift,
-            InputKeyCode.LeftControl, InputKeyCode.RightControl,
-            InputKeyCode.LeftAlt, InputKeyCode.RightAlt,
-            InputKeyCode.LeftWindows, InputKeyCode.RightWindows
+            ModifierKeyCode.LeftShift, ModifierKeyCode.RightShift,
+            ModifierKeyCode.LeftControl, ModifierKeyCode.RightControl,
+            ModifierKeyCode.LeftAlt, ModifierKeyCode.RightAlt,
+            ModifierKeyCode.LeftWindows, ModifierKeyCode.RightWindows
         };
     }
 
-    public static KeyCode AsUnityKeyCode(this InputKeyCode target) => (KeyCode)(int)target;
+    public static KeyCode AsUnityKeyCode(this ActionKeyCode target) => (KeyCode)(int)target;
+    public static KeyCode AsUnityKeyCode(this ModifierKeyCode target) => (KeyCode)(int)target;
     #endregion
 
     #region Privates
-    private static bool GetKeyState(InputKeyCode target, Predicate<InputKeyCode> predicate) => predicate?.Invoke(target) ?? false;
+    private static bool GetKeyState(ActionKeyCode target, Predicate<ActionKeyCode> predicate) => predicate?.Invoke(target) ?? false;
 
-    private static Predicate<InputKeyCode> GetKeyPredicate(InputKeyCode target, Predicate<KeyCode> defaultInputPredicate, bool wheelDetect = true)
+    private static bool GetKeyState(ModifierKeyCode target, Predicate<ModifierKeyCode> predicate) => predicate?.Invoke(target) ?? false;
+
+    private static Predicate<ActionKeyCode> GetKeyPredicate(ActionKeyCode target, Predicate<KeyCode> defaultInputPredicate, bool wheelDetect = true)
     {
         return target switch
         {
-            InputKeyCode.MouseWheelUp or InputKeyCode.MouseWheelDown => wheelChecker,
+            ActionKeyCode.MouseWheelUp or ActionKeyCode.MouseWheelDown => wheelChecker,
             _ => inputKeyCode => defaultInputPredicate?.Invoke(AsUnityKeyCode(inputKeyCode)) ?? false
         };
 
-        bool wheelChecker(InputKeyCode inputKeyCode)
+        bool wheelChecker(ActionKeyCode inputKeyCode)
         {
             if (!wheelDetect)
             {
@@ -91,13 +96,18 @@ public static class InputManagerUtil
             float scrollY = Input.mouseScrollDelta.y;
             return inputKeyCode switch
             {
-                InputKeyCode.MouseWheelDown => scrollY < 0,
-                InputKeyCode.MouseWheelUp => scrollY > 0,
+                ActionKeyCode.MouseWheelDown => scrollY < 0,
+                ActionKeyCode.MouseWheelUp => scrollY > 0,
                 _ => false
             };
         }
     }
+
+    private static Predicate<ModifierKeyCode> GetKeyPredicate(ModifierKeyCode target, Predicate<KeyCode> defaultInputPredicate)
+    {
+        return inputKeyCode => defaultInputPredicate?.Invoke(AsUnityKeyCode(inputKeyCode)) ?? false;
+    }
     #endregion
 
-    private static InputKeyCode[] _allModifier;
+    private static ModifierKeyCode[] _allModifier;
 }

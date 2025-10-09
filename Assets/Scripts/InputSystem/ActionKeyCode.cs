@@ -1,4 +1,4 @@
-public enum InputKeyCode
+public enum ActionKeyCode
 {
     //
     // 요약:
@@ -264,43 +264,6 @@ public enum InputKeyCode
     NumPadEnter = 271,
 
     // ============================================
-    // 조합키들
-    // ============================================
-
-    //
-    // 요약:
-    //     왼쪽 Shift 키.
-    LeftShift = 304,
-    //
-    // 요약:
-    //     오른쪽 Shift 키.
-    RightShift = 303,
-    //
-    // 요약:
-    //     왼쪽 Control 키.
-    LeftControl = 306,
-    //
-    // 요약:
-    //     오른쪽 Control 키.
-    RightControl = 305,
-    //
-    // 요약:
-    //     왼쪽 Alt 키.
-    LeftAlt = 308,
-    //
-    // 요약:
-    //     오른쪽 Alt 키.
-    RightAlt = 307,
-    //
-    // 요약:
-    //     왼쪽 Windows 키.
-    LeftWindows = 311,
-    //
-    // 요약:
-    //     오른쪽 Windows 키.
-    RightWindows = 312,
-
-    // ============================================
     // 락 키들
     // ============================================
 
@@ -371,4 +334,40 @@ public enum InputKeyCode
     // 요약:
     //     마우스 휠 아래로.
     MouseWheelDown = 322,
+}
+
+public enum ModifierKeyCode
+{
+    //
+    // 요약:
+    //     왼쪽 Shift 키.
+    LeftShift = 304,
+    //
+    // 요약:
+    //     오른쪽 Shift 키.
+    RightShift = 303,
+    //
+    // 요약:
+    //     왼쪽 Control 키.
+    LeftControl = 306,
+    //
+    // 요약:
+    //     오른쪽 Control 키.
+    RightControl = 305,
+    //
+    // 요약:
+    //     왼쪽 Alt 키.
+    LeftAlt = 308,
+    //
+    // 요약:
+    //     오른쪽 Alt 키.
+    RightAlt = 307,
+    //
+    // 요약:
+    //     왼쪽 Windows 키.
+    LeftWindows = 311,
+    //
+    // 요약:
+    //     오른쪽 Windows 키.
+    RightWindows = 312,
 }

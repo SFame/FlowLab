@@ -12,38 +12,37 @@ public class CameraKeyInput : MonoBehaviour
 
     private CameraActionLauncher Launcher => _launcher ??= new CameraActionLauncher(m_CameraController);
 
-    private void Update()
-    {
-        _alwaysCache.Clear();
-        Launcher.InjectScrollDelta(Input.mouseScrollDelta.y);
+    //private void Update()
+    //{
+    //    _alwaysCache.Clear();
+    //    Launcher.InjectScrollDelta(Input.mouseScrollDelta.y);
 
-        foreach (CameraKeymap keyMap in m_KeyMaps)
-        {
-            if (keyMap.Always)
-            {
-                _alwaysCache.Add(keyMap);
-                continue;
-            }
+    //    foreach (CameraKeymap keyMap in m_KeyMaps)
+    //    {
+    //        if (keyMap.Always)
+    //        {
+    //            _alwaysCache.Add(keyMap);
+    //            continue;
+    //        }
 
-            if (Input.GetKey(keyMap.KeyCode))
-            {
-                Launcher.LaunchAction(keyMap.ActionType);
-            }
-        }
+    //        if (Input.GetKey(keyMap.KeyCode))
+    //        {
+    //            Launcher.LaunchAction(keyMap.ActionType);
+    //        }
+    //    }
 
-        foreach (CameraKeymap alwaysKeymap in _alwaysCache)
-        {
-            Launcher.LaunchAction(alwaysKeymap.ActionType);
-        }
-    }
+    //    foreach (CameraKeymap alwaysKeymap in _alwaysCache)
+    //    {
+    //        Launcher.LaunchAction(alwaysKeymap.ActionType);
+    //    }
+    //}
 }
 
 [Serializable]
 public struct CameraKeymap
 {
     [SerializeField] public CameraActionType ActionType;
-    [SerializeField] public KeyCode KeyCode;
-    [SerializeField] public bool Always;
+    [SerializeField] public InputKeyMap KeyMap;
 }
 
 public class CameraActionLauncher

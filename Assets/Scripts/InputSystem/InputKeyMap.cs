@@ -2,7 +2,6 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using static InputKeyMap;
 
@@ -17,7 +16,7 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
 
     public interface IModifierRemovable
     {
-        bool RemoveModifier(InputKeyCode target);
+        bool RemoveModifier(ModifierKeyCode target);
     }
 
     void IKeyMapRemovable.Remove()
@@ -25,16 +24,16 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
         _onRemove?.Invoke();
     }
 
-    bool IModifierRemovable.RemoveModifier(InputKeyCode target)
+    bool IModifierRemovable.RemoveModifier(ModifierKeyCode target)
     {
         return _modifiers.Remove(target);
     }
 
     [SerializeField, OdinSerialize]
-    private readonly InputKeyCode _actionKey;
+    private readonly ActionKeyCode _actionKey;
 
     [SerializeField, OdinSerialize]
-    private readonly List<InputKeyCode> _modifiers;
+    private readonly List<ModifierKeyCode> _modifiers;
 
     [SerializeField, OdinSerialize]
     private readonly bool _immutable;
@@ -42,10 +41,10 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
     [NonSerialized]
     private readonly Action _onRemove;
 
-    private InputKeyMap(InputKeyCode actionKey, List<InputKeyCode> modifierKeys, bool immutable, Action onRemove)
+    private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys, bool immutable, Action onRemove)
     {
         _actionKey = actionKey;
-        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<InputKeyCode>();
+        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
         _immutable = immutable;
         _onRemove = onRemove;
     }
@@ -82,25 +81,25 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
     #endregion
 
     #region Interface
-    public InputKeyMap(InputKeyCode actionKey, HashSet<InputKeyCode> modifierKeys = null, bool immutable = false, Action onRemove = null)
+    public InputKeyMap(ActionKeyCode actionKey, HashSet<ModifierKeyCode> modifierKeys = null, bool immutable = false, Action onRemove = null)
     {
         _actionKey = actionKey;
-        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<InputKeyCode>();
+        _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
         _immutable = immutable;
         _onRemove = onRemove;
     }
 
-    private InputKeyMap(InputKeyCode actionKey, bool immutable)
+    private InputKeyMap(ActionKeyCode actionKey, bool immutable)
     {
         _actionKey = actionKey;
-        _modifiers = new List<InputKeyCode>();
+        _modifiers = new List<ModifierKeyCode>();
         _immutable = immutable;
         _onRemove = null;
     }
 
-    public InputKeyCode ActionKey => _actionKey;
+    public ActionKeyCode ActionKey => _actionKey;
 
-    public IReadOnlyList<InputKeyCode> Modifiers => _modifiers;
+    public IReadOnlyList<ModifierKeyCode> Modifiers => _modifiers;
 
     public bool Immutable => _immutable;
     #endregion
