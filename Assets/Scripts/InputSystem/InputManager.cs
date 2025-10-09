@@ -8,6 +8,7 @@ using static InputKeyMap;
 public static class InputManager
 {
     private static readonly Dictionary<InputKeyMap, Action> _keyMaps = new();
+    private static readonly HashSet<object> _blocker = new();
     private static KeyValuePair<InputKeyMap, Action>[] _sortedKeyMaps;
     private static SafetyCancellationTokenSource _loopCts = new();
     private static UniTask _loopTask = UniTask.CompletedTask;
@@ -50,6 +51,16 @@ public static class InputManager
         return true;
     }
 
+    public static bool AddBlocker(object blocker)
+    {
+        return _blocker.Add(blocker);
+    }
+
+    public static bool RemoveBlocker(object blocker)
+    {
+        return _blocker.Remove(blocker);
+    }
+
     private static void SortKeyMap()
     {
         _sortedKeyMaps = _keyMaps.OrderByDescending(kvp => kvp.Key.Modifiers.Count).ToArray();
@@ -75,7 +86,11 @@ public static class InputManager
         {
             while (!token.IsCancellationRequested)
             {
-                KeyCheck();
+                if (_blocker.Count <= 0)
+                {
+                    KeyCheck();
+                }
+
                 await UniTask.Yield(token, cancelImmediately: true);
             }
         }

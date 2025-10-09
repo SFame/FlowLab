@@ -39,11 +39,13 @@ public class KeyMapDetector
     private bool _actionHold = false;
     private bool _immutable = false;
     private Action _onRemove;
+    private readonly object _blocker = new();
 
     private async UniTask<InputKeyMap?> Detect(CancellationToken token)
     {
         HashSet<ModifierKeyCode> modifiers = new();
         ActionKeyCode actionKey = ActionKeyCode.None;
+        InputManager.AddBlocker(_blocker);
 
         try
         {
@@ -82,6 +84,10 @@ public class KeyMapDetector
         catch (OperationCanceledException)
         {
             return null;
+        }
+        finally
+        {
+            InputManager.RemoveBlocker(_blocker);
         }
     }
 
