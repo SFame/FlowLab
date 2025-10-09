@@ -10,6 +10,5 @@ public class InspactorInputManager : PUMPInputManager
     {
         KeyMap.Clear();
         KeyMap.AddRange(m_KeyMap);
-        Enable = m_Enable;
     }
 }

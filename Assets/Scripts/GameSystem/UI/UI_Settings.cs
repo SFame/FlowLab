@@ -76,6 +76,7 @@ public class UI_Settings : MonoBehaviour
             loopThresholdInputField.onEndEdit.AddListener(OnLoopThresholdChanged);
             loopThresholdInputField.characterLimit = 2;
         }
+
         // 버튼 이벤트
         if (applyButton != null)
         {
@@ -194,7 +195,7 @@ public class UI_Settings : MonoBehaviour
         }
     }
 
-    private void OnApplyButtonClicked()
+    public void OnApplyButtonClicked()
     {
         List<BackgroundActionKeyMap> UI_KeyMap = new List<BackgroundActionKeyMap>();
         // 키맵 아이템에서 변경된 값을 가져와 임시 설정에 적용
@@ -341,4 +342,5 @@ public class UI_Settings : MonoBehaviour
         // 0 = 음소거, 1 = 0dB (최대 볼륨)
         return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
     }
+
 }

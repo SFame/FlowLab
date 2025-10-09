@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class SettingLinkInputManager : PUMPInputManager
 {
@@ -9,6 +10,7 @@ public class SettingLinkInputManager : PUMPInputManager
         Setting.OnSettingUpdated += () =>
         {
             UpdateKeyMap(Setting.CurrentKeyMap);
+            Refresh();
         };
     }
 

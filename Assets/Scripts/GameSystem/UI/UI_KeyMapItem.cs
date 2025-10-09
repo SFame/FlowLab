@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System;
 
 public class UI_KeyMapItem : MonoBehaviour
 {
@@ -61,10 +62,8 @@ public class UI_KeyMapItem : MonoBehaviour
                 //_keyMap.m_ActionKeys = changeKeyMap.m_KeyMap.Modifiers;
                 //_keyMap.m_Modifiers = changeKeyMap.m_KeyMap.Modifiers;
             });
-
         }
 
-        
     }
 
     public void ResetToOriginal()
@@ -82,5 +81,8 @@ public class UI_KeyMapItem : MonoBehaviour
     {
         return _keyMap;
     }
-
+    public void OnDisable()
+    {
+        //Setting.OnClickApplyButton();
+    }
 }

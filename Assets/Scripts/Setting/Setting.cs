@@ -160,6 +160,18 @@ public static class Setting
     {
         _tempKeyMap = new List<BackgroundActionKeyMap>(keyMap);
     }
+    public static void SetTempKeyMapSingle(BackgroundActionType actionType, InputKeyMap keyMap)
+    {
+        var index = _tempKeyMap.FindIndex(k => k.m_ActionType == actionType);
+        if (index >= 0)
+        {
+            _tempKeyMap[index].m_KeyMap = keyMap;
+        }
+        else
+        {
+            _tempKeyMap.Add(new BackgroundActionKeyMap { m_ActionType = actionType, m_KeyMap = keyMap });
+        }
+    }
     public static void SetTempIsImmediately(bool isImmediately)
     {
         _tempIsImmediately = isImmediately;
@@ -192,7 +204,6 @@ public static class Setting
         // 이벤트 발생 - 각 시스템이 이를 받아서 Setting의 값을 가져가 적용
         OnSettingUpdated?.Invoke();
     }
-  
     #region Save/Load Settings
     [Serializable]
     public class SettingData

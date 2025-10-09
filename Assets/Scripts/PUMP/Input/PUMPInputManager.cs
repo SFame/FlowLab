@@ -47,7 +47,7 @@ public class PUMPInputManager : MonoBehaviour
 
             InputKeyMapArgs args = new InputKeyMapArgs()
             {
-                Callback = _ => BackgroundActionMapper.GetAction(backgroundActionKeyMap.m_ActionType),
+                Callback = _ => BackgroundActionMapper.GetAction(backgroundActionKeyMap.m_ActionType)?.Invoke(),
                 OnRemove = backgroundActionKeyMap.m_OnRemove,
                 ActionHold = backgroundActionKeyMap.m_ActionHold,
                 Immutable = false,
@@ -115,7 +115,7 @@ public class BackgroundActionKeyMap
     #region OnInspector
     [SerializeField, OdinSerialize, Tooltip("Action Type")] public BackgroundActionType m_ActionType;
     [SerializeField, OdinSerialize, Tooltip("Key Map")] public InputKeyMap m_KeyMap;
-    [NonSerialized, Tooltip("Hold")] public bool m_ActionHold;
+    [SerializeField, OdinSerialize, Tooltip("Hold")] public bool m_ActionHold;
     [NonSerialized, Tooltip("On Remove")] public Action<InputKeyMap> m_OnRemove;
     #endregion
 }
