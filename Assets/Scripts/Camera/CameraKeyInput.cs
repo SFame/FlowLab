@@ -8,17 +8,18 @@ public class CameraKeyInput : MonoBehaviour
     [SerializeField] private CameraController m_CameraController;
     [SerializeField] private List<CameraKeymap> m_KeyMaps;
 
-    private Dictionary<InputKeyMap, Action> _keyMapsDict;
+    private Dictionary<InputKeyMap, InputKeyMapArgs> _keyMapsDict;
     private CameraActionLauncher _launcher;
     private CameraActionLauncher Launcher => _launcher ??= new CameraActionLauncher(m_CameraController);
 
-    private Dictionary<InputKeyMap, Action> AsKeyMap(List<CameraKeymap> camKeyMaps)
+    private Dictionary<InputKeyMap, InputKeyMapArgs> AsKeyMap(List<CameraKeymap> camKeyMaps)
     {
-        Dictionary<InputKeyMap, Action> keyMaps = new();
+        Dictionary<InputKeyMap, InputKeyMapArgs> keyMaps = new();
         foreach (CameraKeymap camKeymap in camKeyMaps)
         {
-            InputKeyMap keyMap = new InputKeyMap(camKeymap.ActionKey, camKeymap.ModifierKeys.ToHashSet(), true, camKeymap.ActionHold);
-            if (!keyMaps.TryAdd(keyMap, () => Launcher.LaunchAction(camKeymap.ActionType)))
+            InputKeyMap keyMap = new InputKeyMap(camKeymap.ActionKey, camKeymap.ModifierKeys.ToHashSet());
+            InputKeyMapArgs args = new InputKeyMapArgs(_ => Launcher.LaunchAction(camKeymap.ActionType)) { Immutable = true, ActionHold = camKeymap.ActionHold };
+            if (!keyMaps.TryAdd(keyMap, args))
             {
                 Debug.LogWarning($"CameraKeyInput: {camKeymap.ActionType.ToString()} 중복됨");
             }

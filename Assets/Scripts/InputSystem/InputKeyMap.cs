@@ -3,55 +3,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static InputKeyMap;
 
 [Serializable]
-public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, IModifierRemovable
+public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 {
     #region Non Interfece
-    public interface IKeyMapRemovable
-    {
-        void Remove();
-    }
-
-    public interface IModifierRemovable
-    {
-        bool RemoveModifier(ModifierKeyCode target);
-    }
-
-    void IKeyMapRemovable.Remove()
-    {
-        _onRemove?.Invoke();
-    }
-
-    bool IModifierRemovable.RemoveModifier(ModifierKeyCode target)
-    {
-        return _modifiers.Remove(target);
-    }
-
     [SerializeField, OdinSerialize]
     private readonly ActionKeyCode _actionKey;
 
     [SerializeField, OdinSerialize]
     private readonly List<ModifierKeyCode> _modifiers;
 
-    [SerializeField, OdinSerialize]
-    private readonly bool _immutable;
-
-    [SerializeField, OdinSerialize]
-    private readonly bool _actionHold;
-
-    [NonSerialized]
-    private readonly Action _onRemove;
-
-
-    private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys, bool immutable, bool actionHold, Action onRemove)
+    private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys)
     {
         _actionKey = actionKey;
         _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
-        _immutable = immutable;
-        _actionHold = actionHold;
-        _onRemove = onRemove;
+
     }
 
     public override int GetHashCode()
@@ -81,35 +48,46 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
 
     public InputKeyMap Copy()
     {
-        return new InputKeyMap(_actionKey, _modifiers, _immutable, _actionHold, _onRemove);
+        return new InputKeyMap(_actionKey, _modifiers);
     }
     #endregion
 
     #region Interface
-    public InputKeyMap(ActionKeyCode actionKey, HashSet<ModifierKeyCode> modifierKeys = null, bool immutable = false, bool actionHold = false, Action onRemove = null)
+    public InputKeyMap(ActionKeyCode actionKey, HashSet<ModifierKeyCode> modifierKeys = null)
     {
         _actionKey = actionKey;
         _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
-        _immutable = immutable;
-        _actionHold = actionHold;
-        _onRemove = onRemove;
-    }
-
-    private InputKeyMap(ActionKeyCode actionKey, bool immutable, bool actionHold)
-    {
-        _actionKey = actionKey;
-        _modifiers = new List<ModifierKeyCode>();
-        _immutable = immutable;
-        _actionHold = actionHold;
-        _onRemove = null;
     }
 
     public ActionKeyCode ActionKey => _actionKey;
 
     public IReadOnlyList<ModifierKeyCode> Modifiers => _modifiers;
-
-    public bool ActionHold => _actionHold;
-
-    public bool Immutable => _immutable;
     #endregion
+}
+
+public struct InputKeyMapArgs
+{
+    public InputKeyMapArgs(Action<InputKeyMap> callback, Action<InputKeyMap> onRemove, bool immutable, bool actionHold)
+    {
+        Callback = callback;
+        OnRemove = onRemove;
+        Immutable = immutable;
+        ActionHold = actionHold;
+    }
+
+    public InputKeyMapArgs(Action<InputKeyMap> callback)
+    {
+        Callback = callback;
+        OnRemove = null;
+        Immutable = false;
+        ActionHold = false;
+    }
+
+    public bool Immutable;
+
+    public bool ActionHold;
+
+    public Action<InputKeyMap> Callback;
+
+    public Action<InputKeyMap> OnRemove;
 }

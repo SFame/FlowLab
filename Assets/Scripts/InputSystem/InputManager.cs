@@ -3,33 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using static InputKeyMap;
 
 public static class InputManager
 {
-    private static readonly Dictionary<InputKeyMap, Action> _keyMaps = new();
+    private static readonly Dictionary<InputKeyMap, InputKeyMapArgs> _keyMaps = new();
     private static readonly HashSet<object> _blocker = new();
-    private static KeyValuePair<InputKeyMap, Action>[] _sortedKeyMaps;
+    private static KeyValuePair<InputKeyMap, InputKeyMapArgs>[] _sortedKeyMaps;
     private static SafetyCancellationTokenSource _loopCts = new();
     private static UniTask _loopTask = UniTask.CompletedTask;
 
-    public static bool Subscribe(InputKeyMap keyMap, Action callback)
+    public static bool Subscribe(InputKeyMap keyMap, InputKeyMapArgs args)
     {
-        if (_keyMaps.TryAdd(keyMap, callback))
+        if (_keyMaps.TryAdd(keyMap, args))
         {
             SortKeyMap();
             LoopCheck();
             return true;
         }
 
-        KeyValuePair<InputKeyMap, Action> actualKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
-        if (actualKvp.Key.Immutable)
+        KeyValuePair<InputKeyMap, InputKeyMapArgs> actualKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
+        if (actualKvp.Value.Immutable)
         {
             return false;
         }
 
         Unsubscribe(actualKvp.Key);
-        bool result = _keyMaps.TryAdd(keyMap, callback);
+        bool result = _keyMaps.TryAdd(keyMap, args);
         SortKeyMap();
         LoopCheck();
         return result;
@@ -42,13 +41,25 @@ public static class InputManager
             return false;
         }
 
-        KeyValuePair<InputKeyMap, Action> removeKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
-        IKeyMapRemovable removable = removeKvp.Key;
-        removable.Remove();
+        KeyValuePair<InputKeyMap, InputKeyMapArgs> removeKvp = _keyMaps.FirstOrDefault(pair => pair.Key.Equals(keyMap));
+        removeKvp.Value.OnRemove?.Invoke(removeKvp.Key);
         _keyMaps.Remove(removeKvp.Key);
         SortKeyMap();
         LoopCheck();
         return true;
+    }
+
+    public static bool TryFind(InputKeyMap targetKeyMap, out InputKeyMapArgs findArgs)
+    {
+        findArgs = default;
+
+        if (_keyMaps.TryGetValue(targetKeyMap, out InputKeyMapArgs args))
+        {
+            findArgs = args;
+            return true;
+        }
+
+        return false;
     }
 
     public static bool AddBlocker(object blocker)
@@ -104,32 +115,32 @@ public static class InputManager
             SortKeyMap();
         }
 
-        foreach ((InputKeyMap keyMap, Action action) in _sortedKeyMaps!)
+        foreach ((InputKeyMap keyMap, InputKeyMapArgs args) in _sortedKeyMaps!)
         {
             bool matched = false;
 
             if (keyMap.Modifiers.Count == 0)
             {
                 bool noModifiersPressed = InputManagerUtil.GetAllModifiers().All(mod => !mod.GetKey());
-                bool actionKeyPress = keyMap.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
+                bool actionKeyPress = args.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
 
                 if (noModifiersPressed && actionKeyPress)
                 {
-                    action?.Invoke();
+                    args.Callback?.Invoke(keyMap);
                     matched = true;
                 }
             }
             else
             {
                 bool allRequiredPressed = keyMap.Modifiers.All(mod => mod.GetKey());
-                bool actionKeyPressed = keyMap.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
+                bool actionKeyPressed = args.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
 
                 IEnumerable<ModifierKeyCode> otherModifiers = InputManagerUtil.GetAllModifiers().Except(keyMap.Modifiers);
                 bool noOtherModifiers = otherModifiers.All(mod => !mod.GetKey());
 
                 if (allRequiredPressed && actionKeyPressed && noOtherModifiers)
                 {
-                    action?.Invoke();
+                    args.Callback?.Invoke(keyMap);
                     matched = true;
                 }
             }

@@ -24,21 +24,15 @@ public class KeyMapDetector
         Initialize();
     }
 
-    public UniTask<InputKeyMap?> GetKeyMapAsync(bool actionHold = false, bool immutable = false, Action onRemove = null, CancellationToken token = default, params KeyCode[] cancelKeyCodes)
+    public UniTask<InputKeyMap?> GetKeyMapAsync(CancellationToken token = default, params KeyCode[] cancelKeyCodes)
     {
         _cancelKeyCodes = cancelKeyCodes;
-        _actionHold = actionHold;
-        _immutable = immutable;
-        _onRemove = onRemove;
         return Detect(token);
     }
     #endregion
 
     #region Privates
     private KeyCode[] _cancelKeyCodes;
-    private bool _actionHold = false;
-    private bool _immutable = false;
-    private Action _onRemove;
     private readonly object _blocker = new();
 
     private async UniTask<InputKeyMap?> Detect(CancellationToken token)
@@ -76,7 +70,7 @@ public class KeyMapDetector
                     continue;
                 }
 
-                return new InputKeyMap(actionKey, modifiers, _immutable, _actionHold, _onRemove);
+                return new InputKeyMap(actionKey, modifiers);
             }
 
             return null;
