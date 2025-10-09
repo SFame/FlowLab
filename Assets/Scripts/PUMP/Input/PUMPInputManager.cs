@@ -25,22 +25,44 @@ public class PUMPInputManager : MonoBehaviour
 
     public List<BackgroundActionKeyMap> KeyMap { get; } = new();
 
-    public bool Enable { get; set; } = true;
-
     public void AddBlocker(object blocker) => InputManager.AddBlocker(blocker);
 
     public void RemoveBlocker(object blocker) => InputManager.RemoveBlocker(blocker);
-
-
     #endregion
 
     #region Privates / Protected
+    private static PUMPInputManager _current;
+    private readonly List<InputKeyMap> _cacheKeymap = new();
     protected virtual void Initialize() { }
     protected virtual void Terminate() { }
 
-    private static PUMPInputManager _current;
+    protected void Refresh()
+    {
+        Unsubscribe();
+        _cacheKeymap!.Clear();
 
-    
+        foreach (BackgroundActionKeyMap backgroundActionKeyMap in KeyMap)
+        {
+            _cacheKeymap.Add(backgroundActionKeyMap.m_KeyMap);
+
+            InputKeyMapArgs args = new InputKeyMapArgs()
+            {
+                Callback = _ => BackgroundActionMapper.GetAction(backgroundActionKeyMap.m_ActionType),
+                OnRemove = backgroundActionKeyMap.m_OnRemove,
+                ActionHold = backgroundActionKeyMap.m_ActionHold,
+                Immutable = false,
+            };
+            InputManager.Subscribe(backgroundActionKeyMap.m_KeyMap, args);
+        }
+    }
+
+    protected void Unsubscribe()
+    {
+        foreach (InputKeyMap keyMap in _cacheKeymap)
+        {
+            InputManager.Unsubscribe(keyMap);
+        }
+    }
 
     private void Awake()
     {
@@ -52,7 +74,7 @@ public class PUMPInputManager : MonoBehaviour
         Current = this;
 
         Initialize();
-
+        Refresh();
     }
 
     private void OnDestroy()
@@ -63,6 +85,7 @@ public class PUMPInputManager : MonoBehaviour
         }
 
         Terminate();
+        Unsubscribe();
     }
     #endregion
 }
@@ -92,9 +115,9 @@ public class BackgroundActionKeyMap
     #region OnInspector
     [SerializeField, OdinSerialize, Tooltip("Action Type")] public BackgroundActionType m_ActionType;
     [SerializeField, OdinSerialize, Tooltip("Key Map")] public InputKeyMap m_KeyMap;
+    [NonSerialized, Tooltip("Hold")] public bool m_ActionHold;
+    [NonSerialized, Tooltip("On Remove")] public Action<InputKeyMap> m_OnRemove;
     #endregion
-
-    
 }
 
 /// <summary>
