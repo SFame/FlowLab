@@ -20,24 +20,23 @@ public class UI_KeyMapItem : MonoBehaviour
         _originalKeyMap = new BackgroundActionKeyMap
         {
             m_ActionType = Setting.GetActionType(keyMap.m_ActionType),
-            m_ActionKeys = Setting.GetActionKeys(keyMap.m_ActionType),
-            m_Modifiers = Setting.GetActionModifiers(keyMap.m_ActionType)
+            m_KeyMap = Setting.GetKeyMap(keyMap.m_ActionType),
         };
 
         if (m_ActionNameText != null)
         {
-            m_ActionNameText.text = keyMap.m_ActionType.ToString();
+            m_ActionNameText.text = keyMap.m_KeyMap.Modifiers.ToString();
         }
         if (m_ButtonText != null)
         {
             
-            if (_keyMap.m_Modifiers.Count > 0)
+            if (_keyMap.m_KeyMap.Modifiers.Count > 0)
             {
-                m_ButtonText.text = string.Join(" + ", keyMap.m_Modifiers) + " + " + string.Join(" + ", keyMap.m_ActionKeys);
+                m_ButtonText.text = string.Join(" + ", keyMap.m_KeyMap.Modifiers) + " + " + string.Join(" + ", keyMap.m_KeyMap.Modifiers);
             }
             else
             {
-                m_ButtonText.text = string.Join(" + ", keyMap.m_ActionKeys);
+                m_ButtonText.text = string.Join(" + ", keyMap.m_KeyMap.Modifiers);
             }
         }
 
@@ -50,16 +49,17 @@ public class UI_KeyMapItem : MonoBehaviour
                 {
                     return;
                 }
-                if (changeKeyMap.m_Modifiers.Count > 0)
+                if (changeKeyMap.m_KeyMap.Modifiers.Count > 0)
                 {
-                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_Modifiers) + " + " + string.Join(" + ", changeKeyMap.m_ActionKeys);
+                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_KeyMap.Modifiers) + " + " + string.Join(" + ", changeKeyMap.m_KeyMap.Modifiers);
                 }
                 else
                 {
-                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_ActionKeys);
+                    m_ButtonText.text = string.Join(" + ", changeKeyMap.m_KeyMap.Modifiers);
                 }
-                _keyMap.m_ActionKeys = changeKeyMap.m_ActionKeys;
-                _keyMap.m_Modifiers = changeKeyMap.m_Modifiers;
+                _keyMap.m_KeyMap = changeKeyMap.m_KeyMap;
+                //_keyMap.m_ActionKeys = changeKeyMap.m_KeyMap.Modifiers;
+                //_keyMap.m_Modifiers = changeKeyMap.m_KeyMap.Modifiers;
             });
 
         }
@@ -72,8 +72,9 @@ public class UI_KeyMapItem : MonoBehaviour
         if (_originalKeyMap != null)
         {
             _keyMap.m_ActionType = _originalKeyMap.m_ActionType;
-            _keyMap.m_ActionKeys = new List<KeyCode>(_originalKeyMap.m_ActionKeys);
-            _keyMap.m_Modifiers = new List<KeyCode>(_originalKeyMap.m_Modifiers);
+            _keyMap.m_KeyMap = _originalKeyMap.m_KeyMap;
+            //_keyMap.m_ActionKeys = new List<KeyCode>(_originalKeyMap.m_ActionKeys);
+            //_keyMap.m_Modifiers = new List<KeyCode>(_originalKeyMap.m_Modifiers);
             Initialize(_keyMap);
         }
     }

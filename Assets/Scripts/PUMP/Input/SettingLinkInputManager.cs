@@ -16,6 +16,5 @@ public class SettingLinkInputManager : PUMPInputManager
     {
         KeyMap.Clear();
         KeyMap.AddRange(keyMaps);
-        SortKeyMap();
     }
 }

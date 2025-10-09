@@ -62,12 +62,12 @@ input_list: list = ['Connect', 'SetPort', 'Motor1', 'Motor2']
 
 # 아래의 리스트를 설정하여 출력 포트의 수와 이름을 설정합니다
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-output_list: list = ['Sensor1', 'Sensor2', 'Connected', 'DataReceiving','check']
+output_list: list = ['Sensor1', 'Sensor2', 'Connected', 'DataReceiving','Motor']
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. input_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float, str
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
-input_types: list = [bool, bool, int, int]
+input_types: list = [bool, Pulse, int, int]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
 # 사용 가능한 타입: bool, int, float
@@ -247,7 +247,9 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
     입력 신호 처리
     """
     global current_port, motor_data
-    
+    if index == 1:  # SetPort 신호 (포트 변경)
+        change_port()
+        return
     # 변경이 없으면 무시
     if not is_changed:
         return
@@ -265,10 +267,6 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
             connect_serial()
         else:
             disconnect_serial()
-        
-    elif index == 1 and state:  # SetPort 신호 (포트 변경)
-        change_port()
-        
     elif index == 2:  # Motor1 입력 - 데이터만 업데이트 (전송은 별도)
         old_value = motor_data["motor1"]
         motor_data["motor1"] = int(state) if state is not None else 0

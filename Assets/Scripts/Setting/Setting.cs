@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 using Serializer = Utils.Serializer;
@@ -22,64 +23,54 @@ public static class Setting
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Undo,
-            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
-            m_ActionKeys = new List<KeyCode> { KeyCode.LeftArrow }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Z, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Redo,
-            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
-            m_ActionKeys = new List<KeyCode> { KeyCode.RightArrow }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
         },
 #else
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Undo,
-            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
-            m_ActionKeys = new List<KeyCode> { KeyCode.Z }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Z, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Redo,
-            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl, KeyCode.LeftShift },
-            m_ActionKeys = new List<KeyCode> { KeyCode.Z }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
         },
 #endif
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.OpenPalette,
-            m_Modifiers = new List<KeyCode>() { },
-            m_ActionKeys = new List<KeyCode>() { KeyCode.Tab }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Tab, new HashSet<ModifierKeyCode> { })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.OpenSaveLoadPanel,
-            m_Modifiers = new List<KeyCode>() { },
-            m_ActionKeys = new List<KeyCode>() { KeyCode.S }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.S, new HashSet<ModifierKeyCode> { })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectAll,
-            m_Modifiers = new List<KeyCode> { KeyCode.LeftControl },
-            m_ActionKeys = new List<KeyCode> { KeyCode.A }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.A, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDelete,
-            m_Modifiers = new List<KeyCode> { },
-            m_ActionKeys = new List<KeyCode> { KeyCode.Delete }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Delete, new HashSet<ModifierKeyCode> { })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.SelectDisconnect,
-            m_Modifiers = new List<KeyCode> { },
-            m_ActionKeys = new List<KeyCode> { KeyCode.Backspace }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Backspace, new HashSet<ModifierKeyCode> { })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.MinimapToggle,
-            m_Modifiers = new List<KeyCode> { },
-            m_ActionKeys = new List<KeyCode> { KeyCode.M }
+            m_KeyMap = new InputKeyMap (ActionKeyCode.M, new HashSet<ModifierKeyCode> { })
         },
     };
 
@@ -136,7 +127,7 @@ public static class Setting
         AudioMixer audioMixer = Resources.Load<AudioMixer>("AudioMixer");
         if (audioMixer != null)
         {
-            SetAudio(audioMixer);
+            SetAudio(audioMixer).Forget();
             // VFX 볼륨을 오디오 믹서에 적용
             //float dB = ConvertToDecibel(_currentSettings.vfxVolume);
             //audioMixer.SetFloat("VFX", dB);
@@ -295,13 +286,20 @@ public static class Setting
     {
         return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_ActionType ?? actionType;
     }
-    public static List<KeyCode> GetActionKeys(BackgroundActionType actionType)
+    public static ActionKeyCode GetActionKey(BackgroundActionType actionType)
     {
-        return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_ActionKeys ?? new List<KeyCode>();
+        var keyMapInfo = _currentSettings.keyMapList.Find(k => k.m_ActionType == actionType);
+        return keyMapInfo.m_KeyMap.ActionKey;
     }
-    public static List<KeyCode> GetActionModifiers(BackgroundActionType actionType)
+    public static List<ModifierKeyCode> GetActionModifiers(BackgroundActionType actionType)
     {
-        return DefaultKeyMap.Find(k => k.m_ActionType == actionType)?.m_Modifiers ?? new List<KeyCode>();
+        var keyMapInfo = _currentSettings.keyMapList.Find(k => k.m_ActionType == actionType);
+        return keyMapInfo?.m_KeyMap.Modifiers.ToList() ?? new List<ModifierKeyCode>();
+    }
+    public static InputKeyMap GetKeyMap(BackgroundActionType actionType)
+    {
+        var keyMapInfo = _currentSettings.keyMapList.Find(k => k.m_ActionType == actionType);
+        return keyMapInfo?.m_KeyMap ?? new InputKeyMap(ActionKeyCode.None);
     }
 
     private static float ConvertToDecibel(float volume)
