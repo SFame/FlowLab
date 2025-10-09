@@ -1,8 +1,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
-using System;
 
 public class UI_KeyMapItem : MonoBehaviour
 {

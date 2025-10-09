@@ -3,8 +3,10 @@ using OdinSerializer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Audio;
+using VFolders.Libs;
 using Serializer = Utils.Serializer;
 
 public static class Setting
@@ -123,7 +125,6 @@ public static class Setting
         // 저장된 설정 로드
         LoadSettings();
 
-        OnSettingUpdated?.Invoke();
         AudioMixer audioMixer = Resources.Load<AudioMixer>("AudioMixer");
         if (audioMixer != null)
         {
@@ -223,7 +224,7 @@ public static class Setting
             keyMapList = new List<BackgroundActionKeyMap>(DefaultKeyMap);
         }
 
-        public SettingData( float vfx, float speed, bool immediately, int threshold, List<BackgroundActionKeyMap> keyMap)
+        public SettingData(float vfx, float speed, bool immediately, int threshold, List<BackgroundActionKeyMap> keyMap)
         {
             vfxVolume = vfx;
             simulationSpeed = speed;
@@ -317,5 +318,94 @@ public static class Setting
     {
         // 0 = 음소거, 1 = 0dB (최대 볼륨)
         return volume > 0.0001f ? Mathf.Log10(volume) * 20f : -80f;
+    }
+
+    public class SettingKeyManager
+    {
+        private List<BackgroundActionKeyMap> _keyMaps;
+        private readonly Action<List<BackgroundActionKeyMap>> _applier;
+
+        public SettingKeyManager(List<BackgroundActionKeyMap> keyMaps, Action<List<BackgroundActionKeyMap>> applier)
+        {
+            _keyMaps = keyMaps;
+            _applier = applier;
+        }
+
+        public IReadOnlyList<BackgroundActionKeyMap> KeyMaps => _keyMaps;
+
+        public List<BackgroundActionKeyMap> Apply(List<BackgroundActionKeyMap> newKeyMaps)
+        {
+            List<BackgroundActionType> updatedType = new();
+            foreach (BackgroundActionKeyMap keyMap in newKeyMaps)
+            {
+                InputKeyMap lastKeyMap =
+                    _keyMaps.FirstOrDefault(lk => lk.m_ActionType == keyMap.m_ActionType)?.m_KeyMap ??
+                    DefaultKeyMap.FirstOrDefault(defaultKeymap => defaultKeymap.m_ActionType == keyMap.m_ActionType)!.m_KeyMap;
+                InputKeyMap newKeyMap = keyMap.m_KeyMap;
+
+                if (!lastKeyMap.Equals(newKeyMap))
+                {
+                    updatedType.Add(keyMap.m_ActionType);
+                }
+            }
+
+            HashSet<BackgroundActionType> removeTypes = new();
+            var keyMapDuplicateGroup = newKeyMaps.GroupBy(km => km.m_KeyMap);
+            foreach (IGrouping<InputKeyMap, BackgroundActionKeyMap> group in keyMapDuplicateGroup)
+            {
+                if (group.Count() == 1)
+                {
+                    continue;
+                }
+
+                if (group.Count() == 2)
+                {
+                    List<BackgroundActionType> nonContainRemoveTarget = new();
+                    foreach (BackgroundActionKeyMap elem in group)
+                    {
+                        if (updatedType.Contains(elem.m_ActionType))
+                        {
+                            removeTypes.Add(elem.m_ActionType);
+                            break;
+                        }
+                        nonContainRemoveTarget.Add(elem.m_ActionType);
+                    }
+
+                    if (nonContainRemoveTarget.Count >= 2)
+                    {
+                        removeTypes.AddRange(nonContainRemoveTarget);
+                    }
+                    continue;
+                }
+
+                foreach (BackgroundActionKeyMap elem in group)
+                {
+                    removeTypes.Add(elem.m_ActionType);
+                }
+            }
+
+            foreach (BackgroundActionKeyMap newKeyMap in newKeyMaps)
+            {
+                if (InputManager.TryFind(newKeyMap.m_KeyMap, out InputKeyMapArgs findArgs) && findArgs.Immutable)
+                {
+                    removeTypes.Add(newKeyMap.m_ActionType);
+                }
+            }
+
+            foreach (BackgroundActionType removeType in removeTypes)
+            {
+                BackgroundActionKeyMap target = newKeyMaps.FirstOrDefault(km => km.m_ActionType == removeType);
+                if (target != null)
+                {
+                    target.m_KeyMap = new InputKeyMap(ActionKeyCode.None, new HashSet<ModifierKeyCode>());
+                }
+            }
+
+            List<BackgroundActionKeyMap> newKeyMapList = newKeyMaps.ToList();
+
+            _keyMaps = newKeyMapList;
+            _applier?.Invoke(newKeyMapList);
+            return _keyMaps;
+        }
     }
 }
