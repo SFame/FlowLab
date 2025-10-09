@@ -30,8 +30,15 @@ public class UI_Settings : MonoBehaviour
     private const float FRAME_MODE_THRESHOLD = 0.001f;
 
     private readonly object blocker = new object();
-
-
+    private Setting.SettingKeyManager _settingKeyManager;
+    private List<UI_KeyMapItem> _keyMapItems = new List<UI_KeyMapItem>();
+    //private void Awake()
+    //{
+    //    _settingKeyManager = new Setting.SettingKeyManager(
+    //        Setting.CurrentKeyMap,
+    //        (newKeyMaps) => Setting.SetTempKeyMap(newKeyMaps)
+    //    );
+    //}
     private void Start()
     {
         InitializeUI();
@@ -53,6 +60,7 @@ public class UI_Settings : MonoBehaviour
             simulationSpeedSlider.maxValue = 2.0f;
         }
 
+        
         // 초기 UI 값 설정
         RefreshUIFromCurrentSettings();
     }
@@ -123,7 +131,7 @@ public class UI_Settings : MonoBehaviour
         UpdateSimulationSpeedInteractable(immediately);
         UpdateLoopThresholdVisibility(immediately);
         // 키맵 UI 업데이트
-        RefreshKeyMapUI(keyMap);
+        RefreshKeyMapUI(_settingKeyManager.KeyMaps);
     }
     private void RefreshUIFromCurrentSettings()
     {
@@ -151,8 +159,10 @@ public class UI_Settings : MonoBehaviour
         UpdateSimulationSpeedText(speed);
         UpdateSimulationSpeedInteractable(immediately);
         UpdateLoopThresholdVisibility(immediately);
+
+        _settingKeyManager.Apply(keyMap);
         // 키맵 UI 업데이트
-        RefreshKeyMapUI(keyMap);
+        RefreshKeyMapUI(_settingKeyManager.KeyMaps);
     }
 
     #region UI Event Handlers
@@ -207,7 +217,8 @@ public class UI_Settings : MonoBehaviour
                 UI_KeyMap.Add(itemUI.GetKeyMap());
             }
         }
-        Setting.SetTempKeyMap(UI_KeyMap);
+        List<BackgroundActionKeyMap> validatedKeyMaps = _settingKeyManager.Apply(UI_KeyMap);
+        Setting.SetTempKeyMap(validatedKeyMaps);
         Setting.OnClickApplyButton();
         ApplyVFXVolume(Setting.VFXVolume);
         RefreshUIFromTempSettings();
@@ -215,11 +226,17 @@ public class UI_Settings : MonoBehaviour
     private void OnResetToDefaultClicked()
     {
         Setting.ResetTempToDefault();
+        // SettingKeyManager도 기본값으로 재생성
+        _settingKeyManager = new Setting.SettingKeyManager(
+            Setting.DefaultKeyMap,
+            (newKeyMaps) => Setting.SetTempKeyMap(newKeyMaps)
+        );
         RefreshUIFromTempSettings();
     }
     #endregion
     public void OnCloseButtonClicked()
     {
+
         gameObject.SetActive(false);
     }
 
@@ -286,21 +303,70 @@ public class UI_Settings : MonoBehaviour
             loopThresholdInputField.gameObject.SetActive(isImmediately);
         }
     }
-    private void RefreshKeyMapUI(List<BackgroundActionKeyMap> keyMaps)
+    
+    private void RefreshKeyMapUI(IReadOnlyList<BackgroundActionKeyMap> keyMaps)
     {
+        // 기존 아이템들의 이벤트 구독 해제
+        foreach (UI_KeyMapItem item in _keyMapItems)
+        {
+            if (item != null)
+            {
+                item.OnKeyMapChanged -= OnKeyMapItemChanged;
+            }
+        }
+
         // 기존 키맵 아이템 제거
         foreach (Transform child in keyMapContent)
         {
             Destroy(child.gameObject);
         }
-        // 현재 임시 설정값에서 키맵 가져오기
-       
+        _keyMapItems.Clear();
 
         // 키맵 아이템 생성
         foreach (BackgroundActionKeyMap keyMap in keyMaps)
         {
-            var item = Instantiate(keyMapItemPrefab, keyMapContent);
-            item.GetComponent<UI_KeyMapItem>().Initialize(keyMap);
+            var itemGO = Instantiate(keyMapItemPrefab, keyMapContent);
+            var item = itemGO.GetComponent<UI_KeyMapItem>();
+
+            item.Initialize(keyMap);
+
+            // 키맵 변경 이벤트 구독
+            item.OnKeyMapChanged += OnKeyMapItemChanged;
+
+            _keyMapItems.Add(item);
+        }
+    }
+
+    /// <summary>
+    /// UI_KeyMapItem에서 키맵이 변경되었을 때 호출
+    /// 즉시 중복 체크하고 중복되면 None으로 변경
+    /// </summary>
+    private void OnKeyMapItemChanged(UI_KeyMapItem changedItem)
+    {
+        if (changedItem == null)
+            return;
+
+        // 모든 아이템에서 현재 키맵 수집
+        List<BackgroundActionKeyMap> currentKeyMaps = new List<BackgroundActionKeyMap>();
+        foreach (UI_KeyMapItem item in _keyMapItems)
+        {
+            if (item != null)
+            {
+                currentKeyMaps.Add(item.GetKeyMap());
+            }
+        }
+
+        // SettingKeyManager의 Apply로 검증
+        List<BackgroundActionKeyMap> validatedKeyMaps = _settingKeyManager.Apply(currentKeyMaps);
+
+        // 검증 결과를 각 UI_KeyMapItem에 반영
+        for (int i = 0; i < _keyMapItems.Count && i < validatedKeyMaps.Count; i++)
+        {
+            if (_keyMapItems[i] != null)
+            {
+                // 변경된 키맵으로 UI 업데이트 (중복이면 None으로 변경됨)
+                _keyMapItems[i].UpdateKeyMap(validatedKeyMaps[i]);
+            }
         }
     }
     #endregion
@@ -313,6 +379,10 @@ public class UI_Settings : MonoBehaviour
     }
     private void OnEnable()
     {
+        _settingKeyManager = new Setting.SettingKeyManager(
+            Setting.CurrentKeyMap,
+            (newKeyMaps) => Setting.SetTempKeyMap(newKeyMaps)
+        );
         // 패널이 열릴 때마다 현재 임시 설정값으로 UI 업데이트
         PUMPInputManager.Current.AddBlocker(blocker);
         RefreshUIFromCurrentSettings();
@@ -320,8 +390,16 @@ public class UI_Settings : MonoBehaviour
 
     private void OnDisable()
     {
+        Setting.OnClickApplyButton(); // 설정 적용
         // 이벤트 구독 해제
         Setting.OnSettingUpdated -= OnSettingUpdated;
+        foreach (UI_KeyMapItem item in _keyMapItems)
+        {
+            if (item != null)
+            {
+                item.OnKeyMapChanged -= OnKeyMapItemChanged;
+            }
+        }
         PUMPInputManager.Current?.RemoveBlocker(blocker);
     }
 
