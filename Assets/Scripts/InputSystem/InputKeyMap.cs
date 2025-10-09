@@ -38,14 +38,19 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
     [SerializeField, OdinSerialize]
     private readonly bool _immutable;
 
+    [SerializeField, OdinSerialize]
+    private readonly bool _actionHold;
+
     [NonSerialized]
     private readonly Action _onRemove;
 
-    private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys, bool immutable, Action onRemove)
+
+    private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys, bool immutable, bool actionHold, Action onRemove)
     {
         _actionKey = actionKey;
         _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
         _immutable = immutable;
+        _actionHold = actionHold;
         _onRemove = onRemove;
     }
 
@@ -76,30 +81,34 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>, IKeyMapRemovable, 
 
     public InputKeyMap Copy()
     {
-        return new InputKeyMap(_actionKey, _modifiers, Immutable, _onRemove);
+        return new InputKeyMap(_actionKey, _modifiers, _immutable, _actionHold, _onRemove);
     }
     #endregion
 
     #region Interface
-    public InputKeyMap(ActionKeyCode actionKey, HashSet<ModifierKeyCode> modifierKeys = null, bool immutable = false, Action onRemove = null)
+    public InputKeyMap(ActionKeyCode actionKey, HashSet<ModifierKeyCode> modifierKeys = null, bool immutable = false, bool actionHold = false, Action onRemove = null)
     {
         _actionKey = actionKey;
         _modifiers = modifierKeys != null ? modifierKeys.ToList() : new List<ModifierKeyCode>();
         _immutable = immutable;
+        _actionHold = actionHold;
         _onRemove = onRemove;
     }
 
-    private InputKeyMap(ActionKeyCode actionKey, bool immutable)
+    private InputKeyMap(ActionKeyCode actionKey, bool immutable, bool actionHold)
     {
         _actionKey = actionKey;
         _modifiers = new List<ModifierKeyCode>();
         _immutable = immutable;
+        _actionHold = actionHold;
         _onRemove = null;
     }
 
     public ActionKeyCode ActionKey => _actionKey;
 
     public IReadOnlyList<ModifierKeyCode> Modifiers => _modifiers;
+
+    public bool ActionHold => _actionHold;
 
     public bool Immutable => _immutable;
     #endregion

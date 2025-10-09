@@ -49,7 +49,6 @@ public class CameraActionLauncher
 {
     private const float SCROLL_MOVE_WEIGHT = 4.0f;
     private readonly CameraController _controller;
-    private float _scrollDelta = 0.0f;
 
     public CameraActionLauncher(CameraController controller)
     {
@@ -61,49 +60,40 @@ public class CameraActionLauncher
         _controller = controller;
     }
 
-    public void InjectScrollDelta(float scrollDelta)
-    {
-        _scrollDelta = scrollDelta;
-    }
-
     public void LaunchAction(CameraActionType type)
     {
         switch (type)
         {
             case CameraActionType.Up:
-                UpAction();
+                UpMove();
                 return;
             case CameraActionType.Down:
-                DownAction();
+                DownMove();
                 return;
             case CameraActionType.Left:
-                LeftAction();
+                LeftMove();
                 return;
             case CameraActionType.Right:
-                RightAction();
+                RightMove();
                 return;
             case CameraActionType.Drag:
                 DragAction();
                 return;
-            case CameraActionType.ZoomActive:
-                ZoomActiveAction();
+            case CameraActionType.ZoomIn:
+                ZoomIn();
                 return;
-            case CameraActionType.HorizontalMoveActive:
-                HorizontalMoveActiveAction();
+            case CameraActionType.ZoomOut:
+                ZoomOut();
                 return;
-            case CameraActionType.VerticalMoveActive:
-                VerticalMoveActiveAction();
+            case CameraActionType.LeftMove:
+                LeftMove();
+                return;
+            case CameraActionType.RightMove:
+                RightMove();
                 return;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
-    }
-
-    private float GetScrollDelta()
-    {
-        float temp = _scrollDelta;
-        _scrollDelta = 0.0f;
-        return temp;
     }
 
     private void ZoomIn()
@@ -116,22 +106,22 @@ public class CameraActionLauncher
         _controller.ZoomOut();
     }
 
-    private void UpAction()
+    private void UpMove()
     {
         _controller.MovePosition(Vector2.up);
     }
 
-    private void DownAction()
+    private void DownMove()
     {
         _controller.MovePosition(Vector2.down);
     }
 
-    private void LeftAction()
+    private void LeftMove()
     {
         _controller.MovePosition(Vector2.left);
     }
 
-    private void RightAction()
+    private void RightMove()
     {
         _controller.MovePosition(Vector2.right);
     }
@@ -143,48 +133,6 @@ public class CameraActionLauncher
 
         _controller.MovePositionAbsolutely(-worldDelta);
     }
-
-    private void ZoomActiveAction()
-    {
-        float scrollDelta = GetScrollDelta();
-        if (scrollDelta > 0.5f)
-        {
-            ZoomIn();
-        }
-        else if (scrollDelta < -0.5f)
-        {
-            ZoomOut();
-        }
-    }
-
-    private void HorizontalMoveActiveAction()
-    {
-        float scrollDelta = GetScrollDelta();
-        if (scrollDelta > 0.5f)
-        {
-            _controller.MovePosition(Vector2.left, SCROLL_MOVE_WEIGHT);
-            LeftAction();
-        }
-        else if (scrollDelta < -0.5f)
-        {
-            _controller.MovePosition(Vector2.right, SCROLL_MOVE_WEIGHT);
-            RightAction();
-        }
-    }
-
-    private void VerticalMoveActiveAction()
-    {
-        float scrollDelta = GetScrollDelta();
-        if (scrollDelta > 0.5f)
-        {
-            _controller.MovePosition(Vector2.up, SCROLL_MOVE_WEIGHT);
-        }
-        else if (scrollDelta < -0.5f)
-        {
-            _controller.MovePosition(Vector2.down, SCROLL_MOVE_WEIGHT);
-            DownAction();
-        }
-    }
 }
 
 public enum CameraActionType
@@ -194,7 +142,10 @@ public enum CameraActionType
     Left,
     Right,
     Drag,
-    ZoomActive,
-    HorizontalMoveActive,
-    VerticalMoveActive
+    ZoomIn,
+    ZoomOut,
+    LeftMove,
+    RightMove,
+    UpMove,
+    DownMove,
 }
