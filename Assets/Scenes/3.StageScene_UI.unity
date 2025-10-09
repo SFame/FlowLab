@@ -261,29 +261,13 @@ MonoBehaviour:
   m_CameraController: {fileID: 519420034}
   m_KeyMaps:
   - ActionType: 0
-    KeyCode: 273
-    Always: 0
   - ActionType: 1
-    KeyCode: 274
-    Always: 0
-  - ActionType: 2
-    KeyCode: 276
-    Always: 0
+  - ActionType: 8
   - ActionType: 3
-    KeyCode: 275
-    Always: 0
   - ActionType: 4
-    KeyCode: 324
-    Always: 0
   - ActionType: 5
-    KeyCode: 306
-    Always: 0
   - ActionType: 6
-    KeyCode: 304
-    Always: 0
   - ActionType: 7
-    KeyCode: 0
-    Always: 1
 --- !u!114 &519420036
 MonoBehaviour:
   m_ObjectHideFlags: 0

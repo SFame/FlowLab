@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CameraKeyInput : MonoBehaviour
@@ -7,42 +8,62 @@ public class CameraKeyInput : MonoBehaviour
     [SerializeField] private CameraController m_CameraController;
     [SerializeField] private List<CameraKeymap> m_KeyMaps;
 
+    private Dictionary<InputKeyMap, Action> _keyMapsDict;
     private CameraActionLauncher _launcher;
-    private List<CameraKeymap> _alwaysCache = new();
-
     private CameraActionLauncher Launcher => _launcher ??= new CameraActionLauncher(m_CameraController);
 
-    //private void Update()
-    //{
-    //    _alwaysCache.Clear();
-    //    Launcher.InjectScrollDelta(Input.mouseScrollDelta.y);
+    private Dictionary<InputKeyMap, Action> AsKeyMap(List<CameraKeymap> camKeyMaps)
+    {
+        Dictionary<InputKeyMap, Action> keyMaps = new();
+        foreach (CameraKeymap camKeymap in camKeyMaps)
+        {
+            InputKeyMap keyMap = new InputKeyMap(camKeymap.ActionKey, camKeymap.ModifierKeys.ToHashSet(), true, camKeymap.ActionHold);
+            if (!keyMaps.TryAdd(keyMap, () => Launcher.LaunchAction(camKeymap.ActionType)))
+            {
+                Debug.LogWarning($"CameraKeyInput: {camKeymap.ActionType.ToString()} 중복됨");
+            }
+        }
 
-    //    foreach (CameraKeymap keyMap in m_KeyMaps)
-    //    {
-    //        if (keyMap.Always)
-    //        {
-    //            _alwaysCache.Add(keyMap);
-    //            continue;
-    //        }
+        return keyMaps;
+    }
 
-    //        if (Input.GetKey(keyMap.KeyCode))
-    //        {
-    //            Launcher.LaunchAction(keyMap.ActionType);
-    //        }
-    //    }
+    private void Awake()
+    {
+        if (m_KeyMaps == null)
+        {
+            Debug.Log("CameraKeymap 할당 필요");
+            return;
+        }
 
-    //    foreach (CameraKeymap alwaysKeymap in _alwaysCache)
-    //    {
-    //        Launcher.LaunchAction(alwaysKeymap.ActionType);
-    //    }
-    //}
+        _keyMapsDict = AsKeyMap(m_KeyMaps);
+
+        foreach (var(keyMap, action) in _keyMapsDict)
+        {
+            InputManager.Subscribe(keyMap, action);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_keyMapsDict == null)
+        {
+            return;
+        }
+
+        foreach (var (keyMap, _) in _keyMapsDict)
+        {
+            InputManager.Unsubscribe(keyMap);
+        }
+    }
 }
 
 [Serializable]
 public struct CameraKeymap
 {
     [SerializeField] public CameraActionType ActionType;
-    [SerializeField] public InputKeyMap KeyMap;
+    [SerializeField] public ActionKeyCode ActionKey;
+    [SerializeField] public List<ModifierKeyCode> ModifierKeys;
+    [SerializeField] public bool ActionHold;
 }
 
 public class CameraActionLauncher
@@ -84,12 +105,6 @@ public class CameraActionLauncher
                 return;
             case CameraActionType.ZoomOut:
                 ZoomOut();
-                return;
-            case CameraActionType.LeftMove:
-                LeftMove();
-                return;
-            case CameraActionType.RightMove:
-                RightMove();
                 return;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
@@ -144,8 +159,4 @@ public enum CameraActionType
     Drag,
     ZoomIn,
     ZoomOut,
-    LeftMove,
-    RightMove,
-    UpMove,
-    DownMove,
 }

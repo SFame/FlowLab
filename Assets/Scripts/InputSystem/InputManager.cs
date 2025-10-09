@@ -96,8 +96,9 @@ public static class InputManager
             if (keyMap.Modifiers.Count == 0)
             {
                 bool noModifiersPressed = InputManagerUtil.GetAllModifier().All(mod => !mod.GetKey());
+                bool actionKeyPress = keyMap.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
 
-                if (noModifiersPressed && keyMap.ActionKey.GetKeyDown())
+                if (noModifiersPressed && actionKeyPress)
                 {
                     action?.Invoke();
                     matched = true;
@@ -106,7 +107,7 @@ public static class InputManager
             else
             {
                 bool allRequiredPressed = keyMap.Modifiers.All(mod => mod.GetKey());
-                bool actionKeyPressed = keyMap.ActionKey.GetKeyDown();
+                bool actionKeyPressed = keyMap.ActionHold ? keyMap.ActionKey.GetKey() : keyMap.ActionKey.GetKeyDown();
 
                 IEnumerable<ModifierKeyCode> otherModifiers = InputManagerUtil.GetAllModifier().Except(keyMap.Modifiers);
                 bool noOtherModifiers = otherModifiers.All(mod => !mod.GetKey());
