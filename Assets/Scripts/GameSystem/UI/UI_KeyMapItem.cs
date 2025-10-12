@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +14,7 @@ public class UI_KeyMapItem : MonoBehaviour
     private BackgroundActionKeyMap _keyMap;
     private BackgroundActionKeyMap _originalKeyMap;
 
-    // Å°¸ÊÀÌ º¯°æµÇ¾úÀ» ¶§ ¹ß»ıÇÏ´Â ÀÌº¥Æ® (ÀÚ±â ÀÚ½ÅÀ» ÆÄ¶ó¹ÌÅÍ·Î Àü´Ş)
+    // í‚¤ë§µì´ ë³€ê²½ë˜ì—ˆì„ ë•Œ ë°œìƒí•˜ëŠ” ì´ë²¤íŠ¸ (ìê¸° ìì‹ ì„ íŒŒë¼ë¯¸í„°ë¡œ ì „ë‹¬)
     public event Action<UI_KeyMapItem> OnKeyMapChanged;
 
     public void Initialize(BackgroundActionKeyMap keyMap)
@@ -26,18 +27,18 @@ public class UI_KeyMapItem : MonoBehaviour
             m_KeyMap = Setting.GetKeyMap(keyMap.m_ActionType),
         };
 
-        // UI ¾÷µ¥ÀÌÆ®
+        // UI ì—…ë°ì´íŠ¸
         UpdateUI();
 
-        // ¹öÆ° ÀÌº¥Æ® ¼³Á¤ (Áßº¹ µî·Ï ¹æÁö)
+        // ë²„íŠ¼ ì´ë²¤íŠ¸ ì„¤ì • (ì¤‘ë³µ ë“±ë¡ ë°©ì§€)
         if (m_ActionKeyButton != null)
         {
             m_ActionKeyButton.onClick.RemoveAllListeners();
-            m_ActionKeyButton.onClick.AddListener(OnButtonClicked);
+            m_ActionKeyButton.onClick.AddListener(() => OnButtonClicked().Forget());
         }
     }
 
-    private async void OnButtonClicked()
+    private async UniTask OnButtonClicked()
     {
         InputKeyMap? changeKeyMap = await new KeyMapDetector().GetKeyMapAsync();
 
@@ -46,18 +47,18 @@ public class UI_KeyMapItem : MonoBehaviour
             return;
         }
 
-        // Å°¸Ê º¯°æ
+        // í‚¤ë§µ ë³€ê²½
         _keyMap.m_KeyMap = changeKeyMap.Value;
 
-        // UI ¾÷µ¥ÀÌÆ®
+        // UI ì—…ë°ì´íŠ¸
         UpdateUI();
 
-        // ÀÌº¥Æ® ¹ß»ı - UI_Settings¿¡¼­ Áßº¹ Ã¼Å© ¼öÇà
+        // ì´ë²¤íŠ¸ ë°œìƒ - UI_Settingsì—ì„œ ì¤‘ë³µ ì²´í¬ ìˆ˜í–‰
         OnKeyMapChanged?.Invoke(this);
     }
 
     /// <summary>
-    /// Å°¸ÊÀ» UI¿¡ ¹İ¿µ (³»ºÎ È£Ãâ¿ë)
+    /// í‚¤ë§µì„ UIì— ë°˜ì˜ (ë‚´ë¶€ í˜¸ì¶œìš©)
     /// </summary>
     private void UpdateUI()
     {
@@ -70,7 +71,7 @@ public class UI_KeyMapItem : MonoBehaviour
         {
             if (_keyMap.m_KeyMap.ActionKey == ActionKeyCode.None)
             {
-                // NoneÀÎ °æ¿ì »¡°£»öÀ¸·Î Ç¥½Ã
+                // Noneì¸ ê²½ìš° ë¹¨ê°„ìƒ‰ìœ¼ë¡œ í‘œì‹œ
                 m_ButtonText.text = "<color=red>None (Duplicate!)</color>";
             }
             else if (_keyMap.m_KeyMap.Modifiers.Count > 0)
@@ -85,8 +86,8 @@ public class UI_KeyMapItem : MonoBehaviour
     }
 
     /// <summary>
-    /// ¿ÜºÎ¿¡¼­ Å°¸ÊÀ» ¾÷µ¥ÀÌÆ® (ÀÌº¥Æ® ¹ß»ı ¾øÀÌ Á¶¿ëÈ÷ ¾÷µ¥ÀÌÆ®)
-    /// UI_Settings¿¡¼­ Áßº¹ Ã¼Å© ÈÄ È£Ãâ
+    /// ì™¸ë¶€ì—ì„œ í‚¤ë§µì„ ì—…ë°ì´íŠ¸ (ì´ë²¤íŠ¸ ë°œìƒ ì—†ì´ ì¡°ìš©íˆ ì—…ë°ì´íŠ¸)
+    /// UI_Settingsì—ì„œ ì¤‘ë³µ ì²´í¬ í›„ í˜¸ì¶œ
     /// </summary>
     public void UpdateKeyMap(BackgroundActionKeyMap newKeyMap)
     {
@@ -102,7 +103,7 @@ public class UI_KeyMapItem : MonoBehaviour
             _keyMap.m_KeyMap = _originalKeyMap.m_KeyMap;
             UpdateUI();
 
-            // ¸®¼Â ½Ã¿¡µµ ÀÌº¥Æ® ¹ß»ı
+            // ë¦¬ì…‹ ì‹œì—ë„ ì´ë²¤íŠ¸ ë°œìƒ
             OnKeyMapChanged?.Invoke(this);
         }
     }
@@ -114,10 +115,10 @@ public class UI_KeyMapItem : MonoBehaviour
 
     private void OnDestroy()
     {
-        // ÀÌº¥Æ® ±¸µ¶ ÇØÁ¦
+        // ì´ë²¤íŠ¸ êµ¬ë… í•´ì œ
         OnKeyMapChanged = null;
 
-        // ¹öÆ° ¸®½º³Ê Á¦°Å
+        // ë²„íŠ¼ ë¦¬ìŠ¤ë„ˆ ì œê±°
         if (m_ActionKeyButton != null)
         {
             m_ActionKeyButton.onClick.RemoveAllListeners();

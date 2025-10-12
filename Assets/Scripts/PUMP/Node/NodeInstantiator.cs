@@ -13,9 +13,8 @@ public static class NodeInstantiator
             Debug.LogError("NodeInstantiator: nodeType is must child of Node");
             return null;
         }
-        
-        Node newNode = Activator.CreateInstance(nodeType) as Node;
-        if (newNode is null)
+
+        if (!(Activator.CreateInstance(nodeType) is Node newNode))
         {
             throw new InvalidCastException($"NodeInstantiator: Could not create node of type {nodeType}");
         }
@@ -33,16 +32,7 @@ public static class NodeInstantiator
         }
 
         newNodeSupport.Initialize(newNode);
-
-        if (newNode is INodeLifecycleCallable callable)
-        {
-            callable.CallOnAfterInstantiate();
-        }
-        else
-        {
-            throw new InvalidCastException($"NodeInstantiator: Node is not INodeLifecycleCallable. Node Type: [{nodeType.Name}]");
-        }
-
+        ((INodeLifecycleCallable)newNode).CallOnAfterInstantiate();
         return newNode;
     }
     
