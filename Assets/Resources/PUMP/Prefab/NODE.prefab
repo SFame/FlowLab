@@ -250,6 +250,7 @@ MonoBehaviour:
   m_MinimapSprite: {fileID: 1771352180646307525, guid: 8c6f125ca148d124897d85aa4de83041, type: 3}
   m_MinimapColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
   m_MinimapColorUpdate: 1
+  m_MinimapRotationZ: 0
   m_MinimapScale: {x: 1, y: 1}
   m_MinimapOffset: {x: 50, y: 50}
 --- !u!114 &6368112864780920419
@@ -282,7 +283,7 @@ MonoBehaviour:
   m_AudioSource: {fileID: 8840853647835918640}
   m_IsListen: 1
   m_AudioList:
-  - {fileID: 8300000, guid: 5868c966b6a091f4c8f8fed561348849, type: 3}
+  - {fileID: 8300000, guid: f92772bd3acec254eae2f2e521658d00, type: 3}
   m_FindSoundableThisObject: 0
   m_SoundableComponent:
   - {fileID: 3407088412786012311}

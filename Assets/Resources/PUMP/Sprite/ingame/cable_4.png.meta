@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2452947f210abe049bb93000b0c63b02
+guid: 4ac9e829e306ad14b8d35f9edf884027
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4147560166889819263
-    second: circit_0
+      213: 9083498470005056444
+    second: cable_4_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -96,27 +96,53 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: external_node_0
+      name: cable_4_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 256
-        height: 256
+        width: 13
+        height: 18
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 3, y: 0, z: 3, w: 0}
+      border: {x: 6, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f7c07004ff71f8930800000000000000
-      internalID: 4147560166889819263
+      spriteID: cb3a4766bb11f0e70800000000000000
+      internalID: 9083498470005056444
       vertices: []
       indices: 
       edges: []
@@ -125,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: d74b603fc77731342aa94f8022c2d91f
+    spriteID: aed411a5fd09fe942a022c635d66b0d2
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      external_node_0: 4147560166889819263
+      cable_4_0: 9083498470005056444
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

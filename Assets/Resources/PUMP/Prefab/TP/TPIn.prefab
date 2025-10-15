@@ -248,8 +248,8 @@ MonoBehaviour:
   m_AudioSource: {fileID: 7054534765788301231}
   m_IsListen: 1
   m_AudioList:
-  - {fileID: 8300000, guid: e411985df41d031469cf52cf1b03a13a, type: 3}
-  - {fileID: 8300000, guid: 440e23b025b16b5429a36a7f35828e92, type: 3}
+  - {fileID: 8300000, guid: 458299e97553d884e926a4345902e4ff, type: 3}
+  - {fileID: 8300000, guid: 1afc0b01b0154c445a7943d3bae01de4, type: 3}
   m_FindSoundableThisObject: 0
   m_SoundableComponent:
   - {fileID: 672719711206284830}
@@ -5405,6 +5405,8 @@ ParticleSystemRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -5426,6 +5428,7 @@ ParticleSystemRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0

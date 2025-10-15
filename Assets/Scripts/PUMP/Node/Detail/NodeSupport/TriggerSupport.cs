@@ -1,17 +1,21 @@
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TriggerSupport : MonoBehaviour
+public class TriggerSupport : MonoBehaviour, ISoundable
 {
-    [SerializeField] private Graphic m_Graphic;
-    [SerializeField] private float m_ClickAlpha = 0.4f;
-    [SerializeField] private float m_FadeDuration = 0.1f;
+    [SerializeField] private Image m_NodeImage;
+    [SerializeField] private Sprite m_ActiveImage;
+    [SerializeField] private Sprite m_DeactiveImage;
 
-    public void PlayEffect()
+    public event SoundEventHandler OnSounded;
+
+    public void SetDown(bool isDown)
     {
-        m_Graphic.DOKill();
-        m_Graphic.DOFade(m_ClickAlpha, 0f);
-        m_Graphic.DOFade(0f, m_FadeDuration);
+        m_NodeImage.sprite = isDown ? m_ActiveImage : m_DeactiveImage;
+    }
+
+    public void PlaySound(bool isDown)
+    {
+        OnSounded?.Invoke(this, new SoundEventArgs(isDown ? 1 : 2));
     }
 }

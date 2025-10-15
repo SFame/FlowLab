@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Scenes
-  - Assets/Resources/Prefab/UI
   - Assets/Resources/PUMP
-  - Assets/Scripts/PUMP
-  - Assets/Scripts
-  - Assets/Scripts/InputSystem
-  - Assets/Scripts
-  - Assets/Scripts/InputSystem
-  - Assets/Scripts
-  - Assets/Scripts/InputSystem
-  - Assets/Scripts
-  - Assets/Scripts/Setting
-  - Assets/Scripts/PUMP/Input
-  - Assets/Scripts/Setting
-  - Assets/Scripts/PUMP/Input
-  - Assets/Scripts/Setting
-  - Assets/Scripts/GameSystem/UI
-  - Assets/Scripts/Setting
-  - Assets/Scripts/PUMP/Input
-  - Assets/Scripts/Setting
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/Sound/VFX/Button
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
   currentDirIndex: 19

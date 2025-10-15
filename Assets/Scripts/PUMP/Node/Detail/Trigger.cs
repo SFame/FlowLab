@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class Trigger : Node
 {
     private TriggerSupport _triggerSupport;
+    private bool _isDragged = false;
 
     private TriggerSupport TriggerSupport
     {
@@ -19,13 +20,17 @@ public class Trigger : Node
         }
     }
 
-    protected override string NodeDisplayName => "Trig";
+    protected override string NodeDisplayName => "";
 
     protected override float NameTextSize => 25f;
 
+    protected override string InputEnumeratorPrefabPath => "PUMP/Prefab/TP/Logic/LogicTPEnumIn";
+
+    protected override string OutputEnumeratorOutPrefabPath => "PUMP/Prefab/TP/Logic/LogicTPEnumOut";
+
     protected override List<string> InputNames => new List<string>();
 
-    protected override List<string> OutputNames => new List<string>() { "out" };
+    protected override List<string> OutputNames => new List<string>() { "" };
 
     protected override List<TransitionType> InputTypes => new List<TransitionType>();
 
@@ -33,11 +38,11 @@ public class Trigger : Node
 
     protected override float InEnumeratorXPos => 0f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 65f;
 
     protected override float EnumeratorSpacing => 3f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(90f, 90f);
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/TRIGGER";
 
@@ -48,12 +53,35 @@ public class Trigger : Node
 
     protected override void OnAfterInit()
     {
-        Support.OnClick += eventData =>
+        Support.OnDragStart += eventData =>
+        {
+            TriggerSupport.SetDown(false);
+            _isDragged = true;
+        };
+
+        Support.OnMouseDown += eventData =>
         {
             if (eventData.button == PointerEventData.InputButton.Left)
             {
+                _isDragged = false;
+                TriggerSupport.SetDown(true);
+                TriggerSupport.PlaySound(true);
+            }
+        };
+
+        Support.OnMouseUp += eventData =>
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                if (_isDragged)
+                {
+                    _isDragged = false;
+                    return;
+                }
+
                 OutputToken.PushFirst(Transition.Pulse());
-                TriggerSupport.PlayEffect();
+                TriggerSupport.PlaySound(false);
+                TriggerSupport.SetDown(false);
                 ReportChanges();
             }
         };

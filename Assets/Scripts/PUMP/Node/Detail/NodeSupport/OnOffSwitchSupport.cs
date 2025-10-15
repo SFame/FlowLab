@@ -1,22 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class OnOffSwitchSupport : MonoBehaviour
+public class OnOffSwitchSupport : MonoBehaviour, ISoundable
 {
+    [SerializeField] private Image m_NodeImage;
     [SerializeField] private Image m_ShadowImage;
-    [SerializeField] private float m_ShadowAlpha = 0.35f;
+    [SerializeField] private Sprite m_ActivateSprite;
+    [SerializeField] private Sprite m_DeactivateSprite;
+    [SerializeField] private Color m_PushColor;
 
-    private Color _defaultColor;
-    private Color _pressColor;
+    public event SoundEventHandler OnSounded;
 
-    public void Initialize()
+    public void SetPush(bool push)
     {
-        _defaultColor = m_ShadowImage.color;
-        _pressColor = new Color(_defaultColor.r, _defaultColor.g, _defaultColor.b, m_ShadowAlpha);
+        m_ShadowImage.color = push ? m_PushColor : new Color(0f, 0f, 0f, 0f);
     }
 
-    public void SetShadow(bool apply)
+    public void SetActivate(bool activate)
     {
-        m_ShadowImage.color = apply ? _pressColor : _defaultColor;
+        m_NodeImage.sprite = activate ? m_ActivateSprite : m_DeactivateSprite;
+    }
+
+    public void PlaySound(bool onDown)
+    {
+        OnSounded?.Invoke(this, new SoundEventArgs(onDown ? 1 : 2));
     }
 }
