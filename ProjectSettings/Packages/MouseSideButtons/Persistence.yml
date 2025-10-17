@@ -15,22 +15,22 @@ MonoBehaviour:
   directoryHistory:
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/Sound/VFX/Button
   - Assets/Resources/PUMP
+  - Assets/Resources
+  - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/UI
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Other
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Scripts/PUMP/Input
+  - Assets/Resources/PUMP
+  - Assets
+  - Assets/Resources/PUMP
+  - Assets
+  - Assets/Resources/PUMP
+  - Assets
+  - Assets/Resources/PUMP/Prefab/ClassedNode
   currentDirIndex: 19

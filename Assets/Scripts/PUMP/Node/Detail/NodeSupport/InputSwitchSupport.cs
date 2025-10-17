@@ -1,55 +1,91 @@
 using System;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class InputSwitchSupport : MonoBehaviour
+public class InputSwitchSupport : MonoBehaviour, ISoundable
 {
-    [SerializeField] public TMP_InputField m_InputField;
-    [SerializeField] private Image m_InputImage;
+    [SerializeField] private TMP_InputField m_InputField;
     [SerializeField] private CanvasGroup m_InputPanelGroup;
-    [SerializeField] private float m_InputPanelFadeDuration = 0.2f;
-    [SerializeField] private float m_ButtonShadowDuration = 0.1f;
-    [SerializeField] private float m_ButtonShadowAlpha = 0.35f;
+    [SerializeField] private float m_InputPanelFadeDuration;
+    [SerializeField] private Image m_NodeImage;
+    [SerializeField] private Sprite m_ActiveImage;
+    [SerializeField] private Sprite m_DeactiveImage;
 
 
-    public event Action<object> OnValueChanged;
+    public event Action OnValueChanged;
+    public event SoundEventHandler OnSounded;
 
-    // 입력 필드의 텍스트를 반환
-    public string GetInputText()
+    private object _inputManagerBlockerObject = new();
+
+    public void Initialize(Transition initValue)
     {
-        return m_InputField != null ? m_InputField.text : string.Empty;
-    }
-
-    // 필요시 외부에서 텍스트를 설정할 수 있도록 메서드 추가
-    public void SetInputText(string value)
-    {
-        if (m_InputField != null)
-            m_InputField.text = value;
-    }
-
-    public void Initialize()
-    {
-        m_InputField.onEndEdit.AddListener(InvokeValueChangeEvent);
-        m_InputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+        m_InputField.onEndEdit.AddListener(_ => OnValueChanged?.Invoke());
+        m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputManagerBlockerObject));
+        m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputManagerBlockerObject));
+        m_NodeImage.sprite = m_DeactiveImage;
+        SetType(initValue.Type);
+        SetValue(initValue);
         m_InputField.text = "";
     }
 
-    private void InvokeValueChangeEvent(string value)
+    public bool TryGetValue(TransitionType asType, out Transition value)
     {
-        if (int.TryParse(value, out int i))
+        bool success = false;
+        value = asType.Default();
+
+        switch (asType)
         {
-            OnValueChanged?.Invoke(i);
-            return;
+            case TransitionType.Int:
+                success = int.TryParse(string.IsNullOrEmpty(m_InputField.text) ? "0" : m_InputField.text, out int intResult);
+                value = intResult;
+                break;
+            case TransitionType.Float:
+                success = float.TryParse(string.IsNullOrEmpty(m_InputField.text) ? "0.0" : m_InputField.text, out float floatResult);
+                value = floatResult;
+                break;
+            case TransitionType.String:
+                success = true;
+                value = m_InputField.text ?? string.Empty;
+                break;
         }
-        if (float.TryParse(value, out float f))
+
+        return success;
+    }
+
+    public void SetValue(Transition value)
+    {
+        SetValueAsync(value).Forget();
+    }
+
+    public void SetType(TransitionType type)
+    {
+        switch (type)
         {
-            OnValueChanged?.Invoke(f);
-            return;
+            case TransitionType.Int:
+                m_InputField.contentType = TMP_InputField.ContentType.IntegerNumber;
+                return;
+            case TransitionType.Float:
+                m_InputField.contentType = TMP_InputField.ContentType.DecimalNumber;
+                return;
+            case TransitionType.String:
+                m_InputField.contentType = TMP_InputField.ContentType.Standard;
+                return;
         }
-        OnValueChanged?.Invoke(value);
+
+        throw new Exception($"{GetType().Name}.SetType(): 허용되지 않는 타입 할당: {type.ToString()}");
+    }
+
+    public void SetDown(bool isDown)
+    {
+        m_NodeImage.sprite = isDown ? m_ActiveImage : m_DeactiveImage;
+    }
+
+    public void PlaySound(bool isActivate)
+    {
+        OnSounded?.Invoke(this, new SoundEventArgs(isActivate ? 1 : 2));
     }
 
     public void OpenInputPanel()
@@ -72,16 +108,29 @@ public class InputSwitchSupport : MonoBehaviour
         });
     }
 
-    public void ButtonShadowActive()
+    private async UniTaskVoid SetValueAsync(Transition value)
     {
-        m_InputImage.DOKill();
-        m_InputImage.DOFade(m_ButtonShadowAlpha, m_ButtonShadowDuration);
+        await UniTask.Yield();
+
+        if (value.IsNull || value.Type == TransitionType.None || value.Type == TransitionType.Bool || value.Type == TransitionType.Pulse)
+        {
+            m_InputField.text = string.Empty;
+            return;
+        }
+
+        if (m_InputField != null)
+        {
+            m_InputField.text = value.GetValueString();
+        }
     }
 
-    public void ButtonShadowInactive()
+    private void OnDestroy()
     {
-        m_InputImage.DOKill();
-        m_InputImage.DOFade(0f, m_ButtonShadowDuration);
+        InputManager.RemoveBlocker(_inputManagerBlockerObject);
+    }
+
+    private void OnDisable()
+    {
+        InputManager.RemoveBlocker(_inputManagerBlockerObject);
     }
 }
-

@@ -53,7 +53,7 @@ public class Trigger : Node
 
     protected override void OnAfterInit()
     {
-        Support.OnDragStart += eventData =>
+        Support.OnDragStart += _ =>
         {
             TriggerSupport.SetDown(false);
             _isDragged = true;

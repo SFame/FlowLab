@@ -115,7 +115,7 @@ public abstract class NodePalette : MonoBehaviour
     private void SetElementCallback(PaletteElem elem)
     {
         elem.OnDragStart += () => IsVisible = false;
-        elem.OnInstantiate += () => OnNodeAdded?.Invoke(elem.NewNode);
+        elem.OnInstantiate += newNode => OnNodeAdded?.Invoke(newNode);
         elem.OnDragEnd += () => IsVisible = true;
     }
 

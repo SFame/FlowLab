@@ -23,7 +23,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     
     public event Action OnDragStart;
     public event Action OnDragEnd;
-    public event Action OnInstantiate;
+    public event Action<Node> OnInstantiate;
     public event Action OnClick;
 
     public Image Image => m_Image;
@@ -39,8 +39,6 @@ public class PaletteElem : MonoBehaviour, IDraggable
     }
     
     public Type NodeType { get; set; }
-
-    public Node NewNode => _newNode;
 
     public void OnBeginDrag(PointerEventData eventData)
     {
@@ -92,7 +90,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
 
         try
         {
-            if (_background is null)
+            if (_background == null)
             {
                 _raycastResults.Clear();
                 EventSystem.current.RaycastAll(eventData, _raycastResults);
@@ -102,13 +100,18 @@ public class PaletteElem : MonoBehaviour, IDraggable
                     if (result.gameObject.TryGetComponent(out _background))
                     {
                         _newNode = _background.AddNewNode(NodeType);
-                        OnInstantiate?.Invoke();
+                        if (_newNode is INodeLifecycleCallable callable)
+                        {
+                            callable.CallOnAddFromPalette();
+                            OnInstantiate?.Invoke(_newNode);
+                        }
+
                         break;
                     }
                 }
             }
 
-            if (_background is null)
+            if (_background == null)
                 return;
 
             _newNode.Support.SetPosition(eventData.position.ScreenToWorldPoint());

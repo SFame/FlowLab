@@ -65,27 +65,32 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
     #endregion
 }
 
+[Serializable]
 public struct InputKeyMapArgs
 {
-    public InputKeyMapArgs(Action<InputKeyMap> callback, Action<InputKeyMap> onRemove, bool immutable, bool actionHold)
+    public InputKeyMapArgs(string name, Action<InputKeyMap> callback, Action<InputKeyMap> onRemove, bool immutable, bool actionHold)
     {
+        Name = name;
         Callback = callback;
         OnRemove = onRemove;
         Immutable = immutable;
         ActionHold = actionHold;
     }
 
-    public InputKeyMapArgs(Action<InputKeyMap> callback)
+    public InputKeyMapArgs(string name, Action<InputKeyMap> callback)
     {
+        Name = name;
         Callback = callback;
         OnRemove = null;
         Immutable = false;
         ActionHold = false;
     }
 
-    public bool Immutable;
+    [SerializeField] public string Name;
 
-    public bool ActionHold;
+    [SerializeField] public bool Immutable;
+
+    [SerializeField] public bool ActionHold;
 
     public Action<InputKeyMap> Callback;
 

@@ -371,10 +371,60 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8200589970030649765, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       insertIndex: 2
       addedObject: {fileID: 5889736232465186105}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5800741480439603181, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6605243565804384751}
+    - targetCorrespondingSourceObject: {fileID: 1405101189836445236, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7507300941412663987}
   m_SourcePrefab: {fileID: 100100000, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+--- !u!1 &2951031225972584476 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1405101189836445236, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+  m_PrefabInstance: {fileID: 4290742240646555176}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7507300941412663987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2951031225972584476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
+  m_Mode: 1
+  m_TargetActionKey: 0
+  m_TargetModifiers: 
+  m_AllowingNames:
+  - Background_OpenSaveLoadPanel
 --- !u!224 &5351857956286531469 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8200589970030649765, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
   m_PrefabInstance: {fileID: 4290742240646555176}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &7713426948394432965 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5800741480439603181, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+  m_PrefabInstance: {fileID: 4290742240646555176}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6605243565804384751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7713426948394432965}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
+  m_Mode: 1
+  m_TargetActionKey: 0
+  m_TargetModifiers: 
+  m_AllowingNames:
+  - Background_OpenPalette

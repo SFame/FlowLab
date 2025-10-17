@@ -47,6 +47,7 @@ public class PUMPInputManager : MonoBehaviour
 
             InputKeyMapArgs args = new InputKeyMapArgs()
             {
+                Name = $"Background_{backgroundActionKeyMap.m_ActionType.ToString()}",
                 Callback = _ => BackgroundActionMapper.GetAction(backgroundActionKeyMap.m_ActionType)?.Invoke(),
                 OnRemove = backgroundActionKeyMap.m_OnRemove,
                 ActionHold = backgroundActionKeyMap.m_ActionHold,

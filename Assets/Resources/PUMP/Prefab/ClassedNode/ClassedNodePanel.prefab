@@ -673,6 +673,7 @@ GameObject:
   - component: {fileID: 4241456303041261665}
   - component: {fileID: 8964992266142112784}
   - component: {fileID: 1991671256311874097}
+  - component: {fileID: 7572619779526657788}
   m_Layer: 0
   m_Name: ClassedControllerPanel
   m_TagString: Untagged
@@ -754,6 +755,22 @@ MonoBehaviour:
   m_OnClose:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7572619779526657788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798588885275829072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
+  m_Mode: 0
+  m_TargetActionKey: 0
+  m_TargetModifiers: 
+  m_AllowingNames: []
 --- !u!1 &1006451197076265924
 GameObject:
   m_ObjectHideFlags: 0
@@ -4294,6 +4311,7 @@ GameObject:
   - component: {fileID: 1566370447973017139}
   - component: {fileID: 3004900261550282087}
   - component: {fileID: 5353159193677231917}
+  - component: {fileID: 766775431608003239}
   m_Layer: 0
   m_Name: PUMP_SaveLoadPanel
   m_TagString: Untagged
@@ -4438,6 +4456,23 @@ MonoBehaviour:
   m_OnClose:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &766775431608003239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6686671209708348074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
+  m_Mode: 1
+  m_TargetActionKey: 0
+  m_TargetModifiers: 
+  m_AllowingNames:
+  - Background_OpenSaveLoadPanel
 --- !u!1 &6758274655871393432
 GameObject:
   m_ObjectHideFlags: 0
@@ -4616,6 +4651,7 @@ GameObject:
   - component: {fileID: 2689299723717721375}
   - component: {fileID: 4668460308311783974}
   - component: {fileID: 3227645587822201097}
+  - component: {fileID: 6097206682130069541}
   m_Layer: 0
   m_Name: NodePalette
   m_TagString: Untagged
@@ -4736,6 +4772,23 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &6097206682130069541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7219667373526888652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
+  m_Mode: 1
+  m_TargetActionKey: 0
+  m_TargetModifiers: 
+  m_AllowingNames:
+  - Background_OpenPalette
 --- !u!1 &8252422920431032018
 GameObject:
   m_ObjectHideFlags: 0

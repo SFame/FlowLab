@@ -18,7 +18,7 @@ public class CameraKeyInput : MonoBehaviour
         foreach (CameraKeymap camKeymap in camKeyMaps)
         {
             InputKeyMap keyMap = new InputKeyMap(camKeymap.ActionKey, camKeymap.ModifierKeys.ToHashSet());
-            InputKeyMapArgs args = new InputKeyMapArgs(_ => Launcher.LaunchAction(camKeymap.ActionType)) { Immutable = true, ActionHold = camKeymap.ActionHold };
+            InputKeyMapArgs args = new InputKeyMapArgs($"Cam_{camKeymap.ActionType.ToString()}", _ => Launcher.LaunchAction(camKeymap.ActionType)) { Immutable = true, ActionHold = camKeymap.ActionHold };
             if (!keyMaps.TryAdd(keyMap, args))
             {
                 Debug.LogWarning($"CameraKeyInput: {camKeymap.ActionType.ToString()} 중복됨");

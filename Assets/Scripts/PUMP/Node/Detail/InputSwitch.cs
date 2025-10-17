@@ -1,13 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static UnityEngine.Rendering.DebugUI;
 
-public class InputSwitch : Node, INodeAdditionalArgs<string>
+public class InputSwitch : Node, INodeAdditionalArgs<Transition>
 {
     private InputSwitchSupport _inputSwitchSupport;
-    private string _value = string.Empty;
+    private bool _isDragged = false;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/INPUT_SWITCH";
+
+    protected override string InputEnumeratorPrefabPath => "PUMP/Prefab/TP/Logic/LogicTPEnumIn";
+
+    protected override string OutputEnumeratorOutPrefabPath => "PUMP/Prefab/TP/Logic/LogicTPEnumOut";
 
     protected override List<string> InputNames { get; } = new List<string> { };
 
@@ -15,19 +20,17 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType>();
 
-    protected override List<TransitionType> OutputTypes => new() { TransitionType.Int };
+    protected override List<TransitionType> OutputTypes => new() { AdditionalArgs.Type };
 
     protected override float InEnumeratorXPos => 0f;
 
-    protected override float OutEnumeratorXPos => 47f;
+    protected override float OutEnumeratorXPos => 65f;
 
     protected override float EnumeratorSpacing => 3f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(130f, 80f);
+    protected override Vector2 DefaultNodeSize => new Vector2(90f, 90f);
 
-    protected override string NodeDisplayName => "Input";
-
-    protected override float NameTextSize => 28f;
+    protected override string NodeDisplayName => "";
 
 
     private InputSwitchSupport InputSwitchSupport
@@ -37,13 +40,8 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
             if (_inputSwitchSupport == null)
             {
                 _inputSwitchSupport = Support.GetComponent<InputSwitchSupport>();
-                Support.OnMouseDown += _ => _inputSwitchSupport.ButtonShadowActive();
-                Support.OnMouseUp += _ => _inputSwitchSupport.ButtonShadowInactive();
-                Support.OnMouseEnter += _ => _inputSwitchSupport.OpenInputPanel();
-                Support.OnMouseExit += _ => _inputSwitchSupport.CloseInputPanel();
-                Support.OnMouseEventBlocked += () => _inputSwitchSupport.CloseInputPanel();
-                _inputSwitchSupport.Initialize();
             }
+
             return _inputSwitchSupport;
         }
     }
@@ -53,78 +51,75 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
         get
         {
             List<ContextElement> contexts = base.ContextElements;
-            contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetSwitchType(TransitionType.Int)));
-            contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetSwitchType(TransitionType.Float)));
-            contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetSwitchType(TransitionType.String)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetType(TransitionType.Int)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
+            contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
             return contexts;
         }
     }
 
-    public string AdditionalArgs 
-    { 
-        get => _value;
-        set 
-        { 
-            _value = value;
-            InputSwitchSupport.SetInputText(value);
-        }  
-    }
-
-    protected override void OnBeforeAutoConnect()
-    {
-        SetChangeType(OutputToken[0].Type);
-    }
-
-    private void SetChangeType(TransitionType type)
-    {
-        switch (type)
-        {
-            case TransitionType.Int:
-                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.IntegerNumber;
-                break;
-
-            case TransitionType.Float:
-                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.DecimalNumber;
-                break;
-
-            case TransitionType.String:
-                InputSwitchSupport.m_InputField.contentType = TMPro.TMP_InputField.ContentType.Standard;
-                break;
-        }
-    }
-
-    private void SetSwitchType(TransitionType type)
+    private void SetType(TransitionType type)
     {
         OutputToken.SetTypeAll(type);
-        _value = type.Default().GetValueString();
-        SetChangeType(type);
-        InputSwitchSupport.SetInputText(_value);
+        AdditionalArgs = type.Default();
+        InputSwitchSupport.SetType(AdditionalArgs.Type);
+        InputSwitchSupport.SetValue(AdditionalArgs);
         ReportChanges();
     }
 
-    protected override void OnAfterInstantiate()
+    private void Apply()
     {
-        _value = OutputTypes[0].Default().GetValueString();
+        if (InputSwitchSupport.TryGetValue(OutputToken.FirstType, out Transition value))
+        {
+            OutputToken.PushFirst(value);
+        }
     }
 
     protected override void OnAfterInit()
     {
-        InputSwitchSupport.SetInputText(_value);
+        Support.OnMouseEnter += _ => InputSwitchSupport.OpenInputPanel();
+        Support.OnMouseExit += _ => InputSwitchSupport.CloseInputPanel();
+        Support.OnMouseEventBlocked += () => InputSwitchSupport.CloseInputPanel();
+        InputSwitchSupport.Initialize(AdditionalArgs);
 
-        Support.OnClick += eventData =>
+        InputSwitchSupport.OnValueChanged += () =>
+        {
+            if (InputSwitchSupport.TryGetValue(AdditionalArgs.Type, out Transition result))
+            {
+                AdditionalArgs = result;
+                ReportChanges();
+            }
+        };
+
+        Support.OnDragStart += _ =>
+        {
+            InputSwitchSupport.SetDown(false);
+            _isDragged = true;
+        };
+
+        Support.OnMouseDown += eventData =>
         {
             if (eventData.button == PointerEventData.InputButton.Left)
             {
-                _value = InputSwitchSupport.GetInputText();
+                _isDragged = false;
+                InputSwitchSupport.SetDown(true);
+                InputSwitchSupport.PlaySound(true);
+            }
+        };
 
-                OutputToken[0].State = OutputToken[0].Type switch
+        Support.OnMouseUp += eventData =>
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                if (_isDragged)
                 {
-                    TransitionType.Int => ParseInt(_value),
-                    TransitionType.Float => ParseFloat(_value),
-                    TransitionType.String => (Transition)_value,
-                    _ => OutputToken[0].State.Type.Default()
-                };
+                    _isDragged = false;
+                    return;
+                }
 
+                Apply();
+                InputSwitchSupport.PlaySound(false);
+                InputSwitchSupport.SetDown(false);
                 ReportChanges();
             }
         };
@@ -137,6 +132,6 @@ public class InputSwitch : Node, INodeAdditionalArgs<string>
 
     protected override void StateUpdate(TransitionEventArgs args) { }
 
-    private int ParseInt(string value) => int.TryParse(value, out int i) ? i : 0;
-    private float ParseFloat(string value) => float.TryParse(value, out float f) ? f : 0f;
+
+    public Transition AdditionalArgs { get; set; } = Transition.Zero;
 }

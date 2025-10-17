@@ -314,6 +314,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
 
 
     // Life Cycle (From palette)-----------------------------
+    protected virtual void OnAddFromPalette() { }
     protected virtual void OnCompletePlacementFromPalette() { }
 
 
@@ -702,6 +703,19 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
         }
     }
 
+    void INodeLifecycleCallable.CallOnAddFromPalette()
+    {
+        try
+        {
+            OnAddFromPalette();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("<color=red><b>[LIFE CYCLE: OnAddFromPalette]</b></color>");
+            Debug.LogException(e);
+        }
+    }
+
     void INodeLifecycleCallable.CallOnCompletePlacementFromPalette()
     {
         try
@@ -946,6 +960,7 @@ public interface INodeLifecycleCallable
     void CallOnAfterInit();
     void CallOnBeforeAutoConnect();
     void CallOnBeforeReplayPending(bool[] pendings);
+    void CallOnAddFromPalette();
     void CallOnCompletePlacementFromPalette();
     void CallSetOutputInitStates();
     void CallSetOutputResetStates();

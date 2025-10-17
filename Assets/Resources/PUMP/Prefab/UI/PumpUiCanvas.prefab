@@ -288,6 +288,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5579582271418121349}
   - component: {fileID: 8520800169687906212}
+  - component: {fileID: 4363566335137462828}
   m_Layer: 5
   m_Name: GameMenu
   m_TagString: Untagged
@@ -330,6 +331,18 @@ MonoBehaviour:
   m_MenuObject: {fileID: 2287655655090425743}
   m_codexPrefab: {fileID: 7802264536726917860, guid: a58a2942fae08c348877062825baea7a, type: 3}
   m_SettingUIPrefab: {fileID: 7956677982087096246, guid: 72309f382bf098a4a89f3e548328e820, type: 3}
+--- !u!114 &4363566335137462828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2287655655090425743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3091719c2e6ffc04bbf7afb42fe71a9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputBlockingObject
 --- !u!1 &2827847289828917868
 GameObject:
   m_ObjectHideFlags: 0

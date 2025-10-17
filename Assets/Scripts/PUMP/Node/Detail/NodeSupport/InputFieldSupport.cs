@@ -10,8 +10,8 @@ public class InputFieldSupport : MonoBehaviour
     [SerializeField] private float m_InputPanelFadeDuration = 0.5f;
     [SerializeField] private Vector2 m_InputPanelExtendedSize = new Vector2(300f, 600f);
 
+    private object _inputManagerBlockerObject = new();
     private Vector2 _inputPanelDefaultSize;
-
     private Sequence _rectSizeSequence;
 
     private void SetFieldType(TransitionType transitionType)
@@ -27,6 +27,16 @@ public class InputFieldSupport : MonoBehaviour
         };
     }
 
+    private void OnDestroy()
+    {
+        InputManager.RemoveBlocker(_inputManagerBlockerObject);
+    }
+
+    private void OnDisable()
+    {
+        InputManager.RemoveBlocker(_inputManagerBlockerObject);
+    }
+
     public string Text
     {
         get => m_InputField.text;
@@ -40,6 +50,8 @@ public class InputFieldSupport : MonoBehaviour
     public void Initialize()
     {
         m_InputField.onEndEdit.AddListener(value => OnEndEdit?.Invoke(value));
+        m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputManagerBlockerObject));
+        m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputManagerBlockerObject));
         m_InputPanelRect.pivot = Vector2.one;
         _inputPanelDefaultSize = m_InputPanelRect.sizeDelta;
     }
