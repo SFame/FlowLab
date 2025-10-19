@@ -59,16 +59,6 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
 
     protected override void OnAfterInit()
     {
-        Support.OnClick += eventData =>
-        {
-            if (eventData.button == PointerEventData.InputButton.Left)
-            {
-                State = !State;
-                OutputToken[0].State = State;
-                ReportChanges();
-            }
-        };
-
         Support.OnMouseDown += eventData =>
         {
             if (eventData.button == PointerEventData.InputButton.Left)
@@ -89,12 +79,15 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
                     return;
                 }
 
+                State = !State;
+                OutputToken[0].State = State;
+                ReportChanges();
                 OnOffSwitchSupport.PlaySound(false);
                 OnOffSwitchSupport.SetPush(false);
             }
         };
 
-        Support.OnDragStart += eventData =>
+        Support.OnDragStart += _ =>
         {
             OnOffSwitchSupport.SetPush(false);
             _isDragged = true;

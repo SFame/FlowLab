@@ -9,9 +9,9 @@ public interface IClassedNodeDataManager
     public void SetCurrent(IClassedNode classedNode);
     public CurrentClassedPairManagerToken GetCurrent();
     public void OverrideToCurrent(PUMPSaveDataStructure structure);
-    public UniTask ApplyCurrentById(string id);
+    public void ApplyCurrentByStructure(PUMPSaveDataStructure structure);
     public void DestroyClassed(IClassedNode classedNode);
     public void DiscardCurrent();
     public UniTask AddNew(IClassedNode classedNode);
-    public void Push(string name);
+    public void Push(string name, bool pushDb);
 }

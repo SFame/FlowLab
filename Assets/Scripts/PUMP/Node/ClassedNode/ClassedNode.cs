@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using Utils;
 using static TPEnumeratorToken;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
@@ -13,8 +14,10 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 {
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
-    private string _name;
+    private string _name = "Classed";
+    private bool _isChange = false;
     private UiMouseListener _mouseListener;
+    private ClassedSupport _classedSupport;
 
     private UiMouseListener MouseListener
     {
@@ -22,6 +25,19 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         {
             _mouseListener ??= Support.transform.GetOrAddComponent<UiMouseListener>();
             return _mouseListener;
+        }
+    }
+
+    private ClassedSupport ClassedSupport
+    {
+        get
+        {
+            if (_classedSupport == null)
+            {
+                _classedSupport = Support.GetComponent<ClassedSupport>();
+            }
+
+            return _classedSupport;
         }
     }
 
@@ -75,6 +91,21 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             Debug.LogError($"{Name}: 출력 상태 업데이트 중 예외 발생 - {e.Message}");
         }
     }
+
+    private void SetName()
+    {
+        object blocker = new();
+        InputManager.AddBlocker(blocker);
+
+        TextGetterManager.Set
+        (
+            rootCanvas: PUMPUiManager.RootCanvas,
+            callback: result => Name = result,
+            titleString: "Node Name",
+            inputString: Name,
+            onExit: () => InputManager.RemoveBlocker(blocker)
+        );
+    }
     #endregion
 
     protected override int DefaultInputCount => 2;
@@ -83,7 +114,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/CLASSED";
 
-    protected override string NodeDisplayName => "Classed";
+    protected override string NodeDisplayName => Name;
 
     protected override float NameTextSize => 24;
 
@@ -103,6 +134,8 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         {
             List<ContextElement> contexts = base.ContextElements;
             contexts.Add(new ContextElement("Edit", () => OpenPanel?.Invoke(this)));
+            contexts.Add(new ContextElement("Rename", SetName));
+
             return contexts;
         }
     }
@@ -112,6 +145,11 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         OnRemove += OnRemoveAdapter;
         ClassedNodePanel.JoinPanel(this);
         MouseListener.OnDoubleClick += _ => OpenPanel?.Invoke(this);
+    }
+
+    protected override void OnAddFromPalette()
+    {
+        ClassedSupport.IsChange = _isChange;
     }
 
     protected override string DefineInputName(int tpIndex)
@@ -149,12 +187,23 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         get => _name;
         set
         {
+            _name = value;
             Support.NameText.text = value;
             Support.name = value;
         }
     }
-    public string Id { get; set; } = string.Empty;
 
+    bool IClassedNode.IsChanged
+    {
+        get => _isChange;
+        set
+        {
+            _isChange = value;
+            ClassedSupport.IsChange = _isChange;
+        }
+    }
+
+    PUMPSaveDataStructure IClassedNode.ModuleStructure { get; set; } = null;
     int IClassedNode.InputCount { get => InputCount; set => InputCount = value; }
     int IClassedNode.OutputCount { get => OutputCount; set => OutputCount = value; }
 
@@ -249,7 +298,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         get
         {
             IClassedNode thisClass = this;
-            return new(Id, thisClass.InputCount, thisClass.OutputCount);
+            return new(thisClass.ModuleStructure, thisClass.InputCount, thisClass.OutputCount, thisClass.IsChanged);
         }
 
         set
@@ -257,7 +306,8 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             IClassedNode thisClass = this;
             thisClass.InputCount = value._inputCount;
             thisClass.OutputCount = value._outputCount;
-            Id = value._id;
+            thisClass.ModuleStructure = value._structure;
+            thisClass.IsChanged = value._isChange;
         }
     }
     #endregion
@@ -266,14 +316,16 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 [Serializable]
 public struct ClassedNodeSerializeInfo
 {
-    public ClassedNodeSerializeInfo (string id, int inputCount, int outputCount)
+    public ClassedNodeSerializeInfo (PUMPSaveDataStructure structure, int inputCount, int outputCount, bool isChange)
     {
-        _id = id;
+        _structure = structure;
         _inputCount = inputCount;
         _outputCount = outputCount;
+        _isChange = isChange;
     }
 
-    [OdinSerialize] public string _id;
+    [OdinSerialize] public PUMPSaveDataStructure _structure;
+    [OdinSerialize] public bool _isChange;
     [OdinSerialize] public int _inputCount;
     [OdinSerialize] public int _outputCount;
 }

@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 public interface IClassedNode
 {
     string Name { get; set; }
-    string Id { get; set; }
+    PUMPSaveDataStructure ModuleStructure { get; set; }
     int InputCount { get; set; }
     int OutputCount { get; set; }
+    bool IsChanged { get; set; }
 
     event Action<TransitionEventArgs> OnInputUpdate;
     event Action<IClassedNode> OpenPanel;

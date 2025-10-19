@@ -98,7 +98,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     {
         if (DataManager.GetCurrent().IsChanged)
         {
-            MessageBoxManager.ShowYesNo(PUMPUiManager.RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, () => CloseWithoutSave().Forget());
+            MessageBoxManager.ShowYesNo(PUMPUiManager.RootCanvas, "Save before exiting?", OpenSaveOptionWithExit, CloseWithoutSave);
             return;
         }
 
@@ -111,16 +111,15 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     public void OpenSaveOption()
     {
         object blocker = new();
-        PUMPInputManager inputManager = PUMPInputManager.Current;
-        inputManager?.AddBlocker(blocker);
+        InputManager.AddBlocker(blocker);
 
         TextGetterManager.Set
         (
             rootCanvas: PUMPUiManager.RootCanvas,
-            callback: DataManager.Push,
+            callback: name => DataManager.Push(name, true),
             titleString: "Save Name",
             inputString: defaultSaveName,
-            onExit: () => inputManager?.RemoveBlocker(blocker)
+            onExit: () => InputManager.RemoveBlocker(blocker)
         );
     }
 
@@ -130,20 +129,19 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     public void OpenSaveOptionWithExit()
     {
         object blocker = new();
-        PUMPInputManager inputManager = PUMPInputManager.Current;
-        inputManager?.AddBlocker(blocker);
+        InputManager.AddBlocker(blocker);
 
         TextGetterManager.Set
         (
             rootCanvas: PUMPUiManager.RootCanvas,
             callback: saveName =>
             {
-                DataManager.Push(saveName);
+                DataManager.Push(saveName, true);
                 ClosePanel();
             },
             titleString: "Save Name",
             inputString: defaultSaveName,
-            onExit: () => inputManager?.RemoveBlocker(blocker)
+            onExit: () => InputManager.RemoveBlocker(blocker)
         );
     }
 
@@ -285,13 +283,14 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
         DataManager.DiscardCurrent();
     }
 
-    private async UniTask CloseWithoutSave()
+    private void CloseWithoutSave()
     {
-        if (DataManager.HasCurrent())
-        {
-            await DataManager.ApplyCurrentById(DataManager.GetCurrent().ClassedNode.Id);
-        }
-
+        //if (DataManager.HasCurrent())
+        //{
+        //    DataManager.ApplyCurrentByStructure(DataManager.GetCurrent().ClassedNode.ModuleStructure);
+        //}
+        string name = DataManager.HasCurrent() ? DataManager.GetCurrent().ClassedNode.Name : defaultSaveName;
+        DataManager.Push(name, false);
         ClosePanel();
     }
 
@@ -323,7 +322,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     {
         if (!visible)
         {
-            CloseWithoutSave().Forget();
+            CloseWithoutSave();
         }
     }
 

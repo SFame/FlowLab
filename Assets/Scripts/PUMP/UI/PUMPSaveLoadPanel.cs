@@ -80,9 +80,8 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     private bool Extract(string saveName, out PUMPSaveDataStructure structure)
     {
         List<SerializeNodeInfo> nodeInfos = extractor.GetNodeInfos();
-        object tag = extractor.GetTag();
 
-        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName, tag);
+        PUMPSaveDataStructure newStructure = new(nodeInfos, saveName);
         if (extractor.ValidateBeforeSerialization(newStructure))
         {
             structure = newStructure;

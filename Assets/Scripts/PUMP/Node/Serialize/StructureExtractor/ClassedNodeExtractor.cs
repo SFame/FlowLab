@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using Utils;
 
 public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeDataManager
 {
@@ -40,38 +39,15 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         return null;
     }
 
-    public override object GetTag()
-    {
-        string newId = GetNewId();
-        return newId;
-    }
+    public override object GetTag() => null;
 
     public override bool ValidateBeforeSerialization(PUMPSaveDataStructure structure)
     {
-        string id;
-        string name;
-
-        try
-        {
-            id = structure.Tag.AsString();
-            name = structure.Name;
-        }
-        catch (InvalidCastException e)
-        {
-            Debug.LogError("Tag convert Error: " + e.Message);
-            return false;
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e.Message);
-            return false;
-        }
-
         if (HasCurrent()) // PUMPSaveDataStructure가 Valid할 시, 현재 Classed에 적용 후 true return
         {
             var current = GetCurrent();
-            current.ClassedNode.Name = name;
-            current.ClassedNode.Id = id;
+            current.ClassedNode.Name = structure.Name;
+            current.ClassedNode.ModuleStructure = structure;
             current.ClearChangeFlag();
             return true;
         }
@@ -83,9 +59,27 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
     public Func<PUMPBackground> BackgroundGetter { get; set; }
     public PUMPBackground BaseBackground { get; set; }
 
-    public void Push(string name)
+    public void Push(string name, bool pushDb)
     {
-        PushAsync(name).Forget();
+        if (!HasCurrent())
+        {
+            return;
+        }
+
+        PUMPSaveDataStructure newStructure = new()
+        {
+            Name = name,
+            NodeInfos = GetNodeInfos(),
+        };
+
+        IClassedNode currentNode = GetCurrent().ClassedNode;
+        currentNode.ModuleStructure = newStructure;
+        currentNode.Name = name;
+
+        if (pushDb)
+        {
+            PushToDatabaseAsync(newStructure).Forget();
+        }
     }
 
     public CurrentClassedPairManagerToken GetCurrent()
@@ -121,7 +115,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         }
         CurrentClassedPairManagerToken current = GetCurrent();
         current.PairBackground.SetInfos(structure.NodeInfos, true);
-        current.ClassedNode.Id = structure.Tag.ToString();
+        current.ClassedNode.ModuleStructure = structure;
         current.ClassedNode.Name = structure.Name;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
@@ -130,7 +124,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         structure.NotifyDataChanged();
     }
 
-    public async UniTask ApplyCurrentById(string id)
+    public void ApplyCurrentByStructure(PUMPSaveDataStructure structure)
     {
         if (!HasCurrent())
         {
@@ -138,27 +132,23 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             return;
         }
 
-        List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
-        PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(id) ?
-            null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(id));
+        CurrentClassedPairManagerToken current = GetCurrent();
 
-        var current = GetCurrent();
-
-        if (matchedStructure != null)
+        if (structure != null)
         {
-            current.PairBackground.SetInfos(matchedStructure.NodeInfos, true);
-            current.ClassedNode.Id = matchedStructure.Tag.ToString();
-            current.ClassedNode.Name = matchedStructure.Name;
+            current.PairBackground.SetInfos(structure.NodeInfos, true);
+            current.ClassedNode.ModuleStructure = structure;
+            current.ClassedNode.Name = structure.Name;
             SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
             AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
             current.ClassedNode.OutputApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
             current.ClearChangeFlag();
-            matchedStructure.NotifyDataChanged();
+            structure.NotifyDataChanged();
             return;
         }
 
         current.PairBackground.SetInfos(new(), true);
-        current.ClassedNode.Id = string.Empty;
+        current.ClassedNode.ModuleStructure = null;
         current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
@@ -215,12 +205,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
 
         await Loading.AddTask(classedNode.WaitForDeserializationComplete());
 
-        List<PUMPSaveDataStructure> pumpData = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(DataDirectory.PumpAppData, savePath);
-
         prog.SetProgress(60);
 
-        PUMPSaveDataStructure matchedStructure = string.IsNullOrEmpty(classedNode.Id) ?
-            null : pumpData.FirstOrDefault(structure => structure.Tag.Equals(classedNode.Id));
+        PUMPSaveDataStructure matchedStructure = classedNode.ModuleStructure;
         PUMPBackground newBackground = BackgroundGetter?.Invoke();
         if (matchedStructure != null)
         {
@@ -387,22 +374,13 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         classed.InputStateValidate(exIn.Select(tp => tp.State).ToArray());
     }
 
-    private async UniTask PushAsync(string name)
+    private async UniTask PushToDatabaseAsync(PUMPSaveDataStructure structure)
     {
-        PUMPSaveDataStructure newStructure = new()
+        if (ValidateBeforeSerialization(structure))
         {
-            Name = name,
-            NodeInfos = GetNodeInfos(),
-            Tag = GetTag(),
-        };
-
-        if (ValidateBeforeSerialization(newStructure))
-        {
-            await SerializeManagerCatalog.AddData(DataDirectory.PumpAppData, savePath, newStructure);
+            await SerializeManagerCatalog.AddData(DataDirectory.PumpAppData, savePath, structure);
         }
     }
-
-    private string GetNewId() => Guid.NewGuid().ToString();
     #endregion
 
     #region Private Class
@@ -433,7 +411,9 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             _baseBackground = baseBackground;
 
             if (_pairBackground != null || classedNode != null)
+            {
                 Discard();
+            }
 
             if (classedNode == null || pairBackground == null)
             {
@@ -476,6 +456,7 @@ public class CurrentClassedPairManagerToken : ICurrentClassedPairManagerTokenSet
     public void ClearChangeFlag()
     {
         IsChanged = false;
+        SetClassedIsChange(false);
     }
 
     void ICurrentClassedPairManagerTokenSetter.Set(IClassedNode classedNode, PUMPBackground background)
@@ -490,7 +471,7 @@ public class CurrentClassedPairManagerToken : ICurrentClassedPairManagerTokenSet
         }
 
         PairBackground.OnChanged += OnChangedHandler;
-        IsChanged = false;
+        IsChanged = classedNode.IsChanged;
     }
 
     void ICurrentClassedPairManagerTokenSetter.Terminate()
@@ -508,6 +489,15 @@ public class CurrentClassedPairManagerToken : ICurrentClassedPairManagerTokenSet
     private void OnChangedHandler()
     {
         IsChanged = true;
+        SetClassedIsChange(true);
+    }
+
+    private void SetClassedIsChange(bool isChange)
+    {
+        if (ClassedNode != null)
+        {
+            ClassedNode.IsChanged = isChange;
+        }
     }
 }
 
