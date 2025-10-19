@@ -53,7 +53,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         SerializeManagerCatalog.GetOnDataUpdatedEvent(m_TargetDirectory).RemoveEvent(savePath, ReloadData, GetType().Name);
 
         foreach (PUMPSaveDataStructure data in _saveDatas)
+        {
             data.UnsubscribeUpdateNotification(RefreshEventAdapter);
+        }
     }
 
     async Task IClassedImportTarget.Import(PUMPSaveDataStructure structure)

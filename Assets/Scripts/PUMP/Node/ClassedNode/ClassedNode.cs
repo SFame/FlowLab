@@ -31,6 +31,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             action?.Invoke(this);
     }
 
+    [Obsolete("문제 발생 시 전환")]
     private async UniTaskVoid UpdateOutputStateNextFrame(Transition[] outputs)
     {
         try
@@ -44,7 +45,30 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
             }
 
             for (int i = 0; i < OutputToken.Count; i++)
+            {
                 OutputToken[i].State = outputs[i];
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"{Name}: 출력 상태 업데이트 중 예외 발생 - {e.Message}");
+        }
+    }
+
+    private void UpdateOutputState(Transition[] outputs)
+    {
+        try
+        {
+            if (outputs.Length != OutputToken.Count)
+            {
+                Debug.Log($"{Name}: 출력 설정 무시됨 - 토큰 개수 변경됨 (토큰: {OutputToken.Count}, 출력: {outputs.Length})");
+                return;
+            }
+
+            for (int i = 0; i < OutputToken.Count; i++)
+            {
+                OutputToken[i].State = outputs[i];
+            }
         }
         catch (Exception e)
         {
@@ -143,16 +167,18 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         remove => _onDeleteActions.Remove(value);
     }
 
-    public void OutputsApplyAll(Transition[] outputs)
+    public void OutputApplyAll(Transition[] outputs)
     {
         if (outputs.Length != OutputToken.Count)
         {
-            UpdateOutputStateNextFrame(outputs).Forget();
+            UpdateOutputState(outputs);
             return;
         }
 
         for (int i = 0; i < OutputToken.Count; i++)
+        {
             OutputToken[i].State = outputs[i];
+        }
     }
 
     public void OutputApply(TransitionEventArgs args)

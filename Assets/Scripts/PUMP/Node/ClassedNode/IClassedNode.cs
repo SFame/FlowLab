@@ -12,7 +12,7 @@ public interface IClassedNode
     event Action<TransitionEventArgs> OnInputUpdate;
     event Action<IClassedNode> OpenPanel;
     event Action<IClassedNode> OnDestroy;
-    void OutputsApplyAll(Transition[] outputs);
+    void OutputApplyAll(Transition[] outputs);
     void OutputApply(TransitionEventArgs args);
     void InputStateValidate(Transition[] exInStates);
     void OutputStateValidate(Transition[] exOutStates);

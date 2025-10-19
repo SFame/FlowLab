@@ -152,7 +152,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
         TerminateSlider(background);
 
         if (background == null)
+        {
             return;
+        }
 
         if (inputCountSlider != null)
         {
@@ -160,7 +162,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
             inputCountSlider.onValueChanged.AddListener(value =>
             {
                 if (_isInputSliderValueChangingBySystem)
+                {
                     return;
+                }
 
                 int intValue = Mathf.RoundToInt(value);
                 background.ExternalInput.GateCount = intValue;
@@ -174,7 +178,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
             outputCountSlider.onValueChanged.AddListener(value =>
             {
                 if (_isOutputSliderValueChangingBySystem)
+                {
                     return;
+                }
 
                 int intValue = Mathf.RoundToInt(value);
                 background.ExternalOutput.GateCount = intValue;
@@ -243,7 +249,9 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
     private void SetActive(bool active)
     {
         if (canvasGroup == null)
+        {
             return;
+        }
 
         canvasGroup.alpha = active ? 1f : 0f;
         canvasGroup.blocksRaycasts = active;

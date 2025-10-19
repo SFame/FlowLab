@@ -85,6 +85,7 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
     public bool IsDestroyed { get; private set; }
 
     public bool IgnoreSelectedDelete { get; set; } = false;
+
     public bool IgnoreSelectedDisconnect { get; set; } = false;
 
     public event Action<Node> OnDisconnect;

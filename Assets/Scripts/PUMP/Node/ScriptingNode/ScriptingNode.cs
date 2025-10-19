@@ -41,7 +41,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
          var tuple = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
 
          if (tuple == null || string.IsNullOrEmpty(tuple.Value.value))
+         {
              return;
+         }
 
          AddScript(tuple.Value.fileName, tuple.Value.value);
     }
@@ -49,7 +51,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private void ExportScript()
     {
         if (!IsScriptReady || string.IsNullOrEmpty(Script))
+        {
             return;
+        }
 
         string nodeName = string.IsNullOrEmpty(FileName) ? "new_script" : FileName;
 
@@ -99,7 +103,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override string DefineInputName(int tpIndex)
     {
         if (InputNameGetter == null)
+        {
             return $"in {tpIndex}";
+        }
 
         return InputNameGetter(tpIndex);
     }
@@ -107,7 +113,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override string DefineOutputName(int tpIndex)
     {
         if (OutputNameGetter == null)
+        {
             return $"out {tpIndex}";
+        }
 
         return OutputNameGetter(tpIndex);
     }
@@ -115,7 +123,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override TransitionType DefineInputType(int tpIndex)
     {
         if (InputTypeGetter == null)
+        {
             return TransitionType.Bool;
+        }
 
         return InputTypeGetter(tpIndex);
     }
@@ -123,7 +133,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override TransitionType DefineOutputType(int tpIndex)
     {
         if (OutputTypeGetter == null)
+        {
             return TransitionType.Bool;
+        }
 
         return OutputTypeGetter(tpIndex);
     }
@@ -133,7 +145,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
         ScriptingSupport.Initialize();
 
         if (!IsDeserialized)
+        {
             return;
+        }
 
         if (string.IsNullOrEmpty(Script))
         {
@@ -147,7 +161,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     protected override void OnBeforeReplayPending(bool[] pendings)
     {
         if (!IsDeserialized)
+        {
             return;
+        }
 
         InvokeInit();
     }
@@ -172,10 +188,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (Communicator == null)
-            return;
-
-        Communicator.InvokeStateUpdate(args, InputToken.Select(sf => sf.State).ToList());
+        Communicator?.InvokeStateUpdate(args, InputToken.Select(sf => sf.State).ToList());
     }
 
     protected override void OnBeforeRemove()
@@ -255,7 +268,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     private void InvokeInit()
     {
         if (!IsScriptReady || Communicator == null)
+        {
             return;
+        }
 
         try
         {

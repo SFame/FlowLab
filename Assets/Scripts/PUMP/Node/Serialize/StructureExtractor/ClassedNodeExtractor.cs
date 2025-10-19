@@ -125,7 +125,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.ClassedNode.Name = structure.Name;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-        current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+        current.ClassedNode.OutputApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
         structure.NotifyDataChanged();
     }
@@ -151,7 +151,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
             current.ClassedNode.Name = matchedStructure.Name;
             SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
             AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-            current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+            current.ClassedNode.OutputApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
             current.ClearChangeFlag();
             matchedStructure.NotifyDataChanged();
             return;
@@ -162,7 +162,7 @@ public class ClassedNodeExtractor : SaveLoadStructureExtractor, IClassedNodeData
         current.ClassedNode.Name = classedNodePanel.defaultSaveName;
         SyncType(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
         AttachTypeApplier(current.ClassedNode, current.PairBackground.ExternalInput, current.PairBackground.ExternalOutput);
-        current.ClassedNode.OutputsApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
+        current.ClassedNode.OutputApplyAll(current.PairBackground.ExternalOutput.Select(tp => tp.State).ToArray());
         current.ClearChangeFlag();
     }
 
