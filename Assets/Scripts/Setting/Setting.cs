@@ -24,12 +24,12 @@ public static class Setting
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Undo,
-            m_KeyMap = new InputKeyMap (ActionKeyCode.Z, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
+            m_KeyMap = new InputKeyMap (ActionKeyCode.ArrowLeft, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Redo,
-            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
+            m_KeyMap = new InputKeyMap (ActionKeyCode.ArrowRight, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
 #else
         new BackgroundActionKeyMap
@@ -40,7 +40,7 @@ public static class Setting
         new BackgroundActionKeyMap
         {
             m_ActionType = BackgroundActionType.Redo,
-            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Z, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
         },
 #endif
         new BackgroundActionKeyMap

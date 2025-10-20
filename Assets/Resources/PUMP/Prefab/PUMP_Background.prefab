@@ -394,6 +394,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85115ca9ff98fbe44828d24063fa4cf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SortModeKeyMap:
+    _actionKey: 323
+    _modifiers: 30010000
   m_LineImagePrefab: {fileID: 5313602723616248287, guid: 1ea64a0b498a03c40817ce922b2b6797, type: 3}
   m_SortingLineParent: {fileID: 451537479701523285}
   m_SortingLineColor: {r: 1, g: 0, b: 0, a: 1}

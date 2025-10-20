@@ -437,6 +437,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             rect.SetParent(_uiDefaultParent);
             rect.gameObject.SetActive(false);
         });
+
+        LineEdgeSortingManager.Pause(false);
     }
 
     public void Close()
@@ -446,6 +448,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
         if (Current == this)
         {
+            LineEdgeSortingManager.Pause(true);
             gameObject.SetActive(false);
         }
     }

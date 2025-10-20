@@ -5,14 +5,14 @@ using System.Linq;
 using UnityEngine;
 
 [Serializable]
-public readonly struct InputKeyMap : IEquatable<InputKeyMap>
+public struct InputKeyMap : IEquatable<InputKeyMap>
 {
     #region Non Interfece
     [SerializeField, OdinSerialize]
-    private readonly ActionKeyCode _actionKey;
+    private ActionKeyCode _actionKey;
 
     [SerializeField, OdinSerialize]
-    private readonly List<ModifierKeyCode> _modifiers;
+    private List<ModifierKeyCode> _modifiers;
 
     private InputKeyMap(ActionKeyCode actionKey, List<ModifierKeyCode> modifierKeys)
     {
@@ -23,10 +23,12 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 
     public override int GetHashCode()
     {
+        _modifiers ??= new List<ModifierKeyCode>();
+
         return HashCode.Combine
         (
             _actionKey.GetHashCode(),
-            _modifiers.Aggregate(0, (hash, key) => hash ^ key.GetHashCode())
+            _modifiers?.Aggregate(0, (hash, key) => hash ^ key.GetHashCode())
         );
     }
 
@@ -42,6 +44,8 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 
     public bool Equals(InputKeyMap other)
     {
+        _modifiers ??= new List<ModifierKeyCode>();
+
         return _actionKey == other._actionKey &&
                _modifiers.Count == other._modifiers.Count &&
                _modifiers.OrderBy(x => x).SequenceEqual(other._modifiers.OrderBy(x => x));
@@ -49,6 +53,7 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 
     public InputKeyMap Copy()
     {
+        _modifiers ??= new List<ModifierKeyCode>();
         return new InputKeyMap(_actionKey, _modifiers);
     }
     #endregion
@@ -62,7 +67,7 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 
     public ActionKeyCode ActionKey => _actionKey;
 
-    public IReadOnlyList<ModifierKeyCode> Modifiers => _modifiers;
+    public IReadOnlyList<ModifierKeyCode> Modifiers => _modifiers ??= new List<ModifierKeyCode>();
     #endregion
 }
 

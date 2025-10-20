@@ -1,20 +1,26 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LineEdgeSortingManager : MonoBehaviour
 {
+    [SerializeField] private InputKeyMap m_SortModeKeyMap;
     [SerializeField] private GameObject m_LineImagePrefab;
     [SerializeField] private RectTransform m_SortingLineParent;
     [SerializeField] private Color m_SortingLineColor;
     [SerializeField] private float m_LineThickness = 1f;
 
+    private const string KEY_MAP_NAME = "EdgeSorting_Start";
+
     private readonly HashSet<ISortingPositionGettable> _gettables = new();
 
     private Pool<RectTransform> _linePool;
     private bool _lineInitialized = false;
+    private bool _activate = false;
+    private bool _onPause = true;
 
 
     private void LineInitialize()
@@ -79,6 +85,24 @@ public class LineEdgeSortingManager : MonoBehaviour
 
     public float StickDistance { get; set; } = 15f;
 
+    public void Pause(bool pause)
+    {
+        if (pause == _onPause)
+        {
+            return;
+        }
+
+        _onPause = pause;
+
+        if (_onPause)
+        {
+            InputManager.Unsubscribe(m_SortModeKeyMap);
+            return;
+        }
+
+        InputManager.Subscribe(m_SortModeKeyMap, new InputKeyMapArgs(KEY_MAP_NAME, _ => ActivateOneFrame(), null, true, true));
+    }
+
     public void AddGettable(ISortingPositionGettable gettable)
     {
         _gettables.Add(gettable);
@@ -94,11 +118,18 @@ public class LineEdgeSortingManager : MonoBehaviour
         settable.OnSettableDragEnd += RemoveLine;
     }
 
-    public void SettableSortingAction(ISortingPositionSettable settable, Vector2 position, out bool isStick)
+    private void SettableSortingAction(ISortingPositionSettable settable, Vector2 position, out bool isStick)
     {
+        isStick = false;
+
+        if (!_activate)
+        {
+            RemoveLine();
+            return;
+        }
+
         ArrayPool<ISortingPositionGettable> pool = ArrayPool<ISortingPositionGettable>.Shared;
         ISortingPositionGettable[] candidates = pool.Rent(_gettables.Count);
-        isStick = false;
 
         try
         {
@@ -164,6 +195,18 @@ public class LineEdgeSortingManager : MonoBehaviour
         {
             pool.Return(candidates);
         }
+    }
+
+    private void ActivateOneFrame()
+    {
+        _activate = true;
+        DeactivateNextFrame().Forget();
+    }
+
+    private async UniTaskVoid DeactivateNextFrame()
+    {
+        await UniTask.Yield(PlayerLoopTiming.EarlyUpdate);
+        _activate = false;
     }
 
     private struct LineArgs
