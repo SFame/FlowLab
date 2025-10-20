@@ -23,7 +23,8 @@ public readonly struct InputKeyMap : IEquatable<InputKeyMap>
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(
+        return HashCode.Combine
+        (
             _actionKey.GetHashCode(),
             _modifiers.Aggregate(0, (hash, key) => hash ^ key.GetHashCode())
         );

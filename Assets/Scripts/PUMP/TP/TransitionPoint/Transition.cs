@@ -488,6 +488,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     #region Arithmetic Operator
     public static Transition operator +(Transition t) => t.Type switch
     {
+        _ when t.IsNull => t.Type.Null(),
         TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: +t.Value.IntValue)),
         TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: +t.Value.FloatValue)),
         TransitionType.None => throw new TransitionNoneTypeException(),
@@ -496,10 +497,29 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
 
     public static Transition operator -(Transition t) => t.Type switch
     {
+        _ when t.IsNull => t.Type.Null(),
         TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: -t.Value.IntValue)),
         TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: -t.Value.FloatValue)),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionInvalidOperationException("-", t.Type)
+    };
+
+    public static Transition operator ++(Transition t) => t.Type switch
+    {
+        _ when t.IsNull => t.Type.Null(),
+        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: t.Value.IntValue + 1)),
+        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: t.Value.FloatValue + 1)),
+        TransitionType.None => throw new TransitionNoneTypeException(),
+        _ => throw new TransitionInvalidOperationException("++", t.Type)
+    };
+
+    public static Transition operator --(Transition t) => t.Type switch
+    {
+        _ when t.IsNull => t.Type.Null(),
+        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: t.Value.IntValue - 1)),
+        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: t.Value.FloatValue - 1)),
+        TransitionType.None => throw new TransitionNoneTypeException(),
+        _ => throw new TransitionInvalidOperationException("--", t.Type)
     };
 
     public static Transition operator +(Transition t1, Transition t2) => Arithmetic(t1, t2, "+");
@@ -518,6 +538,9 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
 
         if (t1.Type != TransitionType.Int && t1.Type != TransitionType.Float && t1.Type != TransitionType.String)
             throw new TransitionInvalidOperationException(op, t1.Type, t2.Type);
+
+        if (t1.IsNull || t2.IsNull)
+            return t1.Type.Null();
 
         return t1.Type switch
         {
@@ -593,6 +616,15 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
 
         if (t1.Type != TransitionType.Int && t1.Type != TransitionType.Float)
             throw new TransitionInvalidOperationException(op, t1.Type, t2.Type);
+
+        if (t1.IsNull && t2.IsNull)
+            return ApplyIntComparison(0, 0, op);
+
+        if (t1.IsNull)
+            return ApplyIntComparison(0, 1, op);
+
+        if (t2.IsNull)
+            return ApplyIntComparison(1, 0, op);
 
         return t1.Type switch
         {
