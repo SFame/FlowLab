@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 using OdinSerializer;
-using System.Text;
 
 /// <summary>
 /// MonoBehaviour Component
@@ -99,6 +97,9 @@ public enum BackgroundActionType
     NoAction,
     Undo,
     Redo,
+    Copy,
+    Cut,
+    Paste,
     OpenPalette,
     OpenSaveLoadPanel,
     SelectAll,
@@ -130,6 +131,9 @@ public static class BackgroundActionMapper
     {
         BackgroundActionType.Undo => UndoAction,
         BackgroundActionType.Redo => RedoAction,
+        BackgroundActionType.Copy => CopyAction,
+        BackgroundActionType.Cut => CutAction,
+        BackgroundActionType.Paste => PasteAction,
         BackgroundActionType.OpenPalette => OpenPaletteAction,
         BackgroundActionType.OpenSaveLoadPanel => OpenSaveLoadPanelAction,
         BackgroundActionType.SelectAll => SelectAllAction,
@@ -149,6 +153,21 @@ public static class BackgroundActionMapper
     private static void RedoAction()
     {
         PUMPBackground.Current?.Redo();
+    }
+
+    private static void CopyAction()
+    {
+        PUMPBackground.Current?.CopySelected();
+    }
+
+    private static void CutAction()
+    {
+        PUMPBackground.Current?.CutSelected();
+    }
+
+    private static void PasteAction()
+    {
+        PUMPBackground.Current?.Paste();
     }
 
     private static void OpenPaletteAction()

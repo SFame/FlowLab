@@ -9,6 +9,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     #region On Inspector
     [SerializeField] private NodeSupport m_NodeSuppoet;
     [SerializeField] private CanvasGroup m_NodeCanvasGroup;
+    [SerializeField] private bool m_CanCopy = true;
     [SerializeField] private List<RectTransform> m_DetectingGroup;
     #endregion
 
@@ -47,6 +48,8 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     #endregion
 
     #region IDragSelectable
+
+
     bool IDragSelectable.IsSelected
     {
         get => _isSelected;
@@ -68,6 +71,7 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 
     bool IDragSelectable.CanDestroy => !m_NodeSuppoet.Node.IgnoreSelectedDelete;
     bool IDragSelectable.CanDisconnect => !m_NodeSuppoet.Node.IgnoreSelectedDisconnect;
+    bool IDragSelectable.CanCopy => m_CanCopy;
 
     object IDragSelectable.SelectingTag
     {
@@ -94,6 +98,8 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
     }
 
     void IDragSelectable.MoveSelected(Vector2 direction) => m_NodeSuppoet.MovePosition(direction);
+
+    Node IDragSelectable.GetSelfIfNode() => m_NodeSuppoet.Node;
 
     void IDragSelectable.ObjectDestroy() => m_NodeSuppoet.Node.Remove();
 
@@ -244,12 +250,6 @@ public class NodeSelectingHandler : MonoBehaviour, IDragSelectable, IPointerClic
 
         SelectedRemoveRequestInvoke();
         _removeThisRequest?.Invoke(this);
-    }
-
-    private void OnDisable()
-    {
-        SelectedRemoveRequestInvoke();
-        ((IDragSelectable)this).IsSelected = false;
     }
 
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)

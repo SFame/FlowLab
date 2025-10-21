@@ -109,7 +109,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
 
         try
         {
-            connection.TargetState = this;
+            connection.TargetPoint = this;
         }
         catch (TransitionException te)
         {
@@ -146,7 +146,7 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
         connection ??= new();
 
         connection = SetTPConnectionLineConnector(connection);
-        connection.TargetState = this;
+        connection.TargetPoint = this;
         Connection = connection;
 
         targetTp.AcceptLink(connection);

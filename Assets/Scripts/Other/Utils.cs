@@ -274,7 +274,7 @@ namespace Utils
             StringBuilder sb = new();
             foreach (T obj in materialized)
             {
-                sb.AppendLine($"[{obj.ToString()}]");
+                sb.AppendLine($"[{obj?.ToString() ?? "Null"}]");
             }
             Debug.LogFormat(logType, LogOption.None, null, "{0}", sb.ToString());
             return materialized;
@@ -302,7 +302,7 @@ namespace Utils
             StringBuilder sb = new();
             foreach (T obj in materialized)
             {
-                sb.AppendLine($"[{logMap(obj)}]");
+                sb.AppendLine($"[{logMap(obj) ?? "Null"}]");
             }
             Debug.LogFormat(logType, LogOption.None, null, "{0}", sb.ToString());
             return materialized;

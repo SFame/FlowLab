@@ -226,6 +226,7 @@ public class ClassedNodePanel : MonoBehaviour, ISeparatorSectorable, ISetVisible
                     PUMPBackground background = backgroundObject.GetComponent<PUMPBackground>();
                     background.RecordOnInitialize = false;
                     background.UiRectTransform = m_uiRectTransform;
+                    background.CopyIgnoreType = new[] { typeof(ClassedNode) };
                     ((ISeparatorSectorable)background).SetSeparator(((ISeparatorSectorable)this).GetSeparator());
                     background.Open();
                     Other.InvokeActionDelay(_baseBackground.Open).Forget();

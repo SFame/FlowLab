@@ -1,12 +1,13 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Utils;
+using static UnityEditor.PlayerSettings;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
 
@@ -22,6 +23,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     [SerializeField] private SelectionAreaController m_SelectionAreaController;
     [SerializeField] private LineConnectManager m_LineConnectManager;
     [SerializeField] private LineEdgeSortingManager m_LineEdgeSortingManager;
+
+    [Space(10)]
+
+    [SerializeField] private List<string> m_CopyIgnoreType;
 
     [Space(10)]
 
@@ -56,6 +61,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private readonly ExternalOutputAdapter _externalOutputAdapter = new();
     private PUMPSeparator _separator;
     private readonly TaskCompletionSource<bool> _creationAwaitTcs = new();
+    private Type[] _copyIgnoreType;
     private UniTask _changeInvokeTask = UniTask.CompletedTask;
 
     /// <summary>
@@ -136,11 +142,11 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         JoinDraggable(draggable);
     }
     
-    private (int nodeIndex, int tpIndex) GetNodeAndTpIndex(ITransitionPoint findTp)
+    private (int nodeIndex, int tpIndex) GetNodeAndTpIndex(ITransitionPoint findTp, List<Node> nodeDb)
     {
-        for (int i = 0; i < Nodes.Count; i++)
+        for (int i = 0; i < nodeDb.Count; i++)
         {
-            int tpIndex = Nodes[i].GetTPIndex(findTp);
+            int tpIndex = nodeDb[i].GetTPIndex(findTp);
 
             if (tpIndex != -1)
             {
@@ -150,8 +156,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         return (-1, -1);
     }
 
-    private void MapTransitionPointsToIndexInfo(TPConnectionIndexInfo[] saveTarget, ITransitionPoint[] source, List<Vector2>[] vertices)
+    private void MapTransitionPointsToIndexInfo(TPConnectionIndexInfo[] saveTarget, ITransitionPoint[] source, List<Vector2>[] vertices, List<Node> nodeDb = null)
     {
+        nodeDb ??= Nodes;
+
         for (int i = 0; i < source.Length; i++)
         {
             if (source[i] is null || vertices[i] is null)
@@ -160,7 +168,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 continue;
             }
 
-            var nodeTpIndex = GetNodeAndTpIndex(source[i]);
+            var nodeTpIndex = GetNodeAndTpIndex(source[i], nodeDb);
             if (nodeTpIndex.nodeIndex != -1 && nodeTpIndex.tpIndex != -1)
             {
                 Vector2 rectSize = Rect.rect.size;
@@ -413,6 +421,54 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         }
     }
 
+    public Type[] CopyIgnoreType
+    {
+        get
+        {
+            if (_copyIgnoreType == null)
+            {
+                if (m_CopyIgnoreType == null)
+                {
+                    _copyIgnoreType = Type.EmptyTypes;
+                    return _copyIgnoreType;
+                }
+
+                Type nodeType = typeof(Node);
+                HashSet<Type> ignoreTemp = new();
+                foreach (string typeStr in m_CopyIgnoreType)
+                {
+                    if (Type.GetType(typeStr) is { } type && type.IsSubclassOf(nodeType))
+                    {
+                        ignoreTemp.Add(type);
+                    }
+                }
+
+                _copyIgnoreType = ignoreTemp.ToArray();
+            }
+
+            return _copyIgnoreType;
+        }
+        set
+        {
+            if (value == null)
+            {
+                return;
+            }
+
+            Type nodeType = typeof(Node);
+            HashSet<Type> ignoreTemp = new();
+            foreach (Type type in value)
+            {
+                if (type.IsSubclassOf(nodeType))
+                {
+                    ignoreTemp.Add(type);
+                }
+            }
+
+            _copyIgnoreType = ignoreTemp.ToArray();
+        }
+    }
+
     public void Open()
     {
         if (_destroyed)
@@ -547,7 +603,9 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         ClearSelected();
 
         foreach (Node node in Nodes.ToList())
+        {
             node.Disconnect();
+        }
     }
 
     public Node AddNewNode(Type nodeType)
@@ -556,7 +614,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         return newNode;
     }
 
-    private Node AddNewNodeWithArgs(Type nodeType, object nodeAdditionalArgs)
+    public Node GetNewNodeWithArgs(Type nodeType, object nodeAdditionalArgs)
     {
         Node node = NodeInstantiator.GetNode(nodeType);
 
@@ -627,7 +685,6 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             SetGateway();  // ExternalGateway가 없는 예외사항을 대비 명시적 존재보장
             List<SerializeNodeInfo> result = new();
 
-
             foreach (Node node in Nodes)
             {
                 Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
@@ -687,7 +744,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             foreach (SerializeNodeInfo info in infos)
             {
                 // Instantiate new node and apply arg ---------
-                Node newNode = AddNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs);
+                Node newNode = GetNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs);
 
                 // Notify the node of the deserialization ---------
                 if (newNode is IDeserializingListenable listenable) // 역직렬화 시작을 알림
@@ -701,7 +758,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 
                 if (newNode is null)
                 {
-                    Debug.LogError($"{name}: AddNewNodeWithArgs Null 반환");
+                    Debug.LogError($"{name}: AddNewNodeWithArgs() => GetNode() Null 반환");
                     return;
                 }
 
@@ -719,7 +776,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
             if (Nodes.Count != infos.Count)
             {
-                Debug.LogError($"Nodes <-> infos count mismatch");
+                Debug.LogError("Nodes <-> infos count mismatch");
                 return;
             }
 
@@ -867,6 +924,387 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             _isOnChangeBlocker.Remove(blocker);
         }
     }
+
+    public List<SerializeNodeInfo> GetInfosTarget(List<Node> targets)
+    {
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
+
+        try
+        {
+            if (targets.Any(node => !Nodes.Contains(node)))
+            {
+                Debug.LogError($"{GetType().Name}.{nameof(GetInfosTarget)}(): Unregistered node detected in Nodes");
+                return null;
+            }
+
+            List<SerializeNodeInfo> result = new();
+
+            foreach (Node node in targets)
+            {
+                Vector2 nodeLocalPosition = ConvertWorldToLocalPosition(node.Support.WorldPosition, Rect);
+                var typeTuple = node.GetTPElements(tp => tp.Type);
+                var statesTuple = node.GetTPElements(tp => tp.State);
+
+                SerializeNodeInfo nodeInfo = new()
+                {
+                    NodeType = node.GetType(), // 노드 타입
+                    NodePosition = GetNormalizeFromLocalPosition(Rect.rect.size, nodeLocalPosition), // 위치
+                    InTpState = statesTuple.inputElems, // TP 상태정보
+                    OutTpState = statesTuple.outputElems,
+                    InTpType = typeTuple.inputElems,
+                    OutTpType = typeTuple.outputElems,
+                    StatePending = node.GetStatePending(),
+                    NodeAdditionalArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
+                };
+
+                // 연결정보
+                TPConnectionInfo connectionInfo = node.GetTPConnectionInfo();
+
+                // targets에 포함되지 않는 연결된 노드 제거
+                for (int i = 0; i < connectionInfo.InConnectionTargets.Length; i++)
+                {
+                    Node currentNode = connectionInfo.InConnectionTargets[i]?.Node;
+                    if (currentNode == null)
+                    {
+                        continue;
+                    }
+
+                    if (targets.Contains(currentNode))
+                    {
+                        continue;
+                    }
+
+                    connectionInfo.InConnectionTargets[i] = null;
+                    connectionInfo.InVertices[i] = null;
+                    nodeInfo.InTpState[i] = nodeInfo.InTpType[i].Null();
+                }
+
+                for (int i = 0; i < connectionInfo.OutConnectionTargets.Length; i++)
+                {
+                    Node currentNode = connectionInfo.OutConnectionTargets[i]?.Node;
+                    if (currentNode == null)
+                    {
+                        continue;
+                    }
+
+                    if (targets.Contains(currentNode))
+                    {
+                        continue;
+                    }
+
+                    connectionInfo.OutConnectionTargets[i] = null;
+                    connectionInfo.OutVertices[i] = null;
+                    nodeInfo.StatePending[i] = false;
+                }
+
+                nodeInfo.InConnectionTargets = new TPConnectionIndexInfo[connectionInfo.InConnectionTargets.Length];
+                MapTransitionPointsToIndexInfo(nodeInfo.InConnectionTargets, connectionInfo.InConnectionTargets, connectionInfo.InVertices, targets);
+
+                nodeInfo.OutConnectionTargets = new TPConnectionIndexInfo[connectionInfo.OutConnectionTargets.Length];
+                MapTransitionPointsToIndexInfo(nodeInfo.OutConnectionTargets, connectionInfo.OutConnectionTargets, connectionInfo.OutVertices, targets);
+
+                result.Add(nodeInfo);
+            }
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            return null;
+        }
+        finally
+        {
+            _isOnChangeBlocker.Remove(blocker);
+        }
+    }
+
+    public List<Node> SetInfosTarget(List<SerializeNodeInfo> infos, bool invokeOnChange = true, params Type[] ignoreNodes)
+    {
+        // Add change blocker ---------
+        object blocker = new();
+        _isOnChangeBlocker.Add(blocker);
+
+        // Can receive complete SetInfos() for this object ---------
+        using DeserializationCompleteReceiver completeReceiver = new();
+
+        List<Node> result = new List<Node>();
+
+        try
+        {
+            if (ignoreNodes != null)
+            {
+                List<int> ignoreIndex = new();
+                for (int i = 0; i < infos.Count; i++)
+                {
+                    if (ignoreNodes.Contains(infos[i].NodeType))
+                    {
+                        ignoreIndex.Add(i);
+                    }
+                }
+
+                infos = infos.Where(info => !ignoreNodes.Contains(info.NodeType)).ToList();
+
+                Dictionary<int, int> indexMap = new();
+                int newIndex = 0;
+                for (int oldIndex = 0; oldIndex < infos.Count + ignoreIndex.Count; oldIndex++)
+                {
+                    if (!ignoreIndex.Contains(oldIndex))
+                    {
+                        indexMap[oldIndex] = newIndex;
+                        newIndex++;
+                    }
+                }
+
+                foreach (SerializeNodeInfo info in infos)
+                {
+                    if (info.InConnectionTargets != null)
+                    {
+                        for (int i = 0; i < info.InConnectionTargets.Length; i++)
+                        {
+                            if (info.InConnectionTargets[i] == null)
+                            {
+                                continue;
+                            }
+
+                            int oldTargetIndex = info.InConnectionTargets[i].NodeIndex;
+
+                            if (ignoreIndex.Contains(oldTargetIndex))
+                            {
+                                info.InConnectionTargets[i] = null;
+                                if (info.InTpState != null)
+                                {
+                                    info.InTpState[i] = info.InTpState[i].Type.Null();
+                                }
+                            }
+                            else if (indexMap.TryGetValue(oldTargetIndex, out int value))
+                            {
+                                info.InConnectionTargets[i].NodeIndex = value;
+                            }
+                        }
+                    }
+
+                    if (info.OutConnectionTargets != null)
+                    {
+                        for (int i = 0; i < info.OutConnectionTargets.Length; i++)
+                        {
+                            if (info.OutConnectionTargets[i] == null)
+                            {
+                                continue;
+                            }
+
+                            int oldTargetIndex = info.OutConnectionTargets[i].NodeIndex;
+
+                            if (ignoreIndex.Contains(oldTargetIndex))
+                            {
+                                info.OutConnectionTargets[i] = null;
+                                if (info.StatePending != null)
+                                {
+                                    info.StatePending[i] = false;
+                                }
+                            }
+                            else if (indexMap.TryGetValue(oldTargetIndex, out int value))
+                            {
+                                info.OutConnectionTargets[i].NodeIndex = value;
+                            }
+                        }
+                    }
+                }
+            }
+
+            int nodeDbCount = Nodes.Count;
+
+            foreach (SerializeNodeInfo info in infos)
+            {
+                // Instantiate new node and apply arg ---------
+                Node newNode = GetNewNodeWithArgs(info.NodeType, info.NodeAdditionalArgs);
+
+                // Notify the node of the deserialization ---------
+                if (newNode is IDeserializingListenable listenable) // 역직렬화 시작을 알림
+                {
+                    listenable.OnDeserializing = true;
+                    completeReceiver.Subscribe(() => listenable.OnDeserializing = false);
+                }
+
+                // Join Node and Invoke Initialize()
+                newNode = JoinNode(newNode);  // Initialize(), Nodes.Add() 한 상태
+
+                if (newNode is null)
+                {
+                    Debug.LogError($"{name}: AddNewNodeWithArgs() => GetNode() Null 반환");
+                    return null;
+                }
+
+                // Set node position ---------
+                Vector2 normalizeValue = info.NodePosition;
+                Vector2 localPosition = GetLocalPositionFromNormalizeValue(Rect.rect.size, normalizeValue);
+                newNode.Support.SetPosition(ConvertLocalToWorldPosition(localPosition, Rect));
+
+                // Set Transition Point types --------
+                newNode.SetTPElements(info.InTpType, info.OutTpType, (tp, type) => tp.SetType(type));
+
+                // Set Transition Point states ---------
+                newNode.SetTPElements(info.InTpState, info.OutTpState, (tp, state) => tp.State = state);
+
+                if (newNode is not global::ExternalInput && newNode is not global::ExternalOutput)
+                {
+                    result.Add(newNode);
+                }
+            }
+
+            if (Nodes.Count != nodeDbCount + infos.Count)
+            {
+                Debug.LogError("Nodes <-> infos count mismatch");
+                return null;
+            }
+
+            // For call Node's lifecycle method ---------
+            List<INodeLifecycleCallable> callables = Nodes.Skip(nodeDbCount).Select(node => (INodeLifecycleCallable)node).ToList();
+
+            // Lifecycle call 1: OnBeforeAutoConnect ---------
+            foreach (INodeLifecycleCallable callable in callables) // 생명주기: 자동 커넥션 이전
+            {
+                callable.CallOnBeforeAutoConnect();
+            }
+
+            // Load connection info ==>
+            Vector2 rectSize = Rect.rect.size;
+
+            for (int i = nodeDbCount; i < Nodes.Count; i++)
+            {
+                if (Nodes[i] == null)
+                {
+                    continue;
+                }
+
+                TPConnectionIndexInfo[] inConnectionTargetInfos = infos[i - nodeDbCount].InConnectionTargets;  // i번째 노드 커넥션 index 정보들
+                TPConnectionIndexInfo[] outConnectionTargetInfos = infos[i - nodeDbCount].OutConnectionTargets;
+
+                int inCount = inConnectionTargetInfos.Length;
+                int outCount = outConnectionTargetInfos.Length;
+
+                ITransitionPoint[] inConnectionTargets = new ITransitionPoint[inCount];
+                List<Vector2>[] inVertices = new List<Vector2>[inCount];
+                ITransitionPoint[] outConnectionTargets = new ITransitionPoint[outCount];
+                List<Vector2>[] outVertices = new List<Vector2>[outCount];
+
+                // In connection's target (target is TPOut) ---------
+                for (int j = 0; j < inCount; j++)
+                {
+                    if (inConnectionTargetInfos[j] == null || Nodes.Count <= inConnectionTargetInfos[j].NodeIndex + nodeDbCount ||
+                        inConnectionTargetInfos[j].NodeIndex <= -1) // 연결정보 없거나 잘못되었으면 연결 안함
+                    {
+                        continue;
+                    }
+
+                    // Find target node ---------
+                    Node targetNode = Nodes[inConnectionTargetInfos[j].NodeIndex + nodeDbCount];
+
+                    // Target's TP (out) ---------
+                    ITransitionPoint[] targetOutTps = targetNode.GetTPs().outTps;
+
+                    // Index info ---------
+                    int targetTpIndex = inConnectionTargetInfos[j].TpIndex;
+
+                    if (targetTpIndex <= -1 || targetOutTps.Length <= targetTpIndex)
+                    {
+                        continue;
+                    }
+
+                    // Match index to TP ---------
+                    ITransitionPoint targetInTp = targetOutTps[targetTpIndex];
+                    if (targetInTp == null)
+                    {
+                        continue;
+                    }
+
+                    // Apply to array ---------
+                    inConnectionTargets[j] = targetInTp;
+
+                    List<Vector2> verticesLocalPosition = inConnectionTargetInfos[j].Vertices
+                        .Select(normalizeValue => GetLocalPositionFromNormalizeValue(rectSize, normalizeValue)).ToList();
+                    inVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect);
+                }
+
+                // Out connection's target (target is TPIn)
+                for (int j = 0; j < outCount; j++)
+                {
+                    if (outConnectionTargetInfos[j] == null || Nodes.Count <= outConnectionTargetInfos[j].NodeIndex + nodeDbCount ||
+                        outConnectionTargetInfos[j].NodeIndex <= -1)
+                    {
+                        continue;
+                    }
+
+                    // Find target node ---------
+                    Node targetNode = Nodes[outConnectionTargetInfos[j].NodeIndex + nodeDbCount];
+
+                    // Target's TP (in) ---------
+                    ITransitionPoint[] targetInTps = targetNode.GetTPs().inTps;
+
+                    // Index info ---------
+                    int targetTpIndex = outConnectionTargetInfos[j].TpIndex;
+
+                    if (targetTpIndex <= -1 || targetInTps.Length <= targetTpIndex)
+                    {
+                        continue;
+                    }
+
+                    // Match index to TP ---------
+                    ITransitionPoint targetOutTp = targetInTps[targetTpIndex];
+                    if (targetOutTp == null)
+                    {
+                        continue;
+                    }
+
+                    // Apply to array ---------
+                    outConnectionTargets[j] = targetOutTp;
+
+                    List<Vector2> verticesLocalPosition = outConnectionTargetInfos[j].Vertices
+                        .Select(normalized => GetLocalPositionFromNormalizeValue(rectSize, normalized)).ToList();
+                    outVertices[j] = ConvertLocalToWorldPositions(verticesLocalPosition, Rect);
+                }
+
+                TPConnectionInfo connectionInfo = new(inConnectionTargets, outConnectionTargets, inVertices, outVertices);
+                Nodes[i].SetTPConnectionInfo(connectionInfo, completeReceiver);
+            }
+
+            // Lifecycle call 2: OnBeforeReplayPending ---------
+            for (int i = 0; i < callables.Count; i++)
+            {
+                INodeLifecycleCallable callable = callables[i];
+                callable.CallOnBeforeReplayPending(infos[i].StatePending.ToArray());
+            }
+
+            // Replay Pending ---------
+            for (int i = nodeDbCount; i < Nodes.Count; i++)
+            {
+                Nodes[i].ReplayStatePending(infos[i - nodeDbCount].StatePending);
+            }
+
+            // Ensures the integrity of the gateway ---------
+            SetGateway();
+
+            // Invoke DeserializationCompleteReceiver ---------
+            completeReceiver.Invoke();
+
+            if (invokeOnChange)
+            {
+                OnChanged?.Invoke();
+            }
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            return null;
+        }
+        finally
+        {
+            _isOnChangeBlocker.Remove(blocker);
+        }
+    }
     #endregion
 
     #region Undo/Redo
@@ -924,6 +1362,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     private readonly HashSet<IDragSelectable> _selectables = new();
     private readonly HashSet<IDragSelectable> _selected = new();
     private SafetyCancellationTokenSource _alphaControlCts = new();
+    private static List<SerializeNodeInfo> _clipboard = null;
     private const float DRAGGABLES_BLINK_SPEED = 0.75f;
     private const float DRAGGABLES_MIN_ALPHA = 0.6f;
     private const float DRAGGABLES_MAX_ALPHA = 0.9f;
@@ -936,10 +1375,14 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             string remove_s_char = draggablesRemoveCount == 1 ? string.Empty : "s";
             int draggablesDisconnectCount = _selected.Count(draggables => draggables.CanDisconnect);
             string disconnect_s_char = draggablesDisconnectCount == 1 ? string.Empty : "s";
+            int draggablesCopyCount = _selected.Count(draggables => draggables.CanCopy);
+            string copy_s_char = draggablesCopyCount == 1 ? string.Empty : "s";
             return new List<ContextElement>()
             {
                 new (clickAction: DestroySelected, text: $"Remove {draggablesRemoveCount} Node{remove_s_char}"),
-                new (clickAction: DisconnectSelected, text: $"Disconnect {draggablesDisconnectCount} Node{disconnect_s_char}")
+                new (clickAction: DisconnectSelected, text: $"Disconnect {draggablesDisconnectCount} Node{disconnect_s_char}"),
+                new (clickAction: CopySelected, text: $"Copy {draggablesDisconnectCount} Node{disconnect_s_char}"),
+                new (clickAction: CutSelected, text: $"Cut {draggablesDisconnectCount} Node{disconnect_s_char}")
             };
         }
     }
@@ -1001,6 +1444,97 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         ((IChangeObserver)this).ReportChanges();
     }
 
+    public void Paste()
+    {
+        if (_clipboard is not { Count: > 0 })
+        {
+            return;
+        }
+
+        List<Node> paste = SetInfosTarget(_clipboard, false, CopyIgnoreType);
+        HashSet<IDragSelectable> edgeSelectables = new();
+
+        foreach (Node node in paste)
+        {
+            var tuple = node.GetTPElements(tp => tp.Connection?.LineConnector?.EdgeSelectables);
+
+            for (int i = 0; i < tuple.inputElems.Length; i++)
+            {
+                if (tuple.inputElems[i] == null)
+                {
+                    continue;
+                }
+
+                foreach (IDragSelectable selectable in tuple.inputElems[i])
+                {
+                    if (selectable == null)
+                    {
+                        continue;
+                    }
+
+                    edgeSelectables.Add(selectable);
+                }
+            }
+
+            for (int i = 0; i < tuple.outputElems.Length; i++)
+            {
+                if (tuple.outputElems[i] == null)
+                {
+                    continue;
+                }
+
+                foreach (IDragSelectable selectable in tuple.outputElems[i])
+                {
+                    if (selectable == null)
+                    {
+                        continue;
+                    }
+
+                    edgeSelectables.Add(selectable);
+                }
+            }
+        }
+
+        AddSelected(paste.Select(node => node.Support.NodeSelectingHandler).Concat(edgeSelectables));
+        ((IChangeObserver)this).ReportChanges();
+    }
+
+    public void CopySelected()
+    {
+        List<Node> copied = new List<Node>();
+        foreach (IDragSelectable draggable in _selected.ToList())
+        {
+            if (draggable.CanCopy && draggable.GetSelfIfNode() is { } node)
+            {
+                copied.Add(node);
+            }
+        }
+
+        _clipboard = GetInfosTarget(copied);
+        ClearSelected();
+    }
+
+    public void CutSelected()
+    {
+        List<Node> copied = new List<Node>();
+        foreach (IDragSelectable draggable in _selected.ToList())
+        {
+            if (draggable.CanCopy && draggable.GetSelfIfNode() is { } node)
+            {
+                copied.Add(node);
+            }
+        }
+
+        _clipboard = GetInfosTarget(copied);
+        ClearSelected();
+
+        foreach (Node node in copied)
+        {
+            node.Remove();
+        }
+        ((IChangeObserver)this).ReportChanges();
+    }
+
     private void SetSelectionAreaController()
     {
         m_SelectionAreaController.OnMouseDown += mousePos =>
@@ -1022,8 +1556,17 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
 
     private void AddSelected(IEnumerable<IDragSelectable> draggables)
     {
-        if (draggables == null || !draggables.Any())
+        if (draggables == null)
+        {
             return;
+        }
+
+        draggables = draggables.ToList();
+
+        if (!draggables.Any())
+        {
+            return;
+        }
 
         if (_selected.Count > 0)
         {
@@ -1100,6 +1643,7 @@ public interface IDragSelectable
 {
     public bool CanDestroy { get; }
     public bool CanDisconnect { get; }
+    public bool CanCopy { get; }
     public bool IsSelected { get; set; }
     public object SelectingTag { get; set; }
     
@@ -1108,6 +1652,12 @@ public interface IDragSelectable
     /// </summary>
     /// <param name="direction"></param>
     public void MoveSelected(Vector2 direction);
+
+    /// <summary>
+    /// 만약 구현 객체가 Node라면 반환하도록 설계
+    /// </summary>
+    /// <returns></returns>
+    public Node GetSelfIfNode();
 
     /// <summary>
     /// 선택객체 파괴

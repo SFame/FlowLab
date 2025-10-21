@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -142,8 +143,9 @@ public class LineConnector : MonoBehaviour
         }
     }
 
-    public ISortingPositionSettable SettableTemp => _lineDragSettableTemp;
+    public List<IDragSelectable> EdgeSelectables => Edges.Select(edge => (IDragSelectable)edge).ToList();
 
+    public ISortingPositionSettable SettableTemp => _lineDragSettableTemp;
 
     public void Initialize(Vector2 start, Vector2 end)
     {

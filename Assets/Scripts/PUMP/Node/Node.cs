@@ -888,8 +888,8 @@ public class TPConnectionInfo
     /// <param name="outConnections"></param>
     private void SetConnectionTarget(ITransitionPoint[] inConnections, ITransitionPoint[] outConnections)
     {
-        InConnectionTargets = inConnections.Select(inConnection => inConnection?.Connection?.SourceState).ToArray();
-        OutConnectionTargets = outConnections.Select(outConnection => outConnection?.Connection?.TargetState).ToArray();
+        InConnectionTargets = inConnections.Select(inConnection => inConnection?.Connection?.SourcePoint).ToArray();
+        OutConnectionTargets = outConnections.Select(outConnection => outConnection?.Connection?.TargetPoint).ToArray();
     }
     
     /// <summary>

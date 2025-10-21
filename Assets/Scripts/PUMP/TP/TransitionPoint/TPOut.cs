@@ -125,7 +125,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
         connection ??= new();
 
         connection = SetTPConnectionLineConnector(connection);
-        connection.SourceState = this;
+        connection.SourcePoint = this;
         Connection = connection;
 
         targetTp.AcceptLink(connection);
@@ -137,7 +137,7 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
         try
         {
-            connection.SourceState = this;
+            connection.SourcePoint = this;
         }
         catch (TransitionException te)
         {

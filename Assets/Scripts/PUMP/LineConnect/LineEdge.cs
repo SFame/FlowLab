@@ -234,6 +234,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     #region Selecting handler
     public bool CanDestroy { get; } = false;
     public bool CanDisconnect { get; } = false;
+    public bool CanCopy { get; } = false;
 
     public bool IsSelected
     {
@@ -251,6 +252,11 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     public void MoveSelected(Vector2 direction)
     {
         MovePositionWithLine(direction);
+    }
+
+    public Node GetSelfIfNode()
+    {
+        return null;
     }
 
     public bool IsInsideInArea(Vector2 startPos, Vector2 endPos)
@@ -321,12 +327,6 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         OnGettableRemove?.Invoke();
         RemoveThisRequest?.Invoke(this);
         RemoveAllOnSelectedRequest?.Invoke();
-    }
-
-    private void OnDisable()
-    {
-        RemoveAllOnSelectedRequest?.Invoke();
-        IsSelected = false;
     }
     #endregion
 

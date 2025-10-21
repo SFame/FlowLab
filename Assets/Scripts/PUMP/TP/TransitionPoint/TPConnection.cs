@@ -11,8 +11,8 @@ public class TPConnection : IStateful, IDisposable
     private Transition _state;
     private Transition _stateCache;
     private TransitionType _type;
-    private ITransitionPoint _sourceState = null;
-    private ITransitionPoint _targetState = null;
+    private ITransitionPoint _sourcePoint = null;
+    private ITransitionPoint _targetPoint = null;
     private LineConnector _lineConnector = null;
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
@@ -25,9 +25,9 @@ public class TPConnection : IStateful, IDisposable
     {
         if (!_initialized)
         {
-            if (SourceState != null && TargetState != null)
+            if (SourcePoint != null && TargetPoint != null)
             {
-                State = SourceState.State;
+                State = SourcePoint.State;
 
                 DrawLine();
                 _initialized = true;
@@ -62,7 +62,7 @@ public class TPConnection : IStateful, IDisposable
             }
 
             _stateCache = value;
-            if (TargetState is not null && !IsFlushing)
+            if (TargetPoint is not null && !IsFlushing)
             {
                 TargetStateUpdateAsync().Forget();
             }
@@ -88,31 +88,31 @@ public class TPConnection : IStateful, IDisposable
 
     public bool IsFlushing { get; private set; }
 
-    public ITransitionPoint SourceState
+    public ITransitionPoint SourcePoint
     {
-        get => _sourceState;
+        get => _sourcePoint;
         set
         {
-            if (_sourceState is null)
+            if (_sourcePoint is null)
             {
                 Type = value.Type;
                 ThrowIfMismatch(value.Type);
-                _sourceState = value;
+                _sourcePoint = value;
                 InitializeCheck();
             }
         }
     }
 
-    public ITransitionPoint TargetState
+    public ITransitionPoint TargetPoint
     {
-        get => _targetState;
+        get => _targetPoint;
         set
         {
-            if (_targetState is null)
+            if (_targetPoint is null)
             {
                 Type = value.Type;
                 ThrowIfMismatch(value.Type);
-                _targetState = value;
+                _targetPoint = value;
                 InitializeCheck();
             }
         }
@@ -133,7 +133,7 @@ public class TPConnection : IStateful, IDisposable
         {
             if (_lineEdges == null || _lineEdges.Count < 2) // 라인 간선 추가하지 않으면 양 노드 WorldPosition 직선으로 이을 수 있도록
             {
-                _lineEdges = new() { SourceState.WorldPosition, TargetState.WorldPosition };
+                _lineEdges = new() { SourcePoint.WorldPosition, TargetPoint.WorldPosition };
             }
 
             return _lineEdges;
@@ -166,20 +166,20 @@ public class TPConnection : IStateful, IDisposable
 
         _disconnected = true;
 
-        if (SourceState == null || TargetState == null)
+        if (SourcePoint == null || TargetPoint == null)
         {
             Debug.Log($"{GetType().Name}: SourceState or TargetState is null");
             return;
         }
 
-        SourceState.ClearConnection();
-        TargetState.ClearConnection();
+        SourcePoint.ClearConnection();
+        TargetPoint.ClearConnection();
 
-        TargetState.State = Type.Null();
+        TargetPoint.State = Type.Null();
 
         LineConnector?.Remove();
-        _sourceState = null;
-        _targetState = null;
+        _sourcePoint = null;
+        _targetPoint = null;
     }
     
     public void Dispose()
@@ -189,8 +189,8 @@ public class TPConnection : IStateful, IDisposable
         
         _pendingCts.CancelAndDispose();
         OnSelfDisconnect = null;
-        _sourceState = null;
-        _targetState = null;
+        _sourcePoint = null;
+        _targetPoint = null;
         _disposed = true;
     }
     #endregion
@@ -217,11 +217,11 @@ public class TPConnection : IStateful, IDisposable
             ConnectionAwaiter awaiter = ConnectionAwaitManager.GetAwaiter(this, _pendingCts.Token);
             await awaiter.Task;
 
-            if (TargetState is not null && !_pendingCts.Token.IsCancellationRequested)
+            if (TargetPoint is not null && !_pendingCts.Token.IsCancellationRequested)
             {
                 _state = _stateCache;
                 IsFlushing = false;
-                TargetState.State = _stateCache;
+                TargetPoint.State = _stateCache;
             }
         }
         catch (OperationCanceledException)
@@ -239,14 +239,14 @@ public class TPConnection : IStateful, IDisposable
     {
         if (checkType != Type)
         {
-            SourceState.ClearConnection();
-            TargetState.ClearConnection();
+            SourcePoint.ClearConnection();
+            TargetPoint.ClearConnection();
 
-            TargetState.State = Type.Null();
+            TargetPoint.State = Type.Null();
 
             LineConnector?.Remove();
-            _sourceState = null;
-            _targetState = null;
+            _sourcePoint = null;
+            _targetPoint = null;
             _disconnected = true;
             Dispose();
 

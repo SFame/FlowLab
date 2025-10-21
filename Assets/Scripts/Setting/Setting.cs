@@ -31,6 +31,21 @@ public static class Setting
             m_ActionType = BackgroundActionType.Redo,
             m_KeyMap = new InputKeyMap (ActionKeyCode.ArrowRight, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Copy,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.C, new HashSet<ModifierKeyCode> { })
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Cut,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { })
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Paste,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.V, new HashSet<ModifierKeyCode> { })
+        },
 #else
         new BackgroundActionKeyMap
         {
@@ -41,6 +56,21 @@ public static class Setting
         {
             m_ActionType = BackgroundActionType.Redo,
             m_KeyMap = new InputKeyMap (ActionKeyCode.Z, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl, ModifierKeyCode.LeftShift })
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Copy,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.C, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Cut,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.X, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
+        },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType = BackgroundActionType.Paste,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.V, new HashSet<ModifierKeyCode> { ModifierKeyCode.LeftControl })
         },
 #endif
         new BackgroundActionKeyMap

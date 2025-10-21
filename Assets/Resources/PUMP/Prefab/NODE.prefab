@@ -243,6 +243,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Image: {fileID: 6560553130387192381}
   m_NameTmp: {fileID: 1953344865619092123}
+  m_NodeSelectingHandler: {fileID: 6368112864780920419}
   m_ImageGroup: []
   m_DefaultColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
   m_HighlightedColor: {r: 0, g: 0.754717, b: 0, a: 1}
@@ -267,6 +268,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_NodeSuppoet: {fileID: 3407088412786012311}
   m_NodeCanvasGroup: {fileID: 5256127476579471854}
+  m_CanCopy: 1
   m_DetectingGroup: []
 --- !u!114 &298567353741124581
 MonoBehaviour:

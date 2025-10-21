@@ -104,6 +104,8 @@ MonoBehaviour:
   m_SelectionAreaController: {fileID: 6341105819460128539}
   m_LineConnectManager: {fileID: 5056244059888882983}
   m_LineEdgeSortingManager: {fileID: 6833917123823583454}
+  m_CopyIgnoreType:
+  - 
   m_VisibleExternal: 1
   m_ExternalStartPositionRatio: {x: 0.49, y: 0.5}
   m_DefaultExternalInputCount: 2

@@ -13,6 +13,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
     [SerializeField] private TextMeshProUGUI m_NameTmp;
+    [SerializeField] private NodeSelectingHandler m_NodeSelectingHandler;
 
     [Space(10)]
 
@@ -170,6 +171,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public ITPEnumerator OutputEnumerator { get; private set; }
     public Image Image => m_Image;
     public TextMeshProUGUI NameText => m_NameTmp;
+    public NodeSelectingHandler NodeSelectingHandler => m_NodeSelectingHandler;
 
     public Color DefaultColor
     {
