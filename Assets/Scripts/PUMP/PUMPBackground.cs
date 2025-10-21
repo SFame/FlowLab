@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Utils;
-using static UnityEditor.PlayerSettings;
 using static Utils.RectTransformUtils;
 using Debug = UnityEngine.Debug;
 
