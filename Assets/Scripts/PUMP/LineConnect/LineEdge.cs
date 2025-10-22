@@ -10,6 +10,133 @@ using static LineConnector;
 public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, 
                         IPointerClickHandler, IDragSelectable, IHighlightable, ISortingPositionGettable, ISortingPositionSettable
 {
+    #region Static Pool
+    private const string PREFAB_PATH = "PUMP/Prefab/Line/LineEdge";
+    private static Transform _pooledParent;
+    private static Pool<LineEdge> _edgePool;
+
+    private static GameObject _edgePrefab;
+
+    private static GameObject EdgePrefab
+    {
+        get
+        {
+            if (_edgePrefab == null)
+            {
+                _edgePrefab = Resources.Load<GameObject>(PREFAB_PATH);
+            }
+
+            return _edgePrefab;
+        }
+    }
+
+    private static Transform PooledParent
+    {
+        get
+        {
+            if (_pooledParent == null)
+            {
+                _pooledParent = new GameObject("LineEdgePool").transform;
+            }
+
+            return _pooledParent;
+        }
+    }
+
+    private static Pool<LineEdge> EdgePool
+    {
+        get
+        {
+            return _edgePool ??= new Pool<LineEdge>
+            (
+                initSize: 100,
+                maxSize: 10000,
+                createFunc: () =>
+                {
+                    GameObject edgeObject = Instantiate(EdgePrefab, PooledParent, true);
+                    edgeObject.transform.localPosition = Vector2.zero;
+                    edgeObject.SetActive(false);
+                    return edgeObject.GetComponent<LineEdge>();
+                },
+                actionOnGet: edge =>
+                {
+                    edge.gameObject.SetActive(true);
+                    edge._isRemoved = false;
+                },
+                actionOnRelease: edge =>
+                {
+                    edge.StartArg = null;
+                    edge.EndArg = null;
+                    edge.FreezeAttributes = false;
+                    edge.OnDragging = null;
+                    edge.OnDragEnd = null;
+                    edge.OnRightClick = null;
+                    edge.SetHighlight(false);
+                    edge.SetColor(edge._defaultColor);
+                    edge.SetAlpha(1f);
+                    edge.SetSize(edge._defaultSize);
+                    edge.SetRingColor(Color.white);
+                    edge._isSelected = false;
+                    edge.SelectingTag = null;
+                    edge.OnSelectedMove = null;
+                    edge.RemoveThisRequest = null;
+                    edge.RemoveAllOnSelectedRequest = null;
+                    edge.OnSettableDrag = null;
+                    edge.OnSettableDragEnd = null;
+                    edge.OnGettableRemove = null;
+
+                    edge.transform.SetParent(PooledParent);
+                    edge.transform.localPosition = Vector2.zero;
+                    edge.gameObject.SetActive(false);
+                },
+                actionOnDestroy: edge =>
+                {
+                    if (edge._isDestroyed)
+                    {
+                        return;
+                    }
+
+                    edge._isDestroyed = true;
+
+                    if (edge._isRemoved)
+                    {
+                        return;
+                    }
+
+                    edge._isRemoved = true;
+
+                    edge.OnGettableRemove?.Invoke();
+                    edge.RemoveThisRequest?.Invoke(edge);
+                    edge.RemoveAllOnSelectedRequest?.Invoke();
+                    edge.StartArg = null;
+                    edge.EndArg = null;
+                    edge.FreezeAttributes = false;
+                    edge.OnDragging = null;
+                    edge.OnDragEnd = null;
+                    edge.OnRightClick = null;
+                    edge.SetHighlight(false);
+                    edge.SetColor(edge._defaultColor);
+                    edge.SetAlpha(1f);
+                    edge.SetSize(edge._defaultSize);
+                    edge.SetRingColor(Color.white);
+                    edge._isSelected = false;
+                    edge.SelectingTag = null;
+                    edge.OnSelectedMove = null;
+                    edge.RemoveThisRequest = null;
+                    edge.RemoveAllOnSelectedRequest = null;
+                    edge.OnSettableDrag = null;
+                    edge.OnSettableDragEnd = null;
+                    edge.OnGettableRemove = null;
+                }
+            );
+        }
+    }
+
+    public static LineEdge Get()
+    {
+        return EdgePool.Get();
+    }
+    #endregion
     [SerializeField] private Image m_RingImage;
 
     #region Privates
@@ -23,6 +150,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     private bool _isSetDefaultColor = false;
     private bool _isSelected = false;
     private bool _isRemoved = false;
+    private bool _isDestroyed = false;
     private Vector2 _offset;
     private UILineRenderer _lineRenderer;
     
@@ -147,10 +275,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         RemoveThisRequest?.Invoke(this);
         RemoveAllOnSelectedRequest?.Invoke();
 
-        if (gameObject != null)
-        {
-            Destroy(gameObject);
-        }
+        EdgePool.Release(this);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -319,14 +444,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
 
     private void OnDestroy()
     {
-        if (_isRemoved)
-            return;
-
-        _isRemoved = true;
-
-        OnGettableRemove?.Invoke();
-        RemoveThisRequest?.Invoke(this);
-        RemoveAllOnSelectedRequest?.Invoke();
+        EdgePool.Remove(this);
     }
     #endregion
 

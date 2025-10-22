@@ -1395,11 +1395,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     public void SelectAll()
     {
         ClearSelected();
-
-        foreach (IDragSelectable selectable in _selectables)
-        {
-            AddSelected(_selectables);
-        }
+        AddSelected(_selectables);
     }
 
     public void ClearSelected()

@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Utils;
 
@@ -20,7 +18,9 @@ public class LineConnector : MonoBehaviour
         get
         {
             if (_imageLine == null)
+            {
                 _imageLine = Resources.Load<GameObject>(LINE_PREFAB_PATH);
+            }
 
             return _imageLine;
         }
@@ -31,7 +31,9 @@ public class LineConnector : MonoBehaviour
         get
         {
             if (_lineEdgePrefab == null)
+            {
                 _lineEdgePrefab = Resources.Load<GameObject>(LINE_EDGE_PREFAB_PATH);
+            }
 
             return _lineEdgePrefab;
         }
@@ -70,7 +72,9 @@ public class LineConnector : MonoBehaviour
         get
         {
             if (_startSidePointImage == null)
+            {
                 _startSidePointImage = StartSidePointRect.GetComponent<Image>();
+            }
 
             return _startSidePointImage;
         }
@@ -81,7 +85,9 @@ public class LineConnector : MonoBehaviour
         get
         {
             if (_endEdgePointImage == null)
+            {
                 _endEdgePointImage = EndSidePointRect.GetComponent<Image>();
+            }
 
             return _endEdgePointImage;
         }
@@ -429,7 +435,8 @@ public class LineConnector : MonoBehaviour
 
     private LineEdge InstantiateNewEdge()
     {
-        LineEdge edge = Instantiate(LineEdgePrefab, _edgeParent, true).GetComponent<LineEdge>();
+        LineEdge edge = LineEdge.Get();
+        edge.transform.SetParent(_edgeParent);
 
         if (_edgeRingColor != null)
         {
@@ -459,7 +466,7 @@ public class LineConnector : MonoBehaviour
             int lastIndex = Edges.Count - 1;
             if (Edges[lastIndex] != null)
             {
-                Destroy(Edges[lastIndex].gameObject);
+                Edges[lastIndex].Remove();
             }
             Edges.RemoveAt(lastIndex);
         }
