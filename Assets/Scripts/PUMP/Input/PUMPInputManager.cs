@@ -100,6 +100,7 @@ public enum BackgroundActionType
     Copy,
     Cut,
     Paste,
+    ToggleSnapMode,
     OpenPalette,
     OpenSaveLoadPanel,
     SelectAll,
@@ -134,6 +135,7 @@ public static class BackgroundActionMapper
         BackgroundActionType.Copy => CopyAction,
         BackgroundActionType.Cut => CutAction,
         BackgroundActionType.Paste => PasteAction,
+        BackgroundActionType.ToggleSnapMode => ToggleSnapModeAction,
         BackgroundActionType.OpenPalette => OpenPaletteAction,
         BackgroundActionType.OpenSaveLoadPanel => OpenSaveLoadPanelAction,
         BackgroundActionType.SelectAll => SelectAllAction,
@@ -168,6 +170,11 @@ public static class BackgroundActionMapper
     private static void PasteAction()
     {
         PUMPBackground.Current?.Paste();
+    }
+
+    private static void ToggleSnapModeAction()
+    {
+        LineEdgeSortingManager.Activate = !LineEdgeSortingManager.Activate;
     }
 
     private static void OpenPaletteAction()

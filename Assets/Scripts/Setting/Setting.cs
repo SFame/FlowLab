@@ -75,6 +75,11 @@ public static class Setting
 #endif
         new BackgroundActionKeyMap
         {
+            m_ActionType = BackgroundActionType.ToggleSnapMode,
+            m_KeyMap = new InputKeyMap (ActionKeyCode.Q, new HashSet<ModifierKeyCode> { })
+        },
+        new BackgroundActionKeyMap
+        {
             m_ActionType = BackgroundActionType.OpenPalette,
             m_KeyMap = new InputKeyMap (ActionKeyCode.Tab, new HashSet<ModifierKeyCode> { })
         },

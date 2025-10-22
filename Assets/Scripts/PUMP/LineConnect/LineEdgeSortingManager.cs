@@ -1,12 +1,30 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LineEdgeSortingManager : MonoBehaviour
 {
+    #region Static
+    public static bool Activate
+    {
+        get => _activate;
+        set
+        {
+            _activate = value;
+
+            if (!_activate)
+            {
+                OnDeactive?.Invoke();
+            }
+        }
+    }
+
+    private static bool _activate;
+    private static Action OnDeactive;
+    #endregion
+
     [SerializeField] private InputKeyMap m_SortModeKeyMap;
     [SerializeField] private GameObject m_LineImagePrefab;
     [SerializeField] private RectTransform m_SortingLineParent;
@@ -14,14 +32,13 @@ public class LineEdgeSortingManager : MonoBehaviour
     [SerializeField] private float m_LineThickness = 1f;
 
     private const string KEY_MAP_NAME = "EdgeSorting_Start";
-
     private readonly HashSet<ISortingPositionGettable> _gettables = new();
-
     private Pool<RectTransform> _linePool;
     private bool _lineInitialized = false;
-    private bool _activate = false;
-    private bool _onPause = true;
 
+    private void Awake() => OnDeactive += RemoveLine;
+
+    private void OnDestroy() => OnDeactive -= RemoveLine;
 
     private void LineInitialize()
     {
@@ -84,24 +101,6 @@ public class LineEdgeSortingManager : MonoBehaviour
     }
 
     public float StickDistance { get; set; } = 15f;
-
-    public void Pause(bool pause)
-    {
-        if (pause == _onPause)
-        {
-            return;
-        }
-
-        _onPause = pause;
-
-        if (_onPause)
-        {
-            InputManager.Unsubscribe(m_SortModeKeyMap);
-            return;
-        }
-
-        InputManager.Subscribe(m_SortModeKeyMap, new InputKeyMapArgs(KEY_MAP_NAME, _ => ActivateOneFrame(), null, true, true));
-    }
 
     public void AddGettable(ISortingPositionGettable gettable)
     {
@@ -197,18 +196,6 @@ public class LineEdgeSortingManager : MonoBehaviour
         }
     }
 
-    private void ActivateOneFrame()
-    {
-        _activate = true;
-        DeactivateNextFrame().Forget();
-    }
-
-    private async UniTaskVoid DeactivateNextFrame()
-    {
-        await UniTask.Yield(PlayerLoopTiming.EarlyUpdate);
-        _activate = false;
-    }
-
     private struct LineArgs
     {
         public LineArgs(Vector2 start, Vector2 end, bool isNull)
@@ -233,7 +220,7 @@ public interface ISortingPositionGettable
 
 public interface ISortingPositionSettable
 {
-    event SettableEventHandler OnSettableDrag;
+    event SettableEventHandler  OnSettableDrag;
     event Action OnSettableDragEnd;
     void SetPosition(Vector2 position);
 }
