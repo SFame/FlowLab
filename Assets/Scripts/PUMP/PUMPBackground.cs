@@ -471,8 +471,10 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     public void Open()
     {
         if (_destroyed)
+        {
             return;
-
+        }
+        ConsoleWindow.Wake();
         if (Current != null && Current != this)
         {
             Current.Close();
@@ -481,7 +483,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         gameObject.SetActive(true);
         Current = this;
         Initialize();
-        PUMPUiManager.Render(m_UiRectTransform, 0,
+        PUMPUiManager.Render(m_UiRectTransform, 1,
         rect =>
         {
             rect.SetRectFull();

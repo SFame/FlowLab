@@ -300,7 +300,6 @@ GameObject:
   - component: {fileID: 7973034616062062785}
   - component: {fileID: 1249412674276274451}
   - component: {fileID: 9054245740632942581}
-  - component: {fileID: 8485349427737927848}
   m_Layer: 0
   m_Name: PumpSector
   m_TagString: Untagged
@@ -388,19 +387,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1510068913751018988}
   m_CullTransparentMesh: 1
---- !u!114 &8485349427737927848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1510068913751018988}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b2313dde78bc694f8768515401d7911, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PumpTool: {fileID: 8275841901262682426}
 --- !u!1 &1610113687663307858
 GameObject:
   m_ObjectHideFlags: 0
