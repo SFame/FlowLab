@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using Utils;
@@ -48,6 +49,22 @@ public class ConsoleWindow : MonoBehaviour
     {
         return _commands.Remove(command);
     }
+
+    public static bool IsOpen
+    {
+        get => _isOpen;
+        set
+        {
+            _isOpen = value;
+            if (_isOpen)
+            {
+                Instance.Show();
+                return;
+            }
+
+            Instance.Hide();
+        }
+    }
     // -=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=--=-=-=-=-=-
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
@@ -59,6 +76,7 @@ public class ConsoleWindow : MonoBehaviour
     private static string _currentTextLine = string.Empty;
     private static bool _onCommand = false;
     private static bool _onQuery = false;
+    private static bool _isOpen = false;
     private static string _queryCache = null;
     private static SafetyCancellationTokenSource _queryCts = new();
     private static object _inputBlocker = new();
@@ -210,6 +228,8 @@ public class ConsoleWindow : MonoBehaviour
     #endregion
 
     #region Instance Layer
+    [SerializeField] private CanvasGroup m_CanvasGroup;
+    [SerializeField] private float m_FadeDuration = 0.2f;
     [SerializeField] private TextMeshProUGUI m_MainTextField;
     [SerializeField] private TMP_InputField m_InputField;
     [SerializeField] private TextMeshProUGUI m_InputHeader;
@@ -242,6 +262,26 @@ public class ConsoleWindow : MonoBehaviour
         float widthResult = active ? m_SpaceWidth : 0;
         m_HeaderSpaceRect.sizeDelta = new Vector2(widthResult, m_HeaderSpaceRect.sizeDelta.y);
         m_InputHeader.text = active ? HEADER_TEXT : string.Empty;
+    }
+
+    private void Show()
+    {
+        m_CanvasGroup.DOKill();
+        m_CanvasGroup.DOFade(1f, m_FadeDuration).onComplete = () =>
+        {
+            m_CanvasGroup.interactable = true;
+            m_CanvasGroup.blocksRaycasts = true;
+        };
+    }
+
+    private void Hide()
+    {
+        m_CanvasGroup.DOKill();
+        m_CanvasGroup.DOFade(0f, m_FadeDuration).onComplete = () =>
+        {
+            m_CanvasGroup.interactable = false;
+            m_CanvasGroup.blocksRaycasts = false;
+        };
     }
     #endregion
 }

@@ -11,7 +11,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
     #endregion
 
     #region Components
-    public RectTransform Rect
+    public virtual RectTransform Rect
     {
         get
         {

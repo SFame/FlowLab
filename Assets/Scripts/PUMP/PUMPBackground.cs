@@ -474,7 +474,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
         {
             return;
         }
-        ConsoleWindow.Wake();
+
         if (Current != null && Current != this)
         {
             Current.Close();
