@@ -116,6 +116,6 @@ public abstract class BaseCodexPalette : MonoBehaviour
             return (null, Color.white);
 
         string imagePath = resourceGetter.Path ?? string.Empty;
-        return (string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath), resourceGetter.Color);
+        return (string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath), resourceGetter.BackgroundColor);
     }
 }

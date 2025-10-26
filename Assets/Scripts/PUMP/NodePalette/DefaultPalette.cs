@@ -111,6 +111,7 @@ public class DefaultPalette : NodePalette
             {
                 { typeof(ScriptingNode), "Scripting" },
                 { typeof(ClassedNode), "Classed" },
+                { typeof(ConsoleNode), "Console" },
             }
         },
     };

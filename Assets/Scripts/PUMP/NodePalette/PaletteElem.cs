@@ -14,7 +14,7 @@ public class PaletteElem : MonoBehaviour, IDraggable
     #endregion
 
     #region Privates
-    private string _displayName;
+    private string _text;
     private bool _caughtException = false;
     private List<RaycastResult> _raycastResults = new();
     private PUMPBackground _background;
@@ -26,16 +26,32 @@ public class PaletteElem : MonoBehaviour, IDraggable
     public event Action<Node> OnInstantiate;
     public event Action OnClick;
 
-    public Image Image => m_Image;
-
-    public string DisplayName
+    public Sprite Sprite
     {
-        get => _displayName;
+        get => m_Image.sprite;
+        set => m_Image.sprite = value;
+    }
+
+    public Color SpriteColor
+    {
+        get => m_Image.color;
+        set => m_Image.color = value;
+    }
+
+    public string Text
+    {
+        get => _text;
         set
         {
-            _displayName = value;
-            m_Text.text = _displayName;
+            _text = value;
+            m_Text.text = _text;
         }
+    }
+
+    public Color TextColor
+    {
+        get => m_Text.color;
+        set => m_Text.color = value;
     }
     
     public Type NodeType { get; set; }

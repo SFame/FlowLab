@@ -5,21 +5,28 @@ using UnityEngine;
 public class ResourceGetterAttribute : Attribute
 {
     public string Path { get; }
-    public Color Color { get; }
+    public Color BackgroundColor { get; }
+    public Color TextColor { get; }
 
     public ResourceGetterAttribute() : this(string.Empty) { }
 
-    public ResourceGetterAttribute(string path) : this(path, "#FFFFFF") { }
+    public ResourceGetterAttribute(string path) : this(path, "#FFFFFF", "#001A2F") { }
 
-    public ResourceGetterAttribute(string path, string colorHex)
+    public ResourceGetterAttribute(string path, string backgroundColorHex, string textColorHex)
     {
         Path = path;
 
-        if (string.IsNullOrEmpty(colorHex) || !ColorUtility.TryParseHtmlString(colorHex, out Color parsedColor))
+        if (string.IsNullOrEmpty(backgroundColorHex) || !ColorUtility.TryParseHtmlString(backgroundColorHex, out Color backgroundParsedColor))
         {
-            parsedColor = Color.white;
+            backgroundParsedColor = Color.white;
         }
 
-        Color = parsedColor;
+        if (string.IsNullOrEmpty(textColorHex) || !ColorUtility.TryParseHtmlString(textColorHex, out Color textParsedColor))
+        {
+            textParsedColor = Color.black;
+        }
+
+        BackgroundColor = backgroundParsedColor;
+        TextColor = textParsedColor;
     }
 }

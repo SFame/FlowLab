@@ -85,15 +85,18 @@ public abstract class NodePalette : MonoBehaviour
             {
                 RectTransform newElemRect = GetNewElement();
                 PaletteElem newElem = newElemRect.GetComponent<PaletteElem>();
-                newElem.DisplayName = innerKvp.Value;
+                newElem.Text = innerKvp.Value;
                 newElem.NodeType = innerKvp.Key;
 
                 var resourceTuple = GetResource(innerKvp.Key);
 
                 if (resourceTuple.sprite != null)
-                    newElem.Image.sprite = resourceTuple.sprite;
+                {
+                    newElem.Sprite = resourceTuple.sprite;
+                }
 
-                newElem.Image.color = resourceTuple.color;
+                newElem.SpriteColor = resourceTuple.backgroundColor;
+                newElem.TextColor = resourceTuple.textColor;
 
                 SetElementCallback(newElem);
                 categoryRectList.Add(newElemRect);
@@ -119,16 +122,17 @@ public abstract class NodePalette : MonoBehaviour
         elem.OnDragEnd += () => IsVisible = true;
     }
 
-    private (Sprite sprite, Color color) GetResource(Type nodeType)
+    private (Sprite sprite, Color backgroundColor, Color textColor) GetResource(Type nodeType)
     {
-        ResourceGetterAttribute resourceGetter =
-            (ResourceGetterAttribute)Attribute.GetCustomAttribute(nodeType, typeof(ResourceGetterAttribute), true);
+        ResourceGetterAttribute resourceGetter = (ResourceGetterAttribute)Attribute.GetCustomAttribute(nodeType, typeof(ResourceGetterAttribute), true);
 
         if (resourceGetter == null)
-            return (null, Color.white);
+        {
+            return (null, Color.white, Color.black);
+        }
         
         string imagePath = resourceGetter.Path ?? string.Empty;
-        return (string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath), resourceGetter.Color);
+        return (string.IsNullOrEmpty(imagePath) ? null : Resources.Load<Sprite>(imagePath), resourceGetter.BackgroundColor, resourceGetter.TextColor);
     }
     #endregion
 }

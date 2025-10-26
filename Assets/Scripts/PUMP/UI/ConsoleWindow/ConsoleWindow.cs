@@ -1,11 +1,12 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
-using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using Utils;
+using static ConsoleCommand;
 
 public class ConsoleWindow : MonoBehaviour
 {
@@ -18,17 +19,24 @@ public class ConsoleWindow : MonoBehaviour
 
     public static void Input(string text)
     {
-        // 커멘드 진행중에는 다른 작업 안됩니다.
+        InternalInput(text, false);
+    }
+
+    public static void Clear()
+    {
         if (_onCommand)
         {
             return;
         }
 
-        InternalInput(text, false);
+        HeaderActive = true;
+        _currentTextLine = string.Empty;
+        Instance.PushText(_currentTextLine, true);
     }
 
     public static bool AddCommand(ConsoleCommand newCommand)
     {
+        ConsoleDefaultCommandInjector.Inject();
         ConsoleCommand existingCommand = _commands.FirstOrDefault(c => c.Command == newCommand.Command);
 
         if (existingCommand != null)
@@ -65,6 +73,8 @@ public class ConsoleWindow : MonoBehaviour
             Instance.Hide();
         }
     }
+
+    public static ConsoleCommand[] GetCommands() => _commands.ToArray();
     // -=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=--=-=-=-=-=-
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
@@ -91,6 +101,7 @@ public class ConsoleWindow : MonoBehaviour
         {
             if (_instance == null)
             {
+                ConsoleDefaultCommandInjector.Inject();
                 GameObject newObject = Instantiate(Prefab);
                 RectTransform newRect = newObject.GetComponent<RectTransform>();
                 PUMPUiManager.Render
@@ -171,11 +182,39 @@ public class ConsoleWindow : MonoBehaviour
 
     private static async UniTaskVoid ProgressCommand(string input)
     {
-        if (_commands.FirstOrDefault(command => command.Command == input) is { } resultCommand)
+        string[] split = input.Split(' ');
+        string currentCommand = split[0];
+        string[] inputArgs = split.Skip(1).ToArray();
+
+        if (_commands.FirstOrDefault(command => command.Command == currentCommand) is { } resultCommand)
         {
+            if ((resultCommand.Args == null || resultCommand.Args.Length <= 0))
+            {
+                if (inputArgs.Length > 0)
+                {
+                    InternalInput("ERROR: Argument not match.", true);
+                    return;
+                }
+            }
+            else if (inputArgs.Length != resultCommand.Args.Length)
+            {
+                InternalInput("ERROR: Argument not match.", true);
+                return;
+            }
+
+            Dictionary<string, string> argsDict = new();
+
+            if (resultCommand.Args != null)
+            {
+                for (int i = 0; i < resultCommand.Args.Length; i++)
+                {
+                    argsDict.Add(resultCommand.Args[i], inputArgs[i]);
+                }
+            }
+
             _onCommand = true;
             HeaderActive = false;
-            string result = await ((IStartQuery)resultCommand).StartQuery(Query);
+            string result = await ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, argsDict));
 
             if (result != null)
             {
@@ -291,11 +330,49 @@ public class ConsoleWindow : MonoBehaviour
 /// </summary>
 public class ConsoleCommand: IStartQuery
 {
-    public ConsoleCommand(string command, Func<Func<string, UniTask<string>>, UniTask<string>> queryProcess, string doc, bool isSystem = true)
+    public struct CommandContext
+    {
+        public CommandContext(Func<string, UniTask<string>> queryFunc, Dictionary<string, string> args)
+        {
+            if (queryFunc == null || args == null)
+            {
+                throw new ArgumentNullException($"{nameof(CommandContext)}: Param is Null");
+            }
+            _queryFunc = queryFunc;
+            _args = args;
+        }
+
+        private Func<string, UniTask<string>> _queryFunc;
+        private Dictionary<string, string> _args;
+
+        public string GetArg(string key)
+        {
+            return _args.GetValueOrDefault(key);
+        }
+
+        public UniTask<string> Query(string ask)
+        {
+            return _queryFunc(ask);
+        }
+    }
+
+    public ConsoleCommand(
+        string command, 
+        Func<CommandContext, UniTask<string>> queryProcess, 
+        string doc, 
+        string[] args = null, 
+        bool isSystem = true)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
         Command = command.StartsWith("/") ? command : $"/{command}";
-        Doc = doc; 
+        Doc = doc;
+
+        if (args != null && args.Length != args.Distinct().Count())
+        {
+            throw new ArgumentException($"{nameof(ConsoleCommand)}: Args duplicate");
+        }
+
+        Args = args;
         IsSystem = isSystem;
     }
 
@@ -304,15 +381,19 @@ public class ConsoleCommand: IStartQuery
     /// </summary>
     public string Command { get; }
 
+    public string[] Args { get; }
+
     /// <summary>
     /// 쿼리 프로세스 정의
     /// 할당 메서드 예: UniTask<string> Process(Func<string, UniTask<string>>) { }
-    /// 인자로 Func<string, UniTask<string>> 형태의 함수를 던져줌. 해당 함수에 질의를 담아 호출하고 메서드 내부에서
+    /// 인자로 Func<string, Dictionary<string, string>, UniTask<string>> 형태의 함수를 던져줌.
+    /// 해당 함수에 질의를 담아 호출하고 메서드 내부에서
     /// 사용자의 답변을 기다릴 수 있는 awaiter를 반환
+    /// Dictionary<string, string>로는 사용자가 전달한 Args 확인 가능
     /// 만약 await 결과가 null인 경우 쿼리가 강제 취소됨을 의미.
     /// 메서드의 반환은 마지막 콘솔 출력으로, null 반환 시 출력 생략 가능
     /// </summary>
-    public Func<Func<string, UniTask<string>>, UniTask<string>> QueryProcess { get; }
+    public Func<CommandContext, UniTask<string>> QueryProcess { get; }
 
     /// <summary>
     /// 해당 커멘드의 Document
@@ -324,10 +405,10 @@ public class ConsoleCommand: IStartQuery
     /// </summary>
     public bool IsSystem { get; }
 
-    UniTask<string> IStartQuery.StartQuery(Func<string, UniTask<string>> queryResultGetter) => QueryProcess(queryResultGetter);
+    UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
 }
 
 public interface IStartQuery
 {
-    UniTask<string> StartQuery(Func<string, UniTask<string>> queryResultGetter);
+    UniTask<string> StartQuery(CommandContext context);
 }

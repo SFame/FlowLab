@@ -110,6 +110,7 @@ public class ClassedPalette : NodePalette
             "Advanced", new Dictionary<Type, string>
             {
                 { typeof(ScriptingNode), "Scripting" },
+                { typeof(ConsoleNode), "Console" },
             }
         },
     };
