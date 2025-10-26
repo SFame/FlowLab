@@ -8,6 +8,19 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
 {
     #region Privates
     private RectTransform _rect;
+    private Canvas _canvas;
+
+    private Canvas Canvas
+    {
+        get
+        {
+            if (_canvas == null)
+            {
+                _canvas = GetComponentInParent<Canvas>()?.rootCanvas;
+            }
+            return _canvas;
+        }
+    }
     #endregion
 
     #region Components
@@ -77,6 +90,16 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
     #region Privates
     private Vector2 _offset;
 
+    private Vector2 GetWorldPosition(Vector2 screenPosition)
+    {
+        if (Canvas != null && Canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            return screenPosition;
+        }
+
+        return screenPosition.ScreenToWorldPoint();
+    }
+
     void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left)
@@ -88,7 +111,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
             return;
 
         IsDragging = true;
-        Vector2 clickPos = eventData.position.ScreenToWorldPoint();
+        Vector2 clickPos = GetWorldPosition(eventData.position);
         _offset = (Vector2)Rect.position - clickPos;
         OnDragStart?.Invoke(new PositionInfo(WorldPosition, LocalPosition, clickPos, eventData.position, Vector2.zero));
     }
@@ -103,7 +126,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         if (BlockedMove)
             return;
 
-        Vector2 clickPos = eventData.position.ScreenToWorldPoint();
+        Vector2 clickPos = GetWorldPosition(eventData.position);
         Vector2 beforePosition = Rect.position;
         Vector2 newPosition = clickPos + _offset;
         SetPosition(newPosition);
@@ -122,7 +145,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
             return;
 
         IsDragging = false;
-        OnDragEnd?.Invoke(new PositionInfo(WorldPosition, LocalPosition, eventData.position.ScreenToWorldPoint(), eventData.position , Vector2.zero));
+        OnDragEnd?.Invoke(new PositionInfo(WorldPosition, LocalPosition, GetWorldPosition(eventData.position), eventData.position , Vector2.zero));
     }
 
     private void InternalSetPosition(Vector2 worldPosition)

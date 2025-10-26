@@ -3,6 +3,7 @@ using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using TMPro;
 using UnityEngine;
 using Utils;
@@ -19,19 +20,27 @@ public class ConsoleWindow : MonoBehaviour
 
     public static void Input(string text)
     {
-        InternalInput(text, false);
+        InternalInput(text, ConsoleInputSource.System);
     }
 
-    public static void Clear()
+    public static void Clear(bool setFocus = false)
     {
-        if (_onCommand)
+        CancelQuery();
+        _onCommand = false;
+        HeaderActive = true;
+        _currentTextLine = string.Empty;
+        Instance.PushText(_currentTextLine, setFocus);
+    }
+
+    public static void SetFocus(bool activateFocus)
+    {
+        if (activateFocus)
         {
+            Instance.m_InputField.ActivateInputField();
             return;
         }
 
-        HeaderActive = true;
-        _currentTextLine = string.Empty;
-        Instance.PushText(_currentTextLine, true);
+        Instance.m_InputField.DeactivateInputField();
     }
 
     public static bool AddCommand(ConsoleCommand newCommand)
@@ -86,9 +95,10 @@ public class ConsoleWindow : MonoBehaviour
     private static string _currentTextLine = string.Empty;
     private static bool _onCommand = false;
     private static bool _onQuery = false;
+    private static ConsoleInputSource _lastQuerySource = ConsoleInputSource.InputField;
     private static bool _isOpen = false;
-    private static string _queryCache = null;
-    private static SafetyCancellationTokenSource _queryCts = new();
+    private static InputElement? _queryCache = null;
+    private static SafetyCancellationTokenSource _queryCts;
     private static object _inputBlocker = new();
     private static GameObject _prefab;
     private static ConsoleWindow _instance;
@@ -137,7 +147,7 @@ public class ConsoleWindow : MonoBehaviour
         }
     }
 
-    private static void InternalInput(string text, bool setFocus)
+    private static void InternalInput(string text, ConsoleInputSource inputSource)
     {
         text ??= string.Empty;
         AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
@@ -145,20 +155,21 @@ public class ConsoleWindow : MonoBehaviour
         // 쿼리 도중에는 캐쉬 설정 후 그대로 출력
         if (_onCommand)
         {
-            _queryCache = text;
-            Instance.PushText(GetCurrentTextLine(), setFocus);
+            _queryCache = new(text, inputSource);
+            _lastQuerySource = inputSource;
+            Instance.PushText(GetCurrentTextLine(), inputSource == ConsoleInputSource.InputField);
             return;
         }
 
         // 슬래쉬로 시작하지 않으면 이전해 Add한 문자열 그대로 찍음
         if (!text.StartsWith("/"))
         {
-            Instance.PushText(GetCurrentTextLine(), setFocus);
+            Instance.PushText(GetCurrentTextLine(), inputSource == ConsoleInputSource.InputField);
             return;
         }
 
         // 슬래쉬로 시작했다면 명령어 판독
-        ProgressCommand(text).Forget();
+        ProgressCommand(text, inputSource).Forget();
     }
 
     private static void AddCurrentTextLine(string text)
@@ -181,7 +192,7 @@ public class ConsoleWindow : MonoBehaviour
         return _currentTextLine;
     }
 
-    private static async UniTaskVoid ProgressCommand(string input)
+    private static async UniTaskVoid ProgressCommand(string input, ConsoleInputSource inputSource)
     {
         string[] split = input.Split(' ');
         string currentCommand = split[0];
@@ -193,13 +204,13 @@ public class ConsoleWindow : MonoBehaviour
             {
                 if (inputArgs.Length > 0)
                 {
-                    InternalInput("ERROR: Argument not match.", true);
+                    InternalInput("ERROR: Argument not match.", inputSource);
                     return;
                 }
             }
             else if (inputArgs.Length != resultCommand.Args.Length)
             {
-                InternalInput("ERROR: Argument not match.", true);
+                InternalInput("ERROR: Argument not match.", inputSource);
                 return;
             }
 
@@ -213,13 +224,20 @@ public class ConsoleWindow : MonoBehaviour
                 }
             }
 
+            ChargeCancelQueryCts();
             _onCommand = true;
+            _lastQuerySource = inputSource;
             HeaderActive = false;
-            string result = await ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, argsDict));
+            UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, argsDict, inputSource));
+            UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
 
-            if (result != null)
+            (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
+
+            string result = winIndex == 0 ? result1 : result2;
+
+            if (result != null || !_queryCts.IsCancellationRequested)
             {
-                InternalInput(result, true);
+                InternalInput(result, _lastQuerySource);
             }
 
             CancelQuery();
@@ -228,10 +246,23 @@ public class ConsoleWindow : MonoBehaviour
             return;
         }
 
-        InternalInput("ERROR: Unknown command", true);
+        InternalInput("ERROR: Unknown command", _lastQuerySource);
     }
 
-    private static async UniTask<string> Query(string query)
+    private static async UniTask<string> WaitUntilCancel(CancellationToken token)
+    {
+        try
+        {
+            await UniTask.WaitUntil(() => token.IsCancellationRequested, cancellationToken: token, cancelImmediately: true);
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private static async UniTask<InputElement?> Query(string query)
     {
         if (_onQuery)
         {
@@ -240,7 +271,7 @@ public class ConsoleWindow : MonoBehaviour
         }
 
         _onQuery = true;
-        InternalInput(query ?? string.Empty, true);
+        InternalInput(query ?? string.Empty, _lastQuerySource);
         _queryCache = null;
 
         try
@@ -250,7 +281,6 @@ public class ConsoleWindow : MonoBehaviour
         }
         catch (OperationCanceledException)
         {
-            InternalInput("ERROR: Command Shutdown", true);
             _queryCache = null;
             return null;
         }
@@ -262,7 +292,12 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void CancelQuery()
     {
-        _queryCts = _queryCts.CancelAndDisposeAndGetNew();
+        _queryCts.CancelAndDispose();
+    }
+
+    private static void ChargeCancelQueryCts()
+    {
+        _queryCts = new();
     }
     // -=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=--=-=-=-=-=
     #endregion
@@ -278,7 +313,7 @@ public class ConsoleWindow : MonoBehaviour
 
     private void Initialize(string initText)
     {
-        m_InputField.onSubmit.AddListener(text => InternalInput(text, true));
+        m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
         m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
         m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
         m_InputField.onFocusSelectAll = false;
@@ -294,7 +329,10 @@ public class ConsoleWindow : MonoBehaviour
         if (setFocus)
         {
             m_InputField.ActivateInputField();
+            return;
         }
+
+        m_InputField.DeactivateInputField();
     }
 
     private void SetHeaderActive(bool active)
@@ -333,7 +371,7 @@ public class ConsoleCommand: IStartQuery
 {
     public struct CommandContext
     {
-        public CommandContext(Func<string, UniTask<string>> queryFunc, Dictionary<string, string> args)
+        public CommandContext(Func<string, UniTask<InputElement?>> queryFunc, Dictionary<string, string> args, ConsoleInputSource initSource)
         {
             if (queryFunc == null || args == null)
             {
@@ -341,17 +379,20 @@ public class ConsoleCommand: IStartQuery
             }
             _queryFunc = queryFunc;
             _args = args;
+            InitSource = initSource;
         }
 
-        private Func<string, UniTask<string>> _queryFunc;
+        private Func<string, UniTask<InputElement?>> _queryFunc;
         private Dictionary<string, string> _args;
+
+        public ConsoleInputSource InitSource { get; }
 
         public string GetArg(string key)
         {
             return _args.GetValueOrDefault(key);
         }
 
-        public UniTask<string> Query(string ask)
+        public UniTask<InputElement?> Query(string ask)
         {
             return _queryFunc(ask);
         }
@@ -421,6 +462,24 @@ public class ConsoleCommand: IStartQuery
     public bool IsSystem { get; }
 
     UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
+}
+
+public struct InputElement
+{
+    public InputElement(string text, ConsoleInputSource inputSource)
+    {
+        Text = text;
+        InputSource = inputSource;
+    }
+
+    public string Text { get; }
+    public ConsoleInputSource InputSource { get; }
+}
+
+public enum ConsoleInputSource
+{
+    InputField,
+    System
 }
 
 public interface IStartQuery

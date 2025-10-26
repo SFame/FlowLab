@@ -1,10 +1,42 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
+using System.Linq;
 using UnityEngine;
 
 public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
 {
+    private static bool _blockInput = false;
+    private static object _inputBlocker = new();
+    private static HashSet<KeyInput> _instances = new();
+
+    private static bool BlockInput
+    {
+        get => _blockInput;
+        set
+        {
+            _blockInput = value;
+            if (_blockInput)
+            {
+                InputManager.AddBlocker(_inputBlocker);
+                return;
+            }
+
+            InputManager.RemoveBlocker(_inputBlocker);
+        }
+    }
+
+    protected override List<ContextElement> ContextElements
+    {
+        get
+        {
+            List<ContextElement> newContext = base.ContextElements.ToList();
+            newContext.Add(new ContextElement(GetInputBlockText(), () => BlockInput = !BlockInput));
+
+            return newContext;
+        }
+    }
+
     private KeyInputSupport InputSupport
     {
         get
@@ -53,6 +85,7 @@ public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
 
     protected override void OnAfterInit()
     {
+        _instances.Add(this);
         InputSupport.Initialize(_currentKeyCode);
         InputSupport.OnValueChange += keyCode =>
         {
@@ -65,6 +98,12 @@ public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
     protected override void OnBeforeRemove()
     {
         _cts.CancelAndDispose();
+        _instances.Remove(this);
+
+        if (_instances.Count <= 0)
+        {
+            InputManager.RemoveBlocker(_inputBlocker);
+        }
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
@@ -94,6 +133,11 @@ public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
             }
         }
         catch (OperationCanceledException) { }
+    }
+
+    private static string GetInputBlockText()
+    {
+        return _blockInput ? "Enable System Input" : "Disable System Input";
     }
 
     public KeyCode AdditionalArgs

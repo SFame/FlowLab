@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 
 public class ConsoleDefaultCommandInjector
 {
@@ -17,15 +16,15 @@ public class ConsoleDefaultCommandInjector
             {
                 ConsoleCommand[] commands = ConsoleWindow.GetCommands();
                 string commandsNames = string.Join("\n", commands.Select(command => command.Command).ToArray());
-                string result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
+                InputElement? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
 
                 if (result == null)
                 {
                     return null;
                 }
 
-                result = result.StartsWith("/") ? result : $"/{result}";
-                if (commands.FirstOrDefault(command => command.Command == result) is { } commandResult)
+                string resultText = result.Value.Text.StartsWith("/") ? result.Value.Text : $"/{result.Value.Text}";
+                if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
                 {
                     string argsString = commandResult.Args == null || commandResult.Args.Length == 0
                         ? string.Empty
@@ -33,7 +32,7 @@ public class ConsoleDefaultCommandInjector
                     return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat: \"{commandResult.Command}{argsString}\"\n{BAR_STRING}";
                 }
                 
-                return $"Command not found: {result}";
+                return $"Command not found: {resultText}";
             }
         ),
         new ConsoleCommand
@@ -41,15 +40,9 @@ public class ConsoleDefaultCommandInjector
             command: "/clear",
             doc: "Clear console output.",
             isSystem: true,
-            queryProcess: async _ =>
+            queryProcess: async context =>
             {
-                async UniTaskVoid clearAsync()
-                {
-                    await UniTask.Yield();
-                    ConsoleWindow.Clear();
-                }
-
-                clearAsync().Forget();
+                ConsoleWindow.Clear(context.InitSource == ConsoleInputSource.InputField);
                 return null;
             }
         ),
@@ -82,14 +75,14 @@ public class ConsoleDefaultCommandInjector
             isSystem: true,
             queryProcess: async context =>
             {
-                string result = await context.Query("Confirm exit? (y/n)");
+                InputElement? result = await context.Query("Confirm exit? (y/n)");
 
                 if (result == null)
                 {
                     return null;
                 }
 
-                if (result.ToLower() == "y")
+                if (result.Value.Text.ToLower() == "y")
                 {
 #if UNITY_EDITOR
                     UnityEditor.EditorApplication.ExitPlaymode();

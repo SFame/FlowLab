@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using OdinSerializer;
 using UnityEngine;
 
-public class SignalDetector : Node, INodeAdditionalArgs<bool>
+public class SignalDetector : Node, INodeAdditionalArgs<SignalDetectorSerializeInfo>
 {
     private bool _onlyChange = false;
+    private bool _pusleFirst = false;
 
     protected override string NodeDisplayName => "Sig\nDetc";
 
@@ -43,6 +46,11 @@ public class SignalDetector : Node, INodeAdditionalArgs<bool>
                 _onlyChange = !_onlyChange;
                 ReportChanges();
             }));
+            newContext.Add(new ContextElement(PulseFirstTextGetter(), () =>
+            {
+                _pusleFirst = !_pusleFirst;
+                ReportChanges();
+            }));
             return newContext;
         }
     }
@@ -54,17 +62,26 @@ public class SignalDetector : Node, INodeAdditionalArgs<bool>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OutputToken[0].State = args.State;
-
-        if (args.IsStateChange)
+        if (!_pusleFirst)
         {
-            OutputToken[1].State = Transition.Pulse();
-            return;
+            OutputToken[0].State = args.State;
         }
 
-        if (!_onlyChange)
+        if (_onlyChange)
+        {
+            if (args.IsStateChange)
+            {
+                OutputToken[1].State = Transition.Pulse();
+            }
+        }
+        else
         {
             OutputToken[1].State = Transition.Pulse();
+        }
+
+        if (_pusleFirst)
+        {
+            OutputToken[0].State = args.State;
         }
     }
 
@@ -77,9 +94,28 @@ public class SignalDetector : Node, INodeAdditionalArgs<bool>
 
     private string OnlyChangeTextGetter() => _onlyChange ? "Detect All" : "Detect only Change";
 
-    public bool AdditionalArgs
+    private string PulseFirstTextGetter() => _pusleFirst ? "Value First" : "Pulse First";
+
+    public SignalDetectorSerializeInfo AdditionalArgs
     {
-        get => _onlyChange;
-        set => _onlyChange = value;
+        get => new SignalDetectorSerializeInfo(_onlyChange, _pusleFirst);
+        set
+        {
+            _onlyChange = value._onlyChange;
+            _pusleFirst = value._pulseFirst;
+        }
     }
+}
+
+[Serializable]
+public struct SignalDetectorSerializeInfo
+{
+    public SignalDetectorSerializeInfo(bool onlyChange, bool pulseFirst)
+    {
+        _onlyChange = onlyChange;
+        _pulseFirst = pulseFirst;
+    }
+
+    [OdinSerialize] public bool _onlyChange;
+    [OdinSerialize] public bool _pulseFirst;
 }
