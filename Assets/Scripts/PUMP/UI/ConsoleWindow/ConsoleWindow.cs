@@ -139,6 +139,7 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void InternalInput(string text, bool setFocus)
     {
+        text ??= string.Empty;
         AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
 
         // 쿼리 도중에는 캐쉬 설정 후 그대로 출력
@@ -239,7 +240,7 @@ public class ConsoleWindow : MonoBehaviour
         }
 
         _onQuery = true;
-        InternalInput(query, true);
+        InternalInput(query ?? string.Empty, true);
         _queryCache = null;
 
         try
@@ -384,15 +385,29 @@ public class ConsoleCommand: IStartQuery
     public string[] Args { get; }
 
     /// <summary>
-    /// 쿼리 프로세스 정의
-    /// 할당 메서드 예: UniTask<string> Process(Func<string, UniTask<string>>) { }
-    /// 인자로 Func<string, Dictionary<string, string>, UniTask<string>> 형태의 함수를 던져줌.
-    /// 해당 함수에 질의를 담아 호출하고 메서드 내부에서
-    /// 사용자의 답변을 기다릴 수 있는 awaiter를 반환
-    /// Dictionary<string, string>로는 사용자가 전달한 Args 확인 가능
-    /// 만약 await 결과가 null인 경우 쿼리가 강제 취소됨을 의미.
-    /// 메서드의 반환은 마지막 콘솔 출력으로, null 반환 시 출력 생략 가능
+    /// 커맨드 실행 로직을 정의하는 함수
     /// </summary>
+    /// <remarks>
+    /// 사용 예시:
+    /// <code>
+    /// async context => 
+    /// {
+    ///     // 인자 가져오기
+    ///     string arg = context.GetArg("argName");
+    ///     
+    ///     // 사용자에게 질문하고 답변 대기 (양방향 await)
+    ///     string answer = await context.Query("질문 내용?");
+    ///     if (answer == null) return null; // 쿼리 취소됨
+    ///     
+    ///     // 결과 반환 (콘솔에 출력됨, null이면 출력 생략)
+    ///     return "실행 완료";
+    /// }
+    /// </code>
+    /// - context.GetArg(key): 커맨드 인자 조회
+    /// - context.Query(ask): 사용자에게 질문하고 답변을 await로 대기
+    /// - 반환값: 콘솔에 출력할 최종 메시지 (null 가능)
+    /// - await 결과가 null: 쿼리가 강제 취소됨
+    /// </remarks>
     public Func<CommandContext, UniTask<string>> QueryProcess { get; }
 
     /// <summary>

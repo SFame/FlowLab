@@ -18,6 +18,12 @@ public class ConsoleDefaultCommandInjector
                 ConsoleCommand[] commands = ConsoleWindow.GetCommands();
                 string commandsNames = string.Join("\n", commands.Select(command => command.Command).ToArray());
                 string result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
+
+                if (result == null)
+                {
+                    return null;
+                }
+
                 result = result.StartsWith("/") ? result : $"/{result}";
                 if (commands.FirstOrDefault(command => command.Command == result) is { } commandResult)
                 {
@@ -77,6 +83,12 @@ public class ConsoleDefaultCommandInjector
             queryProcess: async context =>
             {
                 string result = await context.Query("Confirm exit? (y/n)");
+
+                if (result == null)
+                {
+                    return null;
+                }
+
                 if (result.ToLower() == "y")
                 {
 #if UNITY_EDITOR
@@ -87,17 +99,6 @@ public class ConsoleDefaultCommandInjector
                 }
 
                 return null;
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/test",
-            doc: "Close console window.",
-            isSystem: true,
-            args: new [] { "A", "B" },
-            queryProcess: async context =>
-            {
-                return $"{context.GetArg("A")}, {context.GetArg("B")}";
             }
         ),
     };
