@@ -46,7 +46,7 @@ public class Divide : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override string NodeDisplayName => "DIv";
+    protected override string NodeDisplayName => "Div";
 
     protected override float NameTextSize => 20f;
 

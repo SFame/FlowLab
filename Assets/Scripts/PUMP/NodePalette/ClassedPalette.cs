@@ -24,6 +24,9 @@ public class ClassedPalette : NodePalette
             "Flow", new Dictionary<Type, string>
             {
                 { typeof(IfNode), "If" },
+                { typeof(WhileNode), "While"},
+                { typeof(Branch), "Branch" },
+                { typeof(Select), "Select" },
             }
         },
         {

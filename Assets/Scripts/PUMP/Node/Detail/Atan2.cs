@@ -12,15 +12,15 @@ public class Atan2 : Node
             if (_contexts == null)
             {
                 _contexts = base.ContextElements;
-                _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> ¡æ In", () => SetInputType(TransitionType.Int)));
-                _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> ¡æ In", () => SetInputType(TransitionType.Float)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color> â†’ In", () => SetInputType(TransitionType.Int)));
+                _contexts.Add(new ContextElement($"<color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color> â†’ In", () => SetInputType(TransitionType.Float)));
             }
 
             return _contexts;
         }
     }
 
-    protected override string NodeDisplayName => "Atan2";
+    protected override string NodeDisplayName => "Atan\n2";
 
     protected override List<string> InputNames => new() { "in1", "in2" };
 
@@ -40,7 +40,7 @@ public class Atan2 : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
-    protected override float NameTextSize => 20f;
+    protected override float NameTextSize => 18f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

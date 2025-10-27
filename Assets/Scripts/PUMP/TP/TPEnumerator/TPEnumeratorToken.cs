@@ -86,7 +86,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         get
         {
             if (Count <= 0)
+            {
                 return null;
+            }
 
             return _first ??= this[0];
         }
@@ -97,7 +99,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         get
         {
             if (Count <= 0)
+            {
                 return null;
+            }
 
             return _last ??= this[^1];
         }
@@ -141,7 +145,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         get
         {
             if (Count == 0)
+            {
                 return true;
+            }
 
             TransitionType firstType = First.Type;
             return this.All(sf => sf.Type == firstType);
@@ -153,10 +159,14 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         get
         {
             if (Count == 0)
+            {
                 return true;
+            }
 
             if (!AllSameType)
+            {
                 return false;
+            }
 
             Transition firstState = FirstState;
             return this.All(sf => sf.State.Equals(firstState));
@@ -181,7 +191,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushFirst(Transition state)
     {
         if (Count <= 0)
+        {
             throw new IndexOutOfRangeException("Token has no elements. Cannot push to first index");
+        }
 
         First.State = state;
     }
@@ -195,7 +207,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushAt(int index, Transition state)
     {
         if (index < 0 || index >= Count)
+        {
             throw new IndexOutOfRangeException($"Index must be between 0 and {_adapters.Length - 1} / current: {index}");
+        }
 
         this[index].State = state;
     }
@@ -207,7 +221,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushFirstSafety(Transition state)
     {
         if (Count <= 0)
+        {
             return;
+        }
 
         First.State = state;
     }
@@ -220,7 +236,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushAtSafety(int index, Transition state)
     {
         if (index < 0 || Count <= 0 || index >= Count)
+        {
             return;
+        }
 
         this[index].State = state;
     }
@@ -234,12 +252,16 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushAll(IEnumerable<Transition> states)
     {
         if (states == null)
+        {
             throw new ArgumentNullException($"TPEnumeratorToken.PushAll(): {nameof(states)} is null");
+        }
 
         Transition[] statesArray = states.ToArray();
 
         if (statesArray.Count() != Count)
+        {
             throw new ArgumentException("PushAll: Token Count와 입력 States Count 불일치");
+        }
 
         int i = 0;
         foreach (Transition state in statesArray)
@@ -259,12 +281,16 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushAllowingNull(IEnumerable<Transition?> states)
     {
         if (states == null)
+        {
             throw new ArgumentNullException($"TPEnumeratorToken.PushAllowingNull(): {nameof(states)} is null");
+        }
 
         Transition?[] statesArray = states.ToArray();
 
         if (statesArray.Count() != Count)
+        {
             throw new ArgumentException("PushAllowingNull: Token Count와 입력 States Count 불일치");
+        }
 
         int i = 0;
         foreach (Transition? state in statesArray)
@@ -290,7 +316,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushAllSafety(IEnumerable<Transition> states, bool fillRemainingWithNull = true)
     {
         if (states == null)
+        {
             return;
+        }
 
         Transition[] statesArray = states.ToArray();
 
@@ -315,7 +343,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushNullAt(int index)
     {
         if (index < 0 || index >= Count)
+        {
             throw new IndexOutOfRangeException($"Index must be between 0 and {_adapters.Length - 1} / current: {index}");
+        }
 
         ITypeListenStateful target = this[index];
         target.State = target.Type.Null();
@@ -328,7 +358,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void PushNullAtSafety(int index)
     {
         if (index < 0 || Count <= 0 || index >= Count)
+        {
             return;
+        }
 
         ITypeListenStateful target = this[index];
         target.State = target.Type.Null();
@@ -341,6 +373,22 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     {
         foreach (StatefulAdapter sf in _adapters)
         {
+            sf.State = sf.Type.Null();
+        }
+    }
+
+    /// <summary>
+    /// Null이 아닌 인덱스에 Null을 적용합니다
+    /// </summary>
+    public void PushNullToNonNull()
+    {
+        foreach (StatefulAdapter sf in _adapters)
+        {
+            if (sf.State.IsNull)
+            {
+                continue;
+            }
+
             sf.State = sf.Type.Null();
         }
     }
@@ -393,7 +441,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     public void SetType(int index, TransitionType type)
     {
         if (index < 0 || index >= Count)
+        {
             throw new IndexOutOfRangeException($"Index must be between 0 and {_adapters.Length - 1} / current: {index}");
+        }
 
         _adapters[index].SetType(type);
     }
@@ -450,7 +500,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     void IDisposable.Dispose()
     {
         if (_disposed)
+        {
             return;
+        }
 
         _disposed = true;
         GC.SuppressFinalize(this);
@@ -512,7 +564,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         public void Dispose()
         {
             if (_tp == null)
+            {
                 return;
+            }
 
             _tp.OnTypeChanged -= InvokeOnTypeChanged;
             _tp.OnBeforeTypeChange -= InvokeOnBeforeTypeChange;

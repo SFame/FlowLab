@@ -149,8 +149,12 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void InternalInput(string text, ConsoleInputSource inputSource)
     {
+        if (text != null)
+        {
+            AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
+        }
+
         text ??= string.Empty;
-        AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
 
         // 쿼리 도중에는 캐쉬 설정 후 그대로 출력
         if (_onCommand)
@@ -224,6 +228,7 @@ public class ConsoleWindow : MonoBehaviour
                 }
             }
 
+            CancelQuery();
             ChargeCancelQueryCts();
             _onCommand = true;
             _lastQuerySource = inputSource;
@@ -292,7 +297,7 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void CancelQuery()
     {
-        _queryCts.CancelAndDispose();
+        _queryCts?.CancelAndDispose();
     }
 
     private static void ChargeCancelQueryCts()
@@ -323,6 +328,11 @@ public class ConsoleWindow : MonoBehaviour
 
     private void PushText(string text, bool setFocus)
     {
+        if (text.EndsWith("\n"))
+        {
+            text += "\r";
+        }
+
         m_MainTextField.text = text;
         m_InputField.text = string.Empty;
 
@@ -468,7 +478,7 @@ public struct InputElement
 {
     public InputElement(string text, ConsoleInputSource inputSource)
     {
-        Text = text;
+        Text = text ?? string.Empty;
         InputSource = inputSource;
     }
 
