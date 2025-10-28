@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using NCalc;
 using UnityEngine;
 
 public class ConsoleDefaultCommandInjector
@@ -93,6 +95,30 @@ public class ConsoleDefaultCommandInjector
                 }
 
                 return null;
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/calc",
+            doc: "Evaluates the entered expression.",
+            isSystem: true,
+            args: new []{ "expression" },
+            queryProcess: async context =>
+            {
+                try
+                {
+                    Expression exp = new Expression(context.GetArg("expression"));
+                    object result = exp.Evaluate();
+                    return result.ToString();
+                }
+                catch (EvaluationException ee)
+                {
+                    return $"Invalid Expression: {ee.Message}";
+                }
+                catch
+                {
+                    return "Invalid Expression";
+                }
             }
         ),
     };
