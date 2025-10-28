@@ -374,21 +374,8 @@ public class ConsoleWindow : MonoBehaviour
         };
     }
 
-    private int _submitCount = 0;
     private void OnSubmitHandler(string text)
     {
-        _submitCount++;
-        Debug.Log($"[Submit {_submitCount}] Frame: {Time.frameCount}, Time: {Time.time:F3}, Text: '{text}'");
-
-        if (Time.frameCount == _lastSubmitFrameCount)
-        {
-            Debug.Log("→ BLOCKED (same frame)");
-            return;
-        }
-
-        _lastSubmitFrameCount = Time.frameCount;
-        InternalInput(text, ConsoleInputSource.InputField);
-        return;
         if (Time.frameCount == _lastSubmitFrameCount)
         {
             return;
