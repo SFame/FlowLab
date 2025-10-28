@@ -316,9 +316,11 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private RectTransform m_HeaderSpaceRect;
     [SerializeField] private float m_SpaceWidth = 9.6f;
 
+    private int _lastSubmitFrameCount = -1;
+
     private void Initialize(string initText)
     {
-        m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
+        m_InputField.onSubmit.AddListener(OnSubmitHandler);
         m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
         m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
         m_InputField.onFocusSelectAll = false;
@@ -370,6 +372,17 @@ public class ConsoleWindow : MonoBehaviour
             m_CanvasGroup.interactable = false;
             m_CanvasGroup.blocksRaycasts = false;
         };
+    }
+
+    private void OnSubmitHandler(string text)
+    {
+        if (Time.frameCount == _lastSubmitFrameCount)
+        {
+            return;
+        }
+
+        _lastSubmitFrameCount = Time.frameCount;
+        InternalInput(text, ConsoleInputSource.InputField);
     }
     #endregion
 }
