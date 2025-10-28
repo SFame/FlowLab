@@ -50,9 +50,9 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
     protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Bool };
 
-    protected override float InEnumeratorXPos => -38f;
+    protected override float InEnumeratorXPos => -40f;
 
-    protected override float OutEnumeratorXPos => 38f;
+    protected override float OutEnumeratorXPos => 40f;
 
     protected override float EnumeratorSpacing => 3f;
 

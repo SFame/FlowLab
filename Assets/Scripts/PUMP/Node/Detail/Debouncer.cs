@@ -19,9 +19,9 @@ public class Debouncer : Node, INodeAdditionalArgs<DebouncerSerializeInfo>
 
     protected override List<string> OutputNames { get; } = new() { "out" };
 
-    protected override float InEnumeratorXPos => -38f;
+    protected override float InEnumeratorXPos => -40f;
 
-    protected override float OutEnumeratorXPos => 38f;
+    protected override float OutEnumeratorXPos => 40f;
 
     protected override float EnumeratorSpacing => 3f;
 

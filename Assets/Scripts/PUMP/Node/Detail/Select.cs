@@ -4,7 +4,7 @@ using UnityEngine;
 public class Select : DynamicIONode, INodeAdditionalArgs<int>
 {
     private SplitterSupport _splitterSupport;
-    private TransitionType _currentType = TransitionType.Bool;
+    private TransitionType _currentType = TransitionType.Pulse;
     private List<ContextElement> _contexts;
 
     private SplitterSupport SplitterSupport
