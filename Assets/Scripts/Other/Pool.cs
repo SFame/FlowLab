@@ -13,6 +13,7 @@ using UnityEngine;
 ///     actionOnRelease: Action to apply to T instance when invoking the Release() method
 ///     actionOnDestroy: Action to apply to T instance when invoking the Remove()|Clear()|Dispose() method
 ///     isNullPredicate: Predicate to apply to check if the instance is null. Consider `true` to be null when returned
+///     threadSafe: Enable thread-safe operations with lock. Default is false
 ///     logger: If a problem occurs, the corresponding Action is used to log it
 ///
 /// [Instance method]
@@ -75,6 +76,12 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     private readonly HashSet<T> _tempCache = new();
 
+    private Action<string> _logger;
+
+    private readonly bool _threadSafe;
+
+    private readonly object _lock;
+
     private bool _disposed = false;
     #endregion
 
@@ -84,9 +91,53 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     #endregion
 
     #region Properties
-    public int CountAll => CountActive + CountInactive;
-    public int CountActive => _activeInstances.Count;
-    public int CountInactive => _pool.Count;
+    public int CountAll
+    {
+        get
+        {
+            if (!_threadSafe)
+            {
+                return CountActive + CountInactive;
+            }
+
+            lock (_lock)
+            {
+                return CountActive + CountInactive;
+            }
+        }  
+    }
+
+    public int CountActive
+    {
+        get
+        {
+            if (!_threadSafe)
+            {
+                return _activeInstances.Count;
+            }
+
+            lock (_lock)
+            {
+                return _activeInstances.Count;
+            }
+        }
+    }
+
+    public int CountInactive
+    {
+        get
+        {
+            if (!_threadSafe)
+            {
+                return _pool.Count;
+            }
+
+            lock (_lock)
+            {
+                return _pool.Count;
+            }
+        }   
+    }
     #endregion
 
     #region Initialize Interface
@@ -97,18 +148,10 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
                 Action<T> actionOnRelease = null, 
                 Action<T> actionOnDestroy = null, 
                 Predicate<T> isNullPredicate = null,
+                bool threadSafe = false,
                 Action<string> logger = null)
     {
-        if (logger != null)
-        {
-            Logger = logger;
-        }
-
-        if (createFunc == null)
-        {
-            Logger?.Invoke("Create func cannot be null");
-            return;
-        }
+        Logger = logger ?? Debug.LogWarning;
 
         _createFunc = createFunc ?? throw new ArgumentNullException($"{GetType().Name} parameter '{nameof(createFunc)}' is cannot be null");;
         _actionOnGet = actionOnGet;
@@ -117,15 +160,129 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         _initSize = Math.Min(initSize, maxSize);
         _maxSize = maxSize;
         _isNullPredicate = isNullPredicate ?? (instance => instance == null);
+        _threadSafe = threadSafe;
+
+        if (_threadSafe)
+        {
+            _lock = new object();
+        }
         
         Init();
     }
 
-    public Action<string> Logger { get; set; } = Debug.LogWarning;
+    public Action<string> Logger
+    {
+        get => _logger;
+        set
+        {
+            _logger = text =>
+            {
+                try
+                {
+                    value?.Invoke(text);
+                }
+                catch { }
+            };
+        }
+    }
     #endregion
 
     #region Public methods
     public T Get()
+    {
+        if (!_threadSafe)
+        {
+            return InternalGet();
+        }
+
+        lock (_lock)
+        {
+            return InternalGet();
+        }
+    }
+
+    public bool Release(T instance)
+    {
+        if (!_threadSafe)
+        {
+            return InternalRelease(instance);
+        }
+
+        lock (_lock)
+        {
+            return InternalRelease(instance);
+        }
+    }
+
+    public bool Release(Predicate<T> predicate)
+    {
+        if (!_threadSafe)
+        {
+            return InternalRelease(predicate);
+        }
+
+        lock (_lock)
+        {
+            return InternalRelease(predicate);
+        }
+    }
+
+    public bool ReleaseAll()
+    {
+        if (!_threadSafe)
+        {
+            return InternalReleaseAll();
+        }
+
+        lock (_lock)
+        {
+            return InternalReleaseAll();
+        }
+    }
+
+    public bool Remove(T instance)
+    {
+        if (!_threadSafe)
+        {
+            return InternalRemove(instance);
+        }
+
+        lock (_lock)
+        {
+            return InternalRemove(instance);
+        }
+    }
+
+    public bool Remove(Predicate<T> predicate)
+    {
+        if (!_threadSafe)
+        {
+            return InternalRemove(predicate);
+        }
+
+        lock (_lock)
+        {
+            return InternalRemove(predicate);
+        }
+    }
+
+    public void Clear()
+    {
+        if (!_threadSafe)
+        {
+            InternalClear();
+            return;
+        }
+
+        lock (_lock)
+        {
+            InternalClear();
+        }
+    }
+    #endregion
+
+    #region Internal
+    private T InternalGet()
     {
         CheckDispose();
 
@@ -149,7 +306,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
                 else
                 {
                     Logger?.Invoke("Reinitializing the entire pool");
-                    Clear();
+                    InternalClear();
                     Instantiate();
                     pooled = null;
                     if (_pool.Count > 0)
@@ -180,7 +337,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         return null;
     }
 
-    public bool Release(T instance)
+    private bool InternalRelease(T instance)
     {
         CheckDispose();
 
@@ -199,7 +356,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         _actionOnRelease?.Invoke(instance);
 
-        if (_pool.Count <= _maxSize)
+        if (_pool.Count < _maxSize)
         {
             _pool.AddLast(instance);
         }
@@ -210,7 +367,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         return true;
     }
 
-    public bool Release(Predicate<T> predicate)
+    private bool InternalRelease(Predicate<T> predicate)
     {
         CheckDispose();
 
@@ -223,13 +380,13 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         foreach (T instance in _tempCache)
         {
-            Release(instance);
+            InternalRelease(instance);
         }
 
         return _tempCache.Count > 0;
     }
 
-    public bool ReleaseAll()
+    private bool InternalReleaseAll()
     {
         CheckDispose();
 
@@ -247,7 +404,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         bool isAnyRelease = false;
         foreach (T instance in _tempCache)
         {
-            if (Release(instance))
+            if (InternalRelease(instance))
             {
                 isAnyRelease = true;
             }
@@ -256,7 +413,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         return isAnyRelease;
     }
 
-    public bool Remove(T instance)
+    private bool InternalRemove(T instance)
     {
         CheckDispose();
 
@@ -273,7 +430,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         return success;
     }
 
-    public bool Remove(Predicate<T> predicate)
+    private bool InternalRemove(Predicate<T> predicate)
     {
         CheckDispose();
 
@@ -286,13 +443,13 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         foreach (T instance in _tempCache)
         {
-            Remove(instance);
+            InternalRemove(instance);
         }
 
         return _tempCache.Count > 0;
     }
 
-    public void Clear()
+    private void InternalClear()
     {
         CheckDispose();
 
@@ -318,7 +475,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
             T instance = _createFunc?.Invoke();
             if (IsNull(instance))
             {
-                Debug.LogWarning("Create func returns null");
+                Logger?.Invoke("Create func returns null");
                 break;
             }
             _pool.AddLast(instance);
@@ -449,7 +606,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
         if (disposing)
         {
-            Clear();
+            InternalClear();
         }
         _disposed = true;
     }
@@ -465,8 +622,18 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
 
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        if (!_threadSafe)
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+            return;
+        }
+
+        lock (_lock)
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
     #endregion
 }
