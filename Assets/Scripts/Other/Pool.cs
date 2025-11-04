@@ -153,7 +153,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
     {
         Logger = logger ?? Debug.LogWarning;
 
-        _createFunc = createFunc ?? throw new ArgumentNullException($"{GetType().Name} parameter '{nameof(createFunc)}' is cannot be null");;
+        _createFunc = createFunc ?? throw new ArgumentNullException($"{GetType().Name} parameter '{nameof(createFunc)}' is cannot be null");
         _actionOnGet = actionOnGet;
         _actionOnRelease = actionOnRelease;
         _actionOnDestroy = actionOnDestroy;
