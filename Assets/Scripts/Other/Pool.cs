@@ -114,7 +114,7 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         _actionOnGet = actionOnGet;
         _actionOnRelease = actionOnRelease;
         _actionOnDestroy = actionOnDestroy;
-        _initSize = Mathf.Min(initSize, maxSize);
+        _initSize = Math.Min(initSize, maxSize);
         _maxSize = maxSize;
         _isNullPredicate = isNullPredicate ?? (instance => instance == null);
         
