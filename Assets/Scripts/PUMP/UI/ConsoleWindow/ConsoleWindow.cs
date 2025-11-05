@@ -20,6 +20,7 @@ public class ConsoleWindow : MonoBehaviour
 
     public static void Input(string text)
     {
+        ConsoleDefaultCommandInjector.Inject();
         InternalInput(text, ConsoleInputSource.System);
     }
 
@@ -302,7 +303,7 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void ChargeCancelQueryCts()
     {
-        _queryCts = new();
+        _queryCts = new(false);
     }
     // -=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=--=-=-=-=-=
     #endregion

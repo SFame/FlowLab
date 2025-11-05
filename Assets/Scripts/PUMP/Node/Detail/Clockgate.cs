@@ -6,25 +6,25 @@ using OdinSerializer;
 using UnityEngine;
 
 /// <summary>
-/// ÀÔ·ÂÀÌ ¹Ù²ğ ¶§¸¶´Ù ÁöÁ¤ÇÑ Ã¤³Î/ÁÖ±âÀÇ "´ÙÀ½ Æ½"¿¡ °ªÀ» ±×´ë·Î ³»º¸³»´Â µ¿±âÈ­ °ÔÀÌÆ®.
-/// - ÀÔ·Â: in(°¡º¯ 1°³) / Ãâ·Â: out(1°³, in°ú µ¿ÀÏ Å¸ÀÔ)
-/// - ¿ìÅ¬¸¯ ¡æ Edit ·Î Ã¤³Î, ÁÖ±â, ¹æÃâÁ¤Ã¥À» Á¶Á¤
-/// - °°Àº Ã¤³ÎÀ» ¾²´Â ³ëµå³¢¸® ÇÁ·¹ÀÓ °İÀÚ Á¤·Ä
+/// ì…ë ¥ì´ ë°”ë€” ë•Œë§ˆë‹¤ ì§€ì •í•œ ì±„ë„/ì£¼ê¸°ì˜ "ë‹¤ìŒ í‹±"ì— ê°’ì„ ê·¸ëŒ€ë¡œ ë‚´ë³´ë‚´ëŠ” ë™ê¸°í™” ê²Œì´íŠ¸.
+/// - ì…ë ¥: in(ê°€ë³€ 1ê°œ) / ì¶œë ¥: out(1ê°œ, inê³¼ ë™ì¼ íƒ€ì…)
+/// - ìš°í´ë¦­ â†’ Edit ë¡œ ì±„ë„, ì£¼ê¸°, ë°©ì¶œì •ì±…ì„ ì¡°ì •
+/// - ê°™ì€ ì±„ë„ì„ ì“°ëŠ” ë…¸ë“œë¼ë¦¬ í”„ë ˆì„ ê²©ì ì •ë ¬
 /// </summary>
 public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
 {
     // ---- Serialized ----
     [SerializeField] private int _channel = 0;          // 0 ~ Max-1
-    [SerializeField] private int _periodFrames = 3;     // ÇÁ·¹ÀÓ ´ÜÀ§ ÁÖ±â
-    [SerializeField] private bool _emitImmediatelyIfAligned = true; // °İÀÚ ÇÁ·¹ÀÓÀÌ¸é Áï½Ã ³»º¸³¾Áö
+    [SerializeField] private int _periodFrames = 3;     // í”„ë ˆì„ ë‹¨ìœ„ ì£¼ê¸°
+    [SerializeField] private bool _emitImmediatelyIfAligned = true; // ê²©ì í”„ë ˆì„ì´ë©´ ì¦‰ì‹œ ë‚´ë³´ë‚¼ì§€
     [SerializeField] private TransitionType _inOutType = TransitionType.Int;
 
     // ---- Runtime ----
     private List<ContextElement> _contexts;
-    private SafetyCancellationTokenSource _gateCts = new(); // Å¸ÀÔ ¹Ù²ñ/Á¦°Å ½Ã ÀüÃ¼ Ãë¼Ò
-    private SafetyCancellationTokenSource _pendingCts = new(); // ÃÖ½Å ¿¹¾à 1°³¸¸ À¯Áö(ÃÖ½Å°ª ¿ì¼±)
+    private SafetyCancellationTokenSource _gateCts = new(false); // íƒ€ì… ë°”ë€œ/ì œê±° ì‹œ ì „ì²´ ì·¨ì†Œ
+    private SafetyCancellationTokenSource _pendingCts = new(false); // ìµœì‹  ì˜ˆì•½ 1ê°œë§Œ ìœ ì§€(ìµœì‹ ê°’ ìš°ì„ )
 
-    // (¼±ÅÃ) Edit ÆĞ³Î¿ë ÈÅ ? ¾øÀ¸¸é ¹«½Ã
+    // (ì„ íƒ) Edit íŒ¨ë„ìš© í›… ? ì—†ìœ¼ë©´ ë¬´ì‹œ
     private ClockGateSupport _support;
     private ClockGateSupport Support
     {
@@ -37,8 +37,8 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
     }
     private ClockGateSupport SupportGetter()
     {
-        // DelayÃ³·³ Support ÄÄÆ÷³ÍÆ®¿¡¼­ °¡Á®¿À´Â ÆĞÅÏ°ú µ¿ÀÏ (nullÀÌ¾îµµ ¾ÈÀü)
-        // Delay´Â DelaySupport¸¦ Support.GetComponent·Î È¹µæÇßÀ½. :contentReference[oaicite:3]{index=3}
+        // Delayì²˜ëŸ¼ Support ì»´í¬ë„ŒíŠ¸ì—ì„œ ê°€ì ¸ì˜¤ëŠ” íŒ¨í„´ê³¼ ë™ì¼ (nullì´ì–´ë„ ì•ˆì „)
+        // DelayëŠ” DelaySupportë¥¼ Support.GetComponentë¡œ íšë“í–ˆìŒ. :contentReference[oaicite:3]{index=3}
         return Support.GetComponent<ClockGateSupport>();
     }
 
@@ -59,7 +59,7 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
     protected override Vector2 DefaultNodeSize => new(120f, 50f);
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
-        => TransitionUtil.GetNullArray(outputTypes); // ±âÁ¸ ÆĞÅÏ°ú µ¿ÀÏ :contentReference[oaicite:4]{index=4}
+        => TransitionUtil.GetNullArray(outputTypes); // ê¸°ì¡´ íŒ¨í„´ê³¼ ë™ì¼ :contentReference[oaicite:4]{index=4}
 
     protected override void OnBeforeRemove()
     {
@@ -69,11 +69,11 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        // ÀÔ·Â(in) 1°³¸¸ Á¸ÀçÇÏ¹Ç·Î, ¾î¶² StateUpdateµç ÃÖ½Å°ªÀ» "´ÙÀ½ Æ½"¿¡ ¹æÃâ ¿¹¾à
-        // (Å¸ÀÔ ÀÏÄ¡ º¸Àå: Input/Output Å¸ÀÔ µ¿±â)
-        if (InputToken.FirstType != OutputToken.FirstType) return; // ¾ÈÀüÀåÄ¡ (Delay¿Í µ¿ÀÏ ÆĞÅÏ) :contentReference[oaicite:5]{index=5}
+        // ì…ë ¥(in) 1ê°œë§Œ ì¡´ì¬í•˜ë¯€ë¡œ, ì–´ë–¤ StateUpdateë“  ìµœì‹ ê°’ì„ "ë‹¤ìŒ í‹±"ì— ë°©ì¶œ ì˜ˆì•½
+        // (íƒ€ì… ì¼ì¹˜ ë³´ì¥: Input/Output íƒ€ì… ë™ê¸°)
+        if (InputToken.FirstType != OutputToken.FirstType) return; // ì•ˆì „ì¥ì¹˜ (Delayì™€ ë™ì¼ íŒ¨í„´) :contentReference[oaicite:5]{index=5}
 
-        // ±âÁ¸ ¿¹¾à Ãë¼Ò(ÃÖ½Å°ª¸¸ À¯Áö)
+        // ê¸°ì¡´ ì˜ˆì•½ ì·¨ì†Œ(ìµœì‹ ê°’ë§Œ ìœ ì§€)
         _pendingCts = _pendingCts.CancelAndDisposeAndGetNew();
 
         var current = InputToken.FirstState;
@@ -90,7 +90,7 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
         }
         catch (OperationCanceledException)
         {
-            // ÃÖ½Å ¿¹¾àÀ¸·Î µ¤¾î½èÀ» ¶§ Á¤»ó Ãë¼Ò
+            // ìµœì‹  ì˜ˆì•½ìœ¼ë¡œ ë®ì–´ì¼ì„ ë•Œ ì •ìƒ ì·¨ì†Œ
         }
     }
 
@@ -103,14 +103,14 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
             {
                 _contexts = base.ContextElements;
 
-                // Å¸ÀÔ ÀüÈ¯
+                // íƒ€ì… ì „í™˜
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Bool.GetColorHexCodeString(true)}><b>Bool</b></color>", () => SetDataType(TransitionType.Bool)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetDataType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetDataType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetDataType(TransitionType.String)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>", () => SetDataType(TransitionType.Pulse)));
 
-                // ºü¸¥ ÇÁ¸®¼Â
+                // ë¹ ë¥¸ í”„ë¦¬ì…‹
                 int[] presets = { 1, 2, 3, 4, 5, 6, 8, 12, 16, 24, 30, 60 };
                 foreach (var p in presets)
                 {
@@ -122,16 +122,16 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
                     }));
                 }
 
-                // Á¤Ã¥ Åä±Û
+                // ì •ì±… í† ê¸€
                 _contexts.Add(new ContextElement(
                     _emitImmediatelyIfAligned ? "Aligned: Emit NOW" : "Aligned: Emit NEXT tick",
                     () => { _emitImmediatelyIfAligned = !_emitImmediatelyIfAligned; _contexts = null; ReportChanges(); }
                 ));
 
-                // Ã¤³Î Á¤·Ä
+                // ì±„ë„ ì •ë ¬
                 _contexts.Add(new ContextElement("Align channel now", () => { ChannelClock.AlignNow(_channel); ReportChanges(); }));
 
-                // ---- Edit ÆĞ³Î (Ã¤³Î/ÁÖ±â/Á¤Ã¥ ÀÏ°ı ÆíÁı) ----
+                // ---- Edit íŒ¨ë„ (ì±„ë„/ì£¼ê¸°/ì •ì±… ì¼ê´„ í¸ì§‘) ----
                 _contexts.Add(new ContextElement("<b>Edit...</b>", () =>
                 {
                     if (Support != null)
@@ -149,8 +149,8 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
                     }
                     else
                     {
-                        // Support°¡ ¾ø¾îµµ µ¿ÀÛ: ÃÖ¼Ò ¾È³»
-                        Debug.LogWarning($"{nameof(ClockGate)}: ClockGateSupport°¡ ¾ø¾î ±âº» ÄÁÅØ½ºÆ® ÇÁ¸®¼ÂÀ¸·Î¸¸ ÆíÁıµË´Ï´Ù.");
+                        // Supportê°€ ì—†ì–´ë„ ë™ì‘: ìµœì†Œ ì•ˆë‚´
+                        Debug.LogWarning($"{nameof(ClockGate)}: ClockGateSupportê°€ ì—†ì–´ ê¸°ë³¸ ì»¨í…ìŠ¤íŠ¸ í”„ë¦¬ì…‹ìœ¼ë¡œë§Œ í¸ì§‘ë©ë‹ˆë‹¤.");
                     }
                 }));
             }
@@ -166,7 +166,7 @@ public class ClockGate : Node, INodeAdditionalArgs<ClockGate.SerializeInfo>
 
         _inOutType = type;
         OutputToken.SetTypeAll(type);
-        InputToken.SetTypeAll(type); // in/out µ¿½Ã º¯°æ (Delay ÆĞÅÏ) :contentReference[oaicite:6]{index=6}
+        InputToken.SetTypeAll(type); // in/out ë™ì‹œ ë³€ê²½ (Delay íŒ¨í„´) :contentReference[oaicite:6]{index=6}
         ReportChanges();
 
         _contexts = null;

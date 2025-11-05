@@ -87,7 +87,7 @@ public class PUMPTool : MonoBehaviour
     private void StartPollingTask()
     {
         _cts?.CancelAndDispose();
-        _cts = new SafetyCancellationTokenSource();
+        _cts = new SafetyCancellationTokenSource(false);
         StartPolling(_cts.Token).Forget();
     }
 

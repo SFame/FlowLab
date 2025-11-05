@@ -1359,7 +1359,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #region Selecting
     private readonly HashSet<IDragSelectable> _selectables = new();
     private readonly HashSet<IDragSelectable> _selected = new();
-    private SafetyCancellationTokenSource _alphaControlCts = new();
+    private SafetyCancellationTokenSource _alphaControlCts = new(false);
     private static List<SerializeNodeInfo> _clipboard = null;
     private const float DRAGGABLES_BLINK_SPEED = 0.75f;
     private const float DRAGGABLES_MIN_ALPHA = 0.6f;
@@ -1837,7 +1837,7 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
         }
 
         _statesAdapters.Clear();
-        _cts = new();
+        _cts = new(false);
 
         foreach (ITypeListenStateful stateful in _reference)
         {
@@ -2080,7 +2080,7 @@ public class ExternalInputStatesAdapter : ITypeListenStateful, IDisposable
     }
 
     private bool _disposed;
-    private SafetyCancellationTokenSource _typeChangeCts = new();
+    private SafetyCancellationTokenSource _typeChangeCts = new(false);
     private Transition _state;
     private Transition _stateCache;
     private Func<UniTask> _waitTaskGetter;

@@ -52,7 +52,7 @@ public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
 
     private KeyCode _currentKeyCode = KeyCode.None;
 
-    private SafetyCancellationTokenSource _cts = new();
+    private SafetyCancellationTokenSource _cts = new(false);
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/KEY_INPUT";
 

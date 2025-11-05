@@ -100,7 +100,35 @@ public class ConsoleDefaultCommandInjector
         new ConsoleCommand
         (
             command: "/calc",
-            doc: "Evaluates the entered expression.",
+            doc: @"Evaluates the entered expression.
+
+=== Mathematical Functions ===
+Abs(n): Returns the absolute value
+Acos(n): Returns the arc cosine (in radians)
+Asin(n): Returns the arc sine (in radians)
+Atan(n): Returns the arc tangent (in radians)
+Ceiling(n): Returns the smallest integer greater than or equal to n
+Cos(n): Returns the cosine (in radians)
+Exp(n): Returns e raised to the specified power
+Floor(n): Returns the largest integer less than or equal to n
+IEEERemainder(x, y): Returns the remainder of x divided by y
+Ln(n): Returns the natural logarithm (base e)
+Log(n, base): Returns the logarithm with specified base
+Log10(n): Returns the base 10 logarithm
+Max(a, b): Returns the larger of two values
+Min(a, b): Returns the smaller of two values
+Pow(x, y): Returns x raised to the power of y
+Round(n, digits): Rounds to the specified number of decimal places
+Sign(n): Returns the sign (-1, 0, or 1)
+Sin(n): Returns the sine (in radians)
+Sqrt(n): Returns the square root
+Tan(n): Returns the tangent (in radians)
+Truncate(n): Returns the integral part (truncates decimals)
+
+=== General Functions ===
+in(value, v1, v2, ...): Checks if value is in the list
+if(condition, trueVal, falseVal): Returns value based on condition
+ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
             isSystem: true,
             args: new []{ "expression" },
             queryProcess: async context =>

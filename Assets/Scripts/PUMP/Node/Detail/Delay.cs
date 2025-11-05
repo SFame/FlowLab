@@ -19,7 +19,7 @@ public class Delay : Node, INodeAdditionalArgs<DelaySerializeInfo>
 
     private int _delay = 500;
     private DelaySupport _delaySupport;
-    private SafetyCancellationTokenSource _cts = new();
+    private SafetyCancellationTokenSource _cts = new(false);
     private List<ContextElement> _contexts;
 
     private DelaySupport DelaySupport

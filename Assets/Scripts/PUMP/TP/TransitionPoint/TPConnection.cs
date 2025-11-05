@@ -16,7 +16,7 @@ public class TPConnection : IStateful, IDisposable
     private LineConnector _lineConnector = null;
     private bool _initialized = false;
     private List<Vector2> _lineEdges;
-    private readonly SafetyCancellationTokenSource _pendingCts = new();
+    private readonly SafetyCancellationTokenSource _pendingCts = new(false);
     private bool _typeSet = false;
     private bool _disposed = false;
     private bool _disconnected = false;

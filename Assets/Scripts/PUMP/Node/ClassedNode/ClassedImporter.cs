@@ -39,7 +39,7 @@ public class ClassedImporter : MonoBehaviour
             {
                 SetHighlights(true);
                 _cts?.CancelAndDispose();
-                _cts = new SafetyCancellationTokenSource();
+                _cts = new SafetyCancellationTokenSource(false);
                 FindDataTarget(_cts.Token).Forget();
                 return;
             }

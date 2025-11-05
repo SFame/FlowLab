@@ -223,7 +223,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     private Color _radialDefaultColor;
     private bool _radialInitialized = false;
-    private SafetyCancellationTokenSource _radialCts = new();
+    private SafetyCancellationTokenSource _radialCts = new(false);
 
     private void ShadowInitialize()
     {
@@ -296,7 +296,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     #endregion
 
     #region StateDisplay
-    private SafetyCancellationTokenSource _stateDisplayCts = new();
+    private SafetyCancellationTokenSource _stateDisplayCts = new(false);
     private readonly float _mouseMoveThreshold = 0.5f;
     private readonly float _mouseHoverDelay = 0.5f;
     private Vector2 _mouseLastPosition;

@@ -14,7 +14,7 @@ public static class InputManager
     private static readonly HashSet<object> _blocker = new();
 
     private static KeyValuePair<InputKeyMap, InputKeyMapArgs>[] _sortedKeyMaps;
-    private static SafetyCancellationTokenSource _loopCts = new();
+    private static SafetyCancellationTokenSource _loopCts = new(false);
     private static UniTask _loopTask = UniTask.CompletedTask;
 
     public static bool Subscribe(InputKeyMap keyMap, InputKeyMapArgs args)

@@ -15,7 +15,7 @@ public abstract class BaseCodexPalette : MonoBehaviour
 
     private GameObject _elementPrefab;
     private bool _isVisible = false;
-    private SafetyCancellationTokenSource _cts = new();
+    private SafetyCancellationTokenSource _cts = new(false);
 
     private const string ELEMENT_PREFAB_PATH = "PUMP/Prefab/NodePalette/CodexElem";
 

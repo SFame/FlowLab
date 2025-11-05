@@ -195,7 +195,7 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     public void Log(string message)
     {
         _showLogCts?.CancelAndDispose();
-        _showLogCts = new SafetyCancellationTokenSource();
+        _showLogCts = new SafetyCancellationTokenSource(false);
         RemoveLog();
 
         ShowLogAsync(message, _showLogCts.Token).Forget();

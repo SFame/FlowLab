@@ -16,8 +16,8 @@ public class LoadingController : MonoBehaviour, ILoadingUi
     [SerializeField] private float m_animationInterval = 0.5f;
 
     private bool _isShowing = false;
-    private SafetyCancellationTokenSource _textAnimationCts = new();
-    private SafetyCancellationTokenSource _sliderAnimationCts = new();
+    private SafetyCancellationTokenSource _textAnimationCts = new(false);
+    private SafetyCancellationTokenSource _sliderAnimationCts = new(false);
 
     private float Value
     {
@@ -62,7 +62,7 @@ public class LoadingController : MonoBehaviour, ILoadingUi
 
         if (active)
         {
-            _textAnimationCts = new();
+            _textAnimationCts = new(false);
             TextAnimationAsync(_textAnimationCts.Token).Forget();
         }
     }

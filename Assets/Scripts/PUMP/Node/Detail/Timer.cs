@@ -182,7 +182,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
         _cts?.Cancel();
         _cts?.Dispose();
 
-        _cts = new SafetyCancellationTokenSource();
+        _cts = new SafetyCancellationTokenSource(false);
         return _cts.Token;
     }
     #endregion

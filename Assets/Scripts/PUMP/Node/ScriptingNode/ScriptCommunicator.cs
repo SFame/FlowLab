@@ -116,7 +116,7 @@ printer = Printer()";
     {
         get
         {
-            _asyncModeCts ??= new SafetyCancellationTokenSource();
+            _asyncModeCts ??= new SafetyCancellationTokenSource(false);
             return _asyncModeCts;
         }
     }

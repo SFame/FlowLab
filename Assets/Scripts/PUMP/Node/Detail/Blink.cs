@@ -14,7 +14,7 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     private bool _isRunning = false;
 
-    private SafetyCancellationTokenSource _cts = new();
+    private SafetyCancellationTokenSource _cts = new(false);
 
     private BlinkSupport _blinkSupport;
 

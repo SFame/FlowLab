@@ -9,7 +9,7 @@ public class FrequencyMeter : Node
     private List<ContextElement> _contexts;
     private readonly Queue<float> _signalWindow = new();
     private UniTask _currentTask = UniTask.CompletedTask;
-    private readonly SafetyCancellationTokenSource _cts = new();
+    private readonly SafetyCancellationTokenSource _cts = new(false);
 
     private const float WINDOW_SIZE = 1.0f;
     private const float TARGET_PERIOD = 1.0f;

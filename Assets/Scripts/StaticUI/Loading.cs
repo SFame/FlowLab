@@ -17,7 +17,7 @@ public static class Loading
     private static GameObject _prefab;
     private static GameObject _uiGameObject;
     private static ILoadingUi _loadingUi;
-    private static SafetyCancellationTokenSource _cts = new();
+    private static SafetyCancellationTokenSource _cts = new(false);
     private static List<IProgressManageable> _currentProgresses = new();
 
     private static Pool<IProgressManageable> _progressPool = new
@@ -369,7 +369,7 @@ public static class Loading
             {
                 _cts?.Cancel();
                 _cts?.Dispose();
-                _cts = new();
+                _cts = new(false);
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
@@ -452,7 +452,7 @@ public static class Loading
             {
                 _cts?.Cancel();
                 _cts?.Dispose();
-                _cts = new();
+                _cts = new(false);
 
                 Task observeTask = task.ContinueWith(_ => // 스레드 풀에서 Run 주의
                 {
