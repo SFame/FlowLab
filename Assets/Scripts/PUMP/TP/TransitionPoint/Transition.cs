@@ -1,11 +1,11 @@
-using OdinSerializer;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using OdinSerializer;
 using ColorUtility = UnityEngine.ColorUtility;
 [assembly: RegisterFormatter(typeof(TransitionFormatter))]
 

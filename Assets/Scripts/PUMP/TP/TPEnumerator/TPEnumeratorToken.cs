@@ -489,7 +489,9 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
         }
 
         for (int i = 0; i < _adapters.Length; i++)
+        {
             _adapters[i].Name = names[i];
+        }
     }
     #endregion
 
