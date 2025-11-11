@@ -3,10 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using ColorUtility = UnityEngine.ColorUtility;
+[assembly: RegisterFormatter(typeof(TransitionFormatter))]
 
-public enum TransitionType
+public enum TransitionType : byte
 {
     None,
     Bool,
@@ -23,10 +26,19 @@ public readonly struct Pulse
         IsNull = isNull;
     }
 
+    /// <summary>
+    /// Transition에서 변환했을 때 확인 가능. Transition으로 만들 때에는 IsNull 값에 상관 없이 생성자의 isNull 파라미터를 따라감.
+    /// </summary>
     public bool IsNull { get; }
 }
 
-[Serializable]
+/// <summary>
+/// _type: 0
+/// _isNull: 1
+/// _value: 8
+/// total 16 byte
+/// </summary>
+[StructLayout(LayoutKind.Explicit)]
 public readonly struct Transition : IComparable<Transition>, IEquatable<Transition>
 {
     #region Static Interface
@@ -252,13 +264,13 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     #endregion
 
     #region Backing fields
-    [OdinSerialize] private readonly TransitionType _type;
-    [OdinSerialize] private readonly TransitionValue _value;
-    [OdinSerialize] private readonly bool _isNull;
+    [FieldOffset(0)] private readonly TransitionType _type;
+    [FieldOffset(1)] private readonly bool _isNull;
+    [FieldOffset(8)] private readonly TransitionValue _value;
     #endregion
 
-    #region Non Interface
-    public Transition(TransitionType type, TransitionValue value, bool isNull = false)
+    #region Constructor
+    private Transition(TransitionType type, TransitionValue value, bool isNull)
     {
         if (type == TransitionType.None)
         {
@@ -271,35 +283,35 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
         }
 
         _type = type;
-        _value = value;
+        _value = isNull ? TransitionValue.Default() : value;
         _isNull = isNull;
     }
 
     public Transition(bool value, bool isNull = false)
     {
         _type = TransitionType.Bool;
-        _value = new TransitionValue(boolValue: value);
+        _value = isNull ? TransitionValue.Default() : TransitionValue.CreateBool(value);
         _isNull = isNull;
     }
 
     public Transition(int value, bool isNull = false)
     {
         _type = TransitionType.Int;
-        _value = new TransitionValue(intValue: value);
+        _value = isNull ? TransitionValue.Default() : TransitionValue.CreateInt(value);
         _isNull = isNull;
     }
 
     public Transition(float value, bool isNull = false)
     {
         _type = TransitionType.Float;
-        _value = new TransitionValue(floatValue: value);
+        _value = isNull ? TransitionValue.Default() : TransitionValue.CreateFloat(value);
         _isNull = isNull;
     }
 
     public Transition(string value, bool isNull = false)
     {
         _type = TransitionType.String;
-        _value = new TransitionValue(stringValue: value);
+        _value = isNull ? TransitionValue.Default() : TransitionValue.CreateString(value);
         _isNull = isNull;
     }
 
@@ -315,13 +327,13 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
         if (value is bool b)
         {
             _type = TransitionType.Bool;
-            _value = new TransitionValue(boolValue: b);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateBool(b);
             _isNull = isNull;
         }
         else if (value is int i)
         {
             _type = TransitionType.Int;
-            _value = new TransitionValue(intValue: i);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateInt(i);
             _isNull = isNull;
         }
         else if (value is BigInteger bi)
@@ -335,25 +347,25 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
                 clamped = (int)bi;
 
             _type = TransitionType.Int;
-            _value = new TransitionValue(intValue: clamped);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateInt(clamped);
             _isNull = isNull;
         }
         else if (value is float f)
         {
             _type = TransitionType.Float;
-            _value = new TransitionValue(floatValue: f);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateFloat(f);
             _isNull = isNull;
         }
         else if (value is double d)
         {
             _type = TransitionType.Float;
-            _value = new TransitionValue(floatValue: (float)d);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateFloat((float)d);
             _isNull = isNull;
         }
         else if (value is string s)
         {
             _type = TransitionType.String;
-            _value = new TransitionValue(stringValue: s);
+            _value = isNull ? TransitionValue.Default() : TransitionValue.CreateString(s);
             _isNull = isNull;
         }
         else if (value is Pulse p)
@@ -377,7 +389,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     // ---------- Bool ----------
     public static implicit operator Transition(bool b)
     {
-        return new Transition(TransitionType.Bool, new TransitionValue(boolValue: b));
+        return new Transition(TransitionType.Bool, TransitionValue.CreateBool(b), false);
     }
 
     public static implicit operator bool(Transition t)
@@ -398,7 +410,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     // ---------- Int ----------
     public static implicit operator Transition(int i)
     {
-        return new Transition(TransitionType.Int, new TransitionValue(intValue: i));
+        return new Transition(TransitionType.Int, TransitionValue.CreateInt(i), false);
     }
 
     public static implicit operator int(Transition t)
@@ -419,7 +431,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     // ---------- Float ----------
     public static implicit operator Transition(float f)
     {
-        return new Transition(TransitionType.Float, new TransitionValue(floatValue: f));
+        return new Transition(TransitionType.Float, TransitionValue.CreateFloat(f), false);
     }
 
     public static implicit operator float(Transition t)
@@ -445,7 +457,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
             throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead");
         }
 
-        return new Transition(TransitionType.String, new TransitionValue(stringValue: s));
+        return new Transition(TransitionType.String, TransitionValue.CreateString(s), false);
     }
 
     public static implicit operator string(Transition t)
@@ -466,7 +478,7 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     // ---------- Pulse ----------
     public static implicit operator Transition(Pulse p)
     {
-        return new Transition(TransitionType.Pulse, TransitionValue.Default());
+        return new Transition(TransitionType.Pulse, TransitionValue.Default(), false);
     }
 
     public static implicit operator Pulse(Transition t)
@@ -489,8 +501,8 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     public static Transition operator +(Transition t) => t.Type switch
     {
         _ when t.IsNull => t.Type.Null(),
-        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: +t.Value.IntValue)),
-        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: +t.Value.FloatValue)),
+        TransitionType.Int => new Transition(t.Type, TransitionValue.CreateInt(+t.Value.IntValue), false),
+        TransitionType.Float => new Transition(t.Type, TransitionValue.CreateFloat(+t.Value.FloatValue), false),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionInvalidOperationException("+", t.Type)
     };
@@ -498,8 +510,8 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     public static Transition operator -(Transition t) => t.Type switch
     {
         _ when t.IsNull => t.Type.Null(),
-        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: -t.Value.IntValue)),
-        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: -t.Value.FloatValue)),
+        TransitionType.Int => new Transition(t.Type, TransitionValue.CreateInt(-t.Value.IntValue), false),
+        TransitionType.Float => new Transition(t.Type, TransitionValue.CreateFloat(-t.Value.FloatValue), false),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionInvalidOperationException("-", t.Type)
     };
@@ -507,8 +519,8 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     public static Transition operator ++(Transition t) => t.Type switch
     {
         _ when t.IsNull => t.Type.Null(),
-        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: t.Value.IntValue + 1)),
-        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: t.Value.FloatValue + 1)),
+        TransitionType.Int => new Transition(t.Type, TransitionValue.CreateInt(t.Value.IntValue + 1), false),
+        TransitionType.Float => new Transition(t.Type, TransitionValue.CreateFloat(t.Value.FloatValue + 1), false),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionInvalidOperationException("++", t.Type)
     };
@@ -516,8 +528,8 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     public static Transition operator --(Transition t) => t.Type switch
     {
         _ when t.IsNull => t.Type.Null(),
-        TransitionType.Int => new Transition(t.Type, new TransitionValue(intValue: t.Value.IntValue - 1)),
-        TransitionType.Float => new Transition(t.Type, new TransitionValue(floatValue: t.Value.FloatValue - 1)),
+        TransitionType.Int => new Transition(t.Type, TransitionValue.CreateInt(t.Value.IntValue - 1), false),
+        TransitionType.Float => new Transition(t.Type, TransitionValue.CreateFloat(t.Value.FloatValue - 1), false),
         TransitionType.None => throw new TransitionNoneTypeException(),
         _ => throw new TransitionInvalidOperationException("--", t.Type)
     };
@@ -544,9 +556,9 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
 
         return t1.Type switch
         {
-            TransitionType.Int => new Transition(t1.Type, new TransitionValue(intValue: ApplyIntOp(t1.Value.IntValue, t2.Value.IntValue, op))),
-            TransitionType.Float => new Transition(t1.Type, new TransitionValue(floatValue: ApplyFloatOp(t1.Value.FloatValue, t2.Value.FloatValue, op))),
-            TransitionType.String => new Transition(t1.Type, new TransitionValue(stringValue: ApplyStringOp(t1.Value.StringValue, t2.Value.StringValue, op))),
+            TransitionType.Int => new Transition(t1.Type, TransitionValue.CreateInt(ApplyIntOp(t1.Value.IntValue, t2.Value.IntValue, op)), false),
+            TransitionType.Float => new Transition(t1.Type, TransitionValue.CreateFloat(ApplyFloatOp(t1.Value.FloatValue, t2.Value.FloatValue, op)), false),
+            TransitionType.String => new Transition(t1.Type, TransitionValue.CreateString(ApplyStringOp(t1.Value.StringValue, t2.Value.StringValue, op)), false),
             _ => throw new TransitionInvalidOperationException(op, t1.Type, t2.Type)
         };
     }
@@ -612,19 +624,29 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
         }
 
         if (t1.Type != t2.Type)
+        {
             throw new TransitionTypeMismatchException(t1.Type, t2.Type);
+        }
 
         if (t1.Type != TransitionType.Int && t1.Type != TransitionType.Float)
+        {
             throw new TransitionInvalidOperationException(op, t1.Type, t2.Type);
+        }
 
         if (t1.IsNull && t2.IsNull)
+        {
             return ApplyIntComparison(0, 0, op);
+        }
 
         if (t1.IsNull)
+        {
             return ApplyIntComparison(0, 1, op);
+        }
 
         if (t2.IsNull)
+        {
             return ApplyIntComparison(1, 0, op);
+        }
 
         return t1.Type switch
         {
@@ -654,19 +676,43 @@ public readonly struct Transition : IComparable<Transition>, IEquatable<Transiti
     #endregion
 }
 
+/// <summary>
+/// Default 생성자 사용 금지
+/// </summary>
+[StructLayout(LayoutKind.Explicit)]
 public readonly struct TransitionValue
 {
     public static TransitionValue Default()
     {
-        return new TransitionValue(false, 0, 0f, string.Empty);
+        return default;
     }
 
-    public TransitionValue(bool boolValue = false, int intValue = 0, float floatValue = 0f, string stringValue = "")
+    public static TransitionValue CreateBool(bool value)
     {
-        _boolValue = boolValue;
-        _intValue = intValue;
-        _floatValue = floatValue;
-        _stringValue = stringValue ?? throw new TransitionNullStringException("TransitionType.String Transition's Value does not allow null. Please use an empty string instead");
+        TransitionValue result = default;
+        Unsafe.As<TransitionValue, bool>(ref result) = value;
+        return result;
+    }
+
+    public static TransitionValue CreateInt(int value)
+    {
+        TransitionValue result = default;
+        Unsafe.As<TransitionValue, int>(ref result) = value;
+        return result;
+    }
+
+    public static TransitionValue CreateFloat(float value)
+    {
+        TransitionValue result = default;
+        Unsafe.As<TransitionValue, float>(ref result) = value;
+        return result;
+    }
+
+    public static TransitionValue CreateString(string value)
+    {
+        TransitionValue result = default;
+        Unsafe.As<TransitionValue, string>(ref result) = value ?? string.Empty;
+        return result;
     }
 
     public bool BoolValue => _boolValue;
@@ -675,10 +721,10 @@ public readonly struct TransitionValue
     public string StringValue => _stringValue ?? string.Empty;
 
     #region Backing fields
-    [OdinSerialize] private readonly bool _boolValue;
-    [OdinSerialize] private readonly int _intValue;
-    [OdinSerialize] private readonly float _floatValue;
-    [OdinSerialize] private readonly string _stringValue;
+    [NonSerialized, FieldOffset(0)] private readonly bool _boolValue;
+    [NonSerialized, FieldOffset(0)] private readonly int _intValue;
+    [NonSerialized, FieldOffset(0)] private readonly float _floatValue;
+    [NonSerialized, FieldOffset(0)] private readonly string _stringValue;
     #endregion
 }
 
@@ -1134,5 +1180,94 @@ public class TransitionTypeArgumentOutOfRangeException : TransitionException
 public class TransitionNullStringException : TransitionException
 {
     public TransitionNullStringException(string message) : base($"<color=#FF7B00><b>[NULL STRING]</b></color> {message}") { }
+}
+#endregion
+
+#region OdinFormatter
+public class TransitionFormatter : MinimalBaseFormatter<Transition>
+{
+    private static readonly Serializer<TransitionType> TypeSerializer = Serializer.Get<TransitionType>();
+    private static readonly Serializer<bool> BoolSerializer = Serializer.Get<bool>();
+    private static readonly Serializer<int> IntSerializer = Serializer.Get<int>();
+    private static readonly Serializer<float> FloatSerializer = Serializer.Get<float>();
+    private static readonly Serializer<string> StringSerializer = Serializer.Get<string>();
+
+    protected override void Read(ref Transition value, IDataReader reader)
+    {
+        TransitionType type = TypeSerializer.ReadValue(reader);
+        bool isNull = BoolSerializer.ReadValue(reader);
+
+        if (isNull)
+        {
+            value = Transition.Null(type);
+            return;
+        }
+
+        switch (type)
+        {
+            case TransitionType.Bool:
+                bool boolValue = BoolSerializer.ReadValue(reader);
+                value = new Transition(boolValue, false);
+                return;
+
+            case TransitionType.Int:
+                int intValue = IntSerializer.ReadValue(reader);
+                value = new Transition(intValue, false);
+                return;
+
+            case TransitionType.Float:
+                float floatValue = FloatSerializer.ReadValue(reader);
+                value = new Transition(floatValue, false);
+                return;
+
+            case TransitionType.String:
+                string stringValue = StringSerializer.ReadValue(reader);
+                value = new Transition(stringValue, false);
+                return;
+
+            case TransitionType.Pulse:
+                value = Transition.Pulse();
+                return;
+
+            case TransitionType.None:
+            default:
+                throw new TransitionNoneTypeException();
+        }
+    }
+
+    protected override void Write(ref Transition value, IDataWriter writer)
+    {
+        TypeSerializer.WriteValue(value.Type, writer);
+        BoolSerializer.WriteValue(value.IsNull, writer);
+
+        if (!value.IsNull)
+        {
+            switch (value.Type)
+            {
+                case TransitionType.Bool:
+                    BoolSerializer.WriteValue(value, writer);
+                    return;
+
+                case TransitionType.Int:
+                    IntSerializer.WriteValue(value, writer);
+                    return;
+
+                case TransitionType.Float:
+                    FloatSerializer.WriteValue(value, writer);
+                    return;
+
+                case TransitionType.String:
+                    StringSerializer.WriteValue(value, writer);
+                    return;
+
+                case TransitionType.Pulse:
+                    return;
+
+                case TransitionType.None:
+                default:
+                    throw new TransitionNoneTypeException();
+            }
+        }
+    }
 }
 #endregion

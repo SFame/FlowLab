@@ -16,7 +16,7 @@ output_list: list = ['Out']
 input_types: list = [bool, bool, bool, bool]
 
 # Output port type configuration - Output is bool type (True/False signal)
-output_types: list = [bool]
+output_types: list = [Pulse]
 
 # Enable asynchronous execution - run_timer() function executes in separate thread
 is_async: bool = True
@@ -47,10 +47,8 @@ def run_timer():
         # Handle immediate completion when timer time is 0 or less
         if target_time <= 0:
             printer.print("Timer time is zero!")  # Display message above node
-            output_applier.apply([True])           # Send True signal to output port
+            output_applier.apply([Pulse()])           # Send True signal to output port
             Thread.Sleep(100)                      # Wait 0.1 seconds
-            if is_timer_running:
-                output_applier.apply([False])      # Send False signal to output port (complete pulse)
             is_timer_running = False
             return
             
@@ -84,12 +82,11 @@ def run_timer():
             printer.print("Timer completed!")
             
             # Send completion signal to output port (True pulse)
-            output_applier.apply([True])
+            output_applier.apply([Pulse()])
             
             # Change to False after short pulse signal
             Thread.Sleep(100)
             if is_timer_running:
-                output_applier.apply([False])
                 printer.print("Ready for next trigger")
                 
     except ThreadInterruptedException:
@@ -112,7 +109,6 @@ def init(inputs: list) -> None:
     target_time = 1.0  # Initialize to default timer duration
     
     # Initialize output port to False
-    output_applier.apply([False])
     # Display initial state message
     printer.print(f"Timer ready: {target_time:.1f}s")
 
@@ -149,7 +145,7 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
     elif index == 1 and state:  # Reset signal (Port 1)
         # Stop running timer and reset output
         is_timer_running = False
-        output_applier.apply([False])
+        output_applier.apply([None])
         printer.print(f"Timer reset: {target_time:.1f}s")
             
     elif index == 2 and state:  # Increase Time signal (Port 2)
