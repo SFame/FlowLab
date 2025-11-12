@@ -83,7 +83,7 @@
 
 # Defines the node's name
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
-name: str = "Scripting Node"
+name: str = 'Scripting Node'
 
 # Set the number and names of input ports with the list below
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
