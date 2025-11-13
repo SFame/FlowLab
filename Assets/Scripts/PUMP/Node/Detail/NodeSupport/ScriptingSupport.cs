@@ -1,11 +1,12 @@
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
-using System.Collections.Generic;
 using PolyAndCode.UI;
 using TMPro;
 using UnityEngine;
 using Utils;
+
 
 public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
 {
@@ -158,7 +159,9 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     private void EnqueueLog(string log)
     {
         if (_logQueue.Count > _maxLogCapacity)
+        {
             _logQueue.RemoveAt(_logQueue.Count - 1);
+        }
 
         _logQueue.Insert(0, log);
     }
@@ -186,12 +189,19 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         RemoveFileName();
     }
 
+    /// <summary>
+    /// 일반 디스플레이
+    /// </summary>
     public void Print(string value)
     {
-        m_PrintText.text = value;
-        EnqueueLog($"<color=black>{value}</color>");
+        string escapedValue = value.Replace("<", "&lt;").Replace(">", "&gt;");
+        m_PrintText.text = escapedValue;
+        EnqueueLog($"<color=black>{escapedValue}</color>");
     }
 
+    /// <summary>
+    /// 빨강 텍스트 경고 디스플레이 (로깅 큐에는 들어가지 않음)
+    /// </summary>
     public void Log(string message)
     {
         _showLogCts?.CancelAndDispose();
@@ -205,14 +215,15 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     {
         if (TryFilterPythonException(e, out string pythonEx))
         {
-            
-            EnqueueLog($"<color=red>{pythonEx}</color>");
+            string escapedString = pythonEx.Replace("<", "&lt;").Replace(">", "&gt;");
+            EnqueueLog($"<color=red>{escapedString}</color>");
             return;
         }
 
         if (TryFilterMicrosoftScriptingException(e, out string scriptingEx))
         {
-            EnqueueLog($"<color=red>{scriptingEx}</color>");
+            string escapedString = scriptingEx.Replace("<", "&lt;").Replace(">", "&gt;");
+            EnqueueLog($"<color=red>{escapedString}</color>");
             return;
         }
 

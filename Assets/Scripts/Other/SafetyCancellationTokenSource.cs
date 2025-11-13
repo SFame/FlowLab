@@ -386,6 +386,33 @@ public static class SafetyCancellationTokenSourceExtensions
         return scts.CancelAndDisposeAndGetNew(throwOnFirstException);
     }
 
+    public static CancellationToken SafeGetToken(this SafetyCancellationTokenSource scts, out SafetyCancellationTokenSource newScts)
+    {
+        if (scts == null)
+        {
+            newScts = new SafetyCancellationTokenSource(true);
+            return newScts.Token;
+        }
+
+        newScts = scts;
+        return scts.Token;
+    }
+
+    public static CancellationToken SafeGetToken(
+        this SafetyCancellationTokenSource scts,
+        out SafetyCancellationTokenSource newScts,
+        SctsThreadMode threadMode)
+    {
+        if (scts == null)
+        {
+            newScts = new SafetyCancellationTokenSource(threadMode);
+            return newScts.Token;
+        }
+
+        newScts = scts;
+        return scts.Token;
+    }
+
     public static CancellationToken SafeCancelAndDisposeAndGetNewToken(this SafetyCancellationTokenSource scts, out SafetyCancellationTokenSource newScts)
     {
         if (scts == null)

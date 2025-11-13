@@ -1841,7 +1841,9 @@ public class ExternalInputAdapter : IExternalInput, IDisposable
 
         foreach (ITypeListenStateful stateful in _reference)
         {
-            _statesAdapters.Add(new ExternalInputStatesAdapter(stateful, () => UniTask.Yield(PlayerLoopTiming.Update, _cts.Token), _cts.Token));
+            // 역직렬화 할 때 ClassedNode.InputStateValidate()가 너무 빨라서 내부 노드들 StateUpdate() 호출 안되는것 때문에 이렇게 했었는데..
+            //_statesAdapters.Add(new ExternalInputStatesAdapter(stateful, () => UniTask.Yield(PlayerLoopTiming.Update, _cts.Token), _cts.Token));
+            _statesAdapters.Add(new ExternalInputStatesAdapter(stateful, null, CancellationToken.None));
         }
     }
 

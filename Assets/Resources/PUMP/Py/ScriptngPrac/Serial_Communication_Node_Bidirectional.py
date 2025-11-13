@@ -18,7 +18,7 @@
 
 # 추가 참조가 필요할 경우:
 # add_reference('필요_어셈블리')
-# from 필요_어셈블리.필요_네임스페이스 import 필요_클래스
+# from 필요_네임스페이스 import 필요_클래스
 
 add_reference('System')
 from System.IO.Ports import SerialPort, Parity, StopBits

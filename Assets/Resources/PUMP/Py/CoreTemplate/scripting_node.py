@@ -18,7 +18,7 @@
 
 # To add additional references:
 # add_reference('required_assembly')
-# from required_assembly.required_namespace import required_class
+# from required_namespace import required_class
 
 # Example:
 # add_reference('System')

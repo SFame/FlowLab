@@ -14,6 +14,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 {
     #region Privates
     private List<Action<IClassedNode>> _onDeleteActions = new();
+    private SafetyCancellationTokenSource _cts;
     private string _name = "Classed";
     private bool _isChange = false;
     private UiMouseListener _mouseListener;
@@ -43,8 +44,10 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     private void OnRemoveAdapter(Node node)
     {
-        foreach (Action<IClassedNode> action in _onDeleteActions.ToList())  // 순회 도중 Enumerable 변경 예외처리
+        foreach (Action<IClassedNode> action in _onDeleteActions.ToList()) // 순회 도중 Enumerable 변경 예외처리
+        {
             action?.Invoke(this);
+        }
     }
 
     [Obsolete("문제 발생 시 전환")]
@@ -52,7 +55,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
     {
         try
         {
-            await UniTask.WaitForEndOfFrame();
+            await UniTask.WaitForEndOfFrame(cancellationToken: _cts.SafeGetToken(out _cts));
 
             if (outputs.Length != OutputToken.Count)
             {
@@ -65,10 +68,35 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
                 OutputToken[i].State = outputs[i];
             }
         }
+        catch (OperationCanceledException) { }
         catch (Exception e)
         {
             Debug.LogError($"{Name}: 출력 상태 업데이트 중 예외 발생 - {e.Message}");
         }
+    }
+
+    private async UniTaskVoid InputStateValidateAsync(Transition[] exInStates)
+    {
+        try
+        {
+            await UniTask.WaitWhile(() => OnDeserializing, cancellationToken: _cts.SafeGetToken(out _cts));
+
+            if (exInStates.Length != InputToken.Count)
+            {
+                throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
+            }
+
+            if (!InputToken.Select(sf => sf.State).SequenceEqual(exInStates))
+            {
+                ((IReadonlyToken)InputToken).IsReadonly = false;
+                foreach (ITypeListenStateful stateful in InputToken)
+                {
+                    stateful.State = stateful.State;
+                }
+                ((IReadonlyToken)InputToken).IsReadonly = true;
+            }
+        }
+        catch (OperationCanceledException) { }
     }
 
     private void UpdateOutputState(Transition[] outputs)
@@ -181,6 +209,11 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
         OnInputUpdate?.Invoke(args);
     }
 
+    protected override void OnBeforeRemove()
+    {
+        _cts.SafeCancelAndDispose();
+    }
+
     #region Classed Node Interface
     public string Name
     {
@@ -243,20 +276,7 @@ public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<Clas
 
     public void InputStateValidate(Transition[] exInStates)
     {
-        if (exInStates.Length != InputToken.Count)
-        {
-            throw new ArgumentOutOfRangeException($"Expected {InputToken.Count} elements, but received {exInStates.Length}.");
-        }
-
-        if (!InputToken.Select(sf => sf.State).SequenceEqual(exInStates))
-        {
-            ((IReadonlyToken)InputToken).IsReadonly = false;
-            foreach (ITypeListenStateful stateful in InputToken)
-            {
-                stateful.State = stateful.State;
-            }
-            ((IReadonlyToken)InputToken).IsReadonly = true;
-        }
+        InputStateValidateAsync(exInStates).Forget();
     }
 
     public void OutputStateValidate(Transition[] exOutStates)
