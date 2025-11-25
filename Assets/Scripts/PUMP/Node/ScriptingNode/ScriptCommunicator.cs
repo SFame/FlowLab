@@ -71,9 +71,13 @@ printer = Printer()";
                 }
 
                 _engine = Python.CreateEngine();
-                ICollection<string> paths = _engine.GetSearchPaths();
-                paths.Add(Path.Combine(Application.streamingAssetsPath, "IronPython.StdLib.3.4.2", "content", "lib"));
-                _engine.SetSearchPaths(paths);
+                string stdLibPath = Path.Combine(Application.streamingAssetsPath, "IronPython.StdLib.3.4.2", "content", "lib");
+                if (Directory.Exists(stdLibPath))
+                {
+                    ICollection<string> paths = _engine.GetSearchPaths();
+                    paths.Add(stdLibPath);
+                    _engine.SetSearchPaths(paths);
+                }
             }
 
             return _engine;
