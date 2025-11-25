@@ -3,17 +3,12 @@
 # ===============================================================
 
 # ==================== Available Python Modules =================
-# System/Utilities: sys, time, gc, atexit, itertools, marshal, signal
-# Math/Computation: math, cmath, _random, _heapq, _bisect
-# String/Text Processing: re, _string, _sre, _struct, _csv
-# Data Structures: array, _collections
-# File/IO: _io, zipimport, _bz2
-# Networking: _socket, _ssl, _overlapped
-# Windows Specific: msvcrt, winreg, winsound, _winapi, nt
+# Most modules from the Python standard library are available.
+# Examples: json, collections, datetime, pathlib, threading, asyncio, etc.
 # ===============================================================
 
 # ===================== .NET Framework Access ===================
-# All .NET Framework libraries are accessible through IronPython
+# All .NET Framework libraries are accessible through IronPython.
 # Default references: System, System.Net
 
 # To add additional references:
@@ -28,8 +23,8 @@
 # from System.Threading import Thread, ThreadStart
 
 # ※Warning:
-# Forms like add_reference('System.Threading') may cause exceptions
-# Therefore, it is recommended to use top-level assembly names as arguments for add_reference()
+# Forms like add_reference('System.Threading') may cause exceptions.
+# Therefore, it is recommended to use top-level assembly names as arguments for add_reference().
 
 # Key useful .NET namespaces:
 # - System: Basic classes, data types, utilities
@@ -144,7 +139,8 @@ printer: Printer = None
 
 # <<Utilities>>
 
-# JSON Utility object
+# JSON Utility object (Deprecated)
+# For general use, 'import json' is recommended.
 # <Available API>
 #   json_util.serialize(data, pretty: bool=False) -> str:
 #   json_util.deserialize(json_text: str) -> object:

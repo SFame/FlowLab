@@ -3,13 +3,8 @@
 # ===============================================================
 
 # ==================== 사용 가능한 Python 모듈 ===================
-# 기본 시스템/유틸리티: sys, time, gc, atexit, itertools, marshal, signal
-# 수학/계산: math, cmath, _random, _heapq, _bisect
-# 문자열/텍스트 처리: re, _string, _sre, _struct, _csv
-# 데이터 구조: array, _collections
-# 파일/IO: _io, zipimport, _bz2
-# 네트워킹: _socket, _ssl, _overlapped
-# 윈도우 특화: msvcrt, winreg, winsound, _winapi, nt
+# Python 표준 라이브러리의 대부분의 모듈을 사용할 수 있습니다.
+# 예: json, collections, datetime, pathlib, threading, asyncio 등
 # ===============================================================
 
 # ===================== .NET Framework 접근 =====================
@@ -144,7 +139,8 @@ printer: Printer = None
 
 # <<유틸리티>>
 
-# JSON 유틸리티 객체
+# JSON 유틸리티 객체 (Deprecated)
+# 일반적인 사용에는 'import json'을 권장합니다
 # <사용 가능한 API>
 #   json_util.serialize(data, pretty: bool=False) -> str:
 #   json_util.deserialize(json_text: str) -> object:
