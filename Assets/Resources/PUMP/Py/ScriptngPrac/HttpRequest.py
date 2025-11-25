@@ -2,6 +2,7 @@ add_reference("System")
 
 from System.Net import WebClient
 from System.Threading import Thread, ThreadStart
+import json
 
 # 노드의 이름 정의
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다

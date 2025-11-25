@@ -6,6 +6,7 @@ using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -19,7 +20,7 @@ public class ScriptCommunicator : IDisposable
 printer = Printer()";
     private static string _callbacksScript;
     private static CompiledCode _callbackCompiled;
-    private static readonly object _callbackCompileLock = new object();
+    private static readonly object _initLock = new object();
     private static ScriptEngine _engine;
     private static readonly Type[] _availableType = new[] { typeof(bool), typeof(int), typeof(float), typeof(BigInteger), typeof(double), typeof(string) };
 
@@ -27,9 +28,12 @@ printer = Printer()";
     {
         get
         {
-            if (string.IsNullOrEmpty(_callbacksScript))
+            lock (_initLock)
             {
-                _callbacksScript = Resources.Load<TextAsset>(CALLBACKS_SCRIPT_PATH).text;
+                if (string.IsNullOrEmpty(_callbacksScript))
+                {
+                    _callbacksScript = Resources.Load<TextAsset>(CALLBACKS_SCRIPT_PATH).text;
+                }
             }
 
             return _callbacksScript;
@@ -40,16 +44,15 @@ printer = Printer()";
     {
         get
         {
-            if (_callbackCompiled == null)
+            lock (_initLock)
             {
-                lock (_callbackCompileLock)
+                if (_callbackCompiled != null)
                 {
-                    if (_callbackCompiled == null)
-                    {
-                        ScriptSource callbackScriptSource = _engine.CreateScriptSourceFromString(CallbacksScript);
-                        _callbackCompiled = callbackScriptSource.Compile();
-                    }
+                    return _callbackCompiled;
                 }
+
+                ScriptSource callbackScriptSource = _engine.CreateScriptSourceFromString(CallbacksScript);
+                _callbackCompiled = callbackScriptSource.Compile();
             }
 
             return _callbackCompiled;
@@ -60,7 +63,19 @@ printer = Printer()";
     {
         get
         {
-            _engine ??= Python.CreateEngine();
+            lock (_initLock)
+            {
+                if (_engine != null)
+                {
+                    return _engine;
+                }
+
+                _engine = Python.CreateEngine();
+                ICollection<string> paths = _engine.GetSearchPaths();
+                paths.Add(Path.Combine(Application.streamingAssetsPath, "IronPython.StdLib.3.4.2", "content", "lib"));
+                _engine.SetSearchPaths(paths);
+            }
+
             return _engine;
         }
     }
@@ -109,15 +124,6 @@ printer = Printer()";
 
             _isSetAsync = true;
             _isAsync = value;
-        }
-    }
-
-    private SafetyCancellationTokenSource AsyncModeCts
-    {
-        get
-        {
-            _asyncModeCts ??= new SafetyCancellationTokenSource(false);
-            return _asyncModeCts;
         }
     }
     #endregion
@@ -265,7 +271,7 @@ printer = Printer()";
                     });
                 }
             },
-            cancellationToken: AsyncModeCts.Token);
+            cancellationToken: _asyncModeCts.SafeGetToken(out _asyncModeCts));
 
             return;
         }
@@ -345,7 +351,7 @@ printer = Printer()";
                         });
                     }
                 },
-                cancellationToken: AsyncModeCts.Token);
+                cancellationToken: _asyncModeCts.SafeGetToken(out _asyncModeCts));
 
             return;
         }
@@ -364,19 +370,16 @@ printer = Printer()";
     public void Dispose()
     {
         if (_disposed)
+        {
             return;
+        }
 
         _disposed = true;
         GC.SuppressFinalize(this);
 
         try
         {
-            if (IsAsync)
-            {
-                AsyncModeCts.Cancel();
-                AsyncModeCts.Dispose();
-            }
-
+            _asyncModeCts.SafeCancelAndDispose();
             OutputApplier?.dispose();
             Printer?.dispose();
             InvokeTerminate();
