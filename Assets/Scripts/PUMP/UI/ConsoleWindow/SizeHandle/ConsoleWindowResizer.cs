@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,8 +8,8 @@ public class ConsoleWindowResizer : MonoBehaviour
     [SerializeField] private List<ConsoleWindowResizingHandle> m_ResizingHandles;
     [SerializeField] private DraggableUGUI m_Draggable;
 
-    private readonly Dictionary<ResizeCorner, Vector2> _oversizeDict = new();
-    private readonly ResizeCorner[] _allCorners = (ResizeCorner[])Enum.GetValues(typeof(ResizeCorner));
+    private readonly Dictionary<ConsoleWindowResizingHandle, Vector2> _oversizeDict = new();
+    private ConsoleWindowResizingHandle[]? _resizingHandlesCache;
     private Vector2? _pivot = null;
 
     private Vector2 Pivot => _pivot ??= m_Draggable.Rect.pivot;
@@ -24,25 +23,30 @@ public class ConsoleWindowResizer : MonoBehaviour
 
         m_Draggable.SizeCorrection();
 
+        _resizingHandlesCache = m_ResizingHandles.ToArray();
         _oversizeDict.Clear();
-        foreach (ResizeCorner corner in _allCorners)
+        foreach (ConsoleWindowResizingHandle resizingHandle in _resizingHandlesCache)
         {
-            _oversizeDict.Add(corner, m_Draggable.Rect.sizeDelta);
-        }
-
-        foreach (ConsoleWindowResizingHandle resizingHandle in m_ResizingHandles)
-        {
+            _oversizeDict.Add(resizingHandle, m_Draggable.Rect.sizeDelta);
             resizingHandle.OnDrag += HandleDragHandler;
             resizingHandle.OnDragEnd += HandleEndDragHandler;
         }
     }
 
-    private void HandleDragHandler(Vector2 mouseDelta, ResizeCorner targetCorner)
+    private void HandleDragHandler(Vector2 mouseDelta, ConsoleWindowResizingHandle resizingHandle)
     {
+        if (_resizingHandlesCache != null)
+        {
+            foreach (ConsoleWindowResizingHandle internalHandle in _resizingHandlesCache)
+            {
+                internalHandle.OtherDrag = internalHandle != resizingHandle;
+            }
+        }
+
         Vector2 sizeDelta = Vector2.zero;
         Vector2 pivotCompensation = Vector2.zero;
 
-        switch (targetCorner)
+        switch (resizingHandle.TargetCorner)
         {
             case ResizeCorner.Right:
                 sizeDelta = new Vector2(mouseDelta.x, 0);
@@ -85,7 +89,7 @@ public class ConsoleWindowResizer : MonoBehaviour
                 break;
         }
 
-        Vector2 targetSize = CalcOverValue(targetCorner, sizeDelta);
+        Vector2 targetSize = CalcOverValue(resizingHandle, sizeDelta);
 
         Vector2 clampedSize = new Vector2(
             Mathf.Clamp(targetSize.x, m_MinSize.x, m_MaxSize.x),
@@ -103,23 +107,36 @@ public class ConsoleWindowResizer : MonoBehaviour
         m_Draggable.Rect.anchoredPosition += positionOffset;
     }
 
-    private void HandleEndDragHandler(ResizeCorner targetCorner)
+    private void HandleEndDragHandler(ConsoleWindowResizingHandle _)
     {
-        m_Draggable.SizeCorrection();
-        InitializeOversizeDict();
-    }
-
-    private Vector2 CalcOverValue(ResizeCorner targetCorner, Vector2 currentDelta)
-    {
-        _oversizeDict[targetCorner] += currentDelta;
-        return _oversizeDict[targetCorner];
-    }
-
-    private void InitializeOversizeDict()
-    {
-        foreach (ResizeCorner corner in _allCorners)
+        if (_resizingHandlesCache != null)
         {
-            _oversizeDict[corner] = m_Draggable.Rect.sizeDelta;
+            foreach (ConsoleWindowResizingHandle internalHandle in _resizingHandlesCache)
+            {
+                internalHandle.OtherDrag = false;
+            }
+        }
+
+        m_Draggable.SizeCorrection();
+        ResetOversizeDict();
+    }
+
+    private Vector2 CalcOverValue(ConsoleWindowResizingHandle resizingHandle, Vector2 currentDelta)
+    {
+        _oversizeDict[resizingHandle] += currentDelta;
+        return _oversizeDict[resizingHandle];
+    }
+
+    private void ResetOversizeDict()
+    {
+        if (_resizingHandlesCache == null)
+        {
+            return;
+        }
+
+        foreach (ConsoleWindowResizingHandle handle in _resizingHandlesCache)
+        {
+            _oversizeDict[handle] = m_Draggable.Rect.sizeDelta;
         }
     }
 }

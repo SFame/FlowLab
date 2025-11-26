@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryHistory:
   - Assets/Resources/PUMP/Prefab/UI
+  - Assets/Resources
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/PaletteImage
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/Cursor
   - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/Node
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/UI
-  - Assets/Resources/PUMP/Prefab
+  - Assets/Scripts/PUMP/TP
   - Assets/Scripts/PUMP
   - Assets/Scripts/PUMP/UI
   - Assets/Scripts/PUMP/UI/ConsoleWindow
   - Assets/Scripts/PUMP/UI/ConsoleWindow/SizeHandle
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/UI
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/Cursor
+  - Assets/Resources/PUMP/Sprite
   currentDirIndex: 19

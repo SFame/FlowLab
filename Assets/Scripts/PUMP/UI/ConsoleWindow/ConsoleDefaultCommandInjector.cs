@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using NCalc;
-using UnityEngine;
 
 public class ConsoleDefaultCommandInjector
 {
@@ -100,7 +98,8 @@ public class ConsoleDefaultCommandInjector
         new ConsoleCommand
         (
             command: "/calc",
-            doc: @"Evaluates the entered expression.
+            doc: @"
+Evaluates the entered expression.
 
 === Mathematical Functions ===
 Abs(n): Returns the absolute value

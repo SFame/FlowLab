@@ -89,7 +89,7 @@ public class ConsoleWindow : MonoBehaviour
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
     private const string PREFAB_PATH = "PUMP/Prefab/UI/ConsoleWindow";
-    private const int MAX_LINE_COUNT = 100;
+    private const int MAX_LINE_COUNT = 200;
     private const string HEADER_TEXT = "FlowLab> ";
     private static bool _headerActive = true;
     private static readonly HashSet<ConsoleCommand> _commands = new HashSet<ConsoleCommand>();
@@ -393,8 +393,9 @@ public class ConsoleWindow : MonoBehaviour
 /// </summary>
 public class ConsoleCommand: IStartQuery
 {
-    public struct CommandContext
+    public readonly struct CommandContext
     {
+        #region Privates
         public CommandContext(Func<string, UniTask<InputElement?>> queryFunc, Dictionary<string, string> args, ConsoleInputSource initSource)
         {
             if (queryFunc == null || args == null)
@@ -406,27 +407,58 @@ public class ConsoleCommand: IStartQuery
             InitSource = initSource;
         }
 
-        private Func<string, UniTask<InputElement?>> _queryFunc;
-        private Dictionary<string, string> _args;
+        private readonly Func<string, UniTask<InputElement?>> _queryFunc;
+        private readonly Dictionary<string, string> _args;
+        #endregion
 
+        #region Interface
+        /// <summary>
+        /// 사용자의 최초 커맨드 입력 소스
+        /// </summary>
         public ConsoleInputSource InitSource { get; }
 
+        /// <summary>
+        /// 사용자가 입력한 커맨드 뒷쪽 Arguments Get
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <returns>해당하는 Argument</returns>
         public string GetArg(string key)
         {
             return _args.GetValueOrDefault(key);
         }
 
+        /// <summary>
+        /// 사용자에게 쿼리
+        /// </summary>
+        /// <param name="ask">쿼리 문장</param>
+        /// <returns>쿼리 결과를 가져오는 UniTask. Result가 null 반환 시 쿼리가 강제 종료된 상황이므로 즉시 return 필요</returns>
         public UniTask<InputElement?> Query(string ask)
         {
             return _queryFunc(ask);
         }
+        #endregion
     }
 
+    #region Privates
+    UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
+    #endregion
+
+    #region Interface
+    /// <summary>
+    /// 커맨드 생성자
+    /// </summary>
+    /// <param name="command">쿼리 호출을 위한 커멘드</param>
+    /// <param name="queryProcess">커맨드 실행 로직을 정의하는 함수</param>
+    /// <param name="doc">해당 커멘드의 Document</param>
+    /// <param name="args">커멘드 뒷쪽에 올 수 있는 Arguments</param>
+    /// <param name="isSystem">시스템 소속: 삭제 불가</param>
+    /// <exception cref="ArgumentNullException">queryProcess가 null일 때 발생</exception>
+    /// <exception cref="ArgumentException">args에 중복이 존재할 때 발생</exception>
     public ConsoleCommand(
         string command, 
-        Func<CommandContext, UniTask<string>> queryProcess, 
-        string doc, 
-        string[] args = null, 
+        Func<CommandContext, UniTask<string>> queryProcess,
+        string doc,
+        string[] args = null,
         bool isSystem = true)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
@@ -447,6 +479,9 @@ public class ConsoleCommand: IStartQuery
     /// </summary>
     public string Command { get; }
 
+    /// <summary>
+    /// 커멘드 뒷쪽에 올 수 있는 Arguments
+    /// </summary>
     public string[] Args { get; }
 
     /// <summary>
@@ -484,25 +519,42 @@ public class ConsoleCommand: IStartQuery
     /// 시스템 소속: 삭제 불가
     /// </summary>
     public bool IsSystem { get; }
-
-    UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
+    #endregion
 }
 
 public struct InputElement
 {
+    #region Privates
     public InputElement(string text, ConsoleInputSource inputSource)
     {
         Text = text ?? string.Empty;
         InputSource = inputSource;
     }
+    #endregion
 
+    #region Interface
+    /// <summary>
+    /// 쿼리 결과: 사용자가 입력한 텍스트
+    /// </summary>
     public string Text { get; }
+
+    /// <summary>
+    /// 해당 쿼리에 사용된 입력 소스
+    /// </summary>
     public ConsoleInputSource InputSource { get; }
+    #endregion
 }
 
 public enum ConsoleInputSource
 {
+    /// <summary>
+    /// 사용자가 입력 필드에 직접 입력
+    /// </summary>
     InputField,
+
+    /// <summary>
+    /// ConsoleWindow.Input()을 통한 시스템 입력
+    /// </summary>
     System
 }
 

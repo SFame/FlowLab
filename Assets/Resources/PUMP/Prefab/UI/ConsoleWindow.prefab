@@ -598,6 +598,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 1
+  m_CursorTexture: {fileID: 2800000, guid: aef06277db926bf4da0462e49ab645fa, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &1690068271431410746
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,6 +689,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 4
+  m_CursorTexture: {fileID: 2800000, guid: 13a06786fab2e93438ae4236aa521797, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &1824542064295012932
 GameObject:
   m_ObjectHideFlags: 0
@@ -1412,6 +1416,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 7
+  m_CursorTexture: {fileID: 2800000, guid: 13a06786fab2e93438ae4236aa521797, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &4733047474885711657
 GameObject:
   m_ObjectHideFlags: 0
@@ -1501,6 +1507,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 5
+  m_CursorTexture: {fileID: 2800000, guid: 0103ffeb2cf17b74b815b098e9f433bf, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &5779107879178421662
 GameObject:
   m_ObjectHideFlags: 0
@@ -1665,6 +1673,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 2
+  m_CursorTexture: {fileID: 2800000, guid: c3d0cdc2020bfbb4aa8712f5e5aaf1fd, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &7877739150239604033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1704,7 +1714,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 530, y: 130}
+  m_AnchoredPosition: {x: 500, y: 100}
   m_SizeDelta: {x: 800, y: 600}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &532355044412135855
@@ -1757,8 +1767,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad386dab0988e2e42b949a8923a8a26c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizer
-  m_MaxSize: {x: 10000, y: 10000}
-  m_MinSize: {x: 100, y: 100}
+  m_MaxSize: {x: 1880, y: 1040}
+  m_MinSize: {x: 200, y: 200}
   m_ResizingHandles:
   - {fileID: 4385787861574182961}
   - {fileID: 8781853664714028817}
@@ -1777,7 +1787,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7877739150239604033}
   m_Enabled: 1
-  m_Alpha: 0.97
+  m_Alpha: 0
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
@@ -1870,6 +1880,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 3
+  m_CursorTexture: {fileID: 2800000, guid: c3d0cdc2020bfbb4aa8712f5e5aaf1fd, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &7983400628997655938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1959,6 +1971,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 6
+  m_CursorTexture: {fileID: 2800000, guid: 0103ffeb2cf17b74b815b098e9f433bf, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &8132250374282137642
 GameObject:
   m_ObjectHideFlags: 0
@@ -2048,6 +2062,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConsoleWindowResizingHandle
   m_TargetCorner: 0
+  m_CursorTexture: {fileID: 2800000, guid: aef06277db926bf4da0462e49ab645fa, type: 3}
+  m_CursorOffset: {x: 0.5, y: 0.5}
 --- !u!1 &8597283211621515178
 GameObject:
   m_ObjectHideFlags: 0
