@@ -45,7 +45,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
     public void SetPosition(Vector2 worldPosition)
     {
         if (BlockedMove)
+        {
             return;
+        }
 
         InternalSetPosition(worldPosition);
     }
@@ -68,6 +70,148 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
 
         OnSizeUpdate?.Invoke(new Vector2(Rect.rect.width, Rect.rect.height));
+    }
+
+    public void SizeCorrection()
+    {
+        if (BoundaryRect == null)
+        {
+            return;
+        }
+
+        Vector3[] boundaryCorners = new Vector3[4];
+        BoundaryRect.GetWorldCorners(boundaryCorners);
+        float boundaryMinX = boundaryCorners[0].x;
+        float boundaryMaxX = boundaryCorners[2].x;
+        float boundaryMinY = boundaryCorners[0].y;
+        float boundaryMaxY = boundaryCorners[2].y;
+
+        Vector2 currentPosition = Rect.position;
+        Vector2 currentSize = Rect.sizeDelta;
+        Vector2 pivot = Rect.pivot;
+
+        Vector2 newSize = currentSize;
+        Vector2 newPosition = currentPosition;
+
+        float leftEdge = currentPosition.x - currentSize.x * pivot.x;
+        float rightEdge = currentPosition.x + currentSize.x * (1 - pivot.x);
+        float bottomEdge = currentPosition.y - currentSize.y * pivot.y;
+        float topEdge = currentPosition.y + currentSize.y * (1 - pivot.y);
+
+        bool changed = false;
+
+        if (leftEdge < boundaryMinX)
+        {
+            float overflow = boundaryMinX - leftEdge;
+            newSize.x -= overflow;
+            newPosition.x += overflow * (1 - pivot.x);
+            changed = true;
+        }
+        else if (rightEdge > boundaryMaxX)
+        {
+            float overflow = rightEdge - boundaryMaxX;
+            newSize.x -= overflow;
+            newPosition.x -= overflow * pivot.x;
+            changed = true;
+        }
+
+        if (bottomEdge < boundaryMinY)
+        {
+            float overflow = boundaryMinY - bottomEdge;
+            newSize.y -= overflow;
+            newPosition.y += overflow * (1 - pivot.y);
+            changed = true;
+        }
+        else if (topEdge > boundaryMaxY)
+        {
+            float overflow = topEdge - boundaryMaxY;
+            newSize.y -= overflow;
+            newPosition.y -= overflow * pivot.y;
+            changed = true;
+        }
+
+        if (changed)
+        {
+            Rect.sizeDelta = newSize;
+            Rect.position = newPosition;
+            OnSizeUpdate?.Invoke(new Vector2(Rect.rect.width, Rect.rect.height));
+            OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, LocalPosition, Vector2.zero, Vector2.zero, Vector2.zero));
+        }
+    }
+
+    public void PositionCorrection()
+    {
+        if (BoundaryRect == null)
+        {
+            return;
+        }
+
+        Vector3[] boundaryCorners = new Vector3[4];
+        BoundaryRect.GetWorldCorners(boundaryCorners);
+        float boundaryMinX = boundaryCorners[0].x;
+        float boundaryMaxX = boundaryCorners[2].x;
+        float boundaryMinY = boundaryCorners[0].y;
+        float boundaryMaxY = boundaryCorners[2].y;
+
+        float boundaryCenterX = (boundaryMinX + boundaryMaxX) / 2f;
+        float boundaryCenterY = (boundaryMinY + boundaryMaxY) / 2f;
+
+        Vector2 currentSize = Rect.rect.size;
+        Vector2 currentPosition = Rect.position;
+        Vector2 pivot = Rect.pivot;
+        Vector2 newPosition = currentPosition;
+
+        bool changed = false;
+
+        float leftEdge = currentPosition.x - currentSize.x * pivot.x;
+        float rightEdge = currentPosition.x + currentSize.x * (1 - pivot.x);
+
+        if (currentSize.x > boundaryMaxX - boundaryMinX)
+        {
+            newPosition.x = boundaryCenterX;
+            changed = true;
+        }
+        else
+        {
+            if (leftEdge < boundaryMinX)
+            {
+                newPosition.x = boundaryMinX + currentSize.x * pivot.x;
+                changed = true;
+            }
+            else if (rightEdge > boundaryMaxX)
+            {
+                newPosition.x = boundaryMaxX - currentSize.x * (1 - pivot.x);
+                changed = true;
+            }
+        }
+
+        float bottomEdge = currentPosition.y - currentSize.y * pivot.y;
+        float topEdge = currentPosition.y + currentSize.y * (1 - pivot.y);
+
+        if (currentSize.y > boundaryMaxY - boundaryMinY)
+        {
+            newPosition.y = boundaryCenterY;
+            changed = true;
+        }
+        else
+        {
+            if (bottomEdge < boundaryMinY)
+            {
+                newPosition.y = boundaryMinY + currentSize.y * pivot.y;
+                changed = true;
+            }
+            else if (topEdge > boundaryMaxY)
+            {
+                newPosition.y = boundaryMaxY - currentSize.y * (1 - pivot.y);
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            Rect.position = newPosition;
+            OnPositionUpdate?.Invoke(new PositionInfo(WorldPosition, LocalPosition, Vector2.zero, Vector2.zero, Vector2.zero));
+        }
     }
 
     public void PositionUpdateForceInvoke()
@@ -108,7 +252,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
 
         if (BlockedMove)
+        {
             return;
+        }
 
         IsDragging = true;
         Vector2 clickPos = GetWorldPosition(eventData.position);
@@ -124,7 +270,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
 
         if (BlockedMove)
+        {
             return;
+        }
 
         Vector2 clickPos = GetWorldPosition(eventData.position);
         Vector2 beforePosition = Rect.position;
@@ -142,7 +290,9 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
 
         if (BlockedMove)
+        {
             return;
+        }
 
         IsDragging = false;
         OnDragEnd?.Invoke(new PositionInfo(WorldPosition, LocalPosition, GetWorldPosition(eventData.position), eventData.position , Vector2.zero));

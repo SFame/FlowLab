@@ -89,7 +89,7 @@ public class ConsoleWindow : MonoBehaviour
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
     private const string PREFAB_PATH = "PUMP/Prefab/UI/ConsoleWindow";
-    private const int MAX_LINE_COUNT = 50;
+    private const int MAX_LINE_COUNT = 100;
     private const string HEADER_TEXT = "FlowLab> ";
     private static bool _headerActive = true;
     private static readonly HashSet<ConsoleCommand> _commands = new HashSet<ConsoleCommand>();

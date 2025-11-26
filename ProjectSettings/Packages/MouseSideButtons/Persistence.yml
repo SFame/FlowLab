@@ -13,14 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/NodePalette
-  - Assets/Scripts/GameSystem/UI
-  - Assets/Scripts/PUMP/UI/ConsoleWindow
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/UI
   - Assets/Scripts/PUMP
   - Assets/Scripts/PUMP/Node
@@ -33,4 +25,12 @@ MonoBehaviour:
   - Assets/Resources/PUMP/Prefab/ClassedNode
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/UI
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Scripts/PUMP
+  - Assets/Scripts/PUMP/UI
+  - Assets/Scripts/PUMP/UI/ConsoleWindow
+  - Assets/Scripts/PUMP/UI/ConsoleWindow/SizeHandle
+  - Assets/Resources/PUMP/Prefab/UI
   currentDirIndex: 19
