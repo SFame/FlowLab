@@ -51,15 +51,9 @@ public class ConsolePUMPCommandInjector : MonoBehaviour
 
                 try
                 {
+                    context.Print("Saving...");
                     string saveName = result.Value.Text;
                     await current.ComponentGetter.PumpSaveLoadPanel.AddNewSave(saveName);
-                    await UniTask.WaitForSeconds(1f);
-                    context.Print("1");
-                    await UniTask.WaitForSeconds(1f);
-                    context.Print("2");
-                    await UniTask.WaitForSeconds(1f);
-                    context.Print("3");
-                    await UniTask.WaitForSeconds(1f);
 
                     return $"Successfully saved as '{saveName}'.";
                 }

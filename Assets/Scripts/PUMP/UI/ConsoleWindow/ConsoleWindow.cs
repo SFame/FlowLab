@@ -190,7 +190,7 @@ public class ConsoleWindow : MonoBehaviour
     private static void InternalInputRaw(string text)
     {
         AddCurrentTextLine(text);
-        Instance.PushTextNotChangeFocus(text);
+        Instance.PushTextNotChangeFocus(GetCurrentTextLine());
     }
 
     private static void AddCurrentTextLine(string text)
@@ -247,17 +247,18 @@ public class ConsoleWindow : MonoBehaviour
 
             CancelQuery();
             ChargeCancelQueryCts();
-            _onCommand = true;
             _lastQuerySource = inputSource;
             HeaderActive = false;
+            _onCommand = true;
+
             try
             {
-                UniTask<string> startQueryTask =
-                    ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, InternalInputRaw, argsDict, inputSource));
+                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, InternalInputRaw, argsDict, inputSource));
                 UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
 
                 (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
 
+                _onCommand = false;
                 string result = winIndex == 0 ? result1 : result2;
 
                 if (result != null || !_queryCts.IsCancellationRequested)
@@ -267,11 +268,11 @@ public class ConsoleWindow : MonoBehaviour
             }
             catch (Exception e)
             {
+                _onCommand = false;
                 InternalInput($"Error during command: {e.Message}", _lastQuerySource);
             }
 
             CancelQuery();
-            _onCommand = false;
             HeaderActive = true;
             return;
         }
@@ -341,7 +342,6 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private RectTransform m_HeaderSpaceRect;
     [SerializeField] private float m_SpaceWidth = 9.6f;
 
-    private bool _submitLock = false;
     private void Initialize(string initText)
     {
         m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
