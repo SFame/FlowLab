@@ -23,6 +23,16 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     {
         ReloadDataAsync().Forget();
     }
+
+    public async UniTask AddNewSave(string saveName)
+    {
+        if (Extract(saveName, out PUMPSaveDataStructure newStructure))
+        {
+            newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
+            await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, newStructure);
+            await ReloadDataAsync();
+        }
+    }
     #endregion
 
     #region Privates
@@ -64,17 +74,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, structure);
 
         ReloadDataAsync().Forget();
-    }
-
-    private async UniTaskVoid AddNewSave(string saveName)
-    {
-        if (Extract(saveName, out PUMPSaveDataStructure newStructure))
-        {
-            newStructure.SubscribeUpdateNotification(RefreshEventAdapter);
-            await SerializeManagerCatalog.AddData(m_TargetDirectory, savePath, newStructure);
-
-            ReloadDataAsync().Forget();
-        }
     }
 
     private bool Extract(string saveName, out PUMPSaveDataStructure structure)
@@ -123,7 +122,6 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         _initialized = true;
     }
 
-
     private async UniTask GetDatasFromManager()
     {
         _saveDatas = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(m_TargetDirectory, savePath);
@@ -144,7 +142,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         
         await GetDatasFromManager();
         if (_saveDatas != null)
+        {
             ScrollRect.ReloadData();
+        }
     }
 
     private async UniTaskVoid DeleteData(PUMPSaveDataStructure data)
@@ -167,7 +167,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     {
         ISaveScrollElem elem = cell as ISaveScrollElem;
         if (elem == null)
+        {
             return;
+        }
 
         PUMPSaveDataStructure currentData = _saveDatas[_saveDatas.Count - 1 - index];
         elem.Initialize(currentData);

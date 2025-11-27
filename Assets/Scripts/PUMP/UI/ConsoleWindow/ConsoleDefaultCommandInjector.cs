@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using NCalc;
+#if !UNITY_EDITOR
+using UnityEngine;
+#endif
 
 public class ConsoleDefaultCommandInjector
 {
@@ -17,7 +20,7 @@ public class ConsoleDefaultCommandInjector
             {
                 ConsoleCommand[] commands = ConsoleWindow.GetCommands();
                 string commandsNames = string.Join("\n", commands.Select(command => command.Command).ToArray());
-                InputElement? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
+                QueryResult? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
 
                 if (result == null)
                 {
@@ -76,7 +79,7 @@ public class ConsoleDefaultCommandInjector
             isSystem: true,
             queryProcess: async context =>
             {
-                InputElement? result = await context.Query("Confirm exit? (y/n)");
+                QueryResult? result = await context.Query("Confirm exit? (y/n)");
 
                 if (result == null)
                 {

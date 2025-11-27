@@ -107,6 +107,7 @@ public enum BackgroundActionType
     SelectDelete,
     SelectDisconnect,
     MinimapToggle,
+    OpenConsole,
 }
 
 /// <summary>
@@ -142,6 +143,7 @@ public static class BackgroundActionMapper
         BackgroundActionType.SelectDelete => SelectDeleteAction,
         BackgroundActionType.SelectDisconnect => SelectDisconnectAction,
         BackgroundActionType.MinimapToggle => MinimapToggleAction,
+        BackgroundActionType.OpenConsole => OpenConsoleAction,
         BackgroundActionType.NoAction => null,
         _ => null
     };
@@ -205,6 +207,19 @@ public static class BackgroundActionMapper
     private static void MinimapToggleAction()
     {
         PUMPBackground.Current?.ComponentGetter?.PumpTool?.ToggleMinimap();
+    }
+
+    private static void OpenConsoleAction()
+    {
+        if (ConsoleWindow.IsOpen)
+        {
+            ConsoleWindow.SetFocus(false);
+            ConsoleWindow.IsOpen = false;
+            return;
+        }
+
+        ConsoleWindow.IsOpen = true;
+        ConsoleWindow.SetFocus(true);
     }
     #endregion
 }

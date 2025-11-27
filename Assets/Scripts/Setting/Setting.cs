@@ -108,6 +108,11 @@ public static class Setting
             m_ActionType = BackgroundActionType.MinimapToggle,
             m_KeyMap = new InputKeyMap (ActionKeyCode.M, new HashSet<ModifierKeyCode> { })
         },
+        new BackgroundActionKeyMap
+        {
+            m_ActionType  = BackgroundActionType.OpenConsole,
+            m_KeyMap = new InputKeyMap(ActionKeyCode.BackTick, new HashSet<ModifierKeyCode> { })
+        },
     };
 
 #endregion

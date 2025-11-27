@@ -360,6 +360,8 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
     #endregion
 
     #region Interface
+    public Node[] AllNodes => Nodes.ToArray();
+
     /// <summary>
     /// 외부 입력
     /// </summary>

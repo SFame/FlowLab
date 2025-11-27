@@ -8,6 +8,7 @@ using TMPro;
 using UnityEngine;
 using Utils;
 using static ConsoleCommand;
+using Debug = UnityEngine.Debug;
 
 public class ConsoleWindow : MonoBehaviour
 {
@@ -98,7 +99,7 @@ public class ConsoleWindow : MonoBehaviour
     private static bool _onQuery = false;
     private static ConsoleInputSource _lastQuerySource = ConsoleInputSource.InputField;
     private static bool _isOpen = false;
-    private static InputElement? _queryCache = null;
+    private static QueryResult? _queryCache = null;
     private static SafetyCancellationTokenSource _queryCts;
     private static object _inputBlocker = new();
     private static GameObject _prefab;
@@ -150,31 +151,46 @@ public class ConsoleWindow : MonoBehaviour
 
     private static void InternalInput(string text, ConsoleInputSource inputSource)
     {
-        if (text != null)
-        {
-            AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
-        }
-
+        bool setFocus = inputSource == ConsoleInputSource.InputField;
         text ??= string.Empty;
 
-        // 쿼리 도중에는 캐쉬 설정 후 그대로 출력
-        if (_onCommand)
+        // 커맨드 도중인데 쿼리가 아닐 때는 입력하는 타이밍이 아님
+        if (_onCommand && !_onQuery)
+        {
+            if (inputSource == ConsoleInputSource.InputField)
+            {
+                Instance.ClearInputField(setFocus);
+            }
+            return;
+        }
+
+        // 텍스트라인에 더함
+        AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
+
+        // 쿼리 도중에는 캐쉬 설정 후 그대로 리턴
+        if (_onCommand && _onQuery)
         {
             _queryCache = new(text, inputSource);
             _lastQuerySource = inputSource;
-            Instance.PushText(GetCurrentTextLine(), inputSource == ConsoleInputSource.InputField);
+            Instance.PushText(GetCurrentTextLine(), setFocus);
             return;
         }
 
         // 슬래쉬로 시작하지 않으면 이전해 Add한 문자열 그대로 찍음
         if (!text.StartsWith("/"))
         {
-            Instance.PushText(GetCurrentTextLine(), inputSource == ConsoleInputSource.InputField);
+            Instance.PushText(GetCurrentTextLine(), setFocus);
             return;
         }
 
         // 슬래쉬로 시작했다면 명령어 판독
         ProgressCommand(text, inputSource).Forget();
+    }
+
+    private static void InternalInputRaw(string text)
+    {
+        AddCurrentTextLine(text);
+        Instance.PushTextNotChangeFocus(text);
     }
 
     private static void AddCurrentTextLine(string text)
@@ -234,16 +250,24 @@ public class ConsoleWindow : MonoBehaviour
             _onCommand = true;
             _lastQuerySource = inputSource;
             HeaderActive = false;
-            UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, argsDict, inputSource));
-            UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
-
-            (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
-
-            string result = winIndex == 0 ? result1 : result2;
-
-            if (result != null || !_queryCts.IsCancellationRequested)
+            try
             {
-                InternalInput(result, _lastQuerySource);
+                UniTask<string> startQueryTask =
+                    ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, InternalInputRaw, argsDict, inputSource));
+                UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
+
+                (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
+
+                string result = winIndex == 0 ? result1 : result2;
+
+                if (result != null || !_queryCts.IsCancellationRequested)
+                {
+                    InternalInput(result, _lastQuerySource);
+                }
+            }
+            catch (Exception e)
+            {
+                InternalInput($"Error during command: {e.Message}", _lastQuerySource);
             }
 
             CancelQuery();
@@ -268,7 +292,7 @@ public class ConsoleWindow : MonoBehaviour
         }
     }
 
-    private static async UniTask<InputElement?> Query(string query)
+    private static async UniTask<QueryResult?> Query(string query)
     {
         if (_onQuery)
         {
@@ -317,11 +341,10 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private RectTransform m_HeaderSpaceRect;
     [SerializeField] private float m_SpaceWidth = 9.6f;
 
-    private int _lastSubmitFrameCount = -1;
-
+    private bool _submitLock = false;
     private void Initialize(string initText)
     {
-        m_InputField.onSubmit.AddListener(OnSubmitHandler);
+        m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
         m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
         m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
         m_InputField.onFocusSelectAll = false;
@@ -337,6 +360,21 @@ public class ConsoleWindow : MonoBehaviour
         }
 
         m_MainTextField.text = text;
+        ClearInputField(setFocus);
+    }
+
+    private void PushTextNotChangeFocus(string text)
+    {
+        if (text.EndsWith("\n"))
+        {
+            text += "\r";
+        }
+
+        m_MainTextField.text = text;
+    }
+
+    private void ClearInputField(bool setFocus)
+    {
         m_InputField.text = string.Empty;
 
         if (setFocus)
@@ -358,32 +396,21 @@ public class ConsoleWindow : MonoBehaviour
     private void Show()
     {
         m_CanvasGroup.DOKill();
-        m_CanvasGroup.DOFade(1f, m_FadeDuration).onComplete = () =>
-        {
-            m_CanvasGroup.interactable = true;
-            m_CanvasGroup.blocksRaycasts = true;
-        };
+
+        m_CanvasGroup.interactable = true;
+        m_CanvasGroup.blocksRaycasts = true;
+
+        m_CanvasGroup.DOFade(1f, m_FadeDuration);
     }
 
     private void Hide()
     {
         m_CanvasGroup.DOKill();
-        m_CanvasGroup.DOFade(0f, m_FadeDuration).onComplete = () =>
-        {
-            m_CanvasGroup.interactable = false;
-            m_CanvasGroup.blocksRaycasts = false;
-        };
-    }
 
-    private void OnSubmitHandler(string text)
-    {
-        if (Time.frameCount == _lastSubmitFrameCount)
-        {
-            return;
-        }
+        m_CanvasGroup.interactable = false;
+        m_CanvasGroup.blocksRaycasts = false;
 
-        _lastSubmitFrameCount = Time.frameCount;
-        InternalInput(text, ConsoleInputSource.InputField);
+        m_CanvasGroup.DOFade(0f, m_FadeDuration);
     }
     #endregion
 }
@@ -396,18 +423,20 @@ public class ConsoleCommand: IStartQuery
     public readonly struct CommandContext
     {
         #region Privates
-        public CommandContext(Func<string, UniTask<InputElement?>> queryFunc, Dictionary<string, string> args, ConsoleInputSource initSource)
+        public CommandContext(Func<string, UniTask<QueryResult?>> queryFunc, Action<string> printAction, Dictionary<string, string> args, ConsoleInputSource initSource)
         {
-            if (queryFunc == null || args == null)
+            if (queryFunc == null || printAction == null || args == null)
             {
                 throw new ArgumentNullException($"{nameof(CommandContext)}: Param is Null");
             }
             _queryFunc = queryFunc;
+            _printAction = printAction;
             _args = args;
             InitSource = initSource;
         }
 
-        private readonly Func<string, UniTask<InputElement?>> _queryFunc;
+        private readonly Func<string, UniTask<QueryResult?>> _queryFunc;
+        private readonly Action<string> _printAction;
         private readonly Dictionary<string, string> _args;
         #endregion
 
@@ -432,9 +461,14 @@ public class ConsoleCommand: IStartQuery
         /// </summary>
         /// <param name="ask">쿼리 문장</param>
         /// <returns>쿼리 결과를 가져오는 UniTask. Result가 null 반환 시 쿼리가 강제 종료된 상황이므로 즉시 return 필요</returns>
-        public UniTask<InputElement?> Query(string ask)
+        public UniTask<QueryResult?> Query(string ask)
         {
             return _queryFunc(ask);
+        }
+
+        public void Print(string text)
+        {
+            _printAction(text);
         }
         #endregion
     }
@@ -459,7 +493,7 @@ public class ConsoleCommand: IStartQuery
         Func<CommandContext, UniTask<string>> queryProcess,
         string doc,
         string[] args = null,
-        bool isSystem = true)
+        bool isSystem = false)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
         Command = command.StartsWith("/") ? command : $"/{command}";
@@ -522,10 +556,10 @@ public class ConsoleCommand: IStartQuery
     #endregion
 }
 
-public struct InputElement
+public struct QueryResult
 {
     #region Privates
-    public InputElement(string text, ConsoleInputSource inputSource)
+    public QueryResult(string text, ConsoleInputSource inputSource)
     {
         Text = text ?? string.Empty;
         InputSource = inputSource;
