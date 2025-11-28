@@ -94,11 +94,11 @@ output_list: list = ['out 1']
 input_types: list = [bool, bool]
 
 # Set the types of ports with the list below. Must match the length of output_list
-# Available types: bool, int, float, Pulse
+# Available types: bool, int, float, str, Pulse
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 output_types: list = [bool]
 
-# When True, allows this Node's methods to be executed asynchronously (but terminate() is always executed synchronously)
+# When True, init() and state_update() of this node will be executed asynchronously (but terminate() is always executed synchronously)
 # ※This value is only reflected in the node when initially set; changes within the function have no effect
 is_async: bool = False
 

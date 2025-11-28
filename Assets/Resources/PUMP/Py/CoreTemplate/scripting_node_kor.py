@@ -94,11 +94,11 @@ output_list: list = ['out 1']
 input_types: list = [bool, bool]
 
 # 아래의 리스트를 설정하여 포트의 타입을 설정합니다. output_list의 길이와 일치해야 합니다
-# 사용 가능한 타입: bool, int, float, Pulse
+# 사용 가능한 타입: bool, int, float, str, Pulse
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 output_types: list = [bool]
 
-# True일 경우, 이 노드의 메서드를 비동기적으로 실행할 수 있습니다(하지만 terminate()는 언제나 동기적으로 실행됩니다)
+# True일 경우, 이 노드의 init()과 state_update()를 비동기적으로 실행합니다 (하지만 terminate()는 언제나 동기적으로 실행됩니다)
 # ※이 값은 초기 설정 시에만 노드에 반영됩니다. 함수 내부에서의 변경은 효과가 없습니다
 is_async: bool = False
 
