@@ -97,12 +97,12 @@ public class Pool<T> : IEnumerable<T>, IDisposable where T : class
         {
             if (!_threadSafe)
             {
-                return CountActive + CountInactive;
+                return _activeInstances.Count + _pool.Count;
             }
 
             lock (_lock)
             {
-                return CountActive + CountInactive;
+                return _activeInstances.Count + _pool.Count;
             }
         }  
     }

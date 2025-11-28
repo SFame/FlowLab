@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Scripts/Other
+  - Assets/Resources/PUMP/Sprite
+  - Assets/Resources/PUMP/Sprite/Loading
   - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Py
-  - Assets/Resources/PUMP/Py/ScriptngPrac
   - Assets/Resources/PUMP/Prefab
-  - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/Input
-  - Assets/Scenes
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/Loading
+  - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/Loading
+  - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/Loading
+  - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/Resources/PUMP/Prefab/Line
   - Assets/Resources/PUMP/Prefab
-  - Assets/Scripts/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Scripts/PUMP/UI
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/Loading
   currentDirIndex: 19

@@ -1,10 +1,15 @@
+using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using Utils;
 using static ScriptingNode;
+using Debug = UnityEngine.Debug;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
 public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSerializeInfo>
@@ -38,14 +43,14 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     private void ImportScript()
     {
-         var tuple = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
+        var tuple = FileBrowser.Load(new[] { "py", "txt" }, "Import Script", null, null);
 
-         if (tuple == null || string.IsNullOrEmpty(tuple.Value.value))
-         {
-             return;
-         }
+        if (tuple == null || string.IsNullOrEmpty(tuple.Value.value))
+        {
+            return;
+        }
 
-         AddScript(tuple.Value.fileName, tuple.Value.value);
+        AddScriptAsync(tuple.Value.fileName, tuple.Value.value).Forget();
     }
 
     private void ExportScript()
@@ -198,6 +203,57 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     #endregion
 
     #region Scripting
+    private async UniTask InternalAddScriptAsync(string fileName, string script)
+    {
+        ScriptingSupport.SetLoadingAnimation(true);
+
+        try
+        {
+            InternalDisposeScript();
+            Script = script;
+            FileName = fileName;
+
+            if (string.IsNullOrEmpty(Script))
+            {
+                return;
+            }
+
+            Communicator = await ScriptCommunicator.CreateAsync(ScriptingSupport.Log, ScriptingSupport.LogException);
+
+            if (await Communicator.SetScriptAsync(Script))
+            {
+                Support.SetName(Communicator.ScriptFieldInfo.Name);
+                SetTpWithList
+                (
+                    Communicator.ScriptFieldInfo.InputList,
+                    Communicator.ScriptFieldInfo.OutputList,
+                    Communicator.ScriptFieldInfo.InputTypes,
+                    Communicator.ScriptFieldInfo.OutputTypes
+                );
+
+                Communicator.OnOutputApply += Apply;
+                Communicator.OnOutputApplyAt += ApplyAt;
+                Communicator.OnOutputApplyTo += ApplyTo;
+                Communicator.OnPrint += ScriptingSupport.Print;
+
+                ScriptingSupport.ShowFileName(FileName);
+                IsScriptReady = true;
+                return;
+            }
+
+            InternalDisposeScript();
+        }
+        catch (Exception e)
+        {
+            InternalDisposeScript();
+            Debug.LogException(e);
+        }
+        finally
+        {
+            ScriptingSupport.SetLoadingAnimation(false);
+        }
+    }
+
     private void InternalAddScript(string fileName, string script)
     {
         try
@@ -211,7 +267,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
                 return;
             }
 
-            Communicator = new ScriptCommunicator(ScriptingSupport.Log, ScriptingSupport.LogException);
+            Communicator = ScriptCommunicator.Create(ScriptingSupport.Log, ScriptingSupport.LogException);
 
             if (Communicator.SetScript(Script))
             {
@@ -378,6 +434,20 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     }
 
     // Scripting Interface ---------------
+    public async UniTask AddScriptAsync(string fileName, string script)
+    {
+        if (string.IsNullOrEmpty(script))
+        {
+            ScriptingSupport.Log("Script is empty");
+            InternalDisposeScript();
+            return;
+        }
+
+        await InternalAddScriptAsync(fileName, script);
+        InvokeInit();
+        ReportChanges();
+    }
+
     public void AddScript(string fileName, string script)
     {
         if (string.IsNullOrEmpty(script))

@@ -19,6 +19,9 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     [Space(10)] 
     [SerializeField] private RectTransform m_LogPanel;
     [SerializeField] private RecyclableScrollRect m_RecyclableScrollRect;
+    [Space(10)]
+    [SerializeField] private GameObject m_LoadingObject;
+    [SerializeField] private Animator m_LoadingAnimator;
     #endregion
 
     #region Privates
@@ -27,6 +30,8 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
     private readonly int _maxLogCapacity = 50;
     private readonly List<string> _logQueue = new();
     private bool _scrollRectInit;
+    private static readonly int AnimatorActive = Animator.StringToHash("Activate");
+
 
     private RecyclableScrollRect RecyclableScrollRect
     {
@@ -230,6 +235,18 @@ public class ScriptingSupport : MonoBehaviour, IRecyclableScrollRectDataSource
         Debug.LogWarning("<---- Python Error ---->");
         Debug.LogException(e);
         Debug.LogWarning("<---------------------->");
+    }
+
+    public void SetLoadingAnimation(bool show)
+    {
+        if (show)
+        {
+            m_LoadingObject.SetActive(true);
+            m_LoadingAnimator.SetBool(AnimatorActive, true);
+            return;
+        }
+        m_LoadingAnimator.SetBool(AnimatorActive, false);
+        m_LoadingObject.SetActive(false);
     }
 
     public void ShowFileName(string fileName)

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 public class ScriptCommunicator : IDisposable
 {
@@ -93,7 +94,7 @@ printer = Printer()";
     private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
     private Func<dynamic> _pulseInstanceGetter;
     private SafetyCancellationTokenSource _asyncModeCts;
-    private readonly string _pulseInstanceId;
+    private readonly string _pulseInstanceId = Guid.NewGuid().ToString();
     private bool _isAsync = false;
     private bool _isSetAsync = false;
     private bool _disposed = false;
@@ -133,27 +134,43 @@ printer = Printer()";
     #endregion
 
     #region Interface
-    public ScriptCommunicator(Action<string> logger, Action<Exception> exLogger)
+    public static async UniTask<ScriptCommunicator> CreateAsync(Action<string> logger, Action<Exception> exLogger)
     {
-        var prog = Loading.GetProgress();
-        prog.SetProgress(50);
-
         try
         {
-            Scope = Engine.CreateScope();
-            CallbackCompiled.Execute(Scope);
-            Scope.SetVariable("reference_ex_logger", new Action<string>(LoggingMissingReference));
-            _logger = logger;
-            _exLogger = exLogger;
-            _pulseInstanceId = Guid.NewGuid().ToString();
+            ScriptCommunicator communicator = new ScriptCommunicator();
+
+            await UniTask.RunOnThreadPool(() => { communicator.Scope = Engine.CreateScope(); });
+
+            CallbackCompiled.Execute(communicator.Scope);
+            communicator.Scope.SetVariable("reference_ex_logger", new Action<string>(communicator.LoggingMissingReference));
+            communicator._logger = logger;
+            communicator._exLogger = exLogger;
+            return communicator;
         }
         catch (Exception e)
         {
             Debug.LogException(e);
+            return null;
         }
-        finally
+    }
+
+    public static ScriptCommunicator Create(Action<string> logger, Action<Exception> exLogger)
+    {
+        try
         {
-            prog.SetComplete();
+            ScriptCommunicator communicator = new ScriptCommunicator();
+            communicator.Scope = Engine.CreateScope();
+            CallbackCompiled.Execute(communicator.Scope);
+            communicator.Scope.SetVariable("reference_ex_logger", new Action<string>(communicator.LoggingMissingReference));
+            communicator._logger = logger;
+            communicator._exLogger = exLogger;
+            return communicator;
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            return null;
         }
     }
 
@@ -166,8 +183,89 @@ printer = Printer()";
     /// <summary>
     /// 반환 확인 필수
     /// </summary>
-    /// <param name="script"></param>
-    /// <returns></returns>
+    /// <param name="script">스크립트 문자열</param>
+    /// <returns>성공 여부</returns>
+    public async UniTask<bool> SetScriptAsync(string script)
+    {
+        try
+        {
+            await UniTask.RunOnThreadPool(() =>
+            {
+                ScriptSource scriptSource = _engine.CreateScriptSourceFromString(script);
+                CompiledCode compiledCode = scriptSource.Compile();
+                compiledCode.Execute(Scope);
+            });
+
+            Dictionary<string, dynamic> tempMembers = new Dictionary<string, dynamic>();
+
+            foreach (var member in EssentialMembers)
+            {
+                if (Scope.TryGetVariable(member.Key, out dynamic value))
+                {
+                    if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
+                    {
+                        _logger?.Invoke(
+                            $"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
+                        return false;
+                    }
+
+                    tempMembers[member.Key] = value;
+                    continue;
+                }
+
+                _logger?.Invoke($"Required field does not exist: {member.Key}");
+                return false;
+            }
+
+            foreach (var pair in tempMembers)
+            {
+                EssentialMembers[pair.Key] = pair.Value;
+            }
+
+            Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
+            _pulseInstanceGetter = Scope.GetVariable("get_pulse_instance");
+            _pulseInstanceGetter()._set_instance_id(_pulseInstanceId);
+            EssentialMembers["output_applier"] = Scope.GetVariable("output_applier");
+            EssentialMembers["printer"] = Scope.GetVariable("printer");
+
+            bool isSuccess = RegistrationMembers();
+
+            if (isSuccess)
+            {
+                IsAsync = EssentialMembers["is_async"];
+                _logger?.Invoke("<b><color=green>Compile success</color></b>");
+            }
+
+            return isSuccess;
+        }
+        catch (SyntaxErrorException se)
+        {
+            int startCol = se.RawSpan.Start.Column;
+            int endCol = se.RawSpan.End.Column;
+            string errorCode = HighlightErrorCode(se.GetCodeLine(), startCol, endCol);
+            _logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
+            _exLogger?.Invoke(se);
+            return false;
+        }
+        catch (MissingReferenceException re)
+        {
+            _logger?.Invoke($"Reference not found:\n{re.Message}");
+            _exLogger?.Invoke(re);
+            return false;
+        }
+        catch (Exception e)
+        {
+            _logger?.Invoke($"Interpreting error\n{e.Message}");
+            _exLogger?.Invoke(e);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 반환 확인 필수
+    /// </summary>
+    /// <param name="script">스크립트 문자열</param>
+    /// <returns>성공 여부</returns>
     public bool SetScript(string script)
     {
         try
@@ -184,7 +282,8 @@ printer = Printer()";
                 {
                     if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
                     {
-                        _logger?.Invoke($"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
+                        _logger?.Invoke(
+                            $"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
                         return false;
                     }
 

@@ -17,15 +17,18 @@ public static class Loading
     private static GameObject _prefab;
     private static GameObject _uiGameObject;
     private static ILoadingUi _loadingUi;
-    private static SafetyCancellationTokenSource _cts = new(false);
+    private static SafetyCancellationTokenSource _cts = new(true);
     private static List<IProgressManageable> _currentProgresses = new();
+    private static object _loadingUiLock = new();
+    private static object _lock = new();
 
     private static Pool<IProgressManageable> _progressPool = new
     (
         createFunc: () => new Progress(),
         initSize: 20,
         maxSize: 10000,
-        actionOnDestroy: p => p.Terminate()
+        actionOnDestroy: p => p.Terminate(),
+        threadSafe: true
     );
 
     private static Pool<IProgressManageable<Task>> _progressTaskPool = new
@@ -33,7 +36,8 @@ public static class Loading
         createFunc: () => new ProgressTask(),
         initSize: 20,
         maxSize: 5000,
-        actionOnDestroy: pt => pt.Terminate()
+        actionOnDestroy: pt => pt.Terminate(),
+        threadSafe: true
     );
 
     private static GameObject Prefab
@@ -59,24 +63,27 @@ public static class Loading
     {
         get
         {
-            if (_loadingUi.IsUnityNull())
+            lock (_loadingUiLock)
             {
-                _loadingUi = UiGameObject.GetComponentInChildren<ILoadingUi>();
-                if (_loadingUi.IsUnityNull()) // 컴포넌트 삭제된 경우
+                if (_loadingUi.IsUnityNull())
                 {
-                    Object.Destroy(_uiGameObject);
-                    _uiGameObject = Object.Instantiate(Prefab);
                     _loadingUi = UiGameObject.GetComponentInChildren<ILoadingUi>();
-                    if (_loadingUi.IsUnityNull()) // 프리펩 문제
+                    if (_loadingUi.IsUnityNull()) // 컴포넌트 삭제된 경우
                     {
-                        Debug.LogError("Loading UI Prefab is invalid");
-                        return null;
+                        Object.Destroy(_uiGameObject);
+                        _uiGameObject = Object.Instantiate(Prefab);
+                        _loadingUi = UiGameObject.GetComponentInChildren<ILoadingUi>();
+                        if (_loadingUi.IsUnityNull()) // 프리펩 문제
+                        {
+                            Debug.LogError("Loading UI Prefab is invalid");
+                            return null;
+                        }
                     }
+                    _loadingUi.Hide();
+                    _loadingUi.SliderMoveDuration = COMPLETE_WAIT_TIME;
                 }
-                _loadingUi.Hide();
-                _loadingUi.SliderMoveDuration = COMPLETE_WAIT_TIME;
+                return _loadingUi;
             }
-            return _loadingUi;
         }
     }
 
@@ -90,18 +97,21 @@ public static class Loading
 
     private static int InternalGetProgressesAverage()
     {
-        int progressCount = _currentProgresses.Count;
-
-        if (progressCount <= 0)
-            return 100;
-
-        int progressSum = 0;
-        for (int i = 0; i < progressCount; i++)
+        lock (_lock)
         {
-            progressSum += _currentProgresses[i].GetProgress();
-        }
+            int progressCount = _currentProgresses.Count;
 
-        return progressSum / progressCount;
+            if (progressCount <= 0)
+                return 100;
+
+            int progressSum = 0;
+            for (int i = 0; i < progressCount; i++)
+            {
+                progressSum += _currentProgresses[i].GetProgress();
+            }
+
+            return progressSum / progressCount; 
+        }
     }
 
     private static async UniTask CheckProgressCompleteAsync(CancellationToken cts)
@@ -119,11 +129,14 @@ public static class Loading
 
     private static void InitProgressManageable(IProgressManageable manageable, object tag)
     {
-        _currentProgresses.Add(manageable);
-        manageable.ProgressUpdated += ProgressUpdated;
-        if (!manageable.Initialize(tag))
+        lock (_lock)
         {
-            throw new InvalidCastException();
+            _currentProgresses.Add(manageable);
+            manageable.ProgressUpdated += ProgressUpdated;
+            if (!manageable.Initialize(tag))
+            {
+                throw new InvalidCastException();
+            } 
         }
 
         ProgressUpdated();
@@ -131,15 +144,26 @@ public static class Loading
 
     private static void TerminateProgressManageable(IProgressManageable manageable)
     {
-        manageable.Terminate();
-        _currentProgresses.Remove(manageable);
+        lock (_lock)
+        {
+            manageable.Terminate();
+            _currentProgresses.Remove(manageable); 
+        }
     }
 
     private static void Reset()
     {
-        foreach (IProgressManageable pm in _currentProgresses.ToList()) // 순회중 Enumerable 변경에 의해 복사본 전달
+        List<IProgressManageable> progressesToTerminate;
+
+        lock (_lock)
         {
-            TerminateProgressManageable(pm);
+            progressesToTerminate = _currentProgresses.ToList();
+            _currentProgresses.Clear();
+        }
+
+        foreach (IProgressManageable pm in progressesToTerminate)
+        {
+            pm.Terminate();
 
             if (pm is Progress progress)
             {
@@ -151,15 +175,14 @@ public static class Loading
             }
         }
 
-        _currentProgresses.Clear();
-        LoadingUi.Hide();
+        UniTask.Post(() => LoadingUi.Hide());
     }
 
     private static void UiUpdate(int value)
     {
         float fillValue = value * 0.01f;
         fillValue = Mathf.Clamp01(fillValue);
-        LoadingUi.SetSliderValue(fillValue);
+        UniTask.Post(() => LoadingUi.SetSliderValue(fillValue));
     }
     #endregion
 
@@ -170,7 +193,7 @@ public static class Loading
     /// <returns>Progress 객체</returns>
     public static Progress GetProgress()
     {
-        LoadingUi.Show();
+        UniTask.Post(() => LoadingUi.Show());
         IProgressManageable manageable = _progressPool.Get();
         InitProgressManageable(manageable, null);
         return manageable as Progress;
@@ -183,7 +206,7 @@ public static class Loading
     /// <returns>Copied Task</returns>
     public static Task AddTask(Task task)
     {
-        LoadingUi.Show();
+        UniTask.Post(() => LoadingUi.Show());
         IProgressManageable<Task> progressTask = _progressTaskPool.Get();
         InitProgressManageable(progressTask, task);
         return progressTask.ProcessingObject;
@@ -197,7 +220,7 @@ public static class Loading
     /// <returns>Copied Task</returns>
     public static Task<T> AddTask<T>(Task<T> task)
     {
-        LoadingUi.Show();
+        UniTask.Post(() => LoadingUi.Show());
         IProgressManageable<Task<T>> progressTask = new ProgressTask<T>();
         InitProgressManageable(progressTask, task);
         return progressTask.ProcessingObject;
@@ -239,7 +262,10 @@ public static class Loading
     /// <returns></returns>
     public static int GetProgressesCount()
     {
-        return _currentProgresses.Count;
+        lock (_lock)
+        {
+            return _currentProgresses.Count; 
+        }
     }
 
     /// <summary>
