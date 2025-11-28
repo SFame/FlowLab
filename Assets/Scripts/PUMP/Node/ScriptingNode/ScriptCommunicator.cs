@@ -184,7 +184,7 @@ printer = Printer()";
                 {
                     if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
                     {
-                        _logger?.Invoke($"요소 타입이 일치하지 않습니다: {member.Key}의 기대 타입: {correctType} / 현재 타입: {currentType}");
+                        _logger?.Invoke($"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
                         return false;
                     }
 
@@ -192,7 +192,7 @@ printer = Printer()";
                     continue;
                 }
 
-                _logger?.Invoke($"필소 항목이 존재하지 않습니다: {member.Key}");
+                _logger?.Invoke($"Required field does not exist: {member.Key}");
                 return false;
             }
 
@@ -228,13 +228,13 @@ printer = Printer()";
         }
         catch (MissingReferenceException re)
         {
-            _logger?.Invoke($"레퍼런스를 찾을 수 없습니다:\n{re.Message}");
+            _logger?.Invoke($"Reference not found:\n{re.Message}");
             _exLogger?.Invoke(re);
             return false;
         }
         catch (Exception e)
         {
-            _logger?.Invoke($"인터프리팅 에러\n{e.Message}");
+            _logger?.Invoke($"Interpreting error\n{e.Message}");
             _exLogger?.Invoke(e);
             return false;
         }
@@ -270,7 +270,7 @@ printer = Printer()";
                 {
                     UniTask.Post(() =>
                     {
-                        _logger?.Invoke("init 실행 도중 예외가 발생했습니다");
+                        _logger?.Invoke("An exception occurred while executing 'init()'");
                         _exLogger?.Invoke(e);
                     });
                 }
@@ -286,7 +286,7 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("init 실행 도중 예외가 발생했습니다");
+            _logger?.Invoke("An exception occurred while executing 'init()'");
             _exLogger?.Invoke(e);
         }
     }
@@ -299,7 +299,7 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("terminate 실행 도중 예외가 발생했습니다");
+            _logger?.Invoke("An exception occurred while executing 'terminate()'");
             _exLogger?.Invoke(e);
         }
     }
@@ -313,8 +313,8 @@ printer = Printer()";
     {
         if (args == null)
         {
-            _logger?.Invoke("Scripting Node 시스템 오류");
-            Debug.LogError("InvokeStateUpdate: Null Args 감지됨");
+            _logger?.Invoke("Scripting Node system error");
+            Debug.LogError("InvokeStateUpdate: Null Args Detected");
             return;
         }
 
@@ -350,7 +350,7 @@ printer = Printer()";
                     {
                         UniTask.Post(() =>
                         {
-                            _logger?.Invoke("state_update 실행 도중 예외가 발생했습니다");
+                            _logger?.Invoke("An exception occurred while executing 'state_update()'");
                             _exLogger?.Invoke(e);
                         });
                     }
@@ -366,7 +366,7 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("state_update 실행 도중 예외가 발생했습니다");
+            _logger?.Invoke("An exception occurred while executing 'state_update()'");
             _exLogger?.Invoke(e);
         }
     }
@@ -400,7 +400,7 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("terminate 실행 도중 예외가 발생했습니다");
+            _logger?.Invoke("An exception occurred while disposing the node");
             _exLogger?.Invoke(e);
         }
     }
@@ -454,7 +454,7 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("참조 객체의 매핑을 실패했습니다");
+            _logger?.Invoke("Failed to map reference object");
             _exLogger?.Invoke(e);
             return false;
         }
@@ -464,12 +464,12 @@ printer = Printer()";
     {
         if (inputList.Count != inputTypes.Count)
         {
-            throw new ArgumentException("input_list와 input_types의 길이가 일치하지 않습니다");
+            throw new ArgumentException("Length of 'input_list' and 'input_types' do not match");
         }
 
         if (outputList.Count != outputTypes.Count)
         {
-            throw new ArgumentException("output_list와 output_types의 길이가 일치하지 않습니다");
+            throw new ArgumentException("Length of 'output_list' and 'output_types' do not match");
         }
 
         Type pulseType = typeof(Pulse);
@@ -488,14 +488,14 @@ printer = Printer()";
 
                 if (!_availableType.Contains(type))
                 {
-                    throw new ArgumentException($"input_types 내부에 혀용되지 않는 Type이 존재합니다: {type.Name}");
+                    throw new ArgumentException($"'input_types' contains an unsupported type: {type.Name}");
                 }
 
                 inTypes.Add(type);
                 continue;
             }
 
-            throw new ArgumentException("input_types 내부에 Type 이외의 객체가 존재합니다");
+            throw new ArgumentException("'input_types' contains a non-Type object");
 
         }
 
@@ -514,14 +514,14 @@ printer = Printer()";
 
                 if (!_availableType.Contains(type))
                 {
-                    throw new ArgumentException($"output_types 내부에 혀용되지 않는 Type이 존재합니다: {type.Name}");
+                    throw new ArgumentException($"'output_types' contains an unsupported type: {type.Name}");
                 }
 
                 outTypes.Add(type);
                 continue;
             }
 
-            throw new ArgumentException("output_types 내부에 Type 이외의 객체가 존재합니다");
+            throw new ArgumentException("'output_types' contains a non-Type object");
         }
 
         return (inTypes, outTypes);
@@ -565,17 +565,17 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다\n{tEx.Message}");
+                _logger?.Invoke($"Output type mismatch or Null was assigned\n{tEx.Message}");
                 _exLogger?.Invoke(tEx);
             }
             catch (ArgumentException e)
             {
-                _logger?.Invoke($"output_applier.apply()의 outputs의 길이가 노드의 출력과 다릅니다. outputs length: {values.Count}");
+                _logger?.Invoke($"Length of the list passed to 'output_applier.apply()' does not match the node's outputs. length: {values.Count}");
                 _exLogger?.Invoke(e);
             }
             catch (Exception e)
             {
-                _logger?.Invoke("output_applier.apply() 도중 문제가 발생했습니다");
+                _logger?.Invoke("An error occurred during 'output_applier.apply()'");
                 _exLogger?.Invoke(e);
             }
         };
@@ -609,17 +609,17 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
+                _logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
                 _exLogger?.Invoke(tEx);
             }
             catch (IndexOutOfRangeException ie)
             {
-                _logger?.Invoke($"output_applier.apply_at()의 설정 인덱스가 범위를 벗어났습니다: index: ({index})");
+                _logger?.Invoke($"Index for 'output_applier.apply_at()' is out of range: index: ({index})");
                 _exLogger?.Invoke(ie);
             }
             catch (Exception e)
             {
-                _logger?.Invoke("output_applier.apply_at() 도중 문제가 발생했습니다");
+                _logger?.Invoke("An error occurred during 'output_applier.apply_at()'");
                 _exLogger?.Invoke(e);
             }
         };
@@ -653,22 +653,22 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"출력의 타입이 다르거나 Null을 할당하였습니다: value: ({value})");
+                _logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
                 _exLogger?.Invoke(tEx);
             }
             catch (KeyNotFoundException ke)
             {
-                _logger?.Invoke($"출력을 찾을 수 없습니다: name: ({name})");
+                _logger?.Invoke($"Output not found: name: ({name})");
                 _exLogger?.Invoke(ke);
             }
             catch (AmbiguousMatchException ae)
             {
-                _logger?.Invoke($"중복되는 output_list 요소가 존재하면 output_applier.apply_to()를 사용할 수 없습니다: name: ({name})");
+                _logger?.Invoke($"Cannot use 'output_applier.apply_to()' when 'output_list' contains duplicate strings: name: ({name})");
                 _exLogger?.Invoke(ae);
             }
             catch (Exception e)
             {
-                _logger?.Invoke($"output_applier.apply_to() 도중 문제가 발생했습니다");
+                _logger?.Invoke("An error occurred during 'output_applier.apply_to()'");
                 _exLogger?.Invoke(e);
             }
         };
@@ -686,7 +686,7 @@ printer = Printer()";
             }
             catch (Exception e)
             {
-                _logger?.Invoke("print 도중 문제가 발생했습니다");
+                _logger?.Invoke("An error occurred during 'printer.print()'");
                 _exLogger?.Invoke(e);
             }
         };

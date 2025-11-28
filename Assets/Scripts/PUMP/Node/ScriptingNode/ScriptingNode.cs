@@ -382,7 +382,7 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     {
         if (string.IsNullOrEmpty(script))
         {
-            ScriptingSupport.Log("스크립트가 비어있습니다");
+            ScriptingSupport.Log("Script is empty");
             InternalDisposeScript();
             return;
         }
