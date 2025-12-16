@@ -93,11 +93,11 @@ FlowLab supports 5 data types, distinguished by port color.
 
 | Type | Description | Example |
 |------|-------------|---------|
-| **Bool** | True/False | `true`, `false` |
-| **Int** | Integer | `0`, `42`, `-100` |
-| **Float** | Decimal | `3.14`, `0.5` |
-| **String** | Text | `"Hello"` |
-| **Pulse** | Execution signal | Event trigger |
+| ![Bool](https://img.shields.io/badge/Bool-blue) | True/False | `true`, `false` |
+| ![Int](https://img.shields.io/badge/Int-green) | Integer | `0`, `42`, `-100` |
+| ![Float](https://img.shields.io/badge/Float-orange) | Decimal | `3.14`, `0.5` |
+| ![String](https://img.shields.io/badge/String-pink) | Text | `"Hello"` |
+| ![Pulse](https://img.shields.io/badge/Pulse-white) | Execution signal | Event trigger |
 
 ### Node Categories
 

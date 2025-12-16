@@ -93,11 +93,11 @@ FlowLab은 5가지 데이터 타입을 지원하며, 포트 색상으로 구분�
 
 | 타입 | 설명 | 예시 |
 |------|------|------|
-| **Bool** | 참/거짓 | `true`, `false` |
-| **Int** | 정수 | `0`, `42`, `-100` |
-| **Float** | 실수 | `3.14`, `0.5` |
-| **String** | 문자열 | `"Hello"` |
-| **Pulse** | 실행 신호 | 이벤트 트리거 |
+| ![Bool](https://img.shields.io/badge/Bool-blue) | 참/거짓 | `true`, `false` |
+| ![Int](https://img.shields.io/badge/Int-green) | 정수 | `0`, `42`, `-100` |
+| ![Float](https://img.shields.io/badge/Float-orange) | 실수 | `3.14`, `0.5` |
+| ![String](https://img.shields.io/badge/String-pink) | 문자열 | `"Hello"` |
+| ![Pulse](https://img.shields.io/badge/Pulse-white) | 실행 신호 | 이벤트 트리거 |
 
 ### 노드 카테고리
 
