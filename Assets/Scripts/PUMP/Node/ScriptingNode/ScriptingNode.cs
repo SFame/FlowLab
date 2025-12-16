@@ -2,10 +2,7 @@ using Cysharp.Threading.Tasks;
 using OdinSerializer;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using Utils;
 using static ScriptingNode;
@@ -14,6 +11,15 @@ using Debug = UnityEngine.Debug;
 [ResourceGetter("PUMP/Sprite/PaletteImage/scripting_node_palette")]
 public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSerializeInfo>
 {
+    #region Private Static
+    private const string DEFAULT_TEMPLATE_NAME_ENG = "new_scripting_node";
+    private const string DEFAULT_TEMPLATE_NAME_KOR = "새_스크립트_노드";
+    private const string TEMPLATE_PATH_ENG = "PUMP/Py/CoreTemplate/scripting_node";
+    private const string TEMPLATE_PATH_KOR = "PUMP/Py/CoreTemplate/scripting_node_kor";
+    private static Lazy<string> _templateEngLazy = new Lazy<string>(() => Resources.Load<TextAsset>(TEMPLATE_PATH_ENG).text);
+    private static Lazy<string> _templateKorLazy = new Lazy<string>(() => Resources.Load<TextAsset>(TEMPLATE_PATH_KOR).text);
+    #endregion
+
     #region Privates
     private ScriptingSupport _scriptingSupport;
 
@@ -64,6 +70,16 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
         FileBrowser.Save(Script, nodeName, new [] { "py", "txt" }, "Export Script", null, null);
     }
+
+    private void CreateTemplateEng()
+    {
+        FileBrowser.Save(_templateEngLazy.Value, DEFAULT_TEMPLATE_NAME_ENG, new [] { "py", "txt" }, "Create Python Template", null, null);
+    }
+
+    private void CreateTemplateKor()
+    {
+        FileBrowser.Save(_templateKorLazy.Value, DEFAULT_TEMPLATE_NAME_KOR, new [] { "py", "txt" }, "파이썬 템플릿 생성", null, null);
+    }
     #endregion
 
     #region Override
@@ -81,6 +97,9 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
             baseList.Add(new ContextElement("Show Log", ScriptingSupport.OpenLoggingPanel));
             baseList.Add(new ContextElement("Remove Script", DisposeScript));
+            baseList.Add(new ContextElement("Create Template-ENG", CreateTemplateEng));
+            baseList.Add(new ContextElement("Create Template-KOR", CreateTemplateKor));
+
             return baseList;
         }
     }
