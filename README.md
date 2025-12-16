@@ -26,7 +26,7 @@
 
 Press `Tab` to open the **Node Palette**.
 
-Click on a node to place it in the workspace.
+Drag a node to place it in the workspace.
 
 ### 2. Connecting Nodes
 
