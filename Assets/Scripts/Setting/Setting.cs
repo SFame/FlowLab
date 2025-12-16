@@ -15,8 +15,8 @@ public static class Setting
     public static float DefaultSoundVolume = 1.0f; // Default sound volume
     public static float DefaultVFXVolume = 1.0f; // Default VFX volume
     public static float DefaultSimulationSpeed = 0.0f; // Default simulation speed
-    public static int DefaultLoopThreshold = 2; //min 2 max 20
-    public static bool DefaultIsImmediately = false;
+    public static int DefaultLoopThreshold = 5; //min 2 max 20
+    public static bool DefaultIsImmediately = true;
     // Default key map settings
     public static List<BackgroundActionKeyMap> DefaultKeyMap => new List<BackgroundActionKeyMap>
     {
