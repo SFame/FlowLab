@@ -27,6 +27,6 @@ Traditional programming requires learning syntax, debugging cryptic error messag
 
 ## Built with
 
-- Unity 6000.0.32f1
+- Unity 6000.2.6f2
 - C# with custom node framework
 - IronPython integration for scripting

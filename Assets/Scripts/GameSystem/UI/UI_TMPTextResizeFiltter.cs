@@ -1,5 +1,4 @@
 using UnityEngine;
-using Utils;
 
 public class UI_TMPTextResizeFiltter : MonoBehaviour
 {
@@ -18,10 +17,10 @@ public class UI_TMPTextResizeFiltter : MonoBehaviour
             return m_TextMeshProUGUI;
         }
     }
-    public RectTransform TMPRectTransform { get { return m_TMPRectTransform; } }
+    public RectTransform TMPRectTransform => m_TMPRectTransform;
 
-    [SerializeField]private RectTransform m_RectTransform;
-    public RectTransform rectTransform
+    [SerializeField] private RectTransform m_RectTransform;
+    public RectTransform RectTransform
     {
         get
         {
@@ -34,16 +33,18 @@ public class UI_TMPTextResizeFiltter : MonoBehaviour
     }
 
     private float m_PreferredHeight;
-    public float PreferredHeight { get { return m_PreferredHeight; } }
+    public float PreferredHeight => m_PreferredHeight;
 
     private void SetHeight()
     {
         if (TextMeshPro == null)
+        {
             return;
+        }
 
         m_PreferredHeight = TextMeshPro.preferredHeight;
-        rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, m_PreferredHeight);
-        rectTransform.anchoredPosition = Vector2.zero;
+        RectTransform.sizeDelta = new Vector2(RectTransform.sizeDelta.x, m_PreferredHeight);
+        RectTransform.anchoredPosition = Vector2.zero;
     }
 
     private void OnEnable()
@@ -56,8 +57,9 @@ public class UI_TMPTextResizeFiltter : MonoBehaviour
     }
     private void Update()
     {
-        if (PreferredHeight != TextMeshPro.preferredHeight)
+        if (!Mathf.Approximately(PreferredHeight, TextMeshPro.preferredHeight))
+        {
             SetHeight();
+        }
     }
-
 }
