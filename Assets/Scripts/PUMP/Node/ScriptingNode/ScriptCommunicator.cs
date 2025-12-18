@@ -639,26 +639,28 @@ printer = Printer()";
 
     private void InvokeApplyOutput(IList<dynamic> values)
     {
-        Action applyAction = () =>
+        void applyAction()
         {
             try
             {
                 List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
-                {
-                    if (value == null)
-                        return null;
-
-                    try
                     {
-                        if (value._get_instance_id() == _pulseInstanceId)
-                        {
-                            return Transition.Pulse();
-                        }
-                    }
-                    catch (RuntimeBinderException) { }
+                        if (value == null) return null;
 
-                    return new Transition(value);
-                }).ToList();
+                        try
+                        {
+                            if (value._get_instance_id() == _pulseInstanceId)
+                            {
+                                return Transition.Pulse();
+                            }
+                        }
+                        catch (RuntimeBinderException)
+                        {
+                        }
+
+                        return new Transition(value);
+                    })
+                    .ToList();
 
                 OnOutputApply?.Invoke(transitions);
             }
@@ -677,14 +679,14 @@ printer = Printer()";
                 _logger?.Invoke("An error occurred during 'output_applier.apply()'");
                 _exLogger?.Invoke(e);
             }
-        };
+        }
 
         InvokeActionOnMainThread(applyAction, IsAsync);
     }
 
     private void InvokeApplyOutputAt(int index, dynamic value)
     {
-        Action applyAction = () =>
+        void applyAction()
         {
             try
             {
@@ -702,7 +704,9 @@ printer = Printer()";
                         return;
                     }
                 }
-                catch (RuntimeBinderException) { }
+                catch (RuntimeBinderException)
+                {
+                }
 
                 OnOutputApplyAt?.Invoke(index, new Transition(value));
             }
@@ -721,14 +725,14 @@ printer = Printer()";
                 _logger?.Invoke("An error occurred during 'output_applier.apply_at()'");
                 _exLogger?.Invoke(e);
             }
-        };
+        }
 
         InvokeActionOnMainThread(applyAction, IsAsync);
     }
 
     private void InvokeApplyOutputTo(string name, dynamic value)
     {
-        Action applyAction = () =>
+        void applyAction()
         {
             try
             {
@@ -746,7 +750,9 @@ printer = Printer()";
                         return;
                     }
                 }
-                catch (RuntimeBinderException) { }
+                catch (RuntimeBinderException)
+                {
+                }
 
                 OnOutputApplyTo?.Invoke(name, new Transition(value));
             }
@@ -770,14 +776,14 @@ printer = Printer()";
                 _logger?.Invoke("An error occurred during 'output_applier.apply_to()'");
                 _exLogger?.Invoke(e);
             }
-        };
+        }
 
         InvokeActionOnMainThread(applyAction, IsAsync);
     }
 
     private void InvokePrint(object value)
     {
-        Action printAction = () =>
+        void printAction()
         {
             try
             {
@@ -788,7 +794,7 @@ printer = Printer()";
                 _logger?.Invoke("An error occurred during 'printer.print()'");
                 _exLogger?.Invoke(e);
             }
-        };
+        }
 
         InvokeActionOnMainThread(printAction, IsAsync);
     }
