@@ -13,7 +13,7 @@ using System.Reflection;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-public class ScriptCommunicator : IDisposable
+public class ScriptCommunicator : IScriptCommunicator
 {
     #region Static / Const
     private const string CALLBACKS_SCRIPT_PATH = "PUMP/Py/CoreTemplate/script_bridge";
@@ -87,8 +87,6 @@ printer = Printer()";
     #endregion
 
     #region Privates
-    private Action<string> _logger;
-    private Action<Exception> _exLogger;
     private Action<List<dynamic>> _initAction;
     private Action _terminateAction;
     private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
@@ -143,9 +141,9 @@ printer = Printer()";
             await UniTask.RunOnThreadPool(() => { communicator.Scope = Engine.CreateScope(); });
 
             CallbackCompiled.Execute(communicator.Scope);
-            communicator.Scope.SetVariable("reference_ex_logger", new Action<string>(communicator.LoggingMissingReference));
-            communicator._logger = logger;
-            communicator._exLogger = exLogger;
+            communicator.ReferenceExLogger = communicator.LoggingMissingReference;
+            communicator.Logger = logger;
+            communicator.ExLogger = exLogger;
             return communicator;
         }
         catch (Exception e)
@@ -162,9 +160,9 @@ printer = Printer()";
             ScriptCommunicator communicator = new ScriptCommunicator();
             communicator.Scope = Engine.CreateScope();
             CallbackCompiled.Execute(communicator.Scope);
-            communicator.Scope.SetVariable("reference_ex_logger", new Action<string>(communicator.LoggingMissingReference));
-            communicator._logger = logger;
-            communicator._exLogger = exLogger;
+            communicator.ReferenceExLogger = communicator.LoggingMissingReference;
+            communicator.Logger = logger;
+            communicator.ExLogger = exLogger;
             return communicator;
         }
         catch (Exception e)
@@ -179,6 +177,14 @@ printer = Printer()";
     public event Action<int, Transition?> OnOutputApplyAt;
     public event Action<string, Transition?> OnOutputApplyTo;
     public event Action<string> OnPrint;
+
+    public Action<string> Logger { get; set; }
+    public Action<Exception> ExLogger { get; set; }
+
+    public Action<string> ReferenceExLogger
+    {
+        set => Scope.SetVariable("reference_ex_logger", value);
+    }
 
     /// <summary>
     /// 반환 확인 필수
@@ -204,7 +210,7 @@ printer = Printer()";
                 {
                     if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
                     {
-                        _logger?.Invoke(
+                        Logger?.Invoke(
                             $"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
                         return false;
                     }
@@ -213,7 +219,7 @@ printer = Printer()";
                     continue;
                 }
 
-                _logger?.Invoke($"Required field does not exist: {member.Key}");
+                Logger?.Invoke($"Required field does not exist: {member.Key}");
                 return false;
             }
 
@@ -233,7 +239,7 @@ printer = Printer()";
             if (isSuccess)
             {
                 IsAsync = EssentialMembers["is_async"];
-                _logger?.Invoke("<b><color=green>Compile success</color></b>");
+                Logger?.Invoke("<b><color=green>Compile success</color></b>");
             }
 
             return isSuccess;
@@ -243,20 +249,20 @@ printer = Printer()";
             int startCol = se.RawSpan.Start.Column;
             int endCol = se.RawSpan.End.Column;
             string errorCode = HighlightErrorCode(se.GetCodeLine(), startCol, endCol);
-            _logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
-            _exLogger?.Invoke(se);
+            Logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
+            ExLogger?.Invoke(se);
             return false;
         }
         catch (MissingReferenceException re)
         {
-            _logger?.Invoke($"Reference not found:\n{re.Message}");
-            _exLogger?.Invoke(re);
+            Logger?.Invoke($"Reference not found:\n{re.Message}");
+            ExLogger?.Invoke(re);
             return false;
         }
         catch (Exception e)
         {
-            _logger?.Invoke($"Interpreting error\n{e.Message}");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke($"Interpreting error\n{e.Message}");
+            ExLogger?.Invoke(e);
             return false;
         }
     }
@@ -282,7 +288,7 @@ printer = Printer()";
                 {
                     if (!CheckMemberType(member.Key, value, out string currentType, out string correctType))
                     {
-                        _logger?.Invoke(
+                        Logger?.Invoke(
                             $"Element type mismatch: Expected type for {member.Key}: {correctType} / Current type: {currentType}");
                         return false;
                     }
@@ -291,7 +297,7 @@ printer = Printer()";
                     continue;
                 }
 
-                _logger?.Invoke($"Required field does not exist: {member.Key}");
+                Logger?.Invoke($"Required field does not exist: {member.Key}");
                 return false;
             }
 
@@ -311,7 +317,7 @@ printer = Printer()";
             if (isSuccess)
             {
                 IsAsync = EssentialMembers["is_async"];
-                _logger?.Invoke("<b><color=green>Compile success</color></b>");
+                Logger?.Invoke("<b><color=green>Compile success</color></b>");
             }
 
             return isSuccess;
@@ -321,20 +327,20 @@ printer = Printer()";
             int startCol = se.RawSpan.Start.Column;
             int endCol = se.RawSpan.End.Column;
             string errorCode = HighlightErrorCode(se.GetCodeLine(), startCol, endCol);
-            _logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
-            _exLogger?.Invoke(se);
+            Logger?.Invoke($"[SyntaxError] <b>Line: {se.Line}, Column: {se.Column}</b>\n\"{errorCode}\"");
+            ExLogger?.Invoke(se);
             return false;
         }
         catch (MissingReferenceException re)
         {
-            _logger?.Invoke($"Reference not found:\n{re.Message}");
-            _exLogger?.Invoke(re);
+            Logger?.Invoke($"Reference not found:\n{re.Message}");
+            ExLogger?.Invoke(re);
             return false;
         }
         catch (Exception e)
         {
-            _logger?.Invoke($"Interpreting error\n{e.Message}");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke($"Interpreting error\n{e.Message}");
+            ExLogger?.Invoke(e);
             return false;
         }
     }
@@ -369,8 +375,8 @@ printer = Printer()";
                 {
                     UniTask.Post(() =>
                     {
-                        _logger?.Invoke("An exception occurred while executing 'init()'");
-                        _exLogger?.Invoke(e);
+                        Logger?.Invoke("An exception occurred while executing 'init()'");
+                        ExLogger?.Invoke(e);
                     });
                 }
             },
@@ -385,8 +391,8 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("An exception occurred while executing 'init()'");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke("An exception occurred while executing 'init()'");
+            ExLogger?.Invoke(e);
         }
     }
 
@@ -398,8 +404,8 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("An exception occurred while executing 'terminate()'");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke("An exception occurred while executing 'terminate()'");
+            ExLogger?.Invoke(e);
         }
     }
 
@@ -412,7 +418,7 @@ printer = Printer()";
     {
         if (args == null)
         {
-            _logger?.Invoke("Scripting Node system error");
+            Logger?.Invoke("Scripting Node system error");
             Debug.LogError("InvokeStateUpdate: Null Args Detected");
             return;
         }
@@ -449,8 +455,8 @@ printer = Printer()";
                     {
                         UniTask.Post(() =>
                         {
-                            _logger?.Invoke("An exception occurred while executing 'state_update()'");
-                            _exLogger?.Invoke(e);
+                            Logger?.Invoke("An exception occurred while executing 'state_update()'");
+                            ExLogger?.Invoke(e);
                         });
                     }
                 },
@@ -465,8 +471,8 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("An exception occurred while executing 'state_update()'");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke("An exception occurred while executing 'state_update()'");
+            ExLogger?.Invoke(e);
         }
     }
 
@@ -489,8 +495,8 @@ printer = Printer()";
             _initAction = null;
             _stateUpdateAction = null;
             _terminateAction = null;
-            _logger = null;
-            _exLogger = null;
+            Logger = null;
+            ExLogger = null;
             OnOutputApply = null;
             OnOutputApplyAt = null;
             OnOutputApplyTo = null;
@@ -499,8 +505,8 @@ printer = Printer()";
         }
         catch (Exception e)
         {
-            _logger?.Invoke("An exception occurred while disposing the node");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke("An exception occurred while disposing the node");
+            ExLogger?.Invoke(e);
         }
     }
     #endregion
@@ -547,14 +553,14 @@ printer = Printer()";
         }
         catch (ArgumentException argumentEx)
         {
-            _logger?.Invoke(argumentEx.Message);
-            _exLogger?.Invoke(argumentEx);
+            Logger?.Invoke(argumentEx.Message);
+            ExLogger?.Invoke(argumentEx);
             return false;
         }
         catch (Exception e)
         {
-            _logger?.Invoke("Failed to map reference object");
-            _exLogger?.Invoke(e);
+            Logger?.Invoke("Failed to map reference object");
+            ExLogger?.Invoke(e);
             return false;
         }
     }
@@ -666,18 +672,18 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"Output type mismatch or Null was assigned\n{tEx.Message}");
-                _exLogger?.Invoke(tEx);
+                Logger?.Invoke($"Output type mismatch or Null was assigned\n{tEx.Message}");
+                ExLogger?.Invoke(tEx);
             }
             catch (ArgumentException e)
             {
-                _logger?.Invoke($"Length of the list passed to 'output_applier.apply()' does not match the node's outputs. length: {values.Count}");
-                _exLogger?.Invoke(e);
+                Logger?.Invoke($"Length of the list passed to 'output_applier.apply()' does not match the node's outputs. length: {values.Count}");
+                ExLogger?.Invoke(e);
             }
             catch (Exception e)
             {
-                _logger?.Invoke("An error occurred during 'output_applier.apply()'");
-                _exLogger?.Invoke(e);
+                Logger?.Invoke("An error occurred during 'output_applier.apply()'");
+                ExLogger?.Invoke(e);
             }
         }
 
@@ -712,18 +718,18 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
-                _exLogger?.Invoke(tEx);
+                Logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
+                ExLogger?.Invoke(tEx);
             }
             catch (IndexOutOfRangeException ie)
             {
-                _logger?.Invoke($"Index for 'output_applier.apply_at()' is out of range: index: ({index})");
-                _exLogger?.Invoke(ie);
+                Logger?.Invoke($"Index for 'output_applier.apply_at()' is out of range: index: ({index})");
+                ExLogger?.Invoke(ie);
             }
             catch (Exception e)
             {
-                _logger?.Invoke("An error occurred during 'output_applier.apply_at()'");
-                _exLogger?.Invoke(e);
+                Logger?.Invoke("An error occurred during 'output_applier.apply_at()'");
+                ExLogger?.Invoke(e);
             }
         }
 
@@ -758,23 +764,23 @@ printer = Printer()";
             }
             catch (TransitionException tEx)
             {
-                _logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
-                _exLogger?.Invoke(tEx);
+                Logger?.Invoke($"Output type mismatch or Null was assigned: value: ({value})");
+                ExLogger?.Invoke(tEx);
             }
             catch (KeyNotFoundException ke)
             {
-                _logger?.Invoke($"Output not found: name: ({name})");
-                _exLogger?.Invoke(ke);
+                Logger?.Invoke($"Output not found: name: ({name})");
+                ExLogger?.Invoke(ke);
             }
             catch (AmbiguousMatchException ae)
             {
-                _logger?.Invoke($"Cannot use 'output_applier.apply_to()' when 'output_list' contains duplicate strings: name: ({name})");
-                _exLogger?.Invoke(ae);
+                Logger?.Invoke($"Cannot use 'output_applier.apply_to()' when 'output_list' contains duplicate strings: name: ({name})");
+                ExLogger?.Invoke(ae);
             }
             catch (Exception e)
             {
-                _logger?.Invoke("An error occurred during 'output_applier.apply_to()'");
-                _exLogger?.Invoke(e);
+                Logger?.Invoke("An error occurred during 'output_applier.apply_to()'");
+                ExLogger?.Invoke(e);
             }
         }
 
@@ -791,8 +797,8 @@ printer = Printer()";
             }
             catch (Exception e)
             {
-                _logger?.Invoke("An error occurred during 'printer.print()'");
-                _exLogger?.Invoke(e);
+                Logger?.Invoke("An error occurred during 'printer.print()'");
+                ExLogger?.Invoke(e);
             }
         }
 
@@ -879,62 +885,4 @@ printer = Printer()";
         Dispose();
     }
     #endregion
-}
-
-public struct ScriptFieldInfo
-{
-    public ScriptFieldInfo(string name, IList<object> inputList, IList<object> outputList, IList<Type> inputTypes, IList<Type> outputTypes, bool isAsync)
-    {
-        Name = name;
-        InputList = inputList.Select(obj => obj.ToString()).ToList();
-        OutputList = outputList.Select(obj => obj.ToString()).ToList();
-        InputTypes = inputTypes.Select(type =>
-        {
-            Type convertedType = type;
-            TransitionType transitionType;
-            try
-            {
-                if (type == typeof(BigInteger))
-                    convertedType = typeof(int);
-                else if (type == typeof(double))
-                    convertedType = typeof(float);
-
-                transitionType = convertedType.AsTransitionType();
-            }
-            catch
-            {
-                return TransitionType.Bool;
-            }
-
-            return transitionType;
-        }).ToList();
-        OutputTypes = outputTypes.Select(type =>
-        {
-            Type convertedType = type;
-            TransitionType transitionType;
-            try
-            {
-                if (type == typeof(BigInteger))
-                    convertedType = typeof(int);
-                else if (type == typeof(double))
-                    convertedType = typeof(float);
-
-                transitionType = convertedType.AsTransitionType();
-            }
-            catch
-            {
-                return TransitionType.Bool;
-            }
-
-            return transitionType;
-        }).ToList();
-        IsAsync = isAsync;
-    }
-
-    public string Name;
-    public List<string> InputList;
-    public List<string> OutputList;
-    public List<TransitionType> InputTypes;
-    public List<TransitionType> OutputTypes;
-    public bool IsAsync;
 }

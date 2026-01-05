@@ -22,13 +22,14 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     #region Privates
     private ScriptingSupport _scriptingSupport;
+    private bool _scriptAsyncAdding = false;
 
     private string Script { get; set; } = string.Empty;
     private string FileName { get; set; } = string.Empty;
 
     private bool IsScriptReady { get; set; } = false;
 
-    private ScriptCommunicator Communicator { get; set; } = null;
+    private IScriptCommunicator Communicator { get; set; } = null;
 
     private Func<int, string> InputNameGetter { get; set; } = null;
 
@@ -455,20 +456,38 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
     // Scripting Interface ---------------
     public async UniTask AddScriptAsync(string fileName, string script)
     {
-        if (string.IsNullOrEmpty(script))
+        if (_scriptAsyncAdding)
         {
-            ScriptingSupport.Log("Script is empty");
-            InternalDisposeScript();
             return;
         }
+        _scriptAsyncAdding = true;
 
-        await InternalAddScriptAsync(fileName, script);
-        InvokeInit();
-        ReportChanges();
+        try
+        {
+            if (string.IsNullOrEmpty(script))
+            {
+                ScriptingSupport.Log("Script is empty");
+                InternalDisposeScript();
+                return;
+            }
+
+            await InternalAddScriptAsync(fileName, script);
+            InvokeInit();
+            ReportChanges();
+        }
+        finally
+        {
+            _scriptAsyncAdding = false;
+        }
     }
 
     public void AddScript(string fileName, string script)
     {
+        if (_scriptAsyncAdding)
+        {
+            return;
+        }
+
         if (string.IsNullOrEmpty(script))
         {
             ScriptingSupport.Log("Script is empty");
@@ -483,6 +502,11 @@ public class ScriptingNode : DynamicIONode, INodeAdditionalArgs<ScriptingNodeSer
 
     public void DisposeScript()
     {
+        if (_scriptAsyncAdding)
+        {
+            return;
+        }
+
         InternalDisposeScript(true);
         ReportChanges();
     }
