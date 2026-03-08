@@ -166,20 +166,19 @@ public class ConsoleWindow : MonoBehaviour
 
         // 텍스트라인에 더함
         AddCurrentTextLine(HeaderActive ? $"{HEADER_TEXT}{text}" : text);
+        Instance.PushText(GetCurrentTextLine(), setFocus);
 
         // 쿼리 도중에는 캐쉬 설정 후 그대로 리턴
         if (_onCommand && _onQuery)
         {
             _queryCache = new(text, inputSource);
             _lastQuerySource = inputSource;
-            Instance.PushText(GetCurrentTextLine(), setFocus);
             return;
         }
 
         // 슬래쉬로 시작하지 않으면 이전해 Add한 문자열 그대로 찍음
         if (!text.StartsWith("/"))
         {
-            Instance.PushText(GetCurrentTextLine(), setFocus);
             return;
         }
 
@@ -229,7 +228,7 @@ public class ConsoleWindow : MonoBehaviour
                     return;
                 }
             }
-            else if (inputArgs.Length != resultCommand.Args.Length)
+            else if (inputArgs.Length > resultCommand.Args.Length)
             {
                 InternalInput("ERROR: Argument not match.", inputSource);
                 return;
@@ -241,7 +240,8 @@ public class ConsoleWindow : MonoBehaviour
             {
                 for (int i = 0; i < resultCommand.Args.Length; i++)
                 {
-                    argsDict.Add(resultCommand.Args[i], inputArgs[i]);
+                    string arg = inputArgs.Length > i ? inputArgs[i] : null;
+                    argsDict.Add(resultCommand.Args[i], arg);
                 }
             }
 
@@ -344,12 +344,15 @@ public class ConsoleWindow : MonoBehaviour
 
     private void Initialize(string initText)
     {
-        m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
-        m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
-        m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
-        m_InputField.onFocusSelectAll = false;
-        SetHeaderActive(true);
-        m_InputField.text = initText;
+        Dispatcher.Post(() =>
+        {
+            m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
+            m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
+            m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
+            m_InputField.onFocusSelectAll = false;
+            SetHeaderActive(true);
+            m_InputField.text = initText;
+        });
     }
 
     private void PushText(string text, bool setFocus)
@@ -359,8 +362,11 @@ public class ConsoleWindow : MonoBehaviour
             text += "\r";
         }
 
-        m_MainTextField.text = text;
-        ClearInputField(setFocus);
+        Dispatcher.Post(() =>
+        {
+            m_MainTextField.text = text;
+            ClearInputField(setFocus);
+        });
     }
 
     private void PushTextNotChangeFocus(string text)
@@ -370,7 +376,10 @@ public class ConsoleWindow : MonoBehaviour
             text += "\r";
         }
 
-        m_MainTextField.text = text;
+        Dispatcher.Post(() =>
+        {
+            m_MainTextField.text = text;
+        });
     }
 
     private void ClearInputField(bool setFocus)
@@ -379,38 +388,56 @@ public class ConsoleWindow : MonoBehaviour
 
         if (setFocus)
         {
-            m_InputField.ActivateInputField();
+            Dispatcher.Post(() =>
+            {
+                m_InputField.ActivateInputField();
+            });
             return;
         }
 
-        m_InputField.DeactivateInputField();
+        Dispatcher.Post(() =>
+        {
+            m_InputField.DeactivateInputField();
+        });
     }
 
     private void SetHeaderActive(bool active)
     {
         float widthResult = active ? m_SpaceWidth : 0;
-        m_HeaderSpaceRect.sizeDelta = new Vector2(widthResult, m_HeaderSpaceRect.sizeDelta.y);
-        m_InputHeader.text = active ? HEADER_TEXT : string.Empty;
+        Vector2 sizeDelta = new Vector2(widthResult, m_HeaderSpaceRect.sizeDelta.y);
+        string text = active ? HEADER_TEXT : string.Empty;
+
+        Dispatcher.Post(() =>
+        {
+            m_HeaderSpaceRect.sizeDelta = sizeDelta;
+            m_InputHeader.text = text;
+        });
     }
 
     private void Show()
     {
-        m_CanvasGroup.DOKill();
+        Dispatcher.Post(() =>
+        {
+            m_CanvasGroup.DOKill();
 
-        m_CanvasGroup.interactable = true;
-        m_CanvasGroup.blocksRaycasts = true;
+            m_CanvasGroup.interactable = true;
+            m_CanvasGroup.blocksRaycasts = true;
 
-        m_CanvasGroup.DOFade(1f, m_FadeDuration);
+            m_CanvasGroup.DOFade(1f, m_FadeDuration);
+        });
     }
 
     private void Hide()
     {
-        m_CanvasGroup.DOKill();
+        Dispatcher.Post(() =>
+        {
+            m_CanvasGroup.DOKill();
 
-        m_CanvasGroup.interactable = false;
-        m_CanvasGroup.blocksRaycasts = false;
+            m_CanvasGroup.interactable = false;
+            m_CanvasGroup.blocksRaycasts = false;
 
-        m_CanvasGroup.DOFade(0f, m_FadeDuration);
+            m_CanvasGroup.DOFade(0f, m_FadeDuration);
+        });
     }
     #endregion
 }
@@ -466,6 +493,10 @@ public class ConsoleCommand: IStartQuery
             return _queryFunc(ask);
         }
 
+        /// <summary>
+        /// 콘솔에 Print
+        /// </summary>
+        /// <param name="text">Print할 문자열</param>
         public void Print(string text)
         {
             _printAction(text);

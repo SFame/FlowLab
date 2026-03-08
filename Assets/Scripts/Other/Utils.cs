@@ -108,6 +108,7 @@ namespace Utils
             await UniTask.WaitForSeconds(delay, cancellationToken: token);
             action?.Invoke();
         }
+
         public static string AsString(this object obj)
         {
             return obj is string str
@@ -1606,6 +1607,30 @@ namespace Utils
                 logger?.Invoke($"불러오기 실패: {path}");
                 return null;
             }
+        }
+    }
+
+    public static class Dispatcher
+    {
+        private static int _mainThreadId;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void InitCapture()
+        {
+            _mainThreadId = Thread.CurrentThread.ManagedThreadId;
+        }
+
+        public static bool IsMainThread => Thread.CurrentThread.ManagedThreadId == _mainThreadId;
+
+        public static void Post(Action action)
+        {
+            if (IsMainThread)
+            {
+                action?.Invoke();
+                return;
+            }
+
+            UniTask.Post(action);
         }
     }
 }
