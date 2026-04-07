@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using NCalc;
+using Utils;
 #if !UNITY_EDITOR
 using UnityEngine;
 #endif
@@ -9,7 +13,7 @@ public class ConsoleDefaultCommandInjector
 {
     private static bool _isInjected = false;
     private const string BAR_STRING = "========================";
-    private static List<ConsoleCommand> _deafultCommands = new List<ConsoleCommand>()
+    private static readonly List<ConsoleCommand> _defaultCommands = new List<ConsoleCommand>()
     {
         new ConsoleCommand
         (
@@ -151,6 +155,64 @@ ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
                 }
             }
         ),
+        new ConsoleCommand
+        (
+            command: "/pip",
+            doc: "Execute pip command.\nExample: /pip install numpy",
+            isSystem: true,
+            args: new[] { "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8" },
+            queryProcess: async context =>
+            {
+                string pipArgs = string.Join(" ",
+                    new[] { "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8" }
+                        .Select(k => context.GetArg(k))
+                        .Where(v => !string.IsNullOrEmpty(v))
+                );
+
+                if (string.IsNullOrWhiteSpace(pipArgs))
+                {
+                    return "Usage: /pip <command> [options]\nExample: /pip install numpy";
+                }
+
+                try
+                {
+                    using Process process = new Process();
+                    process.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = @"C:\Program Files\Python311\python.exe",
+                        Arguments = $"-m pip {pipArgs}",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true,
+                    };
+
+                    process.OutputDataReceived += (_, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                            context.Print(e.Data);
+                    };
+
+                    process.ErrorDataReceived += (_, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                            context.Print(e.Data);
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    
+                    await UniTask.RunOnThreadPool(() => process.WaitForExit());
+
+                    return $"Done (exit code: {process.ExitCode})";
+                }
+                catch (Exception ex)
+                {
+                    return $"Failed: {ex.Message}";
+                }
+            }
+        ),
     };
 
     public static void Inject()
@@ -161,7 +223,7 @@ ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
         }
         _isInjected = true;
 
-        foreach (ConsoleCommand defaultCommand in _deafultCommands)
+        foreach (ConsoleCommand defaultCommand in _defaultCommands)
         {
             ConsoleWindow.AddCommand(defaultCommand);
         }
