@@ -198,3 +198,87 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
         is_changed (bool): A flag indicating whether the state of the changed port is different from its previous state
     """
     pass
+
+
+
+# # ===============================================================
+# # Example: Math Calculator
+# # A node that computes two numbers with a given operation when an Execute pulse arrives.
+# # Demonstrates all types (Pulse, float, str, bool), index branching,
+# # None guarding, global state, and exception handling.
+# # ===============================================================
+
+# # <<Node Configuration>>
+
+# name: str = "Math Calculator"
+
+# input_list: list = ['Execute', 'Number A', 'Number B', 'Operation']
+# output_list: list = ['Result', 'IsValid', 'Message']
+
+# input_types: list = [Pulse, float, float, str]
+# output_types: list = [float, bool, str]
+
+# is_async: bool = False
+
+# # <<Node Controllers>>
+# output_applier: OutputApplier = None
+# printer: Printer = None
+
+# # <<Global Variables>>
+# operation_count = 0
+
+# # <<Node Lifecycle Methods>>
+
+# def init(inputs: list) -> None:
+#     """Initialization: set output ports to default values."""
+#     global operation_count
+#     operation_count = 0
+
+#     output_applier.apply([0.0, True, "Ready"])
+#     printer.print("Calculator Ready")
+
+# def terminate() -> None:
+#     """Cleanup: print the total operation count."""
+#     printer.print(f"Calculator terminated ({operation_count} operations)")
+
+# def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
+#     """Run the calculation only when an Execute pulse arrives."""
+#     global operation_count
+
+#     # Ignore input changes other than index 0 (Execute)
+#     if index != 0:
+#         return
+
+#     # Guard against missing inputs: None arrives on a disconnected port or when a signal is lost in the network
+#     if inputs[1] is None or inputs[2] is None or inputs[3] is None:
+#         output_applier.apply([0.0, False, "Missing inputs"])
+#         printer.print("Missing inputs")
+#         return
+
+#     num_a = float(inputs[1])
+#     num_b = float(inputs[2])
+#     operation = str(inputs[3]).strip().lower()
+
+#     try:
+#         if operation in ("add", "+"):
+#             result = num_a + num_b
+#         elif operation in ("subtract", "-"):
+#             result = num_a - num_b
+#         elif operation in ("divide", "/"):
+#             if num_b == 0:
+#                 output_applier.apply([0.0, False, "Division by zero"])
+#                 printer.print("Division by zero")
+#                 return
+#             result = num_a / num_b
+#         else:
+#             output_applier.apply([0.0, False, f"Unknown operation: {operation}"])
+#             printer.print(f"Unknown operation: {operation}")
+#             return
+
+#         operation_count += 1
+#         output_applier.apply([result, True, f"{num_a} {operation} {num_b} = {result}"])
+#         printer.print(f"{num_a} {operation} {num_b} = {result}")
+
+#     except Exception as e:
+#         output_applier.apply([0.0, False, f"Error: {str(e)}"])
+#         printer.print(f"Error: {str(e)}")

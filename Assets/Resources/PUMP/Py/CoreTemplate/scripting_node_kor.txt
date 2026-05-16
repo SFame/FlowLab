@@ -198,3 +198,87 @@ def state_update(inputs: list, index: int, state, before_state, is_changed: bool
         is_changed (bool): 변경된 포트의 상태가 이전과 다른지 여부를 나타내는 플래그
     """
     pass
+
+
+
+# # ===============================================================
+# # 예제: Math Calculator
+# # Execute 펄스를 받으면 두 수를 지정된 연산으로 계산해 출력하는 노드.
+# # 모든 타입(Pulse, float, str, bool) 사용, index 분기, None 방어,
+# # 전역 상태 유지, 예외 처리를 포함한 예제.
+# # ===============================================================
+
+# # <<노드 속성>>
+
+# name: str = "Math Calculator"
+
+# input_list: list = ['Execute', 'Number A', 'Number B', 'Operation']
+# output_list: list = ['Result', 'IsValid', 'Message']
+
+# input_types: list = [Pulse, float, float, str]
+# output_types: list = [float, bool, str]
+
+# is_async: bool = False
+
+# # <<노드 컨트롤러>>
+# output_applier: OutputApplier = None
+# printer: Printer = None
+
+# # <<전역 변수>>
+# operation_count = 0
+
+# # <<노드 생명주기 메서드>>
+
+# def init(inputs: list) -> None:
+#     """초기화: 출력 포트를 기본값으로 설정"""
+#     global operation_count
+#     operation_count = 0
+
+#     output_applier.apply([0.0, True, "Ready"])
+#     printer.print("Calculator Ready")
+
+# def terminate() -> None:
+#     """정리: 누적 연산 횟수 출력"""
+#     printer.print(f"Calculator terminated ({operation_count} operations)")
+
+# def state_update(inputs: list, index: int, state, before_state, is_changed: bool) -> None:
+#     """Execute 펄스가 들어왔을 때만 계산을 수행"""
+#     global operation_count
+
+#     # index 0(Execute) 외의 입력 변경은 무시
+#     if index != 0:
+#         return
+
+#     # 입력 누락 방어: 연결이 끊겼거나 신호가 소실되면 None이 들어옴
+#     if inputs[1] is None or inputs[2] is None or inputs[3] is None:
+#         output_applier.apply([0.0, False, "Missing inputs"])
+#         printer.print("Missing inputs")
+#         return
+
+#     num_a = float(inputs[1])
+#     num_b = float(inputs[2])
+#     operation = str(inputs[3]).strip().lower()
+
+#     try:
+#         if operation in ("add", "+"):
+#             result = num_a + num_b
+#         elif operation in ("subtract", "-"):
+#             result = num_a - num_b
+#         elif operation in ("divide", "/"):
+#             if num_b == 0:
+#                 output_applier.apply([0.0, False, "Division by zero"])
+#                 printer.print("Division by zero")
+#                 return
+#             result = num_a / num_b
+#         else:
+#             output_applier.apply([0.0, False, f"Unknown operation: {operation}"])
+#             printer.print(f"Unknown operation: {operation}")
+#             return
+
+#         operation_count += 1
+#         output_applier.apply([result, True, f"{num_a} {operation} {num_b} = {result}"])
+#         printer.print(f"{num_a} {operation} {num_b} = {result}")
+
+#     except Exception as e:
+#         output_applier.apply([0.0, False, f"Error: {str(e)}"])
+#         printer.print(f"Error: {str(e)}")
