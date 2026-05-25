@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using NCalc;
-using Utils;
 #if !UNITY_EDITOR
 using UnityEngine;
 #endif
@@ -141,7 +138,7 @@ ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
             {
                 try
                 {
-                    Expression exp = new Expression(context.GetArg("expression"));
+                    Expression exp = new Expression(context.GetArg("expression"), EvaluateOptions.IgnoreCase);
                     object result = exp.Evaluate();
                     return result.ToString();
                 }
@@ -152,64 +149,6 @@ ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
                 catch
                 {
                     return "Invalid Expression";
-                }
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/pip",
-            doc: "Execute pip command.\nExample: /pip install numpy",
-            isSystem: true,
-            args: new[] { "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8" },
-            queryProcess: async context =>
-            {
-                string pipArgs = string.Join(" ",
-                    new[] { "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8" }
-                        .Select(k => context.GetArg(k))
-                        .Where(v => !string.IsNullOrEmpty(v))
-                );
-
-                if (string.IsNullOrWhiteSpace(pipArgs))
-                {
-                    return "Usage: /pip <command> [options]\nExample: /pip install numpy";
-                }
-
-                try
-                {
-                    using Process process = new Process();
-                    process.StartInfo = new ProcessStartInfo
-                    {
-                        FileName = @"C:\Program Files\Python311\python.exe",
-                        Arguments = $"-m pip {pipArgs}",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                    };
-
-                    process.OutputDataReceived += (_, e) =>
-                    {
-                        if (!string.IsNullOrEmpty(e.Data))
-                            context.Print(e.Data);
-                    };
-
-                    process.ErrorDataReceived += (_, e) =>
-                    {
-                        if (!string.IsNullOrEmpty(e.Data))
-                            context.Print(e.Data);
-                    };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-                    
-                    await UniTask.RunOnThreadPool(() => process.WaitForExit());
-
-                    return $"Done (exit code: {process.ExitCode})";
-                }
-                catch (Exception ex)
-                {
-                    return $"Failed: {ex.Message}";
                 }
             }
         ),

@@ -114,14 +114,18 @@ public class Divide : DynamicIONode, INodeAdditionalArgs<int>
     private Transition Operate()
     {
         if (InputToken.HasOnlyNull)
+        {
             return OutputToken.First.Type.Null();
-
+        }
+        
         Transition[] notNullArray = InputToken.GetNotNullArray().Select(sf => sf.State).ToArray();
 
         Transition[] splits = notNullArray[1..];
 
         if (splits.Any(state => state == state.Type.Default()))
+        {
             return OutputToken.First.Type.Null();
+        }
 
         Transition sub = notNullArray[0];
 
