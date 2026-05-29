@@ -82,6 +82,7 @@ public class DefaultPalette : NodePalette
                 { typeof(Average), "Average" },
                 { typeof(StandardDeviation), "Standard Deviation" },
                 { typeof(NumericComparator), "Numeric Comparator" },
+                { typeof(FormulaNode), "Formula" },
                 { typeof(Equal), "Equal" },
                 { typeof(Round), "Round" },
                 { typeof(Sin), "Sin" },

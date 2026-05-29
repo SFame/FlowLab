@@ -6,48 +6,85 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-public class FormulaNode : DynamicIONode
+public class FormulaNode : DynamicIONode, INodeAdditionalArgs<string>
 {
-    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
-    {
-        throw new System.NotImplementedException();
-    }
+    private readonly Formula _formula = new();
+    private string _formulaString = "a+b";
 
-    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
-    {
-        throw new System.NotImplementedException();
-    }
+    public override string NodePrefabPath => "PUMP/Prefab/Node/FORMULA";
 
-    protected override void StateUpdate(TransitionEventArgs args)
-    {
-        throw new System.NotImplementedException();
-    }
+    protected override string NodeDisplayName => "Formula";
 
-    protected override string NodeDisplayName { get; }
-    protected override float InEnumeratorXPos { get; }
-    protected override float OutEnumeratorXPos { get; }
-    protected override float EnumeratorSpacing { get; }
-    protected override Vector2 DefaultNodeSize { get; }
-    protected override int DefaultInputCount { get; }
-    protected override int DefaultOutputCount { get; }
+    protected override float InEnumeratorXPos => -90f;
+
+    protected override float OutEnumeratorXPos => 90f;
+
+    protected override float EnumeratorSpacing => 3f;
+
+    protected override float EnumeratorMargin => 5f;
+
+    protected override Vector2 DefaultNodeSize => new Vector2(50f, 50f);
+
+    protected override float NameTextSize => 20f;
+
+    protected override int DefaultInputCount => 0;
+
+    protected override int DefaultOutputCount => 0;
+
     protected override string DefineInputName(int tpIndex)
     {
-        throw new System.NotImplementedException();
+        string[] variables = _formula.Variables;
+        
+        if (tpIndex >= 0 && tpIndex < variables.Length)
+        {
+            return variables[tpIndex];
+        }
+
+        return "null";
     }
 
     protected override string DefineOutputName(int tpIndex)
     {
-        throw new System.NotImplementedException();
+        return "out";
     }
 
     protected override TransitionType DefineInputType(int tpIndex)
     {
-        throw new System.NotImplementedException();
+        return TransitionType.Float;
     }
 
     protected override TransitionType DefineOutputType(int tpIndex)
     {
-        throw new System.NotImplementedException();
+        return _formula.OutputType ?? TransitionType.Float;
+    }
+
+    protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetDefaultArray(outputTypes);
+    }
+
+    protected override void OnAfterInit()
+    {
+        if (_formula.Inspect(_formulaString))
+        {
+            FuseIOCounts(_formula.VariablesCount, 1);
+        }
+    }
+
+    protected override void StateUpdate(TransitionEventArgs args)
+    {
+        
+    }
+
+    public string AdditionalArgs
+    {
+        get => _formulaString;
+        set => _formulaString = value;
     }
 }
 
@@ -194,7 +231,11 @@ public class Formula
     #endregion
 
     #region Public
+    public string Expression => _expression;
+
     public string[] Variables => _variables.ToArray();
+
+    public int VariablesCount => _variables.Count;
 
     public TransitionType? OutputType => _outputType;
 
