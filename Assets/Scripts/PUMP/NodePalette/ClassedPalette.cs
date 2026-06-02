@@ -73,6 +73,7 @@ public class ClassedPalette : NodePalette
                 { typeof(Subtract), "Sub" },
                 { typeof(Multiply), "Mul" },
                 { typeof(Divide), "Div" },
+                { typeof(FormulaNode), "Formula" },
                 { typeof(Pow), "Pow" },
                 { typeof(SquareRoot), "Square Root" },
                 { typeof(Lerp), "Lerp" },

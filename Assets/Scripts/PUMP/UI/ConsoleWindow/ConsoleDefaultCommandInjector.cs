@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using NCalc;
+using Unity.VisualScripting.Dependencies.NCalc;
+using Expression = NCalc.Expression;
 #if !UNITY_EDITOR
 using UnityEngine;
 #endif
@@ -110,6 +111,7 @@ Abs(n): Returns the absolute value
 Acos(n): Returns the arc cosine (in radians)
 Asin(n): Returns the arc sine (in radians)
 Atan(n): Returns the arc tangent (in radians)
+Atan2(y, x): Returns the angle from the ratio of two numbers (in radians)
 Ceiling(n): Returns the smallest integer greater than or equal to n
 Cos(n): Returns the cosine (in radians)
 Exp(n): Returns e raised to the specified power
@@ -131,14 +133,33 @@ Truncate(n): Returns the integral part (truncates decimals)
 === General Functions ===
 in(value, v1, v2, ...): Checks if value is in the list
 if(condition, trueVal, falseVal): Returns value based on condition
-ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions",
+ifs(cond1, val1, cond2, val2, ..., default): Evaluates multiple conditions
+
+=== Logical Operators ===
+and, &&: Logical AND
+or, ||: Logical OR
+not, !: Logical NOT
+
+=== Comparison Operators ===
+=, ==: Equal
+!=, <>: Not equal
+<, <=, >, >=: Less / greater than (or equal)
+
+=== Pattern Matching ===
+in: Checks if value is in a collection or substring of a string
+like: SQL-style pattern matching (% for any chars, _ for one char)
+not in, not like: Negated forms
+
+=== Arithmetic ===
++, -, *, /, %: Basic arithmetic
+**: Exponentiation",
             isSystem: true,
             args: new []{ "expression" },
             queryProcess: async context =>
             {
                 try
                 {
-                    Expression exp = new Expression(context.GetArg("expression"), EvaluateOptions.IgnoreCase);
+                    Expression exp = new Expression(context.GetArg("expression"), ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
                     object result = exp.Evaluate();
                     return result.ToString();
                 }

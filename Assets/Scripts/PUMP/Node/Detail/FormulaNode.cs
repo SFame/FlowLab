@@ -11,19 +11,21 @@ public class FormulaNode : DynamicIONode, INodeAdditionalArgs<string>
     private readonly Formula _formula = new();
     private string _formulaString = "a+b";
 
+    private FormulaSupport _formulaSupport;
+
     public override string NodePrefabPath => "PUMP/Prefab/Node/FORMULA";
 
-    protected override string NodeDisplayName => "Formula";
+    protected override string NodeDisplayName => null;
 
-    protected override float InEnumeratorXPos => -90f;
+    protected override float InEnumeratorXPos => 2f;
 
-    protected override float OutEnumeratorXPos => 90f;
+    protected override float OutEnumeratorXPos => 237f;
 
     protected override float EnumeratorSpacing => 3f;
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(50f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(35f, 50f);
 
     protected override float NameTextSize => 20f;
 
@@ -65,20 +67,104 @@ public class FormulaNode : DynamicIONode, INodeAdditionalArgs<string>
 
     protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetDefaultArray(outputTypes);
+        return TransitionUtil.GetNullArray(outputTypes);
     }
 
     protected override void OnAfterInit()
     {
+        _formulaSupport = Support.GetComponent<FormulaSupport>();
+        _formula.OnError += ex => _formulaSupport.ShowError(ex.Message);
+
+        _formulaSupport.Initialize(_formulaString, text =>
+        {
+            if (text == _formulaString)
+            {
+                return;
+            }
+
+            _formulaString = text;
+            TransitionType? beforeType = _formula.OutputType;
+
+            if (_formula.Inspect(_formulaString))
+            {
+                _formulaString = _formula.Expression;
+                _formulaSupport.Text = _formulaString;
+
+                if (beforeType != _formula.OutputType)
+                {
+                    OutputToken.SetTypeAll((TransitionType)_formula.OutputType!);
+                }
+                
+                string[] portNames = InputToken.GetNames();
+
+                if (_formula.Variables.SequenceEqual(portNames))
+                {
+                    if (OutputToken.Count == 0)  // 입력이 아예 없는 경우에서 터졌을 경우 출력을 만들어줌
+                    {
+                        FuseIOCounts(_formula.VariablesCount, 1);
+                    }
+
+                    Calculate();
+                }
+                else
+                {
+                    FuseIOCounts(_formula.VariablesCount, 1);
+                    Calculate();
+                }
+            }
+            else
+            {
+                FuseIOCounts(0, 0);
+            }
+
+            ReportChanges();
+        });
+
         if (_formula.Inspect(_formulaString))
         {
             FuseIOCounts(_formula.VariablesCount, 1);
+        }
+        else
+        {
+            FuseIOCounts(0, 0);
         }
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        
+        if (!args.IsStateChange)
+        {
+            return;
+        }
+
+        Calculate();
+    }
+
+    private void Calculate()
+    {
+        if (OutputToken.Count == 0)  // 출력이 없다는건 올바르지 않은 식을 가지고 있음을 의미
+        {
+            return;
+        }
+
+        if (InputToken.HasAnyNull)  // 수식의 변수 중 하나라도 null이 있다면 결과는 null
+        {
+            OutputToken.PushAllAsNull();
+            return;
+        }
+
+        if (InputToken.TryGetNameStateDictionary(out Dictionary<string, Transition> inputMap))  // 현재 입력포트 포트명, 상태 가져옴
+        {
+            Dictionary<string, float> inputFloatMap = inputMap.ToDictionary(keySelector: pair => pair.Key, elementSelector: pair => (float)pair.Value);
+
+            if (_formula.Evaluate(inputFloatMap) is { } result && result.Type == OutputToken.FirstType)  // 계산 결과가 null이 아니고, 출력 포트의 타입과 일치할 때
+            {
+                OutputToken.PushFirst(result);
+                return;
+            }
+        }
+
+        OutputToken.PushAllAsNull();
     }
 
     public string AdditionalArgs
@@ -108,6 +194,9 @@ public class Formula
 
         // Utility
         "if", "ifs", "in",
+
+        // Logical / pattern
+        "and", "or", "not", "like",
     };
 
     private void AddVariable(string variable)
@@ -122,6 +211,11 @@ public class Formula
 
     private string BuildFormula(Dictionary<string, float> variableValues)
     {
+        if (variableValues == null)
+        {
+            return null;
+        }
+
         if (variableValues.Count != _variables.Count)
         {
             return null;
@@ -146,6 +240,24 @@ public class Formula
         while (i < _expression.Length)
         {
             char c = _expression[i];
+
+            if (c == '\'' || c == '"')
+            {
+                char quote = c;
+                result.Append(c);
+                i++;
+                while (i < _expression.Length && _expression[i] != quote)
+                {
+                    result.Append(_expression[i]);
+                    i++;
+                }
+                if (i < _expression.Length)
+                {
+                    result.Append(_expression[i]);
+                    i++;
+                }
+                continue;
+            }
 
             if (c == '_' || char.IsLetter(c))
             {
@@ -239,6 +351,8 @@ public class Formula
 
     public TransitionType? OutputType => _outputType;
 
+    public event Action<Exception> OnError;
+
     public bool Inspect(string expression)
     {
         Clear();
@@ -248,12 +362,55 @@ public class Formula
             return false;
         }
 
-        _expression = expression.ToLowerInvariant();
+        StringBuilder lowered = new StringBuilder(expression.Length);
+        int j = 0;
+        while (j < expression.Length)
+        {
+            char c = expression[j];
+
+            if (c == '\'' || c == '"')
+            {
+                char quote = c;
+                lowered.Append(c);
+                j++;
+                while (j < expression.Length && expression[j] != quote)
+                {
+                    lowered.Append(expression[j]);
+                    j++;
+                }
+                if (j < expression.Length)
+                {
+                    lowered.Append(expression[j]);
+                    j++;
+                }
+            }
+            else
+            {
+                lowered.Append(char.ToLowerInvariant(c));
+                j++;
+            }
+        }
+        _expression = lowered.ToString();
 
         int i = 0;
         while (i < _expression.Length)
         {
             char c = _expression[i];
+
+            if (c == '\'' || c == '"')
+            {
+                char quote = c;
+                i++;
+                while (i < _expression.Length && _expression[i] != quote)
+                {
+                    i++;
+                }
+                if (i < _expression.Length)
+                {
+                    i++;
+                }
+                continue;
+            }
 
             if (c == '_' || char.IsLetter(c))
             {
@@ -290,11 +447,12 @@ public class Formula
 
         try
         {
-            Expression exp = new Expression(sampleFormula, EvaluateOptions.IgnoreCase);
+            Expression exp = new Expression(sampleFormula, ExpressionOptions.IgnoreCaseAtBuiltInFunctions | ExpressionOptions.NoStringTypeCoercion);
             result = exp.Evaluate();
         }
-        catch
+        catch (Exception ex)
         {
+            OnError?.Invoke(ex);
             Clear();
             return false;
         }
@@ -319,12 +477,13 @@ public class Formula
         
         try
         {
-            Expression exp = new Expression(formula, EvaluateOptions.IgnoreCase);
+            Expression exp = new Expression(formula, ExpressionOptions.IgnoreCaseAtBuiltInFunctions | ExpressionOptions.NoStringTypeCoercion);
             object result = exp.Evaluate();
             return AsTransition(result);
         }
-        catch
+        catch (Exception ex)
         {
+            OnError?.Invoke(ex);
             return null;
         }
 

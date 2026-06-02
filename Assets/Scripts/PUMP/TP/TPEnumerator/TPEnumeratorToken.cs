@@ -433,6 +433,33 @@ public class TPEnumeratorToken : IEnumerable<ITypeListenStateful>, IReadonlyToke
     }
 
     /// <summary>
+    /// 포트명과 상태를 딕셔너리 형태로 반환을 시도합니다
+    /// </summary>
+    /// <param name="nameStateDictionary">반환 딕셔너리</param>
+    /// <returns>중복된 포트명이 있으면 false</returns>
+    public bool TryGetNameStateDictionary(out Dictionary<string, Transition> nameStateDictionary)
+    {
+        nameStateDictionary = null;
+
+        if (_isNameDuplicated)
+        {
+            return false;
+        }
+
+        nameStateDictionary = _adapters.ToDictionary(keySelector: adapter => adapter.Name, elementSelector: adapter => adapter.State);
+        return true;
+    }
+
+    /// <summary>
+    /// 포트명 배열을 반환합니다
+    /// </summary>
+    /// <returns>포트명 배열 (순서 반영)</returns>
+    public string[] GetNames()
+    {
+        return _adapters.Select(adapter => adapter.Name).ToArray();
+    }
+
+    /// <summary>
     /// 해당 인덱스의 타입을 설정합니다
     /// </summary>
     /// <param name="index">Target Index</param>

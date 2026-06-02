@@ -42,7 +42,9 @@ public class AND : Node
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (!args.IsStateChange)
+        {
             return;
+        }
 
         if (InputToken.HasOnlyNull)
         {

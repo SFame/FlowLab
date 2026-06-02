@@ -16,6 +16,14 @@ using static VFolders.Libs.VUtils;
 using static VFolders.Libs.VGUI;
 
 
+#if UNITY_6000_3_OR_NEWER
+using ObjectID = UnityEngine.EntityId;
+#else
+using ObjectID = System.Int32;
+#endif
+
+
+
 
 namespace VFolders.Libs
 {
@@ -148,7 +156,7 @@ namespace VFolders.Libs
                 if (curType.GetField(fieldName, maxBindingFlags) is FieldInfo fieldInfo)
                     return fieldInfoCache[type][fieldName] = fieldInfo;
 
-            
+
             return fieldInfoCache[type][fieldName] = null;
 
         }
@@ -1073,7 +1081,9 @@ namespace VFolders.Libs
 
         public static Object[] FindObjects(Type type)
         {
-#if UNITY_2023_1_OR_NEWER
+#if UNITY_6000_4_OR_NEWER
+            return Object.FindObjectsByType(type);
+#elif UNITY_2023_1_OR_NEWER
             return Object.FindObjectsByType(type, FindObjectsSortMode.None);
 #else
             return Object.FindObjectsOfType(type);
@@ -1081,7 +1091,9 @@ namespace VFolders.Libs
         }
         public static T[] FindObjects<T>() where T : Object
         {
-#if UNITY_2023_1_OR_NEWER
+#if UNITY_6000_4_OR_NEWER
+            return Object.FindObjectsByType<T>();
+#elif UNITY_2023_1_OR_NEWER
             return Object.FindObjectsByType<T>(FindObjectsSortMode.None);
 #else
             return Object.FindObjectsOfType<T>();
@@ -1382,7 +1394,7 @@ namespace VFolders.Libs
         public struct GlobalID : System.IEquatable<GlobalID>
         {
             public Object GetObject() => GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalObjectId);
-            public int GetObjectInstanceId() => GlobalObjectId.GlobalObjectIdentifierToInstanceIDSlow(globalObjectId);
+            public ObjectID GetObjectId() => _GlobalObjectId_GlobalObjectIdentifierToInstanceIDSlow(globalObjectId);
 
 
             public string guid => globalObjectId.assetGUID.ToString();
@@ -1416,11 +1428,11 @@ namespace VFolders.Libs
         }
 
         public static GlobalID GetGlobalID(this Object o) => new(o);
-        public static GlobalID[] GetGlobalIDs(this IEnumerable<int> instanceIds)
+        public static GlobalID[] GetGlobalIDs(this IEnumerable<ObjectID> instanceIds)
         {
             var unityGlobalIds = new GlobalObjectId[instanceIds.Count()];
 
-            GlobalObjectId.GetGlobalObjectIdsSlow(instanceIds.ToArray(), unityGlobalIds);
+            _GlobalObjectId_GetGlobalObjectIdsSlow(instanceIds.ToArray(), unityGlobalIds);
 
             var globalIds = unityGlobalIds.Select(r => new GlobalID(r.ToString()));
 
@@ -1439,13 +1451,13 @@ namespace VFolders.Libs
             return objects;
 
         }
-        public static int[] GetObjectInstanceIds(this IEnumerable<GlobalID> globalIDs)
+        public static ObjectID[] GetObjectInstanceIds(this IEnumerable<GlobalID> globalIDs)
         {
             var goids = globalIDs.Select(r => r.globalObjectId).ToArray();
 
-            var iids = new int[goids.Length];
+            var iids = new ObjectID[goids.Length];
 
-            GlobalObjectId.GlobalObjectIdentifiersToInstanceIDsSlow(goids, iids);
+            _GlobalObjectId_GlobalObjectIdentifiersToInstanceIDsSlow(goids, iids);
 
             return iids;
 
@@ -1476,7 +1488,7 @@ namespace VFolders.Libs
 
                 var m_ListAreaState = t.GetField("m_ListAreaState", maxBindingFlags).GetValue(w);
 
-                m_ListAreaState.GetType().GetField("m_SelectedInstanceIDs").SetValue(m_ListAreaState, new List<int> { folder.GetInstanceID() });
+                m_ListAreaState.GetType().GetField("m_SelectedInstanceIDs").SetValue(m_ListAreaState, new List<ObjectID> { folder.GetObjectID() }); // todo m_SelectedObjectIDs since 6.4?
 
                 t.GetMethod("OpenSelectedFolders", maxBindingFlags).Invoke(null, null);
 
@@ -1504,8 +1516,11 @@ namespace VFolders.Libs
             }
             public static EditorWindow OpenColorPicker(System.Action<Color> colorChangedCallback, Color color, bool showAlpha = true, bool hdr = false)
             {
+#if UNITY_6000_3_OR_NEWER
+                typeof(Editor).Assembly.GetType("UnityEditor.ColorPicker").InvokeMethod("Show", colorChangedCallback, color, showAlpha, hdr, false);
+#else
                 typeof(Editor).Assembly.GetType("UnityEditor.ColorPicker").InvokeMethod("Show", colorChangedCallback, color, showAlpha, hdr);
-
+#endif
                 return typeof(Editor).Assembly.GetType("UnityEditor.ColorPicker").GetPropertyValue<EditorWindow>("instance");
 
             }
@@ -1949,6 +1964,82 @@ namespace VFolders.Libs
 
 
 #endif
+
+        #endregion
+
+        #region Instance/Entity ID mess
+
+
+        static ObjectID _GlobalObjectId_GlobalObjectIdentifierToInstanceIDSlow(GlobalObjectId id)
+        {
+#if UNITY_6000_3_OR_NEWER
+            return GlobalObjectId.GlobalObjectIdentifierToEntityIdSlow(id);
+#else
+            return GlobalObjectId.GlobalObjectIdentifierToInstanceIDSlow(id);
+#endif
+
+        }
+
+        static void _GlobalObjectId_GlobalObjectIdentifiersToInstanceIDsSlow(GlobalObjectId[] identifiers, ObjectID[] outputIDs)
+        {
+#if UNITY_6000_3_OR_NEWER
+            GlobalObjectId.GlobalObjectIdentifiersToEntityIdsSlow(identifiers, outputIDs);
+#else
+
+            GlobalObjectId.GlobalObjectIdentifiersToInstanceIDsSlow(identifiers, outputIDs);
+
+#endif
+
+        }
+
+        static void _GlobalObjectId_GetGlobalObjectIdsSlow(ObjectID[] ids, GlobalObjectId[] outputIdentifiers)
+        {
+            GlobalObjectId.GetGlobalObjectIdsSlow(ids, outputIdentifiers);
+        }
+
+
+
+
+        public static Object _EditorUtility_ObjectIDToObject(ObjectID id)
+        {
+#if UNITY_6000_3_OR_NEWER
+            return EditorUtility.EntityIdToObject(id);
+#else
+            return EditorUtility.InstanceIDToObject(id);
+#endif
+        }
+
+        public static string _AssetDatabase_GetAssetPath(ObjectID id)
+        {
+            return AssetDatabase.GetAssetPath(id);
+        }
+
+        public static ObjectID[] _Selection_IDs
+        {
+            get
+            {
+#if UNITY_6000_3_OR_NEWER
+                return Selection.entityIds;//.Select(r => (int)r).ToArray();
+#else
+                return Selection.instanceIDs;
+#endif
+            }
+        }
+
+
+
+        public static ObjectID GetObjectID(this Object o)
+        {
+#if UNITY_6000_3_OR_NEWER
+            return o.GetEntityId();
+#else
+            return o.GetInstanceID();
+#endif
+        }
+
+
+
+
 
         #endregion
 
