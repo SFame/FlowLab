@@ -42,7 +42,7 @@ public class WhileNode : Node, INodeAdditionalArgs<WhileNodeSerializeInfo>
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetNullArray(outputTypes);
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void StateUpdate(TransitionEventArgs args)

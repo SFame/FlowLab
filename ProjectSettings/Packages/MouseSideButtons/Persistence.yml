@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Scripts/PUMP/Node/Detail/NodeSupport
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Font
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/TextMesh Pro/Resources/Fonts & Materials
-  - Assets/Font
-  - Assets/TextMesh Pro/Resources/Fonts & Materials
-  - Assets/Font
-  - Assets/TextMesh Pro/Resources/Fonts & Materials
-  - Assets/Scenes
+  - Assets/Scripts/PUMP/Input
+  - Assets/Scripts/PUMP/UI/ConsoleWindow
+  - Assets/Scripts/PUMP
+  - Assets/Scripts/PUMP/UI/ConsoleWindow
+  - Assets
+  - Assets/Scripts/PUMP/Node/Serialize
+  - Assets/Scripts/PUMP/Node/Serialize/SerializeManager
+  - Assets/Scripts/PUMP/Node/Serialize
+  - Assets/Scripts/PUMP/Node/Serialize/StructureExtractor
+  - Assets/Scripts/PUMP/Node/Serialize
+  - Assets/Scripts/PUMP/Node/Serialize/SerializeManager
+  - Assets/Scripts/PUMP/Node/Serialize
+  - Assets/Resources
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   - Assets/Scripts/PUMP
-  - Assets/Scenes
-  - Assets/Resources
   currentDirIndex: 19

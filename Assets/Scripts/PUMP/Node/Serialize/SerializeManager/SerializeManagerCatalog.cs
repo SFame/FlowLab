@@ -115,7 +115,7 @@ public static class SerializeManagerCatalog
             {
                 return t;
             }
-
+            
             isCastFail = true;
             return default;
         }).ToList();

@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TFlipFlop : Node
+public class DFlipFlop : Node
 {
-    protected override string NodeDisplayName => "TFF";
+    protected override string NodeDisplayName => "DFF";
 
     protected override float NameTextSize => 20f;
 
-    protected override List<string> InputNames => new List<string>() { "t", "rst" };
+    protected override List<string> InputNames => new() { "d", "clk", "rst" };
 
     protected override List<string> OutputNames => new List<string>() { "q" };
 
-    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Pulse, TransitionType.Pulse };
+    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool, TransitionType.Pulse, TransitionType.Pulse };
 
     protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Bool };
 
@@ -32,16 +32,17 @@ public class TFlipFlop : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        switch (args.Index)
+        if (args.Index == 0 || args.IsNull)
         {
-            case 0 when args.IsNull:
-                return;
-            case 0:
-                OutputToken.PushFirst(!OutputToken.FirstState);
-                return;
-            case 1 when !args.IsNull:
-                OutputToken.PushFirst(false);
-                break;
+            return;
         }
+
+        if (args.Index == 2)
+        {
+            OutputToken.PushAllAsDefault();
+            return;
+        }
+
+        OutputToken.PushFirst(InputToken[0].State);
     }
 }

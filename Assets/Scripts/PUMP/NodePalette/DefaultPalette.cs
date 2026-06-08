@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class DefaultPalette : NodePalette
 {
@@ -27,6 +28,7 @@ public class DefaultPalette : NodePalette
                 { typeof(WhileNode), "While"},
                 { typeof(Branch), "Branch" },
                 { typeof(Select), "Select" },
+                { typeof(SequenceNode), "Sequence"},
             }
         },
         {
@@ -45,11 +47,13 @@ public class DefaultPalette : NodePalette
         {
             "Signal", new Dictionary<Type, string>
             {
-                { typeof(IsNull), "IsNull" },
+                { typeof(IsNull), "Is Null" },
+                { typeof(NullFilter), "Null Filter" },
                 { typeof(Splitter), "Split" },
                 { typeof(Merger), "Merger" },
                 { typeof(Switch), "Switch" },
                 { typeof(OneHot), "One Hot" },
+                { typeof(SRLatch), "SR Latch" },
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
@@ -61,9 +65,10 @@ public class DefaultPalette : NodePalette
                 { typeof(Sender), "Sender" },
                 { typeof(SignalDetector), "Signal Detector" },
                 { typeof(TFlipFlop), "T Flip-Flop" },
+                { typeof(DFlipFlop), "D Flip-Flop" },
+                { typeof(JKFlipFlop), "JK Flip-Flop" },
                 { typeof(Timer), "Timer" },
                 { typeof(FrequencyMeter), "Frequency Meter" },
-                { typeof(ClockGate), "ClockGate" },
             }
         },
         {

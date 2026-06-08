@@ -64,6 +64,16 @@ public class ConsolePUMPCommandInjector : MonoBehaviour
             doc: "Save the current panel with a name.",
             isSystem: false
         ),
+        //new ConsoleCommand
+        //(
+        //    command: "/load",
+        //    queryProcess: async context =>
+        //    {
+
+        //    },
+        //    doc: "",
+        //    isSystem: false
+        //),
         new ConsoleCommand
         (
             command: "/nodes",

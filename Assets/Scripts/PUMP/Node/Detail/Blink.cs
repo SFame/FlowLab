@@ -8,7 +8,7 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 {
     private const int MAX_PER_FRAME = 9999;
 
-    private int _perFrame = 1;
+    private int _frameInterval = 100;
 
     private int _frameCount = 0;
 
@@ -33,11 +33,11 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     protected override string NodeDisplayName => "Blnk";
 
-    protected override List<string> InputNames => new List<string>() { "on", "rst" };
+    protected override List<string> InputNames => new List<string>() { "on" };
 
     protected override List<string> OutputNames => new List<string>() { "q" };
 
-    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool, TransitionType.Pulse };
+    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool };
 
     protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Pulse };
 
@@ -51,21 +51,21 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 80f);
 
     protected override float NameTextSize => 16f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetNullArray(outputTypes);
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void OnAfterInit()
     {
-        BlinkSupport.Initialize(_perFrame, MAX_PER_FRAME, value =>
+        BlinkSupport.Initialize(_frameInterval, MAX_PER_FRAME, value =>
         {
             _frameCount = 0;
-            _perFrame = value;
+            _frameInterval = value;
             ReportChanges();
         });
     }
@@ -80,29 +80,12 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args.Index == 1)
-        {
-            if (args.IsNull)
-            {
-                return;
-            }
-
-            Reset();
-            if (InputToken.FirstState.IsNull)
-            {
-                OutputToken.PushAllAsNull();
-            }
-
-            return;
-        }
-
         if (args.Index == 0)
         {
             Reset();
 
             if (args.IsNull)
             {
-                OutputToken.PushAllAsNull();
                 return;
             }
 
@@ -123,11 +106,11 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
         try
         {
             _isRunning = true;
-            _frameCount = _perFrame;
+            _frameCount = _frameInterval;
 
             while (!_cts.Token.IsCancellationRequested)
             {
-                if (_frameCount++ >= _perFrame)
+                if (_frameCount++ >= _frameInterval)
                 {
                     OutputToken[0].State = Transition.Pulse();
                     _frameCount = 0;
@@ -151,10 +134,10 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 
     public BlinkSerializeInfo AdditionalArgs
     {
-        get => new() { _perFrame = _perFrame, _isRunning = _isRunning };
+        get => new() { _frameInterval = _frameInterval, _isRunning = _isRunning };
         set
         {
-            _perFrame = value._perFrame;
+            _frameInterval = value._frameInterval;
             _isRunning = value._isRunning;
         }
     }
@@ -163,6 +146,6 @@ public class Blink : Node, INodeAdditionalArgs<BlinkSerializeInfo>
 [Serializable]
 public struct BlinkSerializeInfo
 {
-    [OdinSerialize] public int _perFrame;
+    [OdinSerialize] public int _frameInterval;
     [OdinSerialize] public bool _isRunning;
 }

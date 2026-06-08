@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
+using Vector2 = UnityEngine.Vector2;
 
 [ResourceGetter("PUMP/Sprite/PaletteImage/palette_elem", "#225881", "#001A2F")]
 public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDeserializingListenable

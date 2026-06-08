@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Sender : Node
+public class NullFilter : Node
 {
     private List<ContextElement> _contexts;
 
-    protected override List<string> InputNames { get; } = new List<string> { "in", "exec" };
+    protected override List<string> InputNames { get; } = new List<string> { "in" };
 
     protected override List<string> OutputNames { get; } = new List<string> { "out" };
 
-    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Int, TransitionType.Pulse };
+    protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
     protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
 
@@ -23,7 +23,7 @@ public class Sender : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
-    protected override string NodeDisplayName => "Send";
+    protected override string NodeDisplayName => "NFilt";
 
     protected override float NameTextSize => 16f;
 
@@ -38,6 +38,8 @@ public class Sender : Node
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Int.GetColorHexCodeString(true)}><b>Int</b></color>", () => SetType(TransitionType.Int)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.Float.GetColorHexCodeString(true)}><b>Float</b></color>", () => SetType(TransitionType.Float)));
                 _contexts.Add(new ContextElement($"Type: <color={TransitionType.String.GetColorHexCodeString(true)}><b>String</b></color>", () => SetType(TransitionType.String)));
+                _contexts.Add(new ContextElement($"Type: <color={TransitionType.Pulse.GetColorHexCodeString(true)}><b>Pulse</b></color>", () => SetType(TransitionType.Pulse)));
+
             }
 
             return _contexts;
@@ -46,23 +48,24 @@ public class Sender : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetNullArray(outputTypes);
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        if (args.Index != 1 || args.IsNull)
+        if (args.IsNull)
         {
             return;
         }
 
-        OutputToken.PushFirst(InputToken.FirstState);
+        OutputToken.PushFirst(args.State);
     }
 
     private void SetType(TransitionType type)
     {
-        InputToken.SetType(0, type);
+        InputToken.SetTypeAll(type);
         OutputToken.SetTypeAll(type);
+        OutputToken.PushFirst(OutputToken.FirstType.Default());
         ReportChanges();
     }
 }

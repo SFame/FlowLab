@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SequenceNode : DynamicIONode
+public class SequenceNode : DynamicIONode, INodeAdditionalArgs<(bool, int)>
 {
     private bool _includeOffState = true;
     private int _currentIndex = -1;
@@ -19,7 +19,7 @@ public class SequenceNode : DynamicIONode
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
-    protected override float NameTextSize => 20f;
+    protected override float NameTextSize => 18f;
 
     protected override int DefaultInputCount => 2;
 
@@ -59,5 +59,11 @@ public class SequenceNode : DynamicIONode
     protected override void StateUpdate(TransitionEventArgs args)
     {
         throw new System.NotImplementedException();
+    }
+
+    public (bool, int) AdditionalArgs
+    {
+        get => (_includeOffState, _currentIndex);
+        set => (_includeOffState, _currentIndex) = value;
     }
 }

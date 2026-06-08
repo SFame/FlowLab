@@ -259,7 +259,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         IsDragging = true;
         Vector2 clickPos = GetWorldPosition(eventData.position);
         _offset = (Vector2)Rect.position - clickPos;
-        OnDragStart?.Invoke(new PositionInfo(WorldPosition, LocalPosition, clickPos, eventData.position, Vector2.zero));
+        OnDragStart?.Invoke(new PositionInfo(WorldPosition, LocalPosition, clickPos, eventData.position, Vector2.zero, eventData));
     }
 
     void IDragHandler.OnDrag(PointerEventData eventData)
@@ -279,7 +279,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         Vector2 newPosition = clickPos + _offset;
         SetPosition(newPosition);
         Vector2 actualDelta = (Vector2)Rect.position - beforePosition;
-        OnDragging?.Invoke(new PositionInfo(WorldPosition, LocalPosition, clickPos, eventData.position, actualDelta));
+        OnDragging?.Invoke(new PositionInfo(WorldPosition, LocalPosition, clickPos, eventData.position, actualDelta, eventData));
     }
 
     void IEndDragHandler.OnEndDrag(PointerEventData eventData)
@@ -295,7 +295,7 @@ public class DraggableUGUI : MonoBehaviour, IDraggable, ILocatable
         }
 
         IsDragging = false;
-        OnDragEnd?.Invoke(new PositionInfo(WorldPosition, LocalPosition, GetWorldPosition(eventData.position), eventData.position , Vector2.zero));
+        OnDragEnd?.Invoke(new PositionInfo(WorldPosition, LocalPosition, GetWorldPosition(eventData.position), eventData.position , Vector2.zero, eventData));
     }
 
     private void InternalSetPosition(Vector2 worldPosition)
@@ -336,13 +336,15 @@ public readonly struct PositionInfo
     public Vector2 ClickWorldPos { get; }
     public Vector2 ClickScreenPos { get; }
     public Vector2 Delta { get; }
+    public PointerEventData PointerEventData { get; }
 
-    public PositionInfo(Vector2 world, Vector2 anchored, Vector2 clickWorldPos, Vector2 clickScreenPos, Vector2 delta)
+    public PositionInfo(Vector2 world, Vector2 anchored, Vector2 clickWorldPos, Vector2 clickScreenPos, Vector2 delta, PointerEventData eventData = null)
     {
         WorldPos = world;
         AnchoredPosition = anchored;
         ClickWorldPos = clickWorldPos;
         ClickScreenPos = clickScreenPos;
         Delta = delta;
+        PointerEventData = eventData;
     }
 }

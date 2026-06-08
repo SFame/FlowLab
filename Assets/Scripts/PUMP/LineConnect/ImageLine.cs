@@ -139,7 +139,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         }
 
         Vector2 clickPos = eventData.position.ScreenToWorldPoint();
-        OnDragStart?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, Vector2.zero));
+        OnDragStart?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, Vector2.zero, eventData));
         _dragStartOffset = (Vector2)Rect.position - clickPos;
         SetHighlight(false);
         SetThickness(_defaultThickness);
@@ -157,7 +157,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
         Vector2 beforePosition = Rect.position;
         Vector2 newPosition = clickPos + _dragStartOffset;
         Vector2 actualDelta = newPosition - beforePosition;
-        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta));
+        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta, eventData));
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -167,7 +167,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
             return;
         }
 
-        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
+        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero, eventData));
         _isDragging = false;
     }
 
@@ -190,7 +190,7 @@ public class ImageLine : MonoBehaviour, IDraggable, IPointerEnterHandler, IPoint
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
+            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero, eventData));
         }
     }
 }

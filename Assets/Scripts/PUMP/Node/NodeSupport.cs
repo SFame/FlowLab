@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 
 [RequireComponent(typeof(RectTransform))]
-public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IMinimapProxyClient
+public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler, IMinimapProxyClient
 {
     #region On Inspector (Must be)
     [SerializeField] private Image m_Image;
@@ -20,6 +20,10 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     [SerializeField] private List<Graphic> m_ImageGroup;
     [SerializeField] private Color m_DefaultColor = Color.white;
     [SerializeField] private Color m_HighlightedColor = Color.green;
+
+    [Space(10)]
+
+    [SerializeField] private List<NodeMouseEventRelay> m_MouseEventRelayGroup;
 
     [Space(10)]
 
@@ -139,6 +143,14 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         OnMouseExit?.Invoke(eventData);
     }
 
+    void IPointerMoveHandler.OnPointerMove(PointerEventData eventData)
+    {
+        if (IsMouseEventBlocked)
+            return;
+
+        OnMouseMove?.Invoke(eventData);
+    }
+
     void INodeSupportInitializable.Initialize(Node node)
     {
         if (_initialized)
@@ -155,6 +167,11 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
         _imageGroupDefaultColors = m_ImageGroup?.Select(graphic => graphic.color).ToList();
         OnPositionUpdate += posInfo => OnClientMove?.Invoke(posInfo.WorldPos);
         OnSizeUpdate += size => OnClientSizeUpdate?.Invoke(size * m_MinimapScale + m_MinimapOffset);
+
+        foreach (NodeMouseEventRelay mouseEventRelay in m_MouseEventRelayGroup)
+        {
+            mouseEventRelay?.Initialize(this);
+        }
 
         if (m_IncludeMinimap)
         {
@@ -190,6 +207,7 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public event Action<PointerEventData> OnMouseUp;
     public event Action<PointerEventData> OnMouseEnter;
     public event Action<PointerEventData> OnMouseExit;
+    public event Action<PointerEventData> OnMouseMove;
     public event Action<bool> OnSetHighlight;
     public event Action OnMouseEventBlocked;
     public event Action OnMouseEventUnblocked;
@@ -385,7 +403,14 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
     public void DestroyObject()
     {
         if (_isDestroyed)
+        {
             return;
+        }
+
+        foreach (NodeMouseEventRelay mouseEventRelay in m_MouseEventRelayGroup)
+        {
+            mouseEventRelay?.Terminate();
+        }
 
         Destroy(gameObject);
     }

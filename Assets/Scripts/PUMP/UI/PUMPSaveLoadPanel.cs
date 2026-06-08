@@ -33,6 +33,11 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
             await ReloadDataAsync();
         }
     }
+
+    public void LoadSave(PUMPSaveDataStructure structure)
+    {
+        extractor.ApplyData(structure);
+    }
     #endregion
 
     #region Privates
@@ -127,7 +132,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
         _saveDatas = await SerializeManagerCatalog.GetDatas<PUMPSaveDataStructure>(m_TargetDirectory, savePath);
 
         foreach (PUMPSaveDataStructure data in _saveDatas)
+        {
             data.SubscribeUpdateNotification(RefreshEventAdapter);
+        }
     }
 
     private void RefreshEventAdapter(PUMPSaveDataStructure structure)

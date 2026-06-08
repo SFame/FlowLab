@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEngine.Rendering.DebugUI;
 
 public class InputSwitch : Node, INodeAdditionalArgs<Transition>
 {
     private InputSwitchSupport _inputSwitchSupport;
     private bool _isDragged = false;
+    private bool _onMouseEnter = false;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/INPUT_SWITCH";
 
@@ -75,13 +76,41 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
         }
     }
 
+    private bool IsSupportObject(PointerEventData targetData)
+    {
+        GameObject target = targetData.pointerCurrentRaycast.gameObject;
+        return (InputSwitchSupport.MouseRaycastTargetGroup.Any(go => go == target) || target == Support.gameObject) && target != null;
+    }
+
     protected override void OnAfterInit()
     {
-        Support.OnMouseEnter += _ => InputSwitchSupport.OpenInputPanel();
-        Support.OnMouseExit += _ => InputSwitchSupport.CloseInputPanel();
-        Support.OnMouseEventBlocked += () => InputSwitchSupport.CloseInputPanel();
-        InputSwitchSupport.Initialize(AdditionalArgs);
+        Support.OnMouseMove += eventData =>
+        {
+            if (_isDragged)
+            {
+                return;
+            }
 
+            if (_onMouseEnter && !IsSupportObject(eventData))
+            {
+                _onMouseEnter = false;
+                InputSwitchSupport.CloseInputPanel();
+            }
+
+            if (!_onMouseEnter && IsSupportObject(eventData))
+            {
+                _onMouseEnter = true;
+                InputSwitchSupport.OpenInputPanel();
+            }
+        };
+
+        Support.OnMouseEventBlocked += () =>
+        {
+            _onMouseEnter = false;
+            InputSwitchSupport.CloseInputPanel();
+        };
+
+        InputSwitchSupport.Initialize(AdditionalArgs);
         InputSwitchSupport.OnValueChanged += () =>
         {
             if (InputSwitchSupport.TryGetValue(AdditionalArgs.Type, out Transition result))
@@ -94,6 +123,7 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
         Support.OnDragStart += _ =>
         {
             InputSwitchSupport.SetDown(false);
+            InputSwitchSupport.CloseInputPanel();
             _isDragged = true;
         };
 
@@ -101,6 +131,11 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
         {
             if (eventData.button == PointerEventData.InputButton.Left)
             {
+                if (!IsSupportObject(eventData))
+                {
+                    return;
+                }
+
                 _isDragged = false;
                 InputSwitchSupport.SetDown(true);
                 InputSwitchSupport.PlaySound(true);
@@ -114,6 +149,11 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
                 if (_isDragged)
                 {
                     _isDragged = false;
+                    return;
+                }
+
+                if (!IsSupportObject(eventData))
+                {
                     return;
                 }
 

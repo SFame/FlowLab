@@ -27,7 +27,7 @@ public class IfNode : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetNullArray(outputTypes);
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
@@ -39,7 +39,6 @@ public class IfNode : Node
 
         if (args.IsNull)
         {
-            OutputToken.PushAllAsNull();
             return;
         }
 

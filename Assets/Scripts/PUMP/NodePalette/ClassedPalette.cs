@@ -63,7 +63,6 @@ public class ClassedPalette : NodePalette
                 { typeof(TFlipFlop), "T Flip-Flop" },
                 { typeof(Timer), "Timer" },
                 { typeof(FrequencyMeter), "Frequency Meter" },
-                { typeof(ClockGate), "ClockGate" },
             }
         },
         {

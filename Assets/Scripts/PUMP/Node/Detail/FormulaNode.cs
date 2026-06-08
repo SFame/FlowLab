@@ -19,7 +19,7 @@ public class FormulaNode : DynamicIONode, INodeAdditionalArgs<string>
 
     protected override float InEnumeratorXPos => 2f;
 
-    protected override float OutEnumeratorXPos => 237f;
+    protected override float OutEnumeratorXPos => 257f;
 
     protected override float EnumeratorSpacing => 3f;
 

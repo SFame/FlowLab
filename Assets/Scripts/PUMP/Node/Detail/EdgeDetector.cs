@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class EdgeDetector : Node
 {
-    protected override float NameTextSize { get; } = 18f;
+    protected override float NameTextSize { get; } = 16f;
 
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
@@ -27,19 +27,20 @@ public class EdgeDetector : Node
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
-        return TransitionUtil.GetNullArray(outputTypes);
+        return TransitionUtil.GetDefaultArray(outputTypes);
     }
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
         if (args.IsNull)
         {
-            OutputToken.PushAllAsNull();
             return;
         }
 
         if (!args.IsStateChange)
+        {
             return;
+        }
 
         if (args.State)
         {

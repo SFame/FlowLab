@@ -34,6 +34,12 @@ public class OneShot : Node
     private void SetOutputType(TransitionType type)
     {
         OutputToken.SetTypeAll(type);
+
+        if (type == TransitionType.Pulse)
+        {
+            OutputToken.PushFirst(Transition.Pulse());
+        }
+
         ReportChanges();
     }
 

@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TFlipFlop : Node
+public class SRLatch : Node
 {
-    protected override string NodeDisplayName => "TFF";
+    protected override string NodeDisplayName => "SR\nLatch";
 
-    protected override float NameTextSize => 20f;
+    protected override float NameTextSize => 16f;
 
-    protected override List<string> InputNames => new List<string>() { "t", "rst" };
+    protected override List<string> InputNames => new List<string>() { "s", "r" };
 
-    protected override List<string> OutputNames => new List<string>() { "q" };
+    protected override List<string> OutputNames => new List<string>() { "q"};
 
     protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Pulse, TransitionType.Pulse };
 
@@ -23,7 +23,7 @@ public class TFlipFlop : Node
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
+    protected override Vector2 DefaultNodeSize => new Vector2(100f, 50f);
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -32,16 +32,17 @@ public class TFlipFlop : Node
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        switch (args.Index)
+        if (args.IsNull)
         {
-            case 0 when args.IsNull:
-                return;
-            case 0:
-                OutputToken.PushFirst(!OutputToken.FirstState);
-                return;
-            case 1 when !args.IsNull:
-                OutputToken.PushFirst(false);
-                break;
+            return;
         }
+
+        if (args.Index == 0)
+        {
+            OutputToken.PushFirst(true);
+            return;
+        }
+
+        OutputToken.PushFirst(false);
     }
 }

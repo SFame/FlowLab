@@ -34,9 +34,9 @@ public class Switch : Node, INodeAdditionalArgs<bool>
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SWITCH";
 
-    protected override List<string> InputNames { get; } = new List<string> { "A", "Ctrl", "B" };
+    protected override List<string> InputNames { get; } = new List<string> { "a", "ctrl", "b" };
 
-    protected override List<string> OutputNames { get; } = new List<string> { "Y" };
+    protected override List<string> OutputNames { get; } = new List<string> { "y" };
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.Bool, TransitionType.Bool, TransitionType.Bool };
 

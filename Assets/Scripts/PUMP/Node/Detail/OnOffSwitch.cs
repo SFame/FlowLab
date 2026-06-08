@@ -63,6 +63,11 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
         {
             if (eventData.button == PointerEventData.InputButton.Left)
             {
+                if (!IsSupportObject(eventData))
+                {
+                    return;
+                }
+
                 OnOffSwitchSupport.PlaySound(true);
                 OnOffSwitchSupport.SetPush(true);
                 _isDragged = false;
@@ -76,6 +81,11 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
                 if (_isDragged)
                 {
                     _isDragged = false;
+                    return;
+                }
+
+                if (!IsSupportObject(eventData))
+                {
                     return;
                 }
 
@@ -95,6 +105,12 @@ public class OnOffSwitch : Node, INodeAdditionalArgs<bool>
     }
 
     protected override void StateUpdate(TransitionEventArgs args) { }
+
+    private bool IsSupportObject(PointerEventData targetData)
+    {
+        GameObject target = targetData.pointerCurrentRaycast.gameObject;
+        return target != null && Support.gameObject == target.gameObject;
+    }
 
     public bool AdditionalArgs
     {

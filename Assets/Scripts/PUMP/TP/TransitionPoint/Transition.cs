@@ -1067,6 +1067,7 @@ public static class TransitionUtil
         return transitionTypes.Select(type => type.Null()).ToArray();
     }
 
+
     public static Transition[] GetDefaultArray(IEnumerable<TransitionType> transitionTypes)
     {
         if (transitionTypes == null)
@@ -1075,6 +1076,16 @@ public static class TransitionUtil
         }
 
         return transitionTypes.Select(type => type.Default()).ToArray();
+    }
+
+    public static Transition[] GetNullIfPulseDefaultArray(IEnumerable<TransitionType> transitionTypes)
+    {
+        if (transitionTypes == null)
+        {
+            throw new ArgumentNullException(nameof(transitionTypes), $"{nameof(GetNullArray)}: Argument cannot be null");
+        }
+
+        return transitionTypes.Select(type => type == TransitionType.Pulse ? type.Default() : type.Null()).ToArray();
     }
 
     public static Color GetColor(this TransitionType transitionType) => transitionType switch

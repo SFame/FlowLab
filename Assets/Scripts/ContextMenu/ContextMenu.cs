@@ -179,6 +179,7 @@ public class ContextMenu : MonoBehaviour, IPointerDownHandler
         float yPos = position.y;
         if (yPos < contextSize.y)
             yPos = contextSize.y;
+
         if (yPos > screenSize.y)
             yPos = screenSize.y;
 

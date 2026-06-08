@@ -318,7 +318,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
             }
         }
 
-        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta));
+        OnDragging?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, clickPos, eventData.position, actualDelta, eventData));
     }
     
     public void OnEndDrag(PointerEventData eventData)
@@ -329,7 +329,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
         }
 
         OnSettableDragEnd?.Invoke();
-        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
+        OnDragEnd?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero, eventData));
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -352,7 +352,7 @@ public class LineEdge : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDrag
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero));
+            OnRightClick?.Invoke(new PositionInfo(Rect.position, Rect.anchoredPosition, eventData.position.ScreenToWorldPoint(), eventData.position, Vector2.zero, eventData));
         }
     }
 

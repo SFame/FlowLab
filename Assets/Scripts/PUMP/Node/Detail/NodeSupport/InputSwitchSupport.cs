@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -14,11 +15,15 @@ public class InputSwitchSupport : MonoBehaviour, ISoundable
     [SerializeField] private Sprite m_ActiveImage;
     [SerializeField] private Sprite m_DeactiveImage;
 
+    [SerializeField] private List<GameObject> m_MouseRaycastTargetGroup;
+
 
     public event Action OnValueChanged;
     public event SoundEventHandler OnSounded;
 
     private object _inputManagerBlockerObject = new();
+
+    public List<GameObject> MouseRaycastTargetGroup => m_MouseRaycastTargetGroup ?? new List<GameObject>();
 
     public void Initialize(Transition initValue)
     {

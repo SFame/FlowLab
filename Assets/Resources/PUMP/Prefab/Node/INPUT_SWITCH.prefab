@@ -544,6 +544,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -775,6 +776,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -932,6 +934,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: m_DetectingGroup.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[0]'
+      value: 
+      objectReference: {fileID: 7999700481502075597}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100995989442657449}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[2]'
+      value: 
+      objectReference: {fileID: 3602728201522986483}
+    - target: {fileID: 6368112864780920419, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
+      propertyPath: 'm_DetectingGroup.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8440757631299434766}
     - target: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -985,6 +1007,9 @@ MonoBehaviour:
   m_NodeImage: {fileID: 7712518799765449155}
   m_ActiveImage: {fileID: -7735563126504977094, guid: a8fca74e5faca654a9442a16dd06df97, type: 3}
   m_DeactiveImage: {fileID: 7643684746739801269, guid: f6d23b2a4aaf7c347b6fa01cf207fbbf, type: 3}
+  m_MouseRaycastTargetGroup:
+  - {fileID: 5357185104005879731}
+  - {fileID: 7894038347292888699}
 --- !u!114 &7712518799765449155 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6560553130387192381, guid: 2b7d57ddd6479044e9900ee99fddc185, type: 3}
