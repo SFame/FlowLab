@@ -10,7 +10,7 @@ public class ResourceGetterAttribute : Attribute
 
     public ResourceGetterAttribute() : this(string.Empty) { }
 
-    public ResourceGetterAttribute(string path) : this(path, "#FFFFFF", "#001A2F") { }
+    public ResourceGetterAttribute(string path) : this(path, "#FFFFFF", "#0F2537") { }
 
     public ResourceGetterAttribute(string path, string backgroundColorHex, string textColorHex)
     {

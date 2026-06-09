@@ -13,7 +13,7 @@ public class BinaryDisplay : DynamicIONode, INodeAdditionalArgs<int>
     protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
     protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
 
-    protected override float InEnumeratorXPos => -3f;
+    protected override float InEnumeratorXPos => -0f;
 
     protected override float OutEnumeratorXPos => 0f;
 

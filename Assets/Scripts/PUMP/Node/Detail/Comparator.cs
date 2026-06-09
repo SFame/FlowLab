@@ -25,7 +25,17 @@ public class Comparator : DynamicIONode, INodeAdditionalArgs<Comparator.Comparat
 
     protected override int DefaultOutputCount => 1;
 
-    protected override void StateUpdate(TransitionEventArgs args) => OutputToken.PushFirst(GetResult());
+    protected override void StateUpdate(TransitionEventArgs args)
+    {
+        if (InputToken.HasOnlyNull)
+        {
+            OutputToken.PushAllAsNull();
+            return;
+        }
+
+        OutputToken.PushFirst(GetResult());
+    }
+
     protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
     protected override string DefineOutputName(int tpIndex) => "out";
     protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;

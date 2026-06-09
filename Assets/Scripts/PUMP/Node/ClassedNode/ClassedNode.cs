@@ -9,7 +9,7 @@ using UnityEngine;
 using Utils;
 using static TPEnumeratorToken;
 
-[ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette")]
+[ResourceGetter("PUMP/Sprite/PaletteImage/classed_node_palette", "#FFFFFF", "#BCB8DD")]
 public class ClassedNode : DynamicIONode, IClassedNode, INodeAdditionalArgs<ClassedNodeSerializeInfo>
 {
     #region Privates

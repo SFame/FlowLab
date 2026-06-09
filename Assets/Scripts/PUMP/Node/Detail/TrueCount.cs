@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-public class All : DynamicIONode, INodeAdditionalArgs<int>
+public class TrueCount : DynamicIONode, INodeAdditionalArgs<int>
 {
     private SplitterSupport _splitterSupport;
 
@@ -10,15 +10,13 @@ public class All : DynamicIONode, INodeAdditionalArgs<int>
         get
         {
             if (_splitterSupport == null)
+            {
                 _splitterSupport = Support.GetComponent<SplitterSupport>();
+            }
 
             return _splitterSupport;
         }
     }
-
-    protected override string NodeDisplayName => "All";
-
-    protected override float NameTextSize => 20f;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/SPLIT";
 
@@ -32,24 +30,29 @@ public class All : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override Vector2 DefaultNodeSize => new Vector2(100f, 100f);
 
+    protected override string NodeDisplayName => "True\nCnt";
+
+    protected override float NameTextSize => 16f;
+
     protected override int DefaultInputCount => 2;
 
     protected override int DefaultOutputCount => 1;
 
-    protected override string DefineInputName(int tpIndex) => $"I{tpIndex}";
+    protected override string DefineInputName(int tpIndex) => $"in {tpIndex}";
 
-    protected override string DefineOutputName(int tpIndex) => "O";
+    protected override string DefineOutputName(int tpIndex) => "cnt";
 
     protected override TransitionType DefineInputType(int tpIndex) => TransitionType.Bool;
 
-    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Bool;
+    protected override TransitionType DefineOutputType(int tpIndex) => TransitionType.Int;
 
-    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
-    {
-        return new[] { AllOperate() };
-    }
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
+    {
+        return TransitionUtil.GetNullArray(outputTypes);
+    }
+
+    protected override Transition[] SetOutputResetStates(int outputCount, TransitionType[] outputTypes)
     {
         return TransitionUtil.GetNullArray(outputTypes);
     }
@@ -65,22 +68,15 @@ public class All : DynamicIONode, INodeAdditionalArgs<int>
 
     protected override void StateUpdate(TransitionEventArgs args)
     {
-        OutputToken.PushFirst(AllOperate());
-    }
-
-    private Transition AllOperate()
-    {
         if (InputToken.HasOnlyNull)
         {
-            return TransitionType.Bool.Null();
+            OutputToken.PushAllAsNull();
+            return;
         }
 
-        return InputToken.All(sf => sf.State);
+        int trueCount = InputToken.Count(stateful => stateful.State == true);
+        OutputToken.PushFirst(trueCount);
     }
 
-    public int AdditionalArgs
-    {
-        get => InputCount;
-        set => InputCount = value;
-    }
+    public int AdditionalArgs { get => InputCount; set => InputCount = value; }
 }

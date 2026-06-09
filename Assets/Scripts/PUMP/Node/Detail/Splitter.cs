@@ -13,7 +13,9 @@ public class Splitter : DynamicIONode, INodeAdditionalArgs<int>
         get
         {
             if (_splitterSupport == null)
+            {
                 _splitterSupport = Support.GetComponent<SplitterSupport>();
+            }
 
             return _splitterSupport;
         }

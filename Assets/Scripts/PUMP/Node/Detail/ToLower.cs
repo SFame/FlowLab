@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StringLength : Node
+public class ToLower : Node
 {
     protected override List<string> InputNames { get; } = new List<string> { "in" };
 
@@ -9,7 +9,7 @@ public class StringLength : Node
 
     protected override List<TransitionType> InputTypes { get; } = new List<TransitionType> { TransitionType.String };
 
-    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.Int };
+    protected override List<TransitionType> OutputTypes { get; } = new List<TransitionType> { TransitionType.String };
 
     protected override float InEnumeratorXPos => -39f;
 
@@ -21,9 +21,9 @@ public class StringLength : Node
 
     protected override Vector2 DefaultNodeSize => new Vector2(110f, 50f);
 
-    protected override string NodeDisplayName => "Str\nLen";
+    protected override string NodeDisplayName => "To\nLow";
 
-    protected override float NameTextSize => 18f;
+    protected override float NameTextSize => 16f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -38,7 +38,6 @@ public class StringLength : Node
             return;
         }
 
-        int strLength = ((string)args.State).Length;
-        OutputToken[0].State = strLength;
+        OutputToken.PushFirst(((string)args.State).ToLower());
     }
 }

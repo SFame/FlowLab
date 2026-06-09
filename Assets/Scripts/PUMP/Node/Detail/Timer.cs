@@ -27,7 +27,7 @@ public class Timer : Node, INodeAdditionalArgs<TimerSerializeInfo>
 
     protected override float EnumeratorMargin => 5f;
 
-    protected override Vector2 DefaultNodeSize => new Vector2(135f, 50f);
+    protected override Vector2 DefaultNodeSize => new Vector2(132f, 50f);
 
     protected override string NodeDisplayName => "Timer";
 

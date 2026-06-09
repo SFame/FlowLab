@@ -445,6 +445,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1054,6 +1055,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -2325,6 +2327,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2759,6 +2762,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -3020,10 +3024,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameText: {fileID: 7172690274809455160}
   dateText: {fileID: 5261767253247692796}
-  image: {fileID: 6662086445320464141}
   m_Displayer: {fileID: 9090303338185935566}
+  m_Image: {fileID: 1386890603365863730}
+  m_MouseEnterColor: {r: 0.32156864, g: 0.60784316, b: 0.8156863, a: 1}
   m_HighlightImage: {fileID: 4276744999456362361}
-  m_HighlightColor: {r: 0.61960787, g: 0.7808565, b: 1, a: 0.627451}
+  m_HighlightColor: {r: 0.5882353, g: 1, b: 0.98135847, a: 0.627451}
   m_DefaultColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &9090303338185935566
 MonoBehaviour:
@@ -3850,6 +3855,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -5461,6 +5467,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

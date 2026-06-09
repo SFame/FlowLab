@@ -72,7 +72,7 @@ public class KeyInput : Node, INodeAdditionalArgs<KeyCode>
 
     protected override float InEnumeratorXPos => 0f;
 
-    protected override float OutEnumeratorXPos => 39.5f;
+    protected override float OutEnumeratorXPos => 41.5f;
 
     protected override float EnumeratorSpacing => 3f;
 

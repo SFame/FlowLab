@@ -53,7 +53,6 @@ public class ClassedPalette : NodePalette
                 { typeof(EdgeDetector), "Edge Detector" },
                 { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
-                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(Blink), "Blink" },
                 { typeof(OneShot), "One Shot" },
                 { typeof(Delay), "Delay" },

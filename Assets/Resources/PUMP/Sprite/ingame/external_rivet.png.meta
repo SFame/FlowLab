@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: c42f2904b5b51bf48b494cc2ae025d97
+guid: 5dbbbae97cea4c04686bf3efcd6f9599
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 622863908960364619
-    second: classed_node_palette_0
+      213: 7643684746739801269
+    second: button_square_up_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -48,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: classed_node_palette_0
+      name: button_square_up_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 124
-        height: 66
+        width: 128
+        height: 128
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 47, y: 55, z: 47, w: 47}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b486ef4dc6bd4a800800000000000000
-      internalID: 622863908960364619
+      spriteID: 5bc5f7877c2d31a60800000000000000
+      internalID: 7643684746739801269
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 06de73ee5e6b32b4786c87378e96f54c
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      classed_node_palette_0: 622863908960364619
+      button_square_up_0: 7643684746739801269
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

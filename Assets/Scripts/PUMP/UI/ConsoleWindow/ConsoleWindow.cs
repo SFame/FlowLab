@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 using static ConsoleCommand;
 using Debug = UnityEngine.Debug;
@@ -91,7 +92,7 @@ public class ConsoleWindow : MonoBehaviour
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
     private const string PREFAB_PATH = "PUMP/Prefab/UI/ConsoleWindow";
-    private const int MAX_LINE_COUNT = 200;
+    private const int MAX_LINE_COUNT = 300;
     private const string HEADER_TEXT = "FlowLab> ";
     private static Text _text = new Text(MAX_LINE_COUNT);
     private static bool _headerActive = true;
@@ -380,7 +381,7 @@ public class ConsoleWindow : MonoBehaviour
         }
     }
 
-    private static async UniTask<QueryResult?> Query(string query)
+    private static async UniTask<QueryResult?> Query(string query, CancellationToken token)
     {
         if (_onQuery)
         {
@@ -392,9 +393,11 @@ public class ConsoleWindow : MonoBehaviour
         InternalInput(query ?? string.Empty, _lastQuerySource);
         _queryCache = null;
 
+        CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_queryCts.Token, token);
+
         try
         {
-            await UniTask.WaitUntil(() => _queryCache != null, cancellationToken: _queryCts.Token);
+            await UniTask.WaitUntil(() => _queryCache != null, cancellationToken: linkedCts.Token);
             return _queryCache;
         }
         catch (OperationCanceledException)
@@ -404,6 +407,7 @@ public class ConsoleWindow : MonoBehaviour
         }
         finally
         {
+            linkedCts.Dispose();
             _onQuery = false;
         }
     }
@@ -427,6 +431,7 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private TMP_InputField m_InputField;
     [SerializeField] private TextMeshProUGUI m_InputHeader;
     [SerializeField] private RectTransform m_HeaderSpaceRect;
+    [SerializeField] private ScrollRect m_MainTextScrollRect;
     [SerializeField] private float m_SpaceWidth = 9.6f;
 
     private void Initialize(string initText)
@@ -452,6 +457,7 @@ public class ConsoleWindow : MonoBehaviour
         Dispatcher.Post(() =>
         {
             m_MainTextField.text = text;
+            ResetScrollRect();
             ClearInputField(setFocus);
         });
     }
@@ -466,6 +472,7 @@ public class ConsoleWindow : MonoBehaviour
         Dispatcher.Post(() =>
         {
             m_MainTextField.text = text;
+            ResetScrollRect();
         });
     }
 
@@ -486,6 +493,11 @@ public class ConsoleWindow : MonoBehaviour
         {
             m_InputField.DeactivateInputField();
         });
+    }
+
+    private void ResetScrollRect()
+    {
+        m_MainTextScrollRect.verticalNormalizedPosition = 0f;
     }
 
     private void SetHeaderActive(bool active)
@@ -670,7 +682,7 @@ public class ConsoleCommand: IStartQuery
     public readonly struct CommandContext
     {
         #region Privates
-        public CommandContext(Func<string, UniTask<QueryResult?>> queryFunc, Action<string> printAction, Func<string, ConsoleWindow.ITextLine> textLineGetter, Dictionary<string, string> args, ConsoleInputSource initSource, CommandContextDisposer disposer)
+        public CommandContext(Func<string, CancellationToken, UniTask<QueryResult?>> queryFunc, Action<string> printAction, Func<string, ConsoleWindow.ITextLine> textLineGetter, Dictionary<string, string> args, ConsoleInputSource initSource, CommandContextDisposer disposer)
         {
             if (queryFunc == null || printAction == null || textLineGetter == null || args == null || disposer == null)
             {
@@ -685,7 +697,7 @@ public class ConsoleCommand: IStartQuery
             disposer.OnDispose += Dispose;
         }
 
-        private readonly Func<string, UniTask<QueryResult?>> _queryFunc;
+        private readonly Func<string, CancellationToken, UniTask<QueryResult?>> _queryFunc;
         private readonly Action<string> _printAction;
         private readonly Func<string, ConsoleWindow.ITextLine> _textLineGetter;
         private readonly Dictionary<string, string> _args;
@@ -723,9 +735,9 @@ public class ConsoleCommand: IStartQuery
         /// </summary>
         /// <param name="ask">쿼리 문장</param>
         /// <returns>쿼리 결과를 가져오는 UniTask. Result가 null 반환 시 쿼리가 강제 종료된 상황이므로 즉시 return 필요</returns>
-        public UniTask<QueryResult?> Query(string ask)
+        public UniTask<QueryResult?> Query(string ask, CancellationToken token = default)
         {
-            return _queryFunc(ask);
+            return _queryFunc(ask, token);
         }
 
         /// <summary>

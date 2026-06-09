@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+
 public class CodexPalette : BaseCodexPalette
 {
     public override Dictionary<string, Dictionary<Type, string>> NodeTypes { get; set; } = new()
@@ -21,8 +22,8 @@ public class CodexPalette : BaseCodexPalette
             {
                 { typeof(OnOffSwitch), "On/Off Switch" },
                 { typeof(InputSwitch), "Input Switch" },
-                { typeof(InputField), "Input Field"},
-                { typeof(Display), "Display"},
+                { typeof(InputField), "Input Field" },
+                { typeof(Display), "Display" },
                 { typeof(SegmentDisplay), "7-Segment Display" },
                 { typeof(BinaryDisplay), "Binary Display" },
             }
@@ -33,7 +34,7 @@ public class CodexPalette : BaseCodexPalette
                 { typeof(Splitter), "Split" },
                 { typeof(Switch), "Switch" },
                 { typeof(EdgeDetector), "Edge Detector" },
-                { typeof(TypeConverter), "Type Converter"},
+                { typeof(TypeConverter), "Type Converter" },
                 { typeof(Debouncer), "Debouncer" },
                 { typeof(Timer), "Timer" },
             }
@@ -49,7 +50,6 @@ public class CodexPalette : BaseCodexPalette
                 { typeof(Lerp), "Lerp" },
                 { typeof(Clamp), "Clamp" },
                 { typeof(Absolute), "Absolute" },
-                { typeof(Multiplexer), "Multiplexer" },
                 { typeof(MinMax), "MinMax" },
             }
         },

@@ -13,24 +13,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Scripts/PUMP/Input
-  - Assets/Scripts/PUMP/UI/ConsoleWindow
-  - Assets/Scripts/PUMP
-  - Assets/Scripts/PUMP/UI/ConsoleWindow
-  - Assets
-  - Assets/Scripts/PUMP/Node/Serialize
-  - Assets/Scripts/PUMP/Node/Serialize/SerializeManager
-  - Assets/Scripts/PUMP/Node/Serialize
-  - Assets/Scripts/PUMP/Node/Serialize/StructureExtractor
-  - Assets/Scripts/PUMP/Node/Serialize
-  - Assets/Scripts/PUMP/Node/Serialize/SerializeManager
-  - Assets/Scripts/PUMP/Node/Serialize
-  - Assets/Resources
+  - Assets/Scripts/PUMP/Node/Detail
+  - Assets/Scripts/PUMP/NodePalette
+  - Assets/Scripts/PUMP/UI
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/ClassedNode
+  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
+    I Round 20px
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP/Sprite/ingame
+  - Assets/Resources/PUMP/Prefab/Node
+  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab
+  - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
   - Assets/Resources/PUMP/Prefab/Node
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Scripts/PUMP
+  - Assets/Resources/PUMP/Prefab/UI
   currentDirIndex: 19

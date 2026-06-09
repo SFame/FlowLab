@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4280423168
-  m_fontColor: {r: 0, g: 0.07450981, b: 0.13333334, a: 1}
+    rgba: 4281804047
+  m_fontColor: {r: 0.057157483, g: 0.14571513, b: 0.21383637, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -247,7 +247,8 @@ MonoBehaviour:
   m_NodeSelectingHandler: {fileID: 6368112864780920419}
   m_ImageGroup: []
   m_DefaultColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}
-  m_HighlightedColor: {r: 0, g: 0.754717, b: 0, a: 1}
+  m_HighlightedColor: {r: 0, g: 0.7529412, b: 0, a: 1}
+  m_MouseEventRelayGroup: []
   m_IncludeMinimap: 1
   m_MinimapSprite: {fileID: 1771352180646307525, guid: 8c6f125ca148d124897d85aa4de83041, type: 3}
   m_MinimapColor: {r: 0.13333334, g: 0.34509805, b: 0.5058824, a: 1}

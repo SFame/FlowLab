@@ -23,12 +23,16 @@ public class CloseablePanel : MonoBehaviour, IPointerDownHandler
         EventSystem.current.RaycastAll(eventData, result);
 
         if (result.Count <= 0)
+        {
             return;
+        }
 
         if (result[0].gameObject == gameObject)
         {
             if (m_ControlActive)
+            {
                 gameObject.SetActive(false);
+            }
 
             OnClose?.Invoke();
             m_OnClose.Invoke();

@@ -24,7 +24,7 @@ public class SegmentDisplay : Node
 
     protected override List<TransitionType> OutputTypes { get; } = new();
 
-    protected override float InEnumeratorXPos => -3f;
+    protected override float InEnumeratorXPos => -0f;
 
     protected override float OutEnumeratorXPos => 0f;
 

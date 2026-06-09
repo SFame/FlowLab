@@ -56,6 +56,13 @@ public class ConsoleDefaultCommandInjector
         ),
         new ConsoleCommand
         (
+            command: "/echo",
+            doc: "Echo back the given text.",
+            args: new[] { "text" },
+            isSystem: true,
+            queryProcess: async context => context.GetArg("text")),
+        new ConsoleCommand
+        (
             command: "/open",
             doc: "Open console window.",
             isSystem: true,

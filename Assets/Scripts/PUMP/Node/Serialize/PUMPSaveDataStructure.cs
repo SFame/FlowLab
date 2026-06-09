@@ -46,7 +46,9 @@ public class PUMPSaveDataStructure
             foreach (Delegate d in UpdateNotification.GetInvocationList())
             {
                 if (d.Equals(action))
+                {
                     return;
+                }
             }
         }
         UpdateNotification += action;

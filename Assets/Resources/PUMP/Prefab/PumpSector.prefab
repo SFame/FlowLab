@@ -255,7 +255,7 @@ MonoBehaviour:
   m_TargetDirectory: 0
   savePath: node_data.bin
   extractor: {fileID: 4910561010743960146}
-  defaultSaveName: My Background
+  defaultSaveName: My Workspace
 --- !u!114 &6642009566779663506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -688,8 +688,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nameText: {fileID: 7494898246931356821}
   dateText: {fileID: 1119889918655988205}
-  image: {fileID: 9185416992204861202}
   m_Displayer: {fileID: 1412786084563472262}
+  m_Image: {fileID: 7372091400982380934}
+  m_MouseEnterColor: {r: 0.3213875, g: 0.6091966, b: 0.81761, a: 1}
   m_HighlightImage: {fileID: 0}
   m_HighlightColor: {r: 0, g: 0, b: 0, a: 0}
   m_DefaultColor: {r: 0, g: 0, b: 0, a: 0}
@@ -885,6 +886,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1137,6 +1139,7 @@ MonoBehaviour:
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1759,6 +1762,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1766,7 +1770,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -2773,6 +2777,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 1
+  m_UseReflectionProbes: 0
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0

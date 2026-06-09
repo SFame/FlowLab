@@ -6,13 +6,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler, IClassedDataTargetUi
+public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IClassedDataTargetUi
 {
     #region On Inspector
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI dateText;
-    [SerializeField] private RawImage image;
     [SerializeField] private SaveDisplayer m_Displayer;
+    [SerializeField] private Image m_Image;
+    [SerializeField] private Color m_MouseEnterColor;
 
     [Space(10)]
 
@@ -24,6 +25,7 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     #region Privates
     private Action<PUMPSaveDataStructure> _onDoubleClick;
     private Action<PUMPSaveDataStructure, PointerEventData> _onRightClick;
+    private Color _mouseExitColorColor;
     private bool _classedDataTarget_IsPointerEnter;
     private float _lastClickTime;
     private Vector2 _lastClickPos;
@@ -77,7 +79,9 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
     public void OnPointerClick(PointerEventData eventData)
     {
         if (_classedDataTarget_IsPointerEnter)
+        {
             return;
+        }
 
         if (eventData.button == PointerEventData.InputButton.Right)
         {
@@ -89,7 +93,10 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         float distanceFromLastClick = Vector2.Distance(eventData.position, _lastClickPos);
 
         if (timeSinceLastClick <= DOUBLE_CLICK_TIME && distanceFromLastClick <= DOUBLE_CLICK_MAX_DISTANCE)
+        {
+            m_Image.color = _mouseExitColorColor;
             InvokeOnDoubleClick();
+        }
 
         _lastClickTime = Time.time;
         _lastClickPos = eventData.position;
@@ -127,6 +134,17 @@ public class SaveScrollElem : MonoBehaviour, ISaveScrollElem, IPointerClickHandl
         _onDoubleClick = null;
         _onRightClick = null;
         Data = data;
+        _mouseExitColorColor = m_Image.color;
         Refresh();
+    }
+
+    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    {
+        m_Image.color = m_MouseEnterColor;
+    }
+
+    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+    {
+        m_Image.color = _mouseExitColorColor;
     }
 }

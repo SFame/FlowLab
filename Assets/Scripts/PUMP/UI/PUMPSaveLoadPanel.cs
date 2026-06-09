@@ -19,6 +19,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     #endregion
 
     #region Interface
+    public string SavePath => savePath;
+    public DataDirectory TargetDirectory => m_TargetDirectory;
+
     public void ReloadData()
     {
         ReloadDataAsync().Forget();
@@ -99,7 +102,9 @@ public class PUMPSaveLoadPanel : MonoBehaviour, IRecyclableScrollRectDataSource,
     private async UniTask Initialize()
     {
         if (_initialized)
+        {
             return;
+        }
         
         await GetDatasFromManager();
         ScrollRect.Initialize(this);
