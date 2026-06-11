@@ -302,28 +302,40 @@ public class ConsoleWindow : MonoBehaviour
 
         if (_commands.FirstOrDefault(command => command.Command == currentCommand) is { } resultCommand)
         {
-            if ((resultCommand.Args == null || resultCommand.Args.Length <= 0))
-            {
-                if (inputArgs.Count > 0)
-                {
-                    InternalInput("ERROR: Argument not match.", inputSource);
-                    return;
-                }
-            }
-            else if (inputArgs.Count > resultCommand.Args.Length)
+            bool hasArgs = resultCommand.PossibleArgs is { Length: > 0 };
+
+            if (!hasArgs && inputArgs.Count > 0)  // Args를 가질 수 없는데 존재한다면 에러
             {
                 InternalInput("ERROR: Argument not match.", inputSource);
                 return;
             }
 
-            Dictionary<string, string> argsDict = new();
-
-            if (resultCommand.Args != null)
+            if (hasArgs && resultCommand.PossibleArgs.All(arg => arg.Length != inputArgs.Count))  // Args를 가질 수 있는데 맞는 개수가 없다면 에러
             {
-                for (int i = 0; i < resultCommand.Args.Length; i++)
+                InternalInput("ERROR: Argument not match.", inputSource);
+                return;
+            }
+            // 아래로는 Args를 가질 수 없고 실제로도 없거나, Args를 가질 수 있고 개수가 일치하는게 있는 경우
+            Dictionary<string, string> argsDict = new();
+            int argsIndex = -1;
+            int argsCount = -1;
+
+            if (hasArgs)
+            {
+                argsIndex = Array.FindIndex(resultCommand.PossibleArgs, a => a.Length == inputArgs.Count);
+
+                if (argsIndex == -1)
                 {
-                    string arg = inputArgs.Count > i ? inputArgs[i] : null;
-                    argsDict.Add(resultCommand.Args[i], arg);
+                    InternalInput("ERROR: Internal system error.", inputSource);
+                    return;
+                }
+
+                string[] args = resultCommand.PossibleArgs[argsIndex];
+                argsCount = args.Length;
+
+                for (int i = 0; i < args.Length; i++)
+                {
+                    argsDict.Add(args[i], inputArgs[i]);
                 }
             }
 
@@ -336,7 +348,7 @@ public class ConsoleWindow : MonoBehaviour
 
             try
             {
-                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, text => InternalInputRaw(text), InternalInputRaw, argsDict, inputSource, contextDisposer));
+                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, text => InternalInputRaw(text), InternalInputRaw, argsDict, argsCount, argsIndex, inputSource, contextDisposer));
                 UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
 
                 (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
@@ -442,6 +454,9 @@ public class ConsoleWindow : MonoBehaviour
             m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
             m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
             m_InputField.onFocusSelectAll = false;
+            m_InputField.textComponent.parseCtrlCharacters = false;
+            m_InputHeader.parseCtrlCharacters = false;
+            m_MainTextField.parseCtrlCharacters = false;
             SetHeaderActive(true);
             m_InputField.text = initText;
         });
@@ -682,7 +697,15 @@ public class ConsoleCommand: IStartQuery
     public readonly struct CommandContext
     {
         #region Privates
-        public CommandContext(Func<string, CancellationToken, UniTask<QueryResult?>> queryFunc, Action<string> printAction, Func<string, ConsoleWindow.ITextLine> textLineGetter, Dictionary<string, string> args, ConsoleInputSource initSource, CommandContextDisposer disposer)
+        public CommandContext(
+            Func<string, CancellationToken, UniTask<QueryResult?>> queryFunc,
+            Action<string> printAction,
+            Func<string, ConsoleWindow.ITextLine> textLineGetter,
+            Dictionary<string, string> args,
+            int argCount,
+            int argsIndex,
+            ConsoleInputSource initSource,
+            CommandContextDisposer disposer)
         {
             if (queryFunc == null || printAction == null || textLineGetter == null || args == null || disposer == null)
             {
@@ -692,6 +715,8 @@ public class ConsoleCommand: IStartQuery
             _printAction = printAction;
             _textLineGetter = textLineGetter;
             _args = args;
+            ArgCount = argCount;
+            ArgsIndex = argsIndex;
             InitSource = initSource;
             _textUpdateTokens = new List<TextUpdateToken>();
             disposer.OnDispose += Dispose;
@@ -719,6 +744,16 @@ public class ConsoleCommand: IStartQuery
         /// 사용자의 최초 커맨드 입력 소스
         /// </summary>
         public ConsoleInputSource InitSource { get; }
+
+        /// <summary>
+        /// 현재 입력된 Arg들의 개수
+        /// </summary>
+        public int ArgCount { get; }
+
+        /// <summary>
+        /// 현재 선택된 Args의 인덱스
+        /// </summary>
+        public int ArgsIndex { get; }
 
         /// <summary>
         /// 사용자가 입력한 커맨드 뒷쪽 Arguments Get
@@ -774,7 +809,7 @@ public class ConsoleCommand: IStartQuery
     /// <param name="command">쿼리 호출을 위한 커멘드</param>
     /// <param name="queryProcess">커맨드 실행 로직을 정의하는 함수</param>
     /// <param name="doc">해당 커멘드의 Document</param>
-    /// <param name="args">커멘드 뒷쪽에 올 수 있는 Arguments</param>
+    /// <param name="possibleArgs">커멘드 뒷쪽에 올 수 있는 Arguments</param>
     /// <param name="isSystem">시스템 소속: 삭제 불가</param>
     /// <exception cref="ArgumentNullException">queryProcess가 null일 때 발생</exception>
     /// <exception cref="ArgumentException">args에 중복이 존재할 때 발생</exception>
@@ -782,19 +817,40 @@ public class ConsoleCommand: IStartQuery
         string command, 
         Func<CommandContext, UniTask<string>> queryProcess,
         string doc,
-        string[] args = null,
+        string[][] possibleArgs = null,
         bool isSystem = false)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
         Command = command.StartsWith("/") ? command : $"/{command}";
         Doc = doc;
 
-        if (args != null && args.Length != args.Distinct().Count())
+        if (possibleArgs != null)
         {
-            throw new ArgumentException($"{nameof(ConsoleCommand)}: Args duplicate");
+            if (possibleArgs.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(ConsoleCommand)}: PossibleArgs is empty. Use null for no-args commands");
+            }
+
+            if (possibleArgs.Select(args => args.Length).Distinct().Count() != possibleArgs.Length)
+            {
+                throw new ArgumentException($"{nameof(ConsoleCommand)}: PossibleArgs has duplicate lengths");
+            }
+
+            foreach (string[] args in possibleArgs)
+            {
+                if (args == null)
+                {
+                    throw new ArgumentException($"{nameof(ConsoleCommand)}: PossibleArgs has null");
+                }
+
+                if (args.Length != args.Distinct().Count())
+                {
+                    throw new ArgumentException($"{nameof(ConsoleCommand)}: Args duplicate");
+                }
+            }
         }
 
-        Args = args;
+        PossibleArgs = possibleArgs;
         IsSystem = isSystem;
     }
 
@@ -806,7 +862,7 @@ public class ConsoleCommand: IStartQuery
     /// <summary>
     /// 커멘드 뒷쪽에 올 수 있는 Arguments
     /// </summary>
-    public string[] Args { get; }
+    public string[][] PossibleArgs { get; }
 
     /// <summary>
     /// 커맨드 실행 로직을 정의하는 함수
@@ -866,6 +922,15 @@ public struct QueryResult
     /// 해당 쿼리에 사용된 입력 소스
     /// </summary>
     public ConsoleInputSource InputSource { get; }
+
+    /// <summary>
+    /// ToString
+    /// </summary>
+    /// <returns>Text</returns>
+    public override string ToString()
+    {
+        return Text;
+    }
     #endregion
 }
 

@@ -14,6 +14,7 @@ public struct SerializeNodeInfo
     [OdinSerialize] public Transition[] OutTpState { get; set; }
     [OdinSerialize] public TransitionType[] InTpType { get; set; }
     [OdinSerialize] public TransitionType[] OutTpType { get; set; }
+    [OdinSerialize] public bool[] InConnectionSevered { get; set; }
     [OdinSerialize] public bool[] StatePending { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] InConnectionTargets { get; set; }
     [OdinSerialize] public TPConnectionIndexInfo[] OutConnectionTargets { get; set; }

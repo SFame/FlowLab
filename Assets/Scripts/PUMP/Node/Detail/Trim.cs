@@ -10,13 +10,10 @@ public class Trim : Node, INodeAdditionalArgs<TrimType>
     {
         get
         {
-            if (_context == null)
-            {
-                _context = base.ContextElements;
-                _context.Add(new ContextElement($"All {CheckMarkGetter(TrimType.All)}", () => SetTrim(TrimType.All)));
-                _context.Add(new ContextElement($"Start {CheckMarkGetter(TrimType.Start)}", () => SetTrim(TrimType.Start)));
-                _context.Add(new ContextElement($"End {CheckMarkGetter(TrimType.End)}", () => SetTrim(TrimType.End)));
-            }
+            _context = base.ContextElements;
+            _context.Add(new ContextElement($"All  <b>{CheckMarkGetter(TrimType.All)}</b>", () => SetTrim(TrimType.All)));
+            _context.Add(new ContextElement($"Start  <b>{CheckMarkGetter(TrimType.Start)}</b>", () => SetTrim(TrimType.Start)));
+            _context.Add(new ContextElement($"End  <b>{CheckMarkGetter(TrimType.End)}</b>", () => SetTrim(TrimType.End)));
 
             return _context;
         }
@@ -42,7 +39,7 @@ public class Trim : Node, INodeAdditionalArgs<TrimType>
 
     protected override string NodeDisplayName => "Trim";
 
-    protected override float NameTextSize => 16f;
+    protected override float NameTextSize => 18f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {
@@ -86,7 +83,7 @@ public class Trim : Node, INodeAdditionalArgs<TrimType>
 
     private string CheckMarkGetter(TrimType value)
     {
-        return _trimType == value ? "✓" : string.Empty;
+        return _trimType == value ? "<" : string.Empty;
     }
 
     public TrimType AdditionalArgs

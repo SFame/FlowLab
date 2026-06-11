@@ -301,6 +301,33 @@ public abstract class Node : INodeLifecycleCallable, INodeSupportSettable, IDese
             }
         }
     }
+
+    public void PlaySeveredInConnection(bool[] severed)
+    {
+        if (severed == null)
+        {
+            Debug.LogError($"{Support.name}: Severed data is null");
+            return;
+        }
+
+        CheckSupportEnumeratorNull();
+
+        ITransitionPoint[] inputTPs = Support.InputEnumerator.GetTPs();
+
+        if (inputTPs.Length != severed.Length)
+        {
+            Debug.LogError($"{Support.name}: Count mismatch detected: Expected {severed.Length} InConnectionSevered data but found {inputTPs.Length} Input.TPs");
+            return;
+        }
+
+        for (int i = 0; i < inputTPs.Length; i++)
+        {
+            if (severed[i] && inputTPs[i] is ITPIn tpIn)
+            {
+                Other.InvokeActionDelay(() => tpIn.State = tpIn.Type.Null(), PlayerLoopTiming.EarlyUpdate).Forget();
+            }
+        }
+    }
     #endregion
 
     #region Protected

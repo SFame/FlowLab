@@ -50,9 +50,14 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
     private void SetHide(bool isHide)
     {
         if (Connection is null)
+        {
             return;
+        }
+
         if (Connection.LineConnector is null)
+        {
             return;
+        }
 
         if (isHide)
         {
@@ -68,7 +73,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
     private void CheckHide()
     {
-        SetHide(_hiders.Count > 0);
+        bool hide = _hiders.Count > 0;
+        SetHide(hide);
+        BlockHover = hide;
     }
     #endregion
 
@@ -83,7 +90,11 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
             value.ThrowIfTypeMismatch(Type);
 
             _state = value;
-            PushToConnection(UniTask.CompletedTask);
+
+            if (Connection != null)
+            {
+                Connection.State = State;
+            }
 
             SetImageColor(_state.IsNull ? m_DefaultColor : m_StateActiveColor);
             ShowRadial(_state);
@@ -112,13 +123,24 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
     public void PushToConnection(UniTask delayTask)
     {
+        if (delayTask.Status.IsCompleted())
+        {
+            if (Connection != null)
+            {
+                Connection.State = State;
+            }
+
+            return;
+        }
         PushToConnectionAsync(delayTask).Forget();
     }
 
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
     {
         if (targetTp.Type != Type)
+        {
             return;
+        }
 
         Connection?.Disconnect();
 
@@ -137,10 +159,21 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
 
         try
         {
+            Connection = connection;
             connection.SourcePoint = this;
         }
         catch (TransitionException te)
         {
+            try
+            {
+                Connection = null;
+                connection.Disconnect();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(ex.Message);
+            }
+
             Debug.LogWarning(te.Message);
             return;
         }
@@ -148,10 +181,9 @@ public class TPOut : TransitionPoint, ITPOut, ISoundable, IDraggable, ITPHideabl
         if (BlockConnect)
         {
             connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
+            Connection = null;
             return;
         }
-
-        Connection = connection;
 
         OnMove = _ => OnNodeMove(Connection.LineConnector);
         Connection.OnSelfDisconnect += Node.ReportChanges;

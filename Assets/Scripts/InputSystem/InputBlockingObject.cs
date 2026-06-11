@@ -95,9 +95,9 @@ public class InputBlockingObject : MonoBehaviour
                 InputManager.RemoveInputExclusion(_exclusionTarget);
                 return;
             case InputBlockingMode.AllowingName:
-                foreach (string name in _allowingNames)
+                foreach (string allowingName in _allowingNames)
                 {
-                    InputManager.RemoveAllowingName(name);
+                    InputManager.RemoveAllowingName(allowingName);
                 }
                 return;
             default:

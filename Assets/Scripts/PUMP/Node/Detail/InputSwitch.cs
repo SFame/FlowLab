@@ -8,6 +8,7 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
     private InputSwitchSupport _inputSwitchSupport;
     private bool _isDragged = false;
     private bool _onMouseEnter = false;
+    private bool _mouseEventBlocked = false;
 
     public override string NodePrefabPath => "PUMP/Prefab/Node/INPUT_SWITCH";
 
@@ -106,8 +107,14 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
 
         Support.OnMouseEventBlocked += () =>
         {
+            _mouseEventBlocked = true;
             _onMouseEnter = false;
             InputSwitchSupport.CloseInputPanel();
+        };
+
+        Support.OnMouseEventUnblocked += () =>
+        {
+            _mouseEventBlocked = false;
         };
 
         InputSwitchSupport.Initialize(AdditionalArgs);
@@ -122,6 +129,11 @@ public class InputSwitch : Node, INodeAdditionalArgs<Transition>
 
         Support.OnDragStart += _ =>
         {
+            if (_mouseEventBlocked)
+            {
+                return;
+            }
+
             InputSwitchSupport.SetDown(false);
             InputSwitchSupport.CloseInputPanel();
             _isDragged = true;

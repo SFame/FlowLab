@@ -40,6 +40,7 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private RectTransform _imageRect;
     private string _name;
     private Node _node;
+    private bool _blockHover;
 
 
     private void OnDestroy()
@@ -140,6 +141,20 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     public Action<PositionInfo> OnMove { get; set; }
 
+    protected bool BlockHover
+    {
+        get => _blockHover;
+        set
+        {
+            if (value)
+            {
+                HoverEnd();
+            }
+
+            _blockHover = value;
+        }
+    }
+
     protected virtual List<ContextElement> ContextElements
     {
         get
@@ -200,22 +215,20 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     #region MouseEvent
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        m_HighlighterImage.color = m_HighlightedColor;
         HoverStart();
     }
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        Color hColor = m_HighlightedColor;
-        hColor.a = 0f;
-        m_HighlighterImage.color = hColor;
         HoverEnd();
     }
     
     void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
-            Utils.ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, ContextElements.ToArray());
+        {
+            ContextMenuManager.ShowContextMenu(PUMPUiManager.RootCanvas, eventData.position, ContextElements.ToArray());
+        }
     }
     #endregion
 
@@ -228,7 +241,9 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
     private void ShadowInitialize()
     {
         if (_radialInitialized)
+        {
             return;
+        }
 
         _radialInitialized = true;
 
@@ -303,12 +318,26 @@ public abstract class TransitionPoint : MonoBehaviour, ITransitionPoint, IPointe
 
     private void HoverStart()
     {
+        if (_blockHover)
+        {
+            return;
+        }
+
+        m_HighlighterImage.color = m_HighlightedColor;
         _stateDisplayCts = _stateDisplayCts.CancelAndDisposeAndGetNew();
         CheckMouseMove(_stateDisplayCts.Token).Forget();
     }
 
     private void HoverEnd()
     {
+        if (_blockHover)
+        {
+            return;
+        }
+
+        Color hColor = m_HighlightedColor;
+        hColor.a = 0f;
+        m_HighlighterImage.color = hColor;
         _stateDisplayCts.CancelAndDispose();
         StateDisplay.Clear();
     }

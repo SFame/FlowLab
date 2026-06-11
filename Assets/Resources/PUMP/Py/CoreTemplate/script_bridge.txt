@@ -13,7 +13,6 @@ def add_reference(reference: str) -> None:
 class Pulse:
     """A marker class to identify Pulse-type execution ports."""
     _instance = None
-    _id = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -22,13 +21,6 @@ class Pulse:
     
     def __str__(self):
         return "Pulse"
-
-    def _set_instance_id(self, id):
-        if self._id is None:
-            self._id = id
-
-    def _get_instance_id(self):
-        return self._id
 
 def get_pulse_instance():
     return Pulse()

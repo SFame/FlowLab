@@ -1,9 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
+using Michsky.MUIP;
 using NCalc;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Expression = NCalc.Expression;
 #if !UNITY_EDITOR
 using UnityEngine;
@@ -13,106 +17,7 @@ public class ConsoleDefaultCommandInjector
 {
     private static bool _isInjected = false;
     private const string BAR_STRING = "========================";
-    private static readonly List<ConsoleCommand> _defaultCommands = new List<ConsoleCommand>()
-    {
-        new ConsoleCommand
-        (
-            command: "/help",
-            doc: "Help about help. Very meta.",
-            isSystem: true,
-            queryProcess: async context =>
-            {
-                ConsoleCommand[] commands = ConsoleWindow.GetCommands();
-                string commandsNames = string.Join('\n', commands.Select(command => command.Command).ToArray());
-                QueryResult? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
-
-                if (result == null)
-                {
-                    return null;
-                }
-
-                string resultText = result.Value.Text.StartsWith("/") ? result.Value.Text : $"/{result.Value.Text}";
-                if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
-                {
-                    string argsString = commandResult.Args == null || commandResult.Args.Length == 0
-                        ? string.Empty
-                        : $" {string.Join(' ', commandResult.Args.Select(arg => $"<{arg}>").ToArray())}";
-                    return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat: \"{commandResult.Command}{argsString}\"\n{BAR_STRING}";
-                }
-                
-                return $"Command not found: {resultText}";
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/clear",
-            doc: "Clear console output.",
-            isSystem: true,
-            queryProcess: async context =>
-            {
-                ConsoleWindow.Clear(context.InitSource == ConsoleInputSource.InputField);
-                return null;
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/echo",
-            doc: "Echo back the given text.",
-            args: new[] { "text" },
-            isSystem: true,
-            queryProcess: async context => context.GetArg("text")),
-        new ConsoleCommand
-        (
-            command: "/open",
-            doc: "Open console window.",
-            isSystem: true,
-            queryProcess: async _ =>
-            {
-                ConsoleWindow.IsOpen = true;
-                return null;
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/close",
-            doc: "Close console window.",
-            isSystem: true,
-            queryProcess: async _ =>
-            {
-                ConsoleWindow.IsOpen = false;
-                return null;
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/exit",
-            doc: "Quit the application.",
-            isSystem: true,
-            queryProcess: async context =>
-            {
-                QueryResult? result = await context.Query("Confirm exit? (y/n)");
-
-                if (result == null)
-                {
-                    return null;
-                }
-
-                if (result.Value.Text.ToLower() == "y")
-                {
-#if UNITY_EDITOR
-                    UnityEditor.EditorApplication.ExitPlaymode();
-#else
-                    Application.Quit();
-#endif
-                }
-
-                return null;
-            }
-        ),
-        new ConsoleCommand
-        (
-            command: "/calc",
-            doc: @"
+    private const string CALC_DOC = @"
 Evaluates the entered expression.
 
 === Mathematical Functions ===
@@ -161,30 +66,306 @@ not in, not like: Negated forms
 
 === Arithmetic ===
 +, -, *, /, %: Basic arithmetic
-**: Exponentiation",
+**: Exponentiation";
+
+    private static readonly List<ConsoleCommand> _defaultCommands = new List<ConsoleCommand>()
+    {
+        new ConsoleCommand
+        (
+            command: "/help",
+            doc: "Help about help. Very meta.",
             isSystem: true,
-            args: new []{ "expression" },
             queryProcess: async context =>
             {
-                try
+                ConsoleCommand[] commands = ConsoleWindow.GetCommands();
+                string commandsNames = string.Join('\n', commands.Select(command => command.Command).ToArray());
+                QueryResult? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
+
+                if (result == null)
                 {
-                    Expression exp = new Expression(context.GetArg("expression"), ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
-                    object result = exp.Evaluate();
-                    return result.ToString();
+                    return null;
                 }
-                catch (EvaluationException ee)
+
+                string resultText = result.Value.Text.StartsWith("/") ? result.Value.Text : $"/{result.Value.Text}";
+                if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
                 {
-                    return $"Invalid Expression: {ee.Message}";
+                    string formatString;
+
+                    if (commandResult.PossibleArgs == null || commandResult.PossibleArgs.Length == 0)
+                    {
+                        formatString = $"\"{commandResult.Command}\"";
+                    }
+                    else
+                    {
+                        formatString = string.Join('\n', commandResult.PossibleArgs.Select(overload =>
+                        {
+                            string argsPart = overload.Length == 0
+                                ? string.Empty
+                                : $" {string.Join(' ', overload.Select(arg => $"<{arg}>"))}";
+                            return $"\"{commandResult.Command}{argsPart}\"";
+                        }));
+                    }
+
+                    return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat:\n{formatString}\n{BAR_STRING}";
                 }
-                catch
+
+                return $"Command not found: {resultText}";
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/clear",
+            doc: "Clear console output.",
+            isSystem: true,
+            queryProcess: context =>
+            {
+                ConsoleWindow.Clear(context.InitSource == ConsoleInputSource.InputField);
+                return UniTask.FromResult<string>(null);
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/echo",
+            doc: "Echo back the given text.",
+            possibleArgs: new string[][] { new[] { "text" }, },
+            isSystem: true,
+            queryProcess: context => UniTask.FromResult(context.GetArg("text"))),
+        new ConsoleCommand
+        (
+            command: "/open",
+            doc: "Open console window.",
+            isSystem: true,
+            queryProcess: _ =>
+            {
+                ConsoleWindow.IsOpen = true;
+                return UniTask.FromResult<string>(null);
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/close",
+            doc: "Close console window.",
+            isSystem: true,
+            queryProcess: _ =>
+            {
+                ConsoleWindow.IsOpen = false;
+                return UniTask.FromResult<string>(null);
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/exit",
+            doc: "Quit the application.",
+            isSystem: true,
+            queryProcess: async context =>
+            {
+                QueryResult? result = await context.Query("Confirm exit? (y/n)");
+
+                if (result == null)
                 {
-                    return "Invalid Expression";
+                    return null;
+                }
+
+                if (result.Value.Text.ToLower() == "y")
+                {
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.ExitPlaymode();
+#else
+                    Application.Quit();
+#endif
+                }
+
+                return null;
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/calc",
+            doc: "Evaluates a math expression. Run without args for interactive mode.",
+            isSystem: true,
+            possibleArgs: new string[][] { new[] { "expression" }, Array.Empty<string>() },
+            queryProcess: async context =>
+            {
+                string Eval(string expr)
+                {
+                    try
+                    {
+                        Expression exp = new Expression(expr, ExpressionOptions.IgnoreCaseAtBuiltInFunctions);
+                        return exp.Evaluate().ToString();
+                    }
+                    catch (EvaluationException ee)
+                    {
+                        return $"Invalid Expression: {ee.Message}";
+                    }
+                    catch
+                    {
+                        return "Invalid Expression";
+                    }
+                }
+
+                if (context.GetArg("expression") != null)
+                {
+                    return Eval(context.GetArg("expression"));
+                }
+
+                context.Print(CALC_DOC);
+
+                while (true)
+                {
+                    QueryResult? result = await context.Query("calc> (q to quit): ");
+
+                    if (result == null)
+                    {
+                        return null;
+                    }
+
+                    string input = result.Value.Text.Trim();
+
+                    if (input.ToLower() == "q")
+                    {
+                        return null;
+                    }
+
+                    if (input.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    context.Print($"{Eval(input)}\n");
                 }
             }
         ),
         new ConsoleCommand
         (
-            command: "/badapple",
+            command: "/mem",
+            doc: "Display current memory usage.",
+            isSystem: true,
+            possibleArgs: new string[][] { new[] { "interval" }, Array.Empty<string>() },
+            queryProcess: async context =>
+            {
+                void GetMemoryInformation(Action<string>[] returnFunc)
+                {
+                    long monoUsed = GC.GetTotalMemory(false);
+                    long totalReserved = Profiler.GetTotalReservedMemoryLong();
+                    long totalAllocated = Profiler.GetTotalAllocatedMemoryLong();
+                    long totalUnused = Profiler.GetTotalUnusedReservedMemoryLong();
+
+                    string Format(long bytes) => $"{bytes / 1024f / 1024f:F2} MB";
+
+                    returnFunc[0]("=== Memory Usage ===");
+                    returnFunc[1]($"Mono Heap (GC):   {Format(monoUsed)}");
+                    returnFunc[2]($"Total Allocated:  {Format(totalAllocated)}");
+                    returnFunc[3]($"Total Reserved:   {Format(totalReserved)}");
+                    returnFunc[4]($"Unused Reserved:  {Format(totalUnused)}");
+                    returnFunc[5]($"System RAM:       {SystemInfo.systemMemorySize} MB");
+                    returnFunc[6]($"GFX RAM:          {SystemInfo.graphicsMemorySize} MB");
+                }
+
+                async UniTask PerformanceUpdate(float interval, CancellationToken token)
+                {
+                    TextUpdateToken[] tokens = new TextUpdateToken[7];
+                    bool endFlag = false;
+
+                    for (int i = 0; i < tokens.Length; i++)
+                    {
+                        tokens[i] = context.GetUpdateToken(string.Empty);
+                    }
+
+                    Action<string>[] tokenReturnAction = tokens.Select(tk =>
+                    {
+                        void action(string s)
+                        {
+                            if (endFlag)
+                            {
+                                return;
+                            }
+
+                            if (!tk.TryUpdate(s))
+                            {
+                                endFlag = true;
+                            }
+                        }
+
+                        return (Action<string>)action;
+                    }).ToArray();
+
+                    try
+                    {
+                        while (!token.IsCancellationRequested && !endFlag)
+                        {
+                            GetMemoryInformation(tokenReturnAction);
+                            await UniTask.WaitForSeconds(interval, cancellationToken: token, cancelImmediately: true);
+                        }
+                    }
+                    catch (OperationCanceledException) { }
+                }
+
+                if (context.ArgsIndex == 1)
+                {
+                    string[] array = new string[7];
+                    Action<string>[] returnAction = array.Select((_, idx) => new Action<string>(str => array[idx] = str)).ToArray();
+                    GetMemoryInformation(returnAction);
+                    return string.Join('\n', array);
+                }
+
+                if (!float.TryParse(context.GetArg("interval"), out float interval))
+                {
+                    return "Invalid interval. Please enter a number (seconds).";
+                }
+
+                using CancellationTokenSource cts = new();
+
+                UniTask updateTask = PerformanceUpdate(Math.Clamp(interval, 0.1f, 60f), cts.Token);
+
+                while (true)
+                {
+                    QueryResult? result = await context.Query("q to quit...");
+
+                    if (result == null || result.Value.Text.ToLower().Trim() == "q")
+                    {
+                        cts.Cancel();
+                        await updateTask;
+                        return null;
+                    }
+                }
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/log",
+            doc: "Debug logger.",
+            isSystem: true,
+            possibleArgs: new string[][] { new[] { "type", "text" }, new[] { "text" } },
+            queryProcess: context =>
+            {
+                string text = context.GetArg("text");
+
+                if (context.ArgsIndex == 0)
+                {
+                    string type = context.GetArg("type").ToLower().Trim();
+
+                    if (type == "e" || type == "error")
+                    {
+                        Debug.LogError(text);
+                        return UniTask.FromResult<string>(null);
+                    }
+
+                    if (type == "w" || type == "warning")
+                    {
+                        Debug.LogWarning(text);
+                        return UniTask.FromResult<string>(null);
+                    }
+
+                    return UniTask.FromResult($"Unknown args: {type}");
+                }
+
+                Debug.Log(text);
+                return UniTask.FromResult<string>(null);
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/apple",
             doc: "Play Bad Apple!! in ASCII. Press Q to stop.",
             isSystem: true,
             queryProcess: async context =>

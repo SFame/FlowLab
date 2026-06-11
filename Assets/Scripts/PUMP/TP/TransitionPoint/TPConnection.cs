@@ -62,9 +62,18 @@ public class TPConnection : IStateful, IDisposable
             }
 
             _stateCache = value;
-            if (TargetPoint is not null && !IsFlushing)
+            if (TargetPoint != null && !IsFlushing)
             {
-                TargetStateUpdateAsync().Forget();
+                ConnectionAwaiter awaiter = ConnectionAwaitManager.GetAwaiter(this, _pendingCts.Token);
+
+                if (awaiter.IsCompleted)
+                {
+                    _state = _stateCache;
+                    TargetPoint.State = _stateCache;
+                    return;
+                }
+
+                TargetStateUpdateAsync(awaiter).Forget();
             }
         }
     }
@@ -93,7 +102,7 @@ public class TPConnection : IStateful, IDisposable
         get => _sourcePoint;
         set
         {
-            if (_sourcePoint is null)
+            if (_sourcePoint == null)
             {
                 Type = value.Type;
                 ThrowIfMismatch(value.Type);
@@ -108,7 +117,7 @@ public class TPConnection : IStateful, IDisposable
         get => _targetPoint;
         set
         {
-            if (_targetPoint is null)
+            if (_targetPoint == null)
             {
                 Type = value.Type;
                 ThrowIfMismatch(value.Type);
@@ -162,20 +171,19 @@ public class TPConnection : IStateful, IDisposable
     public void Disconnect()
     {
         if (_disconnected)
-            return;
-
-        _disconnected = true;
-
-        if (SourcePoint == null || TargetPoint == null)
         {
-            Debug.Log($"{GetType().Name}: SourceState or TargetState is null");
             return;
         }
 
-        SourcePoint.ClearConnection();
-        TargetPoint.ClearConnection();
+        _disconnected = true;
 
-        TargetPoint.State = Type.Null();
+        SourcePoint?.ClearConnection();
+        TargetPoint?.ClearConnection();
+
+        if (TargetPoint != null)
+        {
+            TargetPoint.State = Type.Null();
+        }
 
         LineConnector?.Remove();
         _sourcePoint = null;
@@ -208,16 +216,15 @@ public class TPConnection : IStateful, IDisposable
         LineConnector.ContextElements = ContextElements;
     }
 
-    private async UniTaskVoid TargetStateUpdateAsync()
+    private async UniTaskVoid TargetStateUpdateAsync(ConnectionAwaiter awaiter)
     {
         IsFlushing = true;
 
         try
         {
-            ConnectionAwaiter awaiter = ConnectionAwaitManager.GetAwaiter(this, _pendingCts.Token);
             await awaiter.Task;
 
-            if (TargetPoint is not null && !_pendingCts.Token.IsCancellationRequested)
+            if (TargetPoint != null && !_pendingCts.Token.IsCancellationRequested)
             {
                 _state = _stateCache;
                 IsFlushing = false;
@@ -271,9 +278,6 @@ public static class ConnectionAwaitManager
 
     private static async UniTaskVoid DelayClearDictionary()
     {
-        if (_clearRequested)
-            return;
-
         _clearRequested = true;
 
         await UniTask.NextFrame(PlayerLoopTiming.EarlyUpdate);
@@ -310,16 +314,19 @@ public static class ConnectionAwaitManager
             _propagateCountDict[caller]++;
         }
 
-        DelayClearDictionary().Forget();
+        if (!_clearRequested)
+        {
+            DelayClearDictionary().Forget();
+        }
 
         if (_propagateCountDict[caller] >= LoopThreshold)
         {
             _propagateCountDict.Remove(caller);
             OnImmediatelyLoopDetected?.Invoke(caller);
-            return new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), true);
+            return new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), true, false);
         }
 
-        return new ConnectionAwaiter(UniTask.CompletedTask, false);
+        return new ConnectionAwaiter(UniTask.CompletedTask, false, true);
     }
     #endregion
 
@@ -335,16 +342,16 @@ public static class ConnectionAwaitManager
 
         return AwaitType switch
         {
-            ConnectionAwait.Frame => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+            ConnectionAwait.Frame => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false, false),
             ConnectionAwait.FixedTime => new ConnectionAwaiter(UniTask.WaitForSeconds
             (
                 duration: WaitTime,
                 ignoreTimeScale: false,
                 delayTiming: PlayerLoopTiming.Update,
                 cancellationToken: token
-            ), false),
+            ), false, false),
             ConnectionAwait.Immediately => GetImmediatelyAwaiter(caller, token),
-            _ => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false),
+            _ => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false, false),
         };
     }
 
@@ -368,14 +375,16 @@ public static class ConnectionAwaitManager
 
 public struct ConnectionAwaiter
 {
-    public ConnectionAwaiter(UniTask task, bool isLooped)
+    public ConnectionAwaiter(UniTask task, bool isLooped, bool isCompleted)
     {
         Task = task;
         IsLooped = isLooped;
+        IsCompleted = isCompleted;
     }
 
     public UniTask Task;
     public bool IsLooped;
+    public bool IsCompleted;
 }
 
 public enum ConnectionAwait

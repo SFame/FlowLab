@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -36,9 +37,14 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
     private void SetHide(bool isHide)
     {
         if (Connection is null)
+        {
             return;
+        }
+
         if (Connection.LineConnector is null)
+        {
             return;
+        }
 
         if (isHide)
         {
@@ -54,7 +60,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
 
     private void CheckHide()
     {
-        SetHide(_hiders.Count > 0);
+        bool hide = _hiders.Count > 0;
+        SetHide(hide);
+        BlockHover = hide;
     }
     #endregion
 
@@ -103,43 +111,12 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
     public event StateChangeEventHandler OnStateChange;
     public event SoundEventHandler OnSounded;
 
-    public override void AcceptLink(TPConnection connection)
-    {
-        Connection?.Disconnect();
-
-        try
-        {
-            connection.TargetPoint = this;
-        }
-        catch (TransitionException te)
-        {
-            Debug.LogWarning(te.Message);
-            return;
-        }
-
-        if (BlockConnect)
-        {
-            connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
-            return;
-        }
-
-        Connection = connection;
-
-        OnMove = _ => OnNodeMove(Connection.LineConnector);
-        Connection.OnSelfDisconnect += Node.ReportChanges;
-        Node.Support.OnPositionUpdate += OnMove;
-
-        if (!OnDeserializing)
-        {
-            OnSounded?.Invoke(this, new(0, WorldPosition));
-        }
-
-    }
-
     public override void LinkTo(ITransitionPoint targetTp, TPConnection connection = null)
     {
         if (targetTp.Type != Type)
+        {
             return;
+        }
 
         Connection?.Disconnect();
 
@@ -150,6 +127,48 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
         Connection = connection;
 
         targetTp.AcceptLink(connection);
+    }
+
+    public override void AcceptLink(TPConnection connection)
+    {
+        Connection?.Disconnect();
+
+        try
+        {
+            Connection = connection;
+            connection.TargetPoint = this;
+        }
+        catch (TransitionException te)
+        {
+            try
+            {
+                Connection = null;
+                connection.Disconnect();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(ex.Message);
+            }
+
+            Debug.LogWarning(te.Message);
+            return;
+        }
+
+        if (BlockConnect)
+        {
+            connection.Disconnect(); // 커넥션 블로킹 상태면 바로 Disconnect
+            Connection = null;
+            return;
+        }
+
+        OnMove = _ => OnNodeMove(Connection.LineConnector);
+        Connection.OnSelfDisconnect += Node.ReportChanges;
+        Node.Support.OnPositionUpdate += OnMove;
+
+        if (!OnDeserializing)
+        {
+            OnSounded?.Invoke(this, new(0, WorldPosition));
+        }
     }
 
     public override void ClearConnection()
@@ -190,7 +209,9 @@ public class TPIn : TransitionPoint, ITPIn, ISoundable, IDraggable, ITPHideable
         }
 
         if (_lineConnector != null)
+        {
             _lineConnector.Remove();
+        }
 
         _lineConnector = Node.Background.LineConnectManager.AddLineConnector();
         _lineConnector.Initialize(WorldPosition, WorldPosition);

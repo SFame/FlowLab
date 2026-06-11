@@ -10,8 +10,8 @@ public class Display : Node
     protected override string NodeDisplayName => string.Empty;
     protected override List<string> InputNames => new List<string>() { "in" };
     protected override List<string> OutputNames => new List<string>() { "out" };
-    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.Bool };
-    protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.Bool };
+    protected override List<TransitionType> InputTypes => new List<TransitionType>() { TransitionType.String };
+    protected override List<TransitionType> OutputTypes => new List<TransitionType>() { TransitionType.String };
     protected override float InEnumeratorXPos => -183f;
     protected override float OutEnumeratorXPos => 187f;
     protected override float EnumeratorSpacing => 0f;

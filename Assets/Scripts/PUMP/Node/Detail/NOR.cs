@@ -33,7 +33,7 @@ public class NOR : Node
 
     protected override string NodeDisplayName => "NOR";
 
-    protected override float NameTextSize => 18f;
+    protected override float NameTextSize => 17f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

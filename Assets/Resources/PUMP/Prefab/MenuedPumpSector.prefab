@@ -59,7 +59,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0.49803922, g: 0.7921569, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -233,9 +233,21 @@ PrefabInstance:
       propertyPath: m_VisibleExternal
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 594256415904604762, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1119889918655988205, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1510068913751018988, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_Name
       value: MenuedPumpSector
+      objectReference: {fileID: 0}
+    - target: {fileID: 2808341514292841827, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3333150635163710958, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_IsActive
@@ -321,9 +333,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5092944511623851278, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5438208958868648209, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5651505917600332285, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7372091400982380934, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7494898246931356821, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7619520841534023125, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7765382094059274147, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_AnchorMax.x
@@ -349,6 +381,14 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 1080
       objectReference: {fileID: 0}
+    - target: {fileID: 8111605835183734327, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8180573339256848768, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8200589970030649765, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_SizeDelta.x
       value: 325
@@ -364,6 +404,14 @@ PrefabInstance:
     - target: {fileID: 8275841901262682426, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
       propertyPath: m_DetectionAreaWidth
       value: 350
+      objectReference: {fileID: 0}
+    - target: {fileID: 9185416992204861202, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9200039747413606182, guid: b3e49662759630e47b40f2d6ad789793, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

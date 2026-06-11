@@ -34,7 +34,7 @@ public class OR : Node
 
     protected override string NodeDisplayName => "OR";
 
-    protected override float NameTextSize => 18f;
+    protected override float NameTextSize => 17f;
 
     protected override Transition[] SetOutputInitStates(int outputCount, TransitionType[] outputTypes)
     {

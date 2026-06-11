@@ -13,25 +13,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Scripts/PUMP/Node/Detail
-  - Assets/Scripts/PUMP/NodePalette
-  - Assets/Scripts/PUMP/UI
-  - Assets/Resources/PUMP
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
   - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/ClassedNode
-  - Assets/CorePro/Flat Pack/Shapes/Rectangle 512x512 white  frame/Rectangle 512x512
-    I Round 20px
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP/Sprite/ingame
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/Node
-  - Assets/Resources/PUMP
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/UI
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/External
+  - Assets/Resources/PUMP/Prefab/TP
+  - Assets/Resources/PUMP/Prefab/TP/Logic
+  - Assets/Resources/PUMP/Prefab/TP
   currentDirIndex: 19

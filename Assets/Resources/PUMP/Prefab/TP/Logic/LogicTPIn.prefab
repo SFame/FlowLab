@@ -12,18 +12,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: LogicTPIn
       objectReference: {fileID: 0}
-    - target: {fileID: 3023836450401385509, guid: 4dee1a0ac9625eb41900cc9b77ec40e3, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3023836450401385509, guid: 4dee1a0ac9625eb41900cc9b77ec40e3, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3023836450401385509, guid: 4dee1a0ac9625eb41900cc9b77ec40e3, type: 3}
-      propertyPath: m_LocalScale.z
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3893915095787970867, guid: 4dee1a0ac9625eb41900cc9b77ec40e3, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0

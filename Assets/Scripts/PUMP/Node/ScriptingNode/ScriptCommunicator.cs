@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using IronPython.Hosting;
 using IronPython.Runtime.Types;
-using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using System;
@@ -91,8 +90,8 @@ printer = Printer()";
     private Action _terminateAction;
     private Action<List<dynamic>, int, dynamic, dynamic, bool> _stateUpdateAction;
     private Func<dynamic> _pulseInstanceGetter;
+    private PythonType _pulseType;
     private SafetyCancellationTokenSource _asyncModeCts;
-    private readonly string _pulseInstanceId = Guid.NewGuid().ToString();
     private bool _isAsync = false;
     private bool _isSetAsync = false;
     private bool _disposed = false;
@@ -141,6 +140,7 @@ printer = Printer()";
             await UniTask.RunOnThreadPool(() => { communicator.Scope = Engine.CreateScope(); });
 
             CallbackCompiled.Execute(communicator.Scope);
+            communicator._pulseType = communicator.Scope.GetVariable("Pulse");
             communicator.ReferenceExLogger = communicator.LoggingMissingReference;
             communicator.Logger = logger;
             communicator.ExLogger = exLogger;
@@ -160,6 +160,7 @@ printer = Printer()";
             ScriptCommunicator communicator = new ScriptCommunicator();
             communicator.Scope = Engine.CreateScope();
             CallbackCompiled.Execute(communicator.Scope);
+            communicator._pulseType = communicator.Scope.GetVariable("Pulse");
             communicator.ReferenceExLogger = communicator.LoggingMissingReference;
             communicator.Logger = logger;
             communicator.ExLogger = exLogger;
@@ -230,7 +231,6 @@ printer = Printer()";
 
             Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
             _pulseInstanceGetter = Scope.GetVariable("get_pulse_instance");
-            _pulseInstanceGetter()._set_instance_id(_pulseInstanceId);
             EssentialMembers["output_applier"] = Scope.GetVariable("output_applier");
             EssentialMembers["printer"] = Scope.GetVariable("printer");
 
@@ -308,7 +308,6 @@ printer = Printer()";
 
             Engine.Execute(CALLBACKS_INJECT_CODE, Scope);
             _pulseInstanceGetter = Scope.GetVariable("get_pulse_instance");
-            _pulseInstanceGetter()._set_instance_id(_pulseInstanceId);
             EssentialMembers["output_applier"] = Scope.GetVariable("output_applier");
             EssentialMembers["printer"] = Scope.GetVariable("printer");
 
@@ -428,7 +427,7 @@ printer = Printer()";
         dynamic state = args.State.GetValueAsDynamic();
         state = state is Pulse ? _pulseInstanceGetter() : state;
         dynamic beforeState = args.BeforeState.GetValueAsDynamic();
-        beforeState = beforeState is Pulse ? _pulseInstanceGetter : beforeState;
+        beforeState = beforeState is Pulse ? _pulseInstanceGetter() : beforeState;
         bool isStateChange = args.IsStateChange;
 
         List<dynamic> dynamicStateList = inputTokenState.Select(state =>
@@ -583,7 +582,7 @@ printer = Printer()";
         {
             if (obj is PythonType pyType)
             {
-                if (PythonType.Get__name__(pyType) == nameof(Pulse))
+                if (ReferenceEquals(pyType, _pulseType))
                 {
                     inTypes.Add(pulseType);
                     continue;
@@ -609,7 +608,7 @@ printer = Printer()";
         {
             if (obj is PythonType pyType)
             {
-                if (PythonType.Get__name__(pyType) == nameof(Pulse))
+                if (ReferenceEquals(pyType, _pulseType))
                 {
                     outTypes.Add(pulseType);
                     continue;
@@ -632,15 +631,15 @@ printer = Printer()";
         return (inTypes, outTypes);
     }
 
-    private void InvokeActionOnMainThread(Action action, bool dispatchMainThread)
+    private void InvokeActionOnMainThread(Action action)
     {
-        if (dispatchMainThread)
+        if (PlayerLoopHelper.IsMainThread)
         {
-            UniTask.Post(action);
+            action?.Invoke();
             return;
         }
 
-        action?.Invoke();
+        UniTask.Post(action);
     }
 
     private void InvokeApplyOutput(IList<dynamic> values)
@@ -651,19 +650,16 @@ printer = Printer()";
             {
                 List<Transition?> transitions = values.Select<dynamic, Transition?>(value =>
                     {
-                        if (value == null) return null;
-
-                        try
+                        if (value == null)
                         {
-                            if (value._get_instance_id() == _pulseInstanceId)
-                            {
-                                return Transition.Pulse();
-                            }
-                        }
-                        catch (RuntimeBinderException)
-                        {
+                            return null;
                         }
 
+                        if (IsPulse((object)value))
+                        {
+                            return Transition.Pulse();
+                        }
+                        
                         return new Transition(value);
                     })
                     .ToList();
@@ -687,7 +683,7 @@ printer = Printer()";
             }
         }
 
-        InvokeActionOnMainThread(applyAction, IsAsync);
+        InvokeActionOnMainThread(applyAction);
     }
 
     private void InvokeApplyOutputAt(int index, dynamic value)
@@ -702,16 +698,10 @@ printer = Printer()";
                     return;
                 }
 
-                try
+                if (IsPulse((object)value))
                 {
-                    if (value._get_instance_id() == _pulseInstanceId)
-                    {
-                        OnOutputApplyAt?.Invoke(index, Transition.Pulse());
-                        return;
-                    }
-                }
-                catch (RuntimeBinderException)
-                {
+                    OnOutputApplyAt?.Invoke(index, Transition.Pulse());
+                    return;
                 }
 
                 OnOutputApplyAt?.Invoke(index, new Transition(value));
@@ -733,7 +723,7 @@ printer = Printer()";
             }
         }
 
-        InvokeActionOnMainThread(applyAction, IsAsync);
+        InvokeActionOnMainThread(applyAction);
     }
 
     private void InvokeApplyOutputTo(string name, dynamic value)
@@ -748,16 +738,10 @@ printer = Printer()";
                     return;
                 }
 
-                try
+                if (IsPulse((object)value))
                 {
-                    if (value._get_instance_id() == _pulseInstanceId)
-                    {
-                        OnOutputApplyTo?.Invoke(name, Transition.Pulse());
-                        return;
-                    }
-                }
-                catch (RuntimeBinderException)
-                {
+                    OnOutputApplyTo?.Invoke(name, Transition.Pulse());
+                    return;
                 }
 
                 OnOutputApplyTo?.Invoke(name, new Transition(value));
@@ -784,7 +768,7 @@ printer = Printer()";
             }
         }
 
-        InvokeActionOnMainThread(applyAction, IsAsync);
+        InvokeActionOnMainThread(applyAction);
     }
 
     private void InvokePrint(object value)
@@ -802,12 +786,17 @@ printer = Printer()";
             }
         }
 
-        InvokeActionOnMainThread(printAction, IsAsync);
+        InvokeActionOnMainThread(printAction);
     }
 
     private void LoggingMissingReference(string assembly)
     {
         throw new MissingReferenceException($"Except: add_reference({assembly})");
+    }
+
+    private bool IsPulse(object value)
+    {
+        return value != null && ReferenceEquals(DynamicHelpers.GetPythonType(value), _pulseType);
     }
 
     private bool CheckMemberType(string memberName, dynamic value, out string currentType, out string correctType)

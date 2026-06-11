@@ -699,6 +699,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     OutTpState = statesTuple.outputElems,
                     InTpType = typeTuple.inputElems,
                     OutTpType = typeTuple.outputElems,
+                    InConnectionSevered = new bool[typeTuple.inputElems.Length],
                     StatePending = node.GetStatePending(),
                     NodeAdditionalArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
@@ -903,6 +904,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 Nodes[i].ReplayStatePending(infos[i].StatePending);
             }
 
+            // Severed Input Connection Play ---------
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Nodes[i].PlaySeveredInConnection(infos[i].InConnectionSevered);
+            }
+
             // Ensures the integrity of the gateway ---------
             SetGateway();
 
@@ -954,6 +961,7 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                     OutTpState = statesTuple.outputElems,
                     InTpType = typeTuple.inputElems,
                     OutTpType = typeTuple.outputElems,
+                    InConnectionSevered = new bool[typeTuple.inputElems.Length],
                     StatePending = node.GetStatePending(),
                     NodeAdditionalArgs = node is INodeAdditionalArgs args ? args.AdditionalArgs : null // 직렬화 추가정보
                 };
@@ -965,19 +973,20 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
                 for (int i = 0; i < connectionInfo.InConnectionTargets.Length; i++)
                 {
                     Node currentNode = connectionInfo.InConnectionTargets[i]?.Node;
-                    if (currentNode == null)
+                    if (currentNode == null)  // 그냥 연결 안된 경우
                     {
                         continue;
                     }
 
-                    if (targets.Contains(currentNode))
+                    if (targets.Contains(currentNode))  // 연결 되어있고 타겟에 포함
                     {
                         continue;
                     }
 
+                    // 연결 되어있는데 타겟에 없음
                     connectionInfo.InConnectionTargets[i] = null;
                     connectionInfo.InVertices[i] = null;
-                    nodeInfo.InTpState[i] = nodeInfo.InTpType[i].Null();
+                    nodeInfo.InConnectionSevered[i] = true;
                 }
 
                 for (int i = 0; i < connectionInfo.OutConnectionTargets.Length; i++)
@@ -1280,6 +1289,12 @@ public class PUMPBackground : MonoBehaviour, IChangeObserver, ISeparatorSectorab
             for (int i = nodeDbCount; i < Nodes.Count; i++)
             {
                 Nodes[i].ReplayStatePending(infos[i - nodeDbCount].StatePending);
+            }
+
+            // Severed Input Connection Play ---------
+            for (int i = nodeDbCount; i < Nodes.Count; i++)
+            {
+                Nodes[i].PlaySeveredInConnection(infos[i - nodeDbCount].InConnectionSevered);
             }
 
             // Ensures the integrity of the gateway ---------

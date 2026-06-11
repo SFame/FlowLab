@@ -116,7 +116,6 @@ public class NodeSupport : DraggableUGUI, INodeSupportInitializable, ISoundable,
             return;
 
         OnMouseDown?.Invoke(eventData);
-        
     }
 
     void IPointerUpHandler.OnPointerUp(PointerEventData eventData)
