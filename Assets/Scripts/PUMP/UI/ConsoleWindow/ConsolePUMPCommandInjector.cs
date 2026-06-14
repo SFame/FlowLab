@@ -9,8 +9,9 @@ using UnityEngine;
 
 public class ConsolePUMPCommandInjector : MonoBehaviour
 {
-    private bool _isInjected;
-    private List<ConsoleCommand> _commands = new()
+    private static bool _isInjected;
+
+    private static readonly List<ConsoleCommand> _commands = new()
     {
         new ConsoleCommand
         (
@@ -426,7 +427,7 @@ public class ConsolePUMPCommandInjector : MonoBehaviour
         ),
     };
 
-    private void Inject()
+    private static void Inject()
     {
         if (_isInjected)
         {

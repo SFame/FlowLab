@@ -4,15 +4,15 @@ using System.Collections.Generic;
 public class UndoDelegate<T>
 {
     #region Privates
-    private Func<T> _recordGetter;
-    private Action<T> _onUndo;
-    private Action<T> _onRedo;
-    private Action<T> _onClear;
+    private readonly Func<T> _recordGetter;
+    private readonly Action<T> _onUndo;
+    private readonly Action<T> _onRedo;
+    private readonly Action<T> _onClear;
 
     private int _currentRecordedIndex = -1;
     private readonly int _maxCapacity;
 
-    private List<T> _recorded = new();
+    private readonly List<T> _recorded = new();
     private T _lateRecord;
 
     private void Push(T record)

@@ -92,9 +92,12 @@ public class ConsoleWindow : MonoBehaviour
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
     private const string PREFAB_PATH = "PUMP/Prefab/UI/ConsoleWindow";
-    private const int MAX_LINE_COUNT = 300;
     private const string HEADER_TEXT = "FlowLab> ";
-    private static Text _text = new Text(MAX_LINE_COUNT);
+    private const int MAX_LINE_COUNT = 300;
+    private const int HISTORY_CAPACITY = 50;
+    private static readonly Text _text = new Text(MAX_LINE_COUNT);
+    private static readonly ConsoleInputHistoryManager _historyManager = new ConsoleInputHistoryManager(HISTORY_CAPACITY, () => _historyDraftBuffer = null);
+    private static string _historyDraftBuffer = null;
     private static bool _headerActive = true;
     private static readonly HashSet<ConsoleCommand> _commands = new HashSet<ConsoleCommand>();
     private static bool _onCommand = false;
@@ -103,7 +106,7 @@ public class ConsoleWindow : MonoBehaviour
     private static bool _isOpen = false;
     private static QueryResult? _queryCache = null;
     private static SafetyCancellationTokenSource _queryCts;
-    private static object _inputBlocker = new();
+    private static readonly object _inputBlocker = new();
     private static GameObject _prefab;
     private static ConsoleWindow _instance;
 
@@ -189,17 +192,17 @@ public class ConsoleWindow : MonoBehaviour
         return line;
     }
 
-    private static TextLine InternalInputRaw(string text)
+    private static TextLine InternalInputRaw(string text, bool resetScrollRect)
     {
-        TextLine line = AddCurrentText(text);
-        Instance.PushTextNotChangeFocus(GetCurrentText());
-        return line;
+        TextLine textLine = AddCurrentText(text);
+        Instance.PushTextNotChangeFocus(GetCurrentText(), resetScrollRect);
+        return textLine;
     }
 
-    private static TextLine AddCurrentText(string line)
+    private static TextLine AddCurrentText(string text)
     {
-        TextLine textLine = _text.Append(line);
-        textLine.OnTextUpdate += _ => Instance.PushTextNotChangeFocus(GetCurrentText());
+        TextLine textLine = _text.Append(text);
+        textLine.OnTextUpdate += _ => Instance.PushTextNotChangeFocus(GetCurrentText(), textLine.ResetScrollRect);
         return textLine;
     }
 
@@ -348,7 +351,7 @@ public class ConsoleWindow : MonoBehaviour
 
             try
             {
-                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, text => InternalInputRaw(text), InternalInputRaw, argsDict, argsCount, argsIndex, inputSource, contextDisposer));
+                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, (text, resetScrollRect) => InternalInputRaw(text, resetScrollRect), InternalInputRaw, argsDict, argsCount, argsIndex, inputSource, contextDisposer));
                 UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
 
                 (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
@@ -440,7 +443,7 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private CanvasGroup m_CanvasGroup;
     [SerializeField] private float m_FadeDuration = 0.2f;
     [SerializeField] private TextMeshProUGUI m_MainTextField;
-    [SerializeField] private TMP_InputField m_InputField;
+    [SerializeField] private ConsoleWindowTMP_InpufField m_InputField;
     [SerializeField] private TextMeshProUGUI m_InputHeader;
     [SerializeField] private RectTransform m_HeaderSpaceRect;
     [SerializeField] private ScrollRect m_MainTextScrollRect;
@@ -450,7 +453,57 @@ public class ConsoleWindow : MonoBehaviour
     {
         Dispatcher.Post(() =>
         {
-            m_InputField.onSubmit.AddListener(text => InternalInput(text, ConsoleInputSource.InputField));
+            m_InputField.OnKeyUp += () =>
+            {
+                if (_historyManager.Current == null) // 히스토리 없을 때
+                {
+                    return;
+                }
+
+                if (_historyDraftBuffer == null)
+                {
+                    _historyDraftBuffer = m_InputField.text;
+                    m_InputField.text = _historyManager.Current;
+                    m_InputField.caretPosition = m_InputField.text.Length;
+                    return;
+                }
+
+                if (_historyManager.MovePrevious())
+                {
+                    m_InputField.text = _historyManager.Current;
+                    m_InputField.caretPosition = m_InputField.text.Length;
+                }
+            };
+
+            m_InputField.OnKeyDown += () =>
+            {
+                if (_historyManager.Current == null) // 히스토리 없을 때
+                {
+                    return;
+                }
+
+                if (_historyDraftBuffer == null)
+                {
+                    return;
+                }
+
+                if (_historyManager.MoveNext())
+                {
+                    m_InputField.text = _historyManager.Current;
+                    m_InputField.caretPosition = m_InputField.text.Length;
+                    return;
+                }
+
+                m_InputField.text = _historyDraftBuffer ?? string.Empty;
+                m_InputField.caretPosition = m_InputField.text.Length;
+                _historyDraftBuffer = null;
+            };
+
+            m_InputField.onSubmit.AddListener(text =>
+            {
+                InternalInput(text, ConsoleInputSource.InputField);
+                _historyManager.Push(text);
+            });
             m_InputField.onSelect.AddListener(_ => InputManager.AddBlocker(_inputBlocker));
             m_InputField.onDeselect.AddListener(_ => InputManager.RemoveBlocker(_inputBlocker));
             m_InputField.onFocusSelectAll = false;
@@ -477,7 +530,7 @@ public class ConsoleWindow : MonoBehaviour
         });
     }
 
-    private void PushTextNotChangeFocus(string text)
+    private void PushTextNotChangeFocus(string text, bool resetScrollRect)
     {
         if (text.EndsWith("\n"))
         {
@@ -487,7 +540,11 @@ public class ConsoleWindow : MonoBehaviour
         Dispatcher.Post(() =>
         {
             m_MainTextField.text = text;
-            ResetScrollRect();
+
+            if (resetScrollRect)
+            {
+                ResetScrollRect();
+            }
         });
     }
 
@@ -557,10 +614,11 @@ public class ConsoleWindow : MonoBehaviour
 
     public interface ITextLine
     {
-        public string Text { get; set; }
-        public int LineIndex { get; }
-        public event Action<string> OnTextUpdate;
-        public event Action OnHide;
+        string Text { get; set; }
+        int LineIndex { get; }
+        bool ResetScrollRect { get; set; }
+        event Action<string> OnTextUpdate;
+        event Action OnHide;
     }
 
     private class TextLine : ITextLine
@@ -581,13 +639,14 @@ public class ConsoleWindow : MonoBehaviour
         }
 
         public int LineIndex => _lineIndexGetter?.Invoke(this) ?? -1;
+        public bool ResetScrollRect { get; set; }
 
         public event Action<string> OnTextUpdate;
         public event Action OnHide;
 
         private string _text = null;
         private bool _initialized = false;
-        private Func<TextLine, int> _lineIndexGetter;
+        private readonly Func<TextLine, int> _lineIndexGetter;
 
         public void Initialize(string text)
         {
@@ -598,6 +657,7 @@ public class ConsoleWindow : MonoBehaviour
 
             _initialized = true;
             _text = text;
+            ResetScrollRect = true;
         }
 
         public void Terminate()
@@ -611,6 +671,7 @@ public class ConsoleWindow : MonoBehaviour
             Text = null;
             OnTextUpdate = null;
             OnHide = null;
+            ResetScrollRect = true;
         }
 
         public void InvokeHide()
@@ -687,6 +748,62 @@ public class ConsoleWindow : MonoBehaviour
             return _textQueue.ToList().IndexOf(line);
         }
     }
+
+    private class ConsoleInputHistoryManager
+    {
+        private readonly LinkedList<string> _history;
+        private readonly int _capacity;
+        private LinkedListNode<string> _current;
+        private readonly Action _onPush;
+
+        public ConsoleInputHistoryManager(int capacity, Action onPush)
+        {
+            _history = new LinkedList<string>();
+            _capacity = capacity;
+            _onPush = onPush;
+        }
+
+        public string Current => _current?.Value;
+
+        public void Push(string text)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException(nameof(text));
+            }
+
+            if (_history.Count >= _capacity)
+            {
+                _history.RemoveFirst();
+            }
+
+            _history.AddLast(text);
+            _current = _history.Last;
+            _onPush?.Invoke();
+        }
+
+        public bool MovePrevious()
+        {
+            if (_current?.Previous == null)
+            {
+                return false;
+            }
+
+            _current = _current.Previous;
+            return true;
+        }
+
+        public bool MoveNext()
+        {
+            if (_current?.Next == null)
+            {
+                return false;
+            }
+
+            _current = _current.Next;
+            return true;
+        }
+    }
 }
 
 /// <summary>
@@ -699,8 +816,8 @@ public class ConsoleCommand: IStartQuery
         #region Privates
         public CommandContext(
             Func<string, CancellationToken, UniTask<QueryResult?>> queryFunc,
-            Action<string> printAction,
-            Func<string, ConsoleWindow.ITextLine> textLineGetter,
+            Action<string, bool> printAction,
+            Func<string, bool, ConsoleWindow.ITextLine> textLineGetter,
             Dictionary<string, string> args,
             int argCount,
             int argsIndex,
@@ -723,8 +840,8 @@ public class ConsoleCommand: IStartQuery
         }
 
         private readonly Func<string, CancellationToken, UniTask<QueryResult?>> _queryFunc;
-        private readonly Action<string> _printAction;
-        private readonly Func<string, ConsoleWindow.ITextLine> _textLineGetter;
+        private readonly Action<string, bool> _printAction;
+        private readonly Func<string, bool, ConsoleWindow.ITextLine> _textLineGetter;
         private readonly Dictionary<string, string> _args;
         private readonly List<TextUpdateToken> _textUpdateTokens;
 
@@ -779,19 +896,22 @@ public class ConsoleCommand: IStartQuery
         /// 콘솔에 Print
         /// </summary>
         /// <param name="text">Print할 문자열</param>
-        public void Print(string text)
+        /// <param name="resetScrollRect">출력 시 스크롤 초기화 여부</param>
+        public void Print(string text, bool resetScrollRect = true)
         {
-            _printAction(text);
+            _printAction(text, resetScrollRect);
         }
 
         /// <summary>
         /// 동일 라인을 지속적으로 업데이트할 수 있는 토큰을 발급
         /// </summary>
         /// <param name="initText">최초로 보여질 문자열</param>
-        /// <returns>문자열 업데이트 토큰</returns>
-        public TextUpdateToken GetUpdateToken(string initText)
+        /// <param name="resetScrollRect">출력 시 스크롤 초기화 여부</param>
+        /// <returns></returns>
+        public TextUpdateToken GetUpdateToken(string initText, bool resetScrollRect = true)
         {
-            TextUpdateToken token = new TextUpdateToken(_textLineGetter(initText));
+            TextUpdateToken token = new TextUpdateToken(_textLineGetter(initText, resetScrollRect));
+            token.ResetScrollRect = resetScrollRect;
             _textUpdateTokens.Add(token);
             return token;
         }
@@ -902,7 +1022,7 @@ public class ConsoleCommand: IStartQuery
     #endregion
 }
 
-public struct QueryResult
+public readonly struct QueryResult
 {
     #region Privates
     public QueryResult(string text, ConsoleInputSource inputSource)
@@ -932,19 +1052,6 @@ public struct QueryResult
         return Text;
     }
     #endregion
-}
-
-public enum ConsoleInputSource
-{
-    /// <summary>
-    /// 사용자가 입력 필드에 직접 입력
-    /// </summary>
-    InputField,
-
-    /// <summary>
-    /// ConsoleWindow.Input()을 통한 시스템 입력
-    /// </summary>
-    System
 }
 
 public class TextUpdateToken : IDisposable
@@ -997,6 +1104,23 @@ public class TextUpdateToken : IDisposable
     public bool IsExpired { get; private set; }
 
     /// <summary>
+    /// 텍스트 업데이트 시 스크롤 초기화 여부
+    /// </summary>
+    public bool ResetScrollRect
+    {
+        get => IsExpired || _textLine.ResetScrollRect;
+        set
+        {
+            if (IsExpired)
+            {
+                return;
+            }
+
+            _textLine.ResetScrollRect = value;
+        }
+    }
+
+    /// <summary>
     /// 라인 텍스트 업데이트
     /// </summary>
     /// <param name="text">Text value</param>
@@ -1022,6 +1146,19 @@ public class TextUpdateToken : IDisposable
     }
     #endregion
 
+}
+
+public enum ConsoleInputSource
+{
+    /// <summary>
+    /// 사용자가 입력 필드에 직접 입력
+    /// </summary>
+    InputField,
+
+    /// <summary>
+    /// ConsoleWindow.Input()을 통한 시스템 입력
+    /// </summary>
+    System
 }
 
 public interface IStartQuery

@@ -68,9 +68,24 @@ public class TPConnection : IStateful, IDisposable
 
                 if (awaiter.IsCompleted)
                 {
-                    _state = _stateCache;
-                    TargetPoint.State = _stateCache;
-                    return;
+                    if (ConnectionAwaitManager.IsOverSync())
+                    {
+                        ConnectionAwaitManager.ReleaseSyncStack();
+                        TargetStateUpdateAsync(ConnectionAwaitManager.GetYield(_pendingCts.Token)).Forget();
+                        return;
+                    }
+
+                    try
+                    {
+                        ConnectionAwaitManager.ImmediatelyVisit();
+                        _state = _stateCache;
+                        TargetPoint.State = _stateCache;
+                        return;
+                    }
+                    finally
+                    {
+                        ConnectionAwaitManager.ImmediatelyLeave();
+                    }
                 }
 
                 TargetStateUpdateAsync(awaiter).Forget();
@@ -268,11 +283,14 @@ public static class ConnectionAwaitManager
     #region Privates
     private const float MAX_WAIT_TIME = 10f;
     private const int MAX_LOOP_THRESHOLD = 20;
+    private const int MAX_SYNC_DEPTH = 256;
 
     private static float _waitTime = 0.5f;
     private static int _loopThreshold = 2;
     private static bool _hasGetSetting = false;
     private static bool _clearRequested = false;
+
+    private static int _syncDepth = 0;
 
     private static readonly Dictionary<TPConnection, int> _propagateCountDict = new();
 
@@ -353,6 +371,34 @@ public static class ConnectionAwaitManager
             ConnectionAwait.Immediately => GetImmediatelyAwaiter(caller, token),
             _ => new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false, false),
         };
+    }
+
+    public static ConnectionAwaiter GetYield(CancellationToken token)
+    {
+        return new ConnectionAwaiter(UniTask.Yield(PlayerLoopTiming.Update, token), false, false);
+    }
+
+    public static void ImmediatelyVisit()
+    {
+        _syncDepth++;
+    }
+
+    public static void ImmediatelyLeave()
+    {
+        if (_syncDepth > 0)
+        {
+            _syncDepth--;
+        }
+    }
+
+    public static void ReleaseSyncStack()
+    {
+        _syncDepth = 0;
+    }
+
+    public static bool IsOverSync()
+    {
+        return _syncDepth >= MAX_SYNC_DEPTH;
     }
 
     public static event Action<TPConnection> OnImmediatelyLoopDetected;

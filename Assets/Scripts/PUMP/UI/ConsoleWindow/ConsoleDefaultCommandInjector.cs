@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Michsky.MUIP;
 using NCalc;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
@@ -72,44 +71,201 @@ not in, not like: Negated forms
     {
         new ConsoleCommand
         (
+            command: "/flowlab",
+            doc: "About FlowLab.",
+            isSystem: true,
+            queryProcess: async context =>
+            {
+                // 박스 안에 들어갈 로고 본문 (이 줄들끼리 길이 자동 정렬)
+                string[] body =
+                {
+                    "  ███████ ██      ██████  ██     ██ ██       █████  ██████ ",
+                    "  ██      ██     ██    ██ ██     ██ ██      ██   ██ ██   ██",
+                    "  █████   ██     ██    ██ ██  █  ██ ██      ███████ ██████ ",
+                    "  ██      ██     ██    ██ ██ ███ ██ ██      ██   ██ ██   ██",
+                    "  ██      ███████ ██████   ███ ███  ███████ ██   ██ ██████ ",
+                };
+
+                // 가장 긴 줄 기준으로 폭 통일
+                int innerWidth = 0;
+                foreach (string s in body)
+                {
+                    if (s.Length > innerWidth) innerWidth = s.Length;
+                }
+                for (int i = 0; i < body.Length; i++)
+                {
+                    body[i] = body[i].PadRight(innerWidth);
+                }
+
+                string horizontal = new string('─', innerWidth);
+                int portRow1 = 1;                    // 위쪽 포트가 붙을 본문 줄
+                int portRow2 = body.Length - 2;      // 아래쪽 포트가 붙을 본문 줄
+
+                // 전체 로고 조립
+                List<string> lines = new List<string>
+                {
+                    "",
+                    $"    ╭{horizontal}╮"
+                };
+                for (int i = 0; i < body.Length; i++)
+                {
+                    if (i == portRow1 || i == portRow2)
+                    {
+                        lines.Add($" ●──┤{body[i]}├──●");
+                    }
+                    else
+                    {
+                        lines.Add($"    │{body[i]}│");
+                    }
+                }
+                lines.Add($"    ╰{horizontal}╯");
+                lines.Add("");
+                lines.Add("                https://github.com/SFame/FlowLab");
+                lines.Add("");
+
+                string[] logo = lines.ToArray();
+
+                const string GLITCH_CHARS = "▓▒░#@%&";
+                System.Random rng = new System.Random();
+
+                int height = logo.Length;
+                TextUpdateToken[] tokens = new TextUpdateToken[height];
+                for (int i = 0; i < height; i++)
+                {
+                    tokens[i] = context.GetUpdateToken(logo[i], false);
+                }
+
+                // 블록 문자(█)만 골라서 글리치
+                string Glitch(string line)
+                {
+                    char[] buf = line.ToCharArray();
+
+                    // 이 줄의 █ 위치들 수집
+                    List<int> blockPositions = new List<int>();
+                    for (int i = 0; i < buf.Length; i++)
+                    {
+                        if (buf[i] == '█') blockPositions.Add(i);
+                    }
+
+                    if (blockPositions.Count == 0) return line;
+
+                    // █ 중 일부를 깨진 문자로
+                    int glitchCount = rng.Next(1, 3);
+                    for (int g = 0; g < glitchCount; g++)
+                    {
+                        int pos = blockPositions[rng.Next(blockPositions.Count)];
+                        buf[pos] = GLITCH_CHARS[rng.Next(GLITCH_CHARS.Length)];
+                    }
+
+                    return new string(buf);
+                }
+
+                async UniTask GlitchLoop(CancellationToken token)
+                {
+                    try
+                    {
+                        while (!token.IsCancellationRequested)
+                        {
+                            for (int i = 0; i < height; i++)
+                            {
+                                // 본문(█ 있는 줄)만 50% 확률로 글리치
+                                string display = (logo[i].Contains('█') && rng.Next(100) < 15)
+                                    ? Glitch(logo[i])
+                                    : logo[i];
+
+                                if (!tokens[i].TryUpdate(display))
+                                {
+                                    return;
+                                }
+                            }
+
+                            await UniTask.Delay(120, cancellationToken: token);
+                        }
+                    }
+                    catch (OperationCanceledException) { }
+                }
+
+                using CancellationTokenSource cts = new();
+                UniTask glitchTask = GlitchLoop(cts.Token);
+
+                while (true)
+                {
+                    QueryResult? result = await context.Query("q to quit...");
+
+                    if (result == null)
+                    {
+                        break;
+                    }
+
+                    if (result.Value.Text.Trim().ToLower() == "q")
+                    {
+                        break;
+                    }
+                }
+
+                cts.Cancel();
+                await glitchTask;
+
+                for (int i = 0; i < height; i++)
+                {
+                    tokens[i].TryUpdate(logo[i]);
+                }
+
+                return null;
+            }
+        ),
+        new ConsoleCommand
+        (
             command: "/help",
             doc: "Help about help. Very meta.",
+            possibleArgs: new string[][] { Array.Empty<string>(), new[] { "command" }, },
             isSystem: true,
             queryProcess: async context =>
             {
                 ConsoleCommand[] commands = ConsoleWindow.GetCommands();
-                string commandsNames = string.Join('\n', commands.Select(command => command.Command).ToArray());
-                QueryResult? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
 
-                if (result == null)
+                if (context.ArgsIndex == 0)
                 {
-                    return null;
+                    string commandsNames = string.Join('\n', commands.Select(command => command.Command).ToArray());
+                    QueryResult? result = await context.Query($"<Select Command>\n{BAR_STRING}\n{commandsNames}\n{BAR_STRING}");
+
+                    if (result == null)
+                    {
+                        return null;
+                    }
+
+                    return GetCommandDoc(result.Value.Text);
                 }
 
-                string resultText = result.Value.Text.StartsWith("/") ? result.Value.Text : $"/{result.Value.Text}";
-                if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
-                {
-                    string formatString;
+                return GetCommandDoc(context.GetArg("command"));
 
-                    if (commandResult.PossibleArgs == null || commandResult.PossibleArgs.Length == 0)
+                string GetCommandDoc(string command)
+                {
+                    string resultText = command.StartsWith("/") ? command : $"/{command}";
+                    if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
                     {
-                        formatString = $"\"{commandResult.Command}\"";
-                    }
-                    else
-                    {
-                        formatString = string.Join('\n', commandResult.PossibleArgs.Select(overload =>
+                        string formatString;
+
+                        if (commandResult.PossibleArgs == null || commandResult.PossibleArgs.Length == 0)
                         {
-                            string argsPart = overload.Length == 0
-                                ? string.Empty
-                                : $" {string.Join(' ', overload.Select(arg => $"<{arg}>"))}";
-                            return $"\"{commandResult.Command}{argsPart}\"";
-                        }));
+                            formatString = $"\"{commandResult.Command}\"";
+                        }
+                        else
+                        {
+                            formatString = string.Join('\n', commandResult.PossibleArgs.Select(overload =>
+                            {
+                                string argsPart = overload.Length == 0
+                                    ? string.Empty
+                                    : $" {string.Join(' ', overload.Select(arg => $"<{arg}>"))}";
+                                return $"\"{commandResult.Command}{argsPart}\"";
+                            }));
+                        }
+
+                        return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat:\n{formatString}\n{BAR_STRING}";
                     }
 
-                    return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat:\n{formatString}\n{BAR_STRING}";
+                    return $"Command not found: {resultText}";
                 }
-
-                return $"Command not found: {resultText}";
             }
         ),
         new ConsoleCommand
@@ -268,7 +424,7 @@ not in, not like: Negated forms
 
                     for (int i = 0; i < tokens.Length; i++)
                     {
-                        tokens[i] = context.GetUpdateToken(string.Empty);
+                        tokens[i] = context.GetUpdateToken(string.Empty, false);
                     }
 
                     Action<string>[] tokenReturnAction = tokens.Select(tk =>
@@ -332,6 +488,70 @@ not in, not like: Negated forms
         ),
         new ConsoleCommand
         (
+            command: "/fps",
+            doc: "Display current FPS.",
+            isSystem: true,
+            possibleArgs: new string[][] { new[] { "interval" }, Array.Empty<string>() },
+            queryProcess: async context =>
+            {
+                float smoothedFps = 1f / Mathf.Max(Time.unscaledDeltaTime, 0.0001f);
+
+                string GetFpsInfo()
+                {
+                    float current = 1f / Mathf.Max(Time.unscaledDeltaTime, 0.0001f);
+                    smoothedFps = Mathf.Lerp(smoothedFps, current, 0.1f);
+                    float frameMs = Time.unscaledDeltaTime * 1000f;
+                    return $"FPS: {smoothedFps:F1}  ({frameMs:F1} ms)";
+                }
+
+                if (context.ArgsIndex == 1)
+                {
+                    return GetFpsInfo();
+                }
+
+                if (!float.TryParse(context.GetArg("interval"), out float interval))
+                {
+                    return "Invalid interval. Please enter a number (seconds).";
+                }
+
+                async UniTask FpsUpdate(float updateInterval, CancellationToken token)
+                {
+                    TextUpdateToken fpsToken = context.GetUpdateToken(string.Empty, false);
+
+                    try
+                    {
+                        while (!token.IsCancellationRequested)
+                        {
+                            if (!fpsToken.TryUpdate(GetFpsInfo()))
+                            {
+                                return;
+                            }
+
+                            await UniTask.WaitForSeconds(updateInterval, cancellationToken: token, cancelImmediately: true);
+                        }
+                    }
+                    catch (OperationCanceledException) { }
+                }
+
+                using CancellationTokenSource cts = new();
+
+                UniTask updateTask = FpsUpdate(Math.Clamp(interval, 0.1f, 60f), cts.Token);
+
+                while (true)
+                {
+                    QueryResult? result = await context.Query("q to quit...");
+
+                    if (result == null || result.Value.Text.ToLower().Trim() == "q")
+                    {
+                        cts.Cancel();
+                        await updateTask;
+                        return null;
+                    }
+                }
+            }
+        ),
+        new ConsoleCommand
+        (
             command: "/log",
             doc: "Debug logger.",
             isSystem: true,
@@ -366,14 +586,14 @@ not in, not like: Negated forms
         new ConsoleCommand
         (
             command: "/apple",
-            doc: "Play Bad Apple!! in ASCII. Press Q to stop.",
+            doc: "Play Bad Apple!! in ASCII.",
             isSystem: true,
             queryProcess: async context =>
             {
                 const int FRAME_HEIGHT = 27;
                 const float FPS = 15f;
                 const char FRAME_SEP = '\x1e';
-                const string RESOURCE_PATH = "badapple"; // Resources 기준 경로, 확장자 제외
+                const string RESOURCE_PATH = "badapple";
 
                 TextAsset asset = Resources.Load<TextAsset>(RESOURCE_PATH);
                 if (asset == null)
@@ -381,71 +601,113 @@ not in, not like: Negated forms
                     return "ERROR: badapple resource not found.";
                 }
 
-                // 프레임 미리 분할 (한 번만)
                 string[] frames = asset.text.Split(FRAME_SEP);
                 if (frames.Length == 0)
                 {
                     return "ERROR: no frames.";
                 }
 
-                // 45줄 토큰 발급
                 TextUpdateToken[] rows = new TextUpdateToken[FRAME_HEIGHT];
                 for (int y = 0; y < FRAME_HEIGHT; y++)
                 {
-                    rows[y] = context.GetUpdateToken(string.Empty);
+                    rows[y] = context.GetUpdateToken(string.Empty, false);
                 }
 
-                int frameDelayMs = (int)(1000f / FPS);
                 string[] lineBuffer = new string[FRAME_HEIGHT];
 
-                // 시간 기반 재생 (처리 지연 보정해서 드리프트 방지)
-                float startTime = Time.realtimeSinceStartup;
+                using CancellationTokenSource cts = new();
 
-                for (int f = 0; f < frames.Length; f++)
+                async UniTask PlayLoop(CancellationToken token)
                 {
-                    // 현재 시각에 맞는 프레임으로 스킵 (느린 환경에서 프레임 드랍)
-                    float elapsed = Time.realtimeSinceStartup - startTime;
-                    int targetFrame = (int)(elapsed * FPS);
-                    if (targetFrame > f && targetFrame < frames.Length)
+                    try
                     {
-                        f = targetFrame; // 밀린 만큼 건너뜀
-                    }
+                        float startTime = Time.realtimeSinceStartup;
 
-                    // 프레임을 줄 단위로 분할
-                    string frame = frames[f];
-                    int start = 0;
-                    for (int y = 0; y < FRAME_HEIGHT; y++)
-                    {
-                        int nl = frame.IndexOf('\n', start);
-                        if (nl < 0)
+                        for (int f = 0; f < frames.Length; f++)
                         {
-                            lineBuffer[y] = frame.Substring(start);
-                            start = frame.Length;
-                        }
-                        else
-                        {
-                            lineBuffer[y] = frame.Substring(start, nl - start);
-                            start = nl + 1;
+                            if (token.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
+                            float elapsed = Time.realtimeSinceStartup - startTime;
+                            int targetFrame = (int)(elapsed * FPS);
+                            if (targetFrame > f && targetFrame < frames.Length)
+                            {
+                                f = targetFrame;
+                            }
+
+                            string frame = frames[f];
+                            int start = 0;
+                            for (int y = 0; y < FRAME_HEIGHT; y++)
+                            {
+                                int nl = frame.IndexOf('\n', start);
+                                if (nl < 0)
+                                {
+                                    lineBuffer[y] = frame.Substring(start);
+                                    start = frame.Length;
+                                }
+                                else
+                                {
+                                    lineBuffer[y] = frame.Substring(start, nl - start);
+                                    start = nl + 1;
+                                }
+                            }
+
+                            for (int y = 0; y < FRAME_HEIGHT; y++)
+                            {
+                                if (!rows[y].TryUpdate(lineBuffer[y]))
+                                {
+                                    return;
+                                }
+                            }
+
+                            float nextFrameTime = startTime + (f + 1) / FPS;
+                            float wait = nextFrameTime - Time.realtimeSinceStartup;
+                            if (wait > 0)
+                            {
+                                await UniTask.Delay((int)(wait * 1000), cancellationToken: token);
+                            }
                         }
                     }
-
-                    // 각 줄 토큰 갱신 (하나라도 만료=취소면 중단)
-                    for (int y = 0; y < FRAME_HEIGHT; y++)
+                    catch (OperationCanceledException)
                     {
-                        if (!rows[y].TryUpdate(lineBuffer[y]))
-                        {
-                            return null;
-                        }
-                    }
-
-                    // 다음 프레임 시각까지 대기
-                    float nextFrameTime = startTime + (f + 1) / FPS;
-                    float wait = nextFrameTime - Time.realtimeSinceStartup;
-                    if (wait > 0)
-                    {
-                        await UniTask.Delay((int)(wait * 1000));
                     }
                 }
+
+                // q 입력 감시: q 들어오면 재생 취소
+                async UniTask WaitQuit(CancellationToken token)
+                {
+                    try
+                    {
+                        while (!token.IsCancellationRequested)
+                        {
+                            QueryResult? r = await context.Query("q to quit", token);
+
+                            if (r == null)
+                            {
+                                return;
+                            }
+
+                            if (r.Value.Text.Trim().ToLower() == "q")
+                            {
+                                cts.Cancel();
+                                return;
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException) { }
+                }
+
+                UniTask playTask = PlayLoop(cts.Token);
+                UniTask quitTask = WaitQuit(cts.Token);
+
+                // 재생 완료를 기다림 (q로 취소되면 여기가 먼저 풀림)
+                await playTask;
+
+                // 재생이 끝났든 q로 끊겼든, 남은 쪽 정리
+                cts.Cancel();
+                await quitTask;
 
                 return null;
             }
