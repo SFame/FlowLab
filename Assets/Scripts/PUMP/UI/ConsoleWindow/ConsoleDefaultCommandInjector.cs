@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using NCalc;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Utils;
 using Expression = NCalc.Expression;
 #if !UNITY_EDITOR
 using UnityEngine;
@@ -15,6 +17,7 @@ using UnityEngine;
 public class ConsoleDefaultCommandInjector
 {
     private static bool _isInjected = false;
+    private const string SAVE_FILE_NAME = "console_data.bin";
     private const string BAR_STRING = "========================";
     private const string CALC_DOC = @"
 Evaluates the entered expression.
@@ -219,6 +222,7 @@ not in, not like: Negated forms
             command: "/help",
             doc: "Help about help. Very meta.",
             possibleArgs: new string[][] { Array.Empty<string>(), new[] { "command" }, },
+            aliases: new string[] { "/doc" },
             isSystem: true,
             queryProcess: async context =>
             {
@@ -242,7 +246,13 @@ not in, not like: Negated forms
                 string GetCommandDoc(string command)
                 {
                     string resultText = command.StartsWith("/") ? command : $"/{command}";
-                    if (commands.FirstOrDefault(command => command.Command == resultText) is { } commandResult)
+
+                    // 정식 이름으로 먼저 찾고, 없으면 alias로 찾음
+                    ConsoleCommand commandResult =
+                        commands.FirstOrDefault(c => c.Command == resultText)
+                        ?? commands.FirstOrDefault(c => c.HasAlias(resultText));
+
+                    if (commandResult != null)
                     {
                         string formatString;
 
@@ -261,7 +271,11 @@ not in, not like: Negated forms
                             }));
                         }
 
-                        return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nFormat:\n{formatString}\n{BAR_STRING}";
+                        string aliasPart = commandResult.Aliases is { Count: > 0 } aliases
+                            ? string.Join(", ", aliases)
+                            : "(none)";
+
+                        return $"{BAR_STRING}\n<{commandResult.Command}>\nDoc: {commandResult.Doc}\nAliases: {aliasPart}\nFormat:\n{formatString}\n{BAR_STRING}";
                     }
 
                     return $"Command not found: {resultText}";
@@ -332,6 +346,117 @@ not in, not like: Negated forms
                 }
 
                 return null;
+            }
+        ),
+        new ConsoleCommand
+        (
+            command: "/alias",
+            isSystem: true,
+            doc:
+@"Manage command aliases.
+Usage:
+  /alias                            Show all commands and their aliases
+  /alias <command>                  Show aliases of the specified command
+  /alias <action> <command> <alias> Add or remove an alias
+Actions:
+  add, a            Add an alias to the command
+  remove, r, rm     Remove an alias from the command
+Examples:
+  /alias add help h      Add 'h' as an alias of /help
+  /alias rm calc c       Remove the 'c' alias from /calc
+The leading '/' is optional for both command and alias.",
+            possibleArgs: new string[][]
+            {
+                Array.Empty<string>(),                      // 0개: 전체 목록
+                new[] { "command" },                        // 1개: 특정 커맨드의 alias 조회
+                new[] { "action", "command", "alias" },     // 3개: add / remove
+            },
+            queryProcess: async context =>
+            {
+                // /로 시작하도록 정규화
+                string Normalize(string name)
+                    => name.StartsWith(ConsoleWindow.COMMAND_DISCRIMINATION_CHAR)
+                        ? name
+                        : $"{ConsoleWindow.COMMAND_DISCRIMINATION_CHAR}{name}";
+
+                // 한 커맨드의 alias들을 보기 좋게
+                string FormatAliases(ConsoleCommand command)
+                {
+                    IReadOnlyList<string> aliases = command.Aliases;
+                    string aliasPart = aliases == null || aliases.Count == 0
+                        ? "(none)"
+                        : string.Join(", ", aliases);
+                    return $"{command.Command}: {aliasPart}";
+                }
+
+                // === 0개: 전체 목록 ===
+                if (context.ArgsIndex == 0)
+                {
+                    string body = string.Join('\n', ConsoleWindow.GetCommands().Select(FormatAliases));
+                    return $"{BAR_STRING}\n{body}\n{BAR_STRING}";
+                }
+
+                // === 1개: 특정 커맨드 조회 ===
+                if (context.ArgsIndex == 1)
+                {
+                    string target = Normalize(context.GetArg("command"));
+                    ConsoleCommand command = ConsoleWindow.FindCommand(c => c.Command == target);
+
+                    if (command == null)
+                    {
+                        return $"Command not found: {target}";
+                    }
+
+                    return $"{BAR_STRING}\n{FormatAliases(command)}\n{BAR_STRING}";
+                }
+
+                // === 3개: add / remove ===
+                string action = context.GetArg("action").ToLower().Trim();
+                bool isAdd    = action is "add" or "a";
+                bool isRemove = action is "remove" or "r" or "rm";
+
+                if (!isAdd && !isRemove)
+                {
+                    return $"Unknown action: {action}. Use add/a or remove/r/rm.";
+                }
+
+                string commandName = Normalize(context.GetArg("command"));
+                string aliasName    = Normalize(context.GetArg("alias"));
+
+                ConsoleCommand targetCommand = ConsoleWindow.FindCommand(c => c.Command == commandName);
+
+                if (targetCommand == null)
+                {
+                    return $"Command not found: {commandName}";
+                }
+
+                if (isAdd)
+                {
+                    // alias가 기존 커맨드명/다른 alias와 겹치는지 검사
+                    ConsoleCommand conflict = ConsoleWindow.FindCommand(c => c.Command == aliasName || c.HasAlias(aliasName));
+
+                    if (conflict != null)
+                    {
+                        return $"'{aliasName}' already used by {conflict.Command}.";
+                    }
+
+                    if (!targetCommand.AddAlias(aliasName))
+                    {
+                        return $"'{aliasName}' is already an alias of {targetCommand.Command}.";
+                    }
+
+                    await SaveData();
+                    return $"Added alias '{aliasName}' to {targetCommand.Command}.";
+                }
+
+                // remove
+                if (!targetCommand.RemoveAlias(aliasName))
+                {
+                    return $"'{aliasName}' is not an alias of {targetCommand.Command}.";
+                }
+
+                await SaveData();
+                return $"Removed alias '{aliasName}' from {targetCommand.Command}.";
             }
         ),
         new ConsoleCommand
@@ -682,7 +807,7 @@ not in, not like: Negated forms
                     {
                         while (!token.IsCancellationRequested)
                         {
-                            QueryResult? r = await context.Query("q to quit", token);
+                            QueryResult? r = await context.Query("q to quit...", token);
 
                             if (r == null)
                             {
@@ -714,6 +839,55 @@ not in, not like: Negated forms
         ),
     };
 
+    public static async Task SaveData()
+    {
+        ConsoleCommand[] commandsWithAlias = ConsoleWindow.FindCommands(command => command.HasAnyAlias);
+        ConsoleAliasData[] aliasData = commandsWithAlias.Select(command => new ConsoleAliasData() { _command = command.Command, _aliases = command.Aliases.ToArray() }).ToArray();
+        ConsoleSerializeData consoleData = new ConsoleSerializeData() { _aliasDatas = aliasData };
+        await Serializer.SaveDataAsync(SAVE_FILE_NAME, consoleData, logging: false);
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    public static async Task LoadData()
+    {
+        ConsoleSerializeData consoleData = await Serializer.LoadDataAsync<ConsoleSerializeData>(SAVE_FILE_NAME);
+
+        if (consoleData._aliasDatas != null)
+        {
+            ConsoleCommand[] commands = ConsoleWindow.GetCommands();
+            foreach (ConsoleAliasData aliasData in consoleData._aliasDatas)
+            {
+                if (string.IsNullOrEmpty(aliasData._command))
+                {
+                    continue;
+                }
+
+                string dataCommand = ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + aliasData._command.Substring(1);
+
+                ConsoleCommand target = commands.FirstOrDefault(command =>
+                {
+                    if (string.IsNullOrEmpty(command.Command))
+                    {
+                        return false;
+                    }
+
+                    return ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + command.Command.Substring(1) == dataCommand;
+                });
+
+                if (target == null)
+                {
+                    continue;
+                }
+
+                foreach (string alias in aliasData._aliases)
+                {
+                    target.AddAlias(alias);
+                }
+            }
+        }
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Inject()
     {
         if (_isInjected)
@@ -727,4 +901,17 @@ not in, not like: Negated forms
             ConsoleWindow.AddCommand(defaultCommand);
         }
     }
+}
+
+[Serializable]
+public struct ConsoleSerializeData
+{
+    public ConsoleAliasData[] _aliasDatas;
+}
+
+[Serializable]
+public struct ConsoleAliasData
+{
+    public string _command;
+    public string[] _aliases;
 }

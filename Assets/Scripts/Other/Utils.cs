@@ -847,13 +847,17 @@ namespace Utils
     /// </summary>
     public static class Serializer
     {
-        public static void SaveData<T>(string fileName, T data, string directoryPath = null, DataFormat format = DataFormat.Binary)
+        public static void SaveData<T>(string fileName, T data, string directoryPath = null, DataFormat format = DataFormat.Binary, bool logging = true)
         {
             fileName = FileNameTrimming(fileName, format);
             
             if (string.IsNullOrEmpty(fileName))
             {
-                Debug.LogError("fileName is null or empty");
+                if (logging)
+                {
+                    Debug.LogError("fileName is null or empty");
+                }
+
                 return;
             }
 
@@ -871,17 +875,24 @@ namespace Utils
             }
             catch (Exception e)
             {
-                Debug.LogError($"Can't write to path: {directoryPath} / {e.Message}");
+                if (logging)
+                {
+                    Debug.LogError($"Can't write to path: {directoryPath} / {e.Message}");
+                }
             }
         }
 
-        public static async Task SaveDataAsync<T>(string fileName, T data, string directoryPath = null, DataFormat format = DataFormat.Binary)
+        public static async Task SaveDataAsync<T>(string fileName, T data, string directoryPath = null, DataFormat format = DataFormat.Binary, bool logging = true)
         {
             fileName = FileNameTrimming(fileName, format);
             
             if (string.IsNullOrEmpty(fileName))
             {
-                Debug.LogError("fileName is null or empty");
+                if (logging)
+                {
+                    Debug.LogError("fileName is null or empty");
+                }
+
                 return;
             }
 
@@ -890,7 +901,9 @@ namespace Utils
             try
             {
                 if (!Directory.Exists(directoryPath))
+                {
                     Directory.CreateDirectory(directoryPath);
+                }
 
                 byte[] bytes = await Task.Run(() => SerializationUtility.SerializeValue<T>(data, format));
                 
@@ -899,17 +912,24 @@ namespace Utils
             }
             catch (Exception e)
             {
-                Debug.LogError($"Can't write to path: {directoryPath} / {e.Message}");
+                if (logging)
+                {
+                    Debug.LogError($"Can't write to path: {directoryPath} / {e.Message}");
+                }
             }
         }
 
-        public static T LoadData<T>(string fileName, string directoryPath = null, DataFormat format = DataFormat.Binary)
+        public static T LoadData<T>(string fileName, string directoryPath = null, DataFormat format = DataFormat.Binary, bool logging = true)
         {
             fileName = FileNameTrimming(fileName, format);
             
             if (string.IsNullOrEmpty(fileName))
             {
-                Debug.LogError("fileName is null or empty");
+                if (logging)
+                {
+                    Debug.LogError("fileName is null or empty");
+                }
+
                 return default;
             }
 
@@ -920,7 +940,11 @@ namespace Utils
                 string path = Path.Combine(directoryPath, fileName);
                 if (!File.Exists(path))
                 {
-                    Debug.LogWarning($"File not found at {path}");
+                    if (logging)
+                    {
+                        Debug.LogWarning($"File not found at {path}");
+                    }
+
                     return default;
                 }
 
@@ -931,18 +955,26 @@ namespace Utils
             }
             catch (Exception e)
             {
-                Debug.LogError($"Can't read from path: {directoryPath} / {e.Message}");
+                if (logging)
+                {
+                    Debug.LogError($"Can't read from path: {directoryPath} / {e.Message}");
+                }
+
                 return default;
             }
         }
 
-        public static async Task<T> LoadDataAsync<T>(string fileName, string directoryPath = null, DataFormat format = DataFormat.Binary)
+        public static async Task<T> LoadDataAsync<T>(string fileName, string directoryPath = null, DataFormat format = DataFormat.Binary, bool logging = true)
         {
             fileName = FileNameTrimming(fileName, format);
             
             if (string.IsNullOrEmpty(fileName))
             {
-                Debug.LogError("fileName is null or empty");
+                if (logging)
+                {
+                    Debug.LogError("fileName is null or empty");
+                }
+
                 return default;
             }
             
@@ -953,7 +985,11 @@ namespace Utils
                 string path = Path.Combine(directoryPath, fileName);
                 if (!File.Exists(path))
                 {
-                    Debug.LogWarning($"File not found at {path}");
+                    if (logging)
+                    {
+                        Debug.LogWarning($"File not found at {path}");
+                    }
+
                     return default;
                 }
 
@@ -963,13 +999,16 @@ namespace Utils
             }
             catch (Exception e)
             {
-                Debug.LogError($"Can't read from path: {directoryPath} / {e.Message}");
+                if (logging)
+                {
+                    Debug.LogError($"Can't read from path: {directoryPath} / {e.Message}");
+                }
+
                 return default;
             }
         }
 
         #region Privates
-
         private static string DefaultSerializePath => Path.Combine(Application.persistentDataPath, "SerializeData");
 
         private static string FileNameTrimming(string fileName, DataFormat format)

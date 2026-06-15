@@ -16,6 +16,8 @@ public class ConsoleWindow : MonoBehaviour
 {
     #region Static Layer
     // -=-=-=-=-=-=-=-=-=- Interface -=-=-=-=-=-=-=-=-=-
+    public const char COMMAND_DISCRIMINATION_CHAR = '/';
+
     public static void Wake()
     {
         _ = Instance;
@@ -23,7 +25,6 @@ public class ConsoleWindow : MonoBehaviour
 
     public static void Input(string text)
     {
-        ConsoleDefaultCommandInjector.Inject();
         InternalInput(text, ConsoleInputSource.System);
     }
 
@@ -49,8 +50,12 @@ public class ConsoleWindow : MonoBehaviour
 
     public static bool AddCommand(ConsoleCommand newCommand)
     {
-        ConsoleDefaultCommandInjector.Inject();
         ConsoleCommand existingCommand = _commands.FirstOrDefault(c => c.Command == newCommand.Command);
+
+        if (_commands.Any(c => c != existingCommand && c.IsConflict(newCommand)))
+        {
+            return false;
+        }
 
         if (existingCommand != null)
         {
@@ -71,6 +76,28 @@ public class ConsoleWindow : MonoBehaviour
         return _commands.Remove(command);
     }
 
+    public static ConsoleCommand[] GetCommands() => _commands.ToArray();
+
+    public static ConsoleCommand FindCommand(Predicate<ConsoleCommand> commandSelector)
+    {
+        if (commandSelector == null)
+        {
+            return null;
+        }
+
+        return _commands.FirstOrDefault(command => commandSelector(command));
+    }
+
+    public static ConsoleCommand[] FindCommands(Predicate<ConsoleCommand> commandSelector)
+    {
+        if (commandSelector == null)
+        {
+            return null;
+        }
+
+        return _commands.Where(command => commandSelector(command)).ToArray();
+    }
+
     public static bool IsOpen
     {
         get => _isOpen;
@@ -86,8 +113,6 @@ public class ConsoleWindow : MonoBehaviour
             Instance.Hide();
         }
     }
-
-    public static ConsoleCommand[] GetCommands() => _commands.ToArray();
     // -=-=-=-=-=-=-=-=-=--=-=-=-=-=-=-=-=-=--=-=-=-=-=-
 
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
@@ -118,7 +143,6 @@ public class ConsoleWindow : MonoBehaviour
         {
             if (_instance == null)
             {
-                ConsoleDefaultCommandInjector.Inject();
                 GameObject newObject = Instantiate(Prefab);
                 RectTransform newRect = newObject.GetComponent<RectTransform>();
                 PUMPUiManager.Render
@@ -132,12 +156,17 @@ public class ConsoleWindow : MonoBehaviour
                     },
                     onReturn: rect =>
                     {
-                        Destroy(rect.gameObject);
+                        if (rect != null && rect.gameObject != null)
+                        {
+                            Destroy(rect.gameObject);
+                        }
+
                         _instance = null;
                     }
                 );
+
                 ConsoleWindow newWindow = newObject.GetComponent<ConsoleWindow>();
-                newWindow.Initialize(string.Empty);
+                newWindow.Initialize(GetCurrentText(), _historyDraftBuffer == null ? string.Empty : _historyManager.Current ?? string.Empty);
                 _instance = newObject.GetComponent<ConsoleWindow>();
             }
             return _instance;
@@ -181,8 +210,8 @@ public class ConsoleWindow : MonoBehaviour
             return line;
         }
 
-        // 슬래쉬로 시작하지 않으면 이전해 Add한 문자열 그대로 찍음
-        if (!text.StartsWith("/"))
+        // 명령어 판독 문자열로 시작하지 않으면 이전해 Add한 문자열 그대로 찍음
+        if (!text.StartsWith(COMMAND_DISCRIMINATION_CHAR))
         {
             return line;
         }
@@ -303,7 +332,12 @@ public class ConsoleWindow : MonoBehaviour
             }
         }
 
-        if (_commands.FirstOrDefault(command => command.Command == currentCommand) is { } resultCommand)
+        if (!(_commands.FirstOrDefault(command => command.Command == currentCommand) is { } resultCommand))
+        {
+            resultCommand = _commands.FirstOrDefault(command => command.HasAlias(currentCommand));
+        }
+
+        if (resultCommand != null)
         {
             bool hasArgs = resultCommand.PossibleArgs is { Length: > 0 };
 
@@ -449,7 +483,7 @@ public class ConsoleWindow : MonoBehaviour
     [SerializeField] private ScrollRect m_MainTextScrollRect;
     [SerializeField] private float m_SpaceWidth = 9.6f;
 
-    private void Initialize(string initText)
+    private void Initialize(string initText, string initInputText)
     {
         Dispatcher.Post(() =>
         {
@@ -511,7 +545,9 @@ public class ConsoleWindow : MonoBehaviour
             m_InputHeader.parseCtrlCharacters = false;
             m_MainTextField.parseCtrlCharacters = false;
             SetHeaderActive(true);
-            m_InputField.text = initText;
+            m_MainTextField.text = initText;
+            m_InputField.text = initInputText;
+            m_InputField.caretPosition = m_InputField.text.Length;
         });
     }
 
@@ -920,9 +956,25 @@ public class ConsoleCommand: IStartQuery
 
     #region Privates
     UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
+
+    private IEnumerable<string> GetAllNames()
+    {
+        yield return Command;
+
+        if (_aliases != null)
+        {
+            foreach (string alias in _aliases)
+            {
+                yield return alias;
+            }
+        }
+    }
+
+    private HashSet<string> _aliases = null;
     #endregion
 
     #region Interface
+
     /// <summary>
     /// 커맨드 생성자
     /// </summary>
@@ -930,6 +982,7 @@ public class ConsoleCommand: IStartQuery
     /// <param name="queryProcess">커맨드 실행 로직을 정의하는 함수</param>
     /// <param name="doc">해당 커멘드의 Document</param>
     /// <param name="possibleArgs">커멘드 뒷쪽에 올 수 있는 Arguments</param>
+    /// <param name="aliases">커멘드의 Alias 배열</param>
     /// <param name="isSystem">시스템 소속: 삭제 불가</param>
     /// <exception cref="ArgumentNullException">queryProcess가 null일 때 발생</exception>
     /// <exception cref="ArgumentException">args에 중복이 존재할 때 발생</exception>
@@ -938,11 +991,12 @@ public class ConsoleCommand: IStartQuery
         Func<CommandContext, UniTask<string>> queryProcess,
         string doc,
         string[][] possibleArgs = null,
+        string[] aliases = null,
         bool isSystem = false)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
-        Command = command.StartsWith("/") ? command : $"/{command}";
-        Doc = doc;
+        Command = command.StartsWith(ConsoleWindow.COMMAND_DISCRIMINATION_CHAR) ? command : $"{ConsoleWindow.COMMAND_DISCRIMINATION_CHAR}{command}";
+        Doc = doc ?? string.Empty;
 
         if (possibleArgs != null)
         {
@@ -971,8 +1025,118 @@ public class ConsoleCommand: IStartQuery
         }
 
         PossibleArgs = possibleArgs;
+
+        if (aliases != null)
+        {
+            foreach (string alias in aliases)
+            {
+                AddAlias(alias);
+            }
+        }
+
         IsSystem = isSystem;
     }
+
+    /// <summary>
+    /// Alias 추가
+    /// </summary>
+    /// <param name="alias">Alias</param>
+    /// <returns>추가 성공 여부 (중복 시 실패)</returns>
+    public bool AddAlias(string alias)
+    {
+        if (alias == null)
+        {
+            throw new ArgumentNullException(nameof(alias));
+        }
+
+        string trimAlias = alias.StartsWith(ConsoleWindow.COMMAND_DISCRIMINATION_CHAR) ? alias : $"{ConsoleWindow.COMMAND_DISCRIMINATION_CHAR}{alias}";
+
+        if (trimAlias == Command)
+        {
+            return false;
+        }
+
+        if (_aliases == null)
+        {
+            _aliases = new HashSet<string> { trimAlias };
+            return true;
+        }
+
+        return _aliases.Add(trimAlias);
+    }
+
+    /// <summary>
+    /// Alias 제거
+    /// </summary>
+    /// <param name="alias">Alias</param>
+    /// <returns>제거 성공 여부 (없는 Alias일 경우 실패)</returns>
+    public bool RemoveAlias(string alias)
+    {
+        if (alias == null)
+        {
+            throw new ArgumentNullException(nameof(alias));
+        }
+
+        string trimAlias = alias.StartsWith(ConsoleWindow.COMMAND_DISCRIMINATION_CHAR) ? alias : $"{ConsoleWindow.COMMAND_DISCRIMINATION_CHAR}{alias}";
+
+        if (_aliases == null)
+        {
+            return false;
+        }
+
+        bool success = _aliases.Remove(trimAlias);
+
+        if (_aliases.Count == 0)
+        {
+            _aliases = null;
+        }
+
+        return success;
+    }
+
+    /// <summary>
+    /// 특정 이름의 Alias 존재 여부 확인
+    /// </summary>
+    /// <param name="targetAlias">확인할 Alias</param>
+    /// <returns>존재 여부</returns>
+    public bool HasAlias(string targetAlias)
+    {
+        if (targetAlias == null)
+        {
+            throw new ArgumentNullException(nameof(targetAlias));
+        }
+
+        if (_aliases == null)
+        {
+            return false;
+        }
+
+        string trimAlias = targetAlias.StartsWith(ConsoleWindow.COMMAND_DISCRIMINATION_CHAR) ? targetAlias : $"{ConsoleWindow.COMMAND_DISCRIMINATION_CHAR}{targetAlias}";
+
+        return _aliases.Contains(trimAlias);
+    }
+
+    /// <summary>
+    /// 이름 및 Alias 충돌 여부 검사
+    /// </summary>
+    /// <param name="targetCommand">대상 command</param>
+    /// <returns></returns>
+    public bool IsConflict(ConsoleCommand targetCommand)
+    {
+        foreach (string name in targetCommand.GetAllNames())
+        {
+            if (name == Command || (_aliases != null && _aliases.Contains(name)))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Alias 존재 여부 확인
+    /// </summary>
+    public bool HasAnyAlias => _aliases is { Count: > 0 };
 
     /// <summary>
     /// 쿼리 호출을 위한 커멘드
@@ -1009,6 +1173,11 @@ public class ConsoleCommand: IStartQuery
     /// - await 결과가 null: 쿼리가 강제 취소됨
     /// </remarks>
     public Func<CommandContext, UniTask<string>> QueryProcess { get; }
+
+    /// <summary>
+    /// 커멘드의 Alias 리스트
+    /// </summary>
+    public IReadOnlyList<string> Aliases => _aliases?.ToList();
 
     /// <summary>
     /// 해당 커멘드의 Document
