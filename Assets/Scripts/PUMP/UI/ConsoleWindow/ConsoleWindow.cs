@@ -68,11 +68,29 @@ public class ConsoleWindow : MonoBehaviour
         }
 
         _commands.Add(newCommand);
+
+        if (((ISerializableProvider)newCommand).Serializable is { } serializable)
+        {
+            if (serializable.IsGlobal)
+            {
+                _globalSerializables.Add(serializable);
+            }
+
+            _applySerializableCache.Add(serializable);
+            ApplySerializeData().Forget();
+        }
+
         return true;
     }
 
     public static bool RemoveCommand(ConsoleCommand command)
     {
+        if (((ISerializableProvider)command).Serializable is { } serializable)
+        {
+            _applySerializableCache.Remove(serializable);
+            _globalSerializables.Remove(serializable);
+        }
+
         return _commands.Remove(command);
     }
 
@@ -118,6 +136,7 @@ public class ConsoleWindow : MonoBehaviour
     // -=-=-=-=-=-=-=-=-=- Privates -=-=-=-=-=-=-=-=-=-
     private const string PREFAB_PATH = "PUMP/Prefab/UI/ConsoleWindow";
     private const string HEADER_TEXT = "FlowLab> ";
+    private const string SAVE_FILE_NAME = "console_data.bin";
     private const int MAX_LINE_COUNT = 300;
     private const int HISTORY_CAPACITY = 50;
     private static readonly Text _text = new Text(MAX_LINE_COUNT);
@@ -128,6 +147,11 @@ public class ConsoleWindow : MonoBehaviour
     private static bool _onCommand = false;
     private static bool _onQuery = false;
     private static ConsoleInputSource _lastQuerySource = ConsoleInputSource.InputField;
+    private static List<object> _serializeData = null;
+    private static readonly HashSet<IConsoleSerializable> _globalSerializables = new();
+    private static UniTaskCompletionSource _serializeTcs = null;
+    private static HashSet<IConsoleSerializable> _applySerializableCache = new();
+    private static bool _applying;
     private static bool _isOpen = false;
     private static QueryResult? _queryCache = null;
     private static SafetyCancellationTokenSource _queryCts;
@@ -181,6 +205,99 @@ public class ConsoleWindow : MonoBehaviour
             _headerActive = value;
             Instance.SetHeaderActive(_headerActive);
         }
+    }
+
+    private static List<object> SerializeData
+    {
+        get
+        {
+            if (_serializeData == null)
+            {
+                _serializeData = Serializer.LoadData<List<object>>(SAVE_FILE_NAME, logging: false) ?? new List<object>();
+            }
+
+            return _serializeData;
+        }
+    }
+
+    private static async UniTaskVoid ApplySerializeData()
+    {
+        if (_applying)
+        {
+            return;
+        }
+
+        _applying = true;
+
+        try
+        {
+            await UniTask.WaitForEndOfFrame();
+
+            foreach (IConsoleSerializable serializable in _applySerializableCache)
+            {
+                if (_globalSerializables.Contains(serializable))
+                {
+                    continue;
+                }
+
+                if (SerializeData.FirstOrDefault(data => data.GetType() == serializable.Type) is { } found)
+                {
+                    serializable.Data = found;
+                }
+            }
+
+            _applySerializableCache.Clear();
+
+            foreach (IConsoleSerializable globalSerializable in _globalSerializables)
+            {
+                if (SerializeData.FirstOrDefault(data => data.GetType() == globalSerializable.Type) is { } found)
+                {
+                    globalSerializable.Data = found;
+                }
+            }
+        }
+        finally
+        {
+            _applying = false;
+        }
+    }
+
+    private static async UniTask SerializingData()
+    {
+        if (_serializeTcs != null)
+        {
+            await _serializeTcs.Task;
+            return;
+        }
+
+        _serializeTcs = new UniTaskCompletionSource();
+
+        try
+        {
+            await UniTask.WaitForEndOfFrame();
+            await Serializer.SaveDataAsync(SAVE_FILE_NAME, SerializeData);
+        }
+        finally
+        {
+            UniTaskCompletionSource tcs = _serializeTcs;
+            _serializeTcs = null;
+            tcs.TrySetResult();
+        }
+    }
+
+    private static async UniTask SaveData(object data)
+    {
+        if (SerializeData.FirstOrDefault(d => d.GetType() == data.GetType()) is { } found)
+        {
+            int idx = SerializeData.IndexOf(found);
+            SerializeData[idx] = data;
+        }
+        else
+        {
+            SerializeData.Add(data);
+        }
+
+        await SerializingData();
     }
 
     private static TextLine InternalInput(string text, ConsoleInputSource inputSource)
@@ -385,7 +502,9 @@ public class ConsoleWindow : MonoBehaviour
 
             try
             {
-                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, (text, resetScrollRect) => InternalInputRaw(text, resetScrollRect), InternalInputRaw, argsDict, argsCount, argsIndex, inputSource, contextDisposer));
+                IConsoleSerializable serializable = ((ISerializableProvider)resultCommand).Serializable;
+                Func<UniTask> saveDataFunc = serializable != null ? () => SaveData(serializable.Data) : null;
+                UniTask<string> startQueryTask = ((IStartQuery)resultCommand).StartQuery(new CommandContext(Query, (text, resetScrollRect) => InternalInputRaw(text, resetScrollRect), InternalInputRaw, saveDataFunc, argsDict, argsCount, argsIndex, inputSource, contextDisposer));
                 UniTask<string> cancelTask = WaitUntilCancel(_queryCts.Token);
 
                 (int winIndex, string result1, string result2) = await UniTask.WhenAny(startQueryTask, cancelTask);
@@ -845,7 +964,7 @@ public class ConsoleWindow : MonoBehaviour
 /// <summary>
 /// 콘솔 커맨드 클래스
 /// </summary>
-public class ConsoleCommand: IStartQuery
+public class ConsoleCommand: IStartQuery, ISerializableProvider
 {
     public readonly struct CommandContext
     {
@@ -854,6 +973,7 @@ public class ConsoleCommand: IStartQuery
             Func<string, CancellationToken, UniTask<QueryResult?>> queryFunc,
             Action<string, bool> printAction,
             Func<string, bool, ConsoleWindow.ITextLine> textLineGetter,
+            Func<UniTask> saveDataFunc,
             Dictionary<string, string> args,
             int argCount,
             int argsIndex,
@@ -871,6 +991,7 @@ public class ConsoleCommand: IStartQuery
             ArgCount = argCount;
             ArgsIndex = argsIndex;
             InitSource = initSource;
+            _saveDataFunc = saveDataFunc;
             _textUpdateTokens = new List<TextUpdateToken>();
             disposer.OnDispose += Dispose;
         }
@@ -878,6 +999,7 @@ public class ConsoleCommand: IStartQuery
         private readonly Func<string, CancellationToken, UniTask<QueryResult?>> _queryFunc;
         private readonly Action<string, bool> _printAction;
         private readonly Func<string, bool, ConsoleWindow.ITextLine> _textLineGetter;
+        private readonly Func<UniTask> _saveDataFunc;
         private readonly Dictionary<string, string> _args;
         private readonly List<TextUpdateToken> _textUpdateTokens;
 
@@ -951,11 +1073,22 @@ public class ConsoleCommand: IStartQuery
             _textUpdateTokens.Add(token);
             return token;
         }
+
+        /// <summary>
+        /// serializable의 Getter를 사용하여 저장
+        /// </summary>
+        /// <returns>저장 완료 시 SetResult</returns>
+        public UniTask SaveData()
+        {
+            return _saveDataFunc?.Invoke() ?? UniTask.CompletedTask;
+        }
         #endregion
     }
 
     #region Privates
     UniTask<string> IStartQuery.StartQuery(CommandContext context) => QueryProcess(context);
+
+    IConsoleSerializable ISerializableProvider.Serializable => _serializable;
 
     private IEnumerable<string> GetAllNames()
     {
@@ -971,6 +1104,7 @@ public class ConsoleCommand: IStartQuery
     }
 
     private HashSet<string> _aliases = null;
+    private IConsoleSerializable _serializable = null;
     #endregion
 
     #region Interface
@@ -992,6 +1126,7 @@ public class ConsoleCommand: IStartQuery
         string doc,
         string[][] possibleArgs = null,
         string[] aliases = null,
+        IConsoleSerializable serializable = null,
         bool isSystem = false)
     {
         QueryProcess = queryProcess ?? throw new ArgumentNullException($"{nameof(ConsoleCommand)}: QueryProcess cannot be Null");
@@ -1034,6 +1169,7 @@ public class ConsoleCommand: IStartQuery
             }
         }
 
+        _serializable = serializable;
         IsSystem = isSystem;
     }
 
@@ -1330,9 +1466,49 @@ public enum ConsoleInputSource
     System
 }
 
+/// <summary>
+/// 직렬화 데이터를 Get, Set하는 방법을 명시하는 인터페이스
+/// </summary>
+/// <typeparam name="T">반드시 각 ConsoleCommand별 독립적인 Type을 가져야 함</typeparam>
+public interface IConsoleSerializable<T> : IConsoleSerializable where T : class
+{
+    #region Interface
+    /// <summary>
+    /// Getter: CommandContext.SaveData 호출 시 데이터를 추출하여 데이터베이스에 저장
+    /// Setter: 해당 커멘드가 AddCommand될 때, 데이터베이스로부터 입력됨
+    /// </summary>
+    new T Data { get; set; }
+    #endregion
+
+    #region Privates
+    object IConsoleSerializable.Data
+    {
+        get => Data;
+        set => Data = (T)value;
+    }
+
+    Type IConsoleSerializable.Type => typeof(T);
+    #endregion
+}
+
+public interface IConsoleSerializable
+{
+    /// <summary>
+    /// 다른 명령어가 AddCommand될 때도 Data의 Setter를 호출할 지 여부
+    /// </summary>
+    bool IsGlobal { get; }
+    object Data { get; set; }
+    Type Type { get; }
+}
+
 public interface IStartQuery
 {
     UniTask<string> StartQuery(CommandContext context);
+}
+
+public interface ISerializableProvider
+{
+    IConsoleSerializable Serializable { get; }
 }
 
 public class CommandContextDisposer : IDisposable

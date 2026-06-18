@@ -13,17 +13,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directoryHistory:
-  - Assets/Resources/PUMP/Prefab
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/Logic
-  - Assets/Resources/PUMP/Prefab/TP
-  - Assets/Resources/PUMP/Prefab/TP/External
   - Assets/Resources/PUMP/Prefab/TP
   - Assets/Resources/PUMP/Prefab/TP/Logic
   - Assets/Resources/PUMP/Prefab/TP
@@ -33,4 +22,13 @@ MonoBehaviour:
   - Assets/Scripts/PUMP/UI/ConsoleWindow
   - Assets/Resources/PUMP
   - Assets/Resources/PUMP/Prefab
-  currentDirIndex: 19
+  - Assets
+  - Assets/Editor
+  - Assets
+  - Assets/Plugins
+  - Assets/Plugins/Demigiant
+  - Assets/Plugins/Demigiant/DOTween
+  - Assets/Plugins
+  - Assets
+  - Assets/Scripts/PUMP/UI/ConsoleWindow
+  currentDirIndex: 17

@@ -1,14 +1,12 @@
+using Cysharp.Threading.Tasks;
+using NCalc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Cysharp.Threading.Tasks;
-using NCalc;
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 using UnityEngine.Profiling;
-using Utils;
 using Expression = NCalc.Expression;
 #if !UNITY_EDITOR
 using UnityEngine;
@@ -17,7 +15,6 @@ using UnityEngine;
 public class ConsoleDefaultCommandInjector
 {
     private static bool _isInjected = false;
-    private const string SAVE_FILE_NAME = "console_data.bin";
     private const string BAR_STRING = "========================";
     private const string CALC_DOC = @"
 Evaluates the entered expression.
@@ -371,6 +368,7 @@ The leading '/' is optional for both command and alias.",
                 new[] { "command" },                        // 1개: 특정 커맨드의 alias 조회
                 new[] { "action", "command", "alias" },     // 3개: add / remove
             },
+            serializable: new ConsoleAliasDataSerializable(),
             queryProcess: async context =>
             {
                 // /로 시작하도록 정규화
@@ -445,7 +443,7 @@ The leading '/' is optional for both command and alias.",
                         return $"'{aliasName}' is already an alias of {targetCommand.Command}.";
                     }
 
-                    await SaveData();
+                    await context.SaveData();
                     return $"Added alias '{aliasName}' to {targetCommand.Command}.";
                 }
 
@@ -455,7 +453,7 @@ The leading '/' is optional for both command and alias.",
                     return $"'{aliasName}' is not an alias of {targetCommand.Command}.";
                 }
 
-                await SaveData();
+                await context.SaveData();
                 return $"Removed alias '{aliasName}' from {targetCommand.Command}.";
             }
         ),
@@ -839,54 +837,6 @@ The leading '/' is optional for both command and alias.",
         ),
     };
 
-    public static async Task SaveData()
-    {
-        ConsoleCommand[] commandsWithAlias = ConsoleWindow.FindCommands(command => command.HasAnyAlias);
-        ConsoleAliasData[] aliasData = commandsWithAlias.Select(command => new ConsoleAliasData() { _command = command.Command, _aliases = command.Aliases.ToArray() }).ToArray();
-        ConsoleSerializeData consoleData = new ConsoleSerializeData() { _aliasDatas = aliasData };
-        await Serializer.SaveDataAsync(SAVE_FILE_NAME, consoleData, logging: false);
-    }
-
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    public static async Task LoadData()
-    {
-        ConsoleSerializeData consoleData = await Serializer.LoadDataAsync<ConsoleSerializeData>(SAVE_FILE_NAME);
-
-        if (consoleData._aliasDatas != null)
-        {
-            ConsoleCommand[] commands = ConsoleWindow.GetCommands();
-            foreach (ConsoleAliasData aliasData in consoleData._aliasDatas)
-            {
-                if (string.IsNullOrEmpty(aliasData._command))
-                {
-                    continue;
-                }
-
-                string dataCommand = ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + aliasData._command.Substring(1);
-
-                ConsoleCommand target = commands.FirstOrDefault(command =>
-                {
-                    if (string.IsNullOrEmpty(command.Command))
-                    {
-                        return false;
-                    }
-
-                    return ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + command.Command.Substring(1) == dataCommand;
-                });
-
-                if (target == null)
-                {
-                    continue;
-                }
-
-                foreach (string alias in aliasData._aliases)
-                {
-                    target.AddAlias(alias);
-                }
-            }
-        }
-    }
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Inject()
     {
@@ -903,15 +853,65 @@ The leading '/' is optional for both command and alias.",
     }
 }
 
-[Serializable]
-public struct ConsoleSerializeData
-{
-    public ConsoleAliasData[] _aliasDatas;
-}
 
 [Serializable]
-public struct ConsoleAliasData
+public class ConsoleAliasData
 {
-    public string _command;
-    public string[] _aliases;
+    public Dictionary<string, string[]> AliasesData;
+}
+
+public class ConsoleAliasDataSerializable : IConsoleSerializable<ConsoleAliasData>
+{
+    public bool IsGlobal => true;
+
+    public ConsoleAliasData Data
+    {
+        get
+        {
+            ConsoleCommand[] commandsWithAlias = ConsoleWindow.FindCommands(command => command.HasAnyAlias);
+            if (commandsWithAlias.Length == 0)
+            {
+                return new ConsoleAliasData();
+            }
+
+            Dictionary<string, string[]> aliasesData = commandsWithAlias.ToDictionary(keySelector: c => c.Command, elementSelector: c => c.Aliases.ToArray());
+            return new ConsoleAliasData() { AliasesData = aliasesData };
+        }
+        set
+        {
+            if (value is { AliasesData: not null })
+            {
+                ConsoleCommand[] commands = ConsoleWindow.GetCommands();
+                foreach (var (com, als) in value.AliasesData)
+                {
+                    if (string.IsNullOrEmpty(com))
+                    {
+                        continue;
+                    }
+
+                    string dataCommand = ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + com.Substring(1);
+
+                    ConsoleCommand target = commands.FirstOrDefault(command =>
+                    {
+                        if (string.IsNullOrEmpty(command.Command))
+                        {
+                            return false;
+                        }
+
+                        return ConsoleWindow.COMMAND_DISCRIMINATION_CHAR + command.Command.Substring(1) == dataCommand;
+                    });
+
+                    if (target == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (string alias in als)
+                    {
+                        target.AddAlias(alias);
+                    }
+                }
+            }
+        }
+    }
 }
