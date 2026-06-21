@@ -108,12 +108,27 @@ Performs logical operations.
 |------|-------------|
 | AND | True when all inputs are true |
 | OR | True when any input is true |
+| NAND | Inverted AND |
+| NOR | Inverted OR |
 | XOR | True when inputs differ |
+| XNOR | True when inputs are equal |
 | NOT | Inverts input |
-| All | Checks if all inputs are true |
-| Any | Checks if any input is true |
+| All | True when all inputs are true |
+| Any | True when any input is true |
+| Comparator | Compares two inputs |
 
-#### Flow (4 nodes)
+#### Memory (5 nodes)
+Stores state.
+
+| Node | Description |
+|------|-------------|
+| SR Latch | Set/Reset latch |
+| D Flip-Flop | Stores data on clock edge |
+| T Flip-Flop | Toggles on clock edge |
+| JK Flip-Flop | JK flip-flop |
+| Counter | Counts pulses |
+
+#### Flow (5 nodes)
 Controls program flow.
 
 | Node | Description |
@@ -122,50 +137,86 @@ Controls program flow.
 | While | Loops while condition is true |
 | Branch | Multiple branching |
 | Select | Selects based on value |
+| Sequence | Executes outputs in order |
 
-#### I/O (7 nodes)
+#### I/O (8 nodes)
 Handles user input/output.
 
 | Node | Description |
 |------|-------------|
 | Trigger | Emits Pulse signal on click |
-| InputField | Text/number input |
+| Input Field | Text/number input |
+| Input Switch | Selectable input |
+| On/Off Switch | Toggle switch |
+| Key Input | Keyboard input |
 | Display | Shows values |
+| 7-Segment Display | Numeric segment display |
+| Binary Display | Binary value display |
 
-#### Signal (17 nodes)
-Distributes and merges signals.
+#### Signal (13 nodes)
+Generates, distributes, and merges signals.
 
 | Node | Description |
 |------|-------------|
-| Splitter | Distributes one signal to multiple outputs |
+| Split | Distributes one signal to multiple outputs |
 | Merger | Merges multiple signals into one |
-| SignalDetector | Detects signal changes |
+| Switch | Routes signal by control input |
+| Sender | Sends a signal to a paired receiver |
+| Signal Detector | Detects signal changes |
+| Edge Detector | Detects rising/falling edges |
+| One Hot | Activates a single output |
+| One Shot | Emits a single pulse |
+| Blink | Generates a periodic signal |
+| Timer | Outputs after a set time |
+| Delay | Delays a signal |
+| Debouncer | Filters signal noise |
+| Frequency Meter | Measures signal frequency |
 
-#### Math (30 nodes)
+#### Math (31 nodes)
 Performs mathematical operations.
 
 | Node | Description |
 |------|-------------|
 | Add, Subtract, Multiply, Divide | Arithmetic operations |
-| Sin, Cos, Tan, Atan | Trigonometric functions |
+| Modulo | Remainder |
+| Pow, Square Root | Power / root |
+| Absolute, Round | Absolute value / rounding |
+| MinMax, Clamp | Range operations |
+| Average, Standard Deviation | Statistics |
+| Sin, Cos, Tan | Trigonometric functions |
+| Asin, Acos, Atan, Atan2 | Inverse trigonometric functions |
+| Sinh, Cosh, Tanh | Hyperbolic functions |
 | Lerp | Linear interpolation |
-| Clamp | Limits value range |
+| Equal, Numeric Comparator | Comparison |
+| True Count | Counts true inputs |
+| Binary Encoder, Binary Decoder | Binary conversion |
+| Random | Random number generation |
+| Formula | Evaluates a custom expression |
 
-#### Util (5 nodes)
+#### Util (11 nodes)
 Provides utility functions.
 
 | Node | Description |
 |------|-------------|
-| StringLength | String length |
-| StringReplace | String replacement |
+| String Length | String length |
+| String Replace | String replacement |
+| String Concat | String concatenation |
+| String Contain | Substring check |
+| String Split | Splits a string |
+| To Upper / To Lower | Case conversion |
+| Trim | Removes whitespace |
+| Type Converter | Converts between types |
+| Is Null | Checks for null |
+| Null Filter | Filters out null signals |
 
 #### Advanced (3 nodes)
 Advanced extension features.
 
 | Node | Description |
 |------|-------------|
-| ScriptingNode | Runs Python scripts |
-| ClassedNode | Encapsulates circuits as modules |
+| Scripting | Runs Python scripts |
+| Classed | Encapsulates circuits as modules |
+| Console | Executes console commands |
 
 ---
 
@@ -360,7 +411,3 @@ Configurable items:
 - OpenPalette
 - OpenSaveLoadPanel
 - SelectAll / SelectDelete
-
-<div align="center">
-
-</div>

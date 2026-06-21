@@ -108,12 +108,27 @@ FlowLab은 5가지 데이터 타입을 지원하며, 포트 색상으로 구분�
 |------|------|
 | AND | 모든 입력이 true일 때 true |
 | OR | 하나라도 true면 true |
+| NAND | AND의 반전 |
+| NOR | OR의 반전 |
 | XOR | 입력이 서로 다르면 true |
+| XNOR | 입력이 서로 같으면 true |
 | NOT | 입력 반전 |
 | All | 모든 입력이 true인지 확인 |
 | Any | 하나라도 true인지 확인 |
+| Comparator | 두 입력 비교 |
 
-#### Flow (4개)
+#### Memory (5개)
+상태를 저장합니다.
+
+| 노드 | 설명 |
+|------|------|
+| SR Latch | Set/Reset 래치 |
+| D Flip-Flop | 클럭 엣지에 데이터 저장 |
+| T Flip-Flop | 클럭 엣지에 토글 |
+| JK Flip-Flop | JK 플립플롭 |
+| Counter | 펄스 카운트 |
+
+#### Flow (5개)
 프로그램 흐름을 제어합니다.
 
 | 노드 | 설명 |
@@ -122,50 +137,86 @@ FlowLab은 5가지 데이터 타입을 지원하며, 포트 색상으로 구분�
 | While | 조건이 참인 동안 반복 |
 | Branch | 다중 분기 |
 | Select | 값에 따라 선택 |
+| Sequence | 출력을 순서대로 실행 |
 
-#### I/O (7개)
+#### I/O (8개)
 사용자 입출력을 처리합니다.
 
 | 노드 | 설명 |
 |------|------|
 | Trigger | 클릭 시 Pulse 신호 발생 |
-| InputField | 텍스트/숫자 입력 |
+| Input Field | 텍스트/숫자 입력 |
+| Input Switch | 선택형 입력 |
+| On/Off Switch | 토글 스위치 |
+| Key Input | 키보드 입력 |
 | Display | 값 표시 |
+| 7-Segment Display | 숫자 세그먼트 표시 |
+| Binary Display | 이진수 표시 |
 
-#### Signal (17개)
-신호를 분배하고 병합합니다.
+#### Signal (13개)
+신호를 생성, 분배, 병합합니다.
 
 | 노드 | 설명 |
 |------|------|
-| Splitter | 하나의 신호를 여러 출력으로 분배 |
+| Split | 하나의 신호를 여러 출력으로 분배 |
 | Merger | 여러 신호를 하나로 병합 |
-| SignalDetector | 신호 변화 감지 |
+| Switch | 제어 입력으로 신호 경로 전환 |
+| Sender | 짝지어진 수신기로 신호 전송 |
+| Signal Detector | 신호 변화 감지 |
+| Edge Detector | 상승/하강 엣지 감지 |
+| One Hot | 단일 출력만 활성화 |
+| One Shot | 단일 펄스 발생 |
+| Blink | 주기적 신호 생성 |
+| Timer | 설정 시간 후 출력 |
+| Delay | 신호 지연 |
+| Debouncer | 신호 노이즈 제거 |
+| Frequency Meter | 신호 주파수 측정 |
 
-#### Math (30개)
+#### Math (31개)
 수학 연산을 수행합니다.
 
 | 노드 | 설명 |
 |------|------|
 | Add, Subtract, Multiply, Divide | 사칙연산 |
-| Sin, Cos, Tan, Atan | 삼각함수 |
+| Modulo | 나머지 |
+| Pow, Square Root | 거듭제곱 / 제곱근 |
+| Absolute, Round | 절댓값 / 반올림 |
+| MinMax, Clamp | 범위 연산 |
+| Average, Standard Deviation | 통계 |
+| Sin, Cos, Tan | 삼각함수 |
+| Asin, Acos, Atan, Atan2 | 역삼각함수 |
+| Sinh, Cosh, Tanh | 쌍곡선함수 |
 | Lerp | 선형 보간 |
-| Clamp | 값 범위 제한 |
+| Equal, Numeric Comparator | 비교 |
+| True Count | true 입력 개수 카운트 |
+| Binary Encoder, Binary Decoder | 이진 변환 |
+| Random | 난수 생성 |
+| Formula | 사용자 정의 수식 계산 |
 
-#### Util (5개)
+#### Util (11개)
 유틸리티 기능을 제공합니다.
 
 | 노드 | 설명 |
 |------|------|
-| StringLength | 문자열 길이 |
-| StringReplace | 문자열 치환 |
+| String Length | 문자열 길이 |
+| String Replace | 문자열 치환 |
+| String Concat | 문자열 결합 |
+| String Contain | 부분 문자열 확인 |
+| String Split | 문자열 분리 |
+| To Upper / To Lower | 대소문자 변환 |
+| Trim | 공백 제거 |
+| Type Converter | 타입 변환 |
+| Is Null | null 확인 |
+| Null Filter | null 신호 필터링 |
 
 #### Advanced (3개)
 고급 확장 기능입니다.
 
 | 노드 | 설명 |
 |------|------|
-| ScriptingNode | Python 스크립트 실행 |
-| ClassedNode | 회로를 모듈로 캡슐화 |
+| Scripting | Python 스크립트 실행 |
+| Classed | 회로를 모듈로 캡슐화 |
+| Console | 콘솔 명령 실행 |
 
 ---
 
@@ -360,7 +411,3 @@ def state_update(inputs, index, state, before_state, is_changed):
 - OpenPalette
 - OpenSaveLoadPanel
 - SelectAll / SelectDelete
-
-<div align="center">
-
-</div>
